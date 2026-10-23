@@ -143,7 +143,7 @@ namespace NovaFramework.Runtime
         /// 返回主备 URL 列表，按优先级排列。
         /// </summary>
         /// <param name="fileName">YooAsset 请求的文件名。</param>
-        /// <returns>候选 URL 列表，至少 1 项。</returns>
+        /// <returns>按优先级排列的新候选列表；无可用根地址时可能为空。</returns>
         public IReadOnlyList<string> GetRemoteUrls(string fileName)
         {
             List<string> urls = new List<string>(4);
@@ -318,10 +318,10 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 判断配置值是否已是完整 URL。
+        /// 只检查 http/https 前缀，不完整校验 URI。
         /// </summary>
         /// <param name="value">待判断的配置值。</param>
-        /// <returns>是完整 URL 返回 true。</returns>
+        /// <returns>有 http/https 前缀时返回 true。</returns>
         private static bool LooksLikeDirectUrl(string value)
         {
             return value.StartsWith("http://", StringComparison.OrdinalIgnoreCase)

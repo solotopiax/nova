@@ -53,18 +53,11 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private bool m_MuteAd = false;
 
         /// <summary>
-        /// 广告加载失败时的最大重试次数；超出后停止本轮重试，等待下一次外部触发加载。
+        /// 全部渠道与格式共用的广告组重试等待序列；各组独立推进，到末项后回到首项继续循环。
         /// </summary>
         [SerializeField]
-        [Tooltip("广告加载失败时的最大重试次数；超出后停止本轮重试，等待下一次外部触发加载。")]
-        private int m_RetryLoadAdMaxNum = 3;
-
-        /// <summary>
-        /// 广告加载重试 N 次仍失败后，再次发起加载之间的间隔时间（秒）。
-        /// </summary>
-        [SerializeField]
-        [Tooltip("广告加载重试 N 次失败后，再次发起加载之间的间隔时间（秒）。")]
-        private float m_RetryLoadAdInterv = 30f;
+        [Tooltip("广告组本轮全部 ID 失败后按列表顺序等待（秒）；各组独立推进，到末项后回到首项继续循环，本组任意 ID 加载成功后从首项重新计数。列表为空或包含非有限正数时整体回退 2、4、8、16、32 秒。")]
+        private float[] m_GroupRetryIntervalsSeconds = CreateDefaultGroupRetryIntervalsSeconds();
 
         /// <summary>
         /// 只读视图；AdPlugin 初始化时遍历此列表创建渠道实例。
@@ -87,14 +80,42 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public bool MuteAd => m_MuteAd;
 
         /// <summary>
-        /// 广告加载失败时的最大重试次数。
+        /// 返回有效的广告组重试等待序列；空列表或任意非有限正数都会使整组配置回退默认值。
         /// </summary>
-        public int RetryLoadAdMaxNum => m_RetryLoadAdMaxNum;
+        public IReadOnlyList<float> GroupRetryIntervalsSeconds
+        {
+            get
+            {
+                bool isValid = m_GroupRetryIntervalsSeconds != null && m_GroupRetryIntervalsSeconds.Length > 0;
+                if (isValid)
+                {
+                    foreach (float interval in m_GroupRetryIntervalsSeconds)
+                    {
+                        if (float.IsNaN(interval) || float.IsInfinity(interval) || interval <= 0f)
+                        {
+                            isValid = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isValid)
+                {
+                    return m_GroupRetryIntervalsSeconds;
+                }
+
+                Log.Warning(LogTag.AD, "广告组重试间隔列表必须包含有限正数，当前配置无效，整体回退 2、4、8、16、32 秒。");
+                return CreateDefaultGroupRetryIntervalsSeconds();
+            }
+        }
 
         /// <summary>
-        /// 广告加载重试失败后再次加载的间隔时间（秒）。
+        /// 创建独立的默认重试间隔数组，避免配置或渠道间共享可修改的默认数据。
         /// </summary>
-        public float RetryLoadAdInterv => m_RetryLoadAdInterv;
+        internal static float[] CreateDefaultGroupRetryIntervalsSeconds()
+        {
+            return new[] { 2f, 4f, 8f, 16f, 32f };
+        }
 
 #if UNITY_EDITOR
         /// <summary>

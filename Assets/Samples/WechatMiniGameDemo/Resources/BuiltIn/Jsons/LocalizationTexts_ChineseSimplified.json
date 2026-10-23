@@ -16,6 +16,9 @@
     { "Name": "TitlePreloadFailed", "Value": "预加载失败" },
     { "Name": "ContentPreloadFailed", "Value": "预加载失败，是否重试？" },
     { "Name": "ConfirmPreloadFailed", "Value": "重试" },
-    { "Name": "CancelPreloadFailed", "Value": "退出" }
+    { "Name": "CancelPreloadFailed", "Value": "退出" },
+    {"Name": "TitleAppDownloaded", "Value": "更新文件已保存"},
+    {"Name": "ContentAppDownloaded", "Value": "更新文件已保存。确认后推荐更新继续启动，强制更新退出应用。"},
+    {"Name": "ConfirmAppDownloaded", "Value": "确认"}
   ]
 }

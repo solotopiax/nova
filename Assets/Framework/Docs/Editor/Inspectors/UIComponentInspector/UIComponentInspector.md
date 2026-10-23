@@ -319,3 +319,11 @@ UIComponentInspector 由 Unity 通过 `[CustomEditor(typeof(UIComponent))]` 自�
 - [EditorUtil.Draw.SourceFileTree.md](../../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md)
 - [EditorUtil.Luban.ExportHelper.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md)
 - [EditorUtil.Luban.DataTypeNameHelper.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md)
+
+## 同步、输入与执行边界
+
+全量和单文件回调虽然先 Apply 再读真实 UISettings，但忽略导出器 bool 返回值；代码目标显式传入，数据路径参数只作非空门禁，数据正式位置仍来自 Unit。按钮捕获的目录或 detailProp 并非全部被执行方法消费，不能据这些引用推断目标已被冻结。watcher 只在 OnEnable 绑定原 `_configs`，切目录/首次生成不自动重绑，删除事件也会设存在标记。
+
+组数量修改立即 Apply，但不统一校验上限、重名或深度；扩容也不保证逐项构造默认。Play 下组列表切为真实运行信息，其它可编辑序列化值不等于实时 Runtime setter 已调用。运行组折叠以名称为 key，同名组共享 UI 状态；详情只读，不触发开关 UIView 或加载资源。
+
+UITemplate 的 Name/AssetLocation/UIGroupName 定位视图与组，PauseCoveredUIView 和 InObjectPools 是 bool。模板中 0/1 数字样例不能直接通过当前 bool.TryParse 验证；应按导出器接受的布尔文本填写，样例也不证明资源和注册已就绪。

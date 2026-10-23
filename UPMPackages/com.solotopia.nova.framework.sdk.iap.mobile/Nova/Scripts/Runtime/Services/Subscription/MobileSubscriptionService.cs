@@ -33,10 +33,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 将订阅到期时间戳写入统一存档 SubscriptionExpireMs 字典并启动倒计时。
-        /// expireTimeMs &lt;= 0 时写入 0 表示已过期，不启动倒计时。
+        /// expireTimeMs 为 0 或负数时写入 0 表示已过期，不启动倒计时。
         /// </summary>
         /// <param name="tableId">订阅商品配置表行 ID。</param>
-        /// <param name="expireTimeMs">服务端下发的到期 Unix 毫秒时间戳；&lt;= 0 表示已过期。</param>
+        /// <param name="expireTimeMs">服务端下发的到期 Unix 毫秒时间戳；0 或负数表示已过期。</param>
         internal void SaveExpireTime(long tableId, long expireTimeMs)
         {
             var persist = m_Hub.Store?.PersistData;
@@ -71,7 +71,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 启动订阅到期倒计时。到期后自动拉取平台已有购买并刷新订阅权益。
-        /// 新倒计时启动时取消旧的（同一 tableId 同时只有一个倒计时生效）。
+        /// 整个服务实例只持有一个倒计时；任意 tableId 启动新倒计时都会取消上一个。
         /// </summary>
         /// <param name="tableId">订阅商品配置表行 ID。</param>
         /// <param name="expireTimeMs">到期 Unix 毫秒时间戳。</param>

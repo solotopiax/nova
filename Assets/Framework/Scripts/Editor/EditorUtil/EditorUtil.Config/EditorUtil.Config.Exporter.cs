@@ -154,6 +154,7 @@ namespace NovaFramework.Editor
 
                 /// <summary>
                 /// 按导出坐标解析 ConfigMaster 中的模板，并单向写入指定 YooAssetSettings.asset。
+                /// <para>值未变化且资产未脏时不重存文件；已有脏数据仍按原保存语义持久化，每次都注入选定实例。</para>
                 /// </summary>
                 private static void WriteYooAssetSettings(
                     ConfigMasterSO master,
@@ -197,9 +198,13 @@ namespace NovaFramework.Editor
                             $"YooAsset 配置导出失败：PackageFilePrefix 包含非法文件名字符：{packageFilePrefix}");
                     }
 
-                    settings.YooFolderName = yooFolderName;
-                    settings.PackageFilePrefix = packageFilePrefix;
-                    EditorUtility.SetDirty(settings);
+                    // 同值导出不重新序列化干净资产，避免受控维护额外改变冻结文件；已有脏状态仍由原保存入口处理。
+                    if (settings.YooFolderName != yooFolderName || settings.PackageFilePrefix != packageFilePrefix)
+                    {
+                        settings.YooFolderName = yooFolderName;
+                        settings.PackageFilePrefix = packageFilePrefix;
+                        EditorUtility.SetDirty(settings);
+                    }
                     AssetDatabase.SaveAssetIfDirty(settings);
                     YooAssetConfiguration.SetSettings(settings);
                 }
@@ -237,6 +242,7 @@ namespace NovaFramework.Editor
                     {
                         AESKey = src.AESKey,
                         AESIV = src.AESIV,
+                        ExtensionConfigsJson = src.ExtensionConfigsJson,
                         PrivacyInfoConfig = src.PrivacyInfoConfig,
                         InfoPlistUsageDescriptions = src.InfoPlistUsageDescriptions,
                     };

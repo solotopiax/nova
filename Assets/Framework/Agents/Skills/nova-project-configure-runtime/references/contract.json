@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -17,6 +17,26 @@
       "kind": "unity-menu",
       "entry": "Nova/Open Config",
       "when": "编辑并保存已冻结三维坐标的 ConfigMasterSO"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.patch-coordinate",
+      "when": "互斥复用：旧请求省略operation/coordinate，按1至64坐标项编辑Namespace/AppConfigs五个固定字符串字段并同组广播；operation=coordinate-switch时省略或null patches，完整coordinate匹配当前Active BuildTarget，只保存CurrentChannel/CurrentDevelopMode。两分支仅保存目标Master，不导出Runtime"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-panel",
+      "when": "只读查询明确坐标及固定面板的实际字段、掩码、同组物理坐标与凭据脱敏值，不补结构"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.patch-panels",
+      "when": "冻结inspect返回的精确字段路径或维度轴后批量预演并只保存目标Master；不导出Runtime或构建；最终全部物理Privacy格的原有效UTF8各16字节Key/IV须相同，初配/no-op/其它隐私字段可用，轮换仍未实现"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.normalize-master",
+      "when": "普通patch发现非规范Master或请求外归一变化时，明确masterGuid及platform/channel/developMode锚点，单独展示整Master完整脱敏差异；只保存目标，随后只读Verify并重新inspect/patch"
     },
     {
       "kind": "agent-action",
@@ -36,31 +56,43 @@
     {
       "kind": "agent-action",
       "entry": "nova.project.config.inspect-bundle-collector",
-      "when": "定位精确 Config 坐标对应的 Bundle Collector"
+      "when": "只读定位指定ConfigMaster当前坐标对应Collector路径与资产；不接收任意目标坐标，也不修改Collector成员"
     },
     {
       "kind": "agent-action",
       "entry": "nova.project.config.export-runtime",
       "when": "确认精确 write set 后导出已冻结 Platform Channel DevelopMode 的 ConfigRuntimeSO"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.ensure-panel-references",
+      "when": "只对已安装IAP Mobile/ThirdPay/Voucher白名单Store，在已有IAPPluginConfig的真实m_StoreConfigList.m_Items中补同一逻辑组缺项；保留旧项值与顺序，冻结程序集/源码/版本，独立Plan和Verify后再字段patch、正式Runtime导出"
     }
   ],
   "inputs": [
     {
       "name": "projectRoot",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
     },
     {
       "name": "configMaster",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
     },
     {
       "name": "platformChannelDevelopMode",
       "required": true,
-      "constraint": "Platform must equal the current Unity Active BuildTarget mapping; supported mappings are Android, iOS, and WebGL"
+      "constraint": "固定字段设计态patches可显式选择多个有效非None坐标，与Active BuildTarget无关；coordinate-switch及Runtime导出均为匹配当前Active BuildTarget的单一Android/iOS/WebGL坐标。坐标选择只保存渠道/模式，跨平台先独立显式切Unity BuildTarget，再重新Plan。"
     },
     {
       "name": "configChangeSet",
       "required": true
+    },
+    {
+      "name": "coordinateSelectionRequest",
+      "required": false,
+      "constraint": "仅保存当前选择时使用同patch-coordinate Action的operation=coordinate-switch、masterGuid和完整coordinate.platform/channel/developMode；patches必须省略或null，平台匹配当前Active BuildTarget，Channel非None、枚举精确。只允许CurrentChannel/CurrentDevelopMode两真实叶子；请求外归一变化须先独立normalize-master后重Plan。"
     },
     {
       "name": "configRuntimeTarget",
@@ -77,15 +109,38 @@
     {
       "name": "targetSdkOrKitConfigTypes",
       "required": false
+    },
+    {
+      "name": "buildValidationContext",
+      "required": false,
+      "constraint": "完整三平台构建时读取Batch配置并逐平台复用单坐标Operation；平台通过受控Unity BuildTarget入口显式切换，再用patch-coordinate互斥coordinate-switch保存Master渠道/模式；批次外独立记录Master、Runtime、已保存Scene及PlayerSettings基线，场景写入使用既有窗口/受控Unity入口。"
+    },
+    {
+      "name": "panelChangeSet",
+      "required": false,
+      "constraint": "固定面板、精确坐标、SDK/Kit configType FullName、inspect字段路径/严格JSON token及显式dimension axis；只修改live editable字段，不创建管理引用类型"
+    },
+    {
+      "name": "normalizationAnchor",
+      "required": false,
+      "constraint": "非规范Master独立归一时必须明确真实masterGuid及大小写精确的platform/channel/developMode；Platform/Channel非None。锚点决定合并轴时的存量保留分支，不从窗口或邻格猜值；冻结全部脱敏物理差异与整Master写入授权，归一后重新Inspect及新patch Plan"
+    },
+    {
+      "name": "registeredPanelReferenceCollectionAndTypes",
+      "required": false,
+      "description": "首次IAP Store必需已有SDK面板target、真实m_StoreConfigList.m_Items、已安装精确Store FullName、掩码同组坐标及全部旧项保留写集；类型从已解析包核实，不接受任意CLR或初始值"
     }
   ],
   "effects": [
     "unity-write",
-    "generated-output"
+    "generated-output",
+    "credential"
   ],
   "writeScope": {
     "allow": [
-      "confirmed ConfigMasterSO at the selected Platform Channel DevelopMode coordinate and explicit EnabledSDKs or EnabledKits members for the target Config types",
+      "confirmed coordinate-switch selection on the sole ConfigMasterSO: exact CurrentChannel/CurrentDevelopMode leaf changes only, complete coordinate matching current Active BuildTarget, patches omitted or null; noncanonical Master requires independent normalize-master and renewed Plan; no-op does not save, platform changes use a separate explicit controlled Unity prerequisite",
+      "confirmed ConfigMasterSO fixed-field patches and their PanelDimensionMask logical groups, or selected SDK/Kit Config types and explicit EnabledSDKs/EnabledKits members; exact physical write set must be reviewed; confirmed existing fixed panels editable field values and explicit dimension split/merge with the complete physical differences shown by patch-panels",
+      "independently confirmed whole-Master normalization through normalize-master, bound to an explicit source coordinate and all redacted physical differences; single-asset save only, no current-coordinate change, Runtime export, resource-key code generation or legacy-migration cleanup",
       "confirmed ConfigRuntimeSO target",
       "resolved YooAssetSettings.asset for the confirmed coordinate when configured",
       "active-scene startup snapshot only when explicitly confirmed"
@@ -98,7 +153,10 @@
       "unconfirmed SDK/Kit Config types or EnabledSDKs/EnabledKits members",
       "SDKComponent.m_PluginEntries as an SDK enable source",
       "handwritten Scene or ScriptableObject YAML",
-      "remote config, CDN, Bundle, Player or external deployment"
+      "remote config, CDN, Bundle, Player or external deployment",
+      "generic patch of arbitrary ConfigMaster fields, dynamic managed-reference type replacement, or silently inferred neighboring coordinate values",
+      "silent whole-Master normalization inside a field patch, unconfirmed normalization source branch, or reuse of a pre-normalization field plan",
+      "replacement/removal/broadcast overwrite of an original valid Privacy AES Key/IV via patch-panels; bypassing the missing old-data migration/rotation contract through manual/shared or generic settings writes"
     ]
   },
   "locks": [
@@ -116,9 +174,11 @@
       "ambiguous SDK/Kit package, Config type, package precondition or EnabledSDKs/EnabledKits membership",
       "create a ConfigMasterSO or ConfigRuntimeSO",
       "change another coordinate, resolved YooAsset settings or active scene snapshot",
-      "delete, external write, credential use, Git commit or push"
+      "delete, external write, credential use, Git commit or push",
+      "explicit panel dimensions changes and all resulting physical-group split/merge/broadcast writes",
+      "independent whole-Master normalization anchor and all physical differences outside the original field change set"
     ],
-    "rule": "确认绑定一个三维坐标、字段变更和 Runtime 目标；SDK/Kit 还须绑定目标包、Config 类型和 EnabledSDKs/EnabledKits 成员。坐标、目标、目标类型或附加场景写入变化后旧确认失效。"
+    "rule": "确认绑定Master、精确字段值及计划展示的全部物理逻辑组写集；批量设计态编辑须明确所有坐标，运行快照仍绑定单一三维坐标与Runtime目标。SDK/Kit绑定类型和启用成员；目标、值、坐标、掩码或附加写入变化后旧确认失效。 已保存配置由Agent主动发现；已有完整任务授权覆盖必要本地准备时继续，不重复索取可读取值。export-runtime/Pipify export.config不回写Master当前Channel/DevelopMode或场景快照，场景写入仍须在既有授权范围。 面板编辑绑定target.panel/configType/三维坐标及inspect字段路径，dimensions仅明确轴；切掩码先分裂/合并再按最终逻辑组广播，全部物理差异须核对。normalize-master单独绑定明确锚点和整Master完整脱敏差异；已有授权覆盖时继续，范围或合并保留分支不明确时先解决决策，归一后重新Inspect并生成新patch计划。 当前选择分支单独绑定coordinate-switch、完整coordinate和当前Active BuildTarget；patches须省略或null，不能借选择保存广播其它字段。平台或目标漂移后重新Plan；平台显式切换为独立受控Unity前置。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -129,8 +189,17 @@
   ],
   "evidence": [
     "ConfigMasterSO 保存与三维坐标证据",
+    "批量patch的完整状态/资产摘要、全部物理字段地址及剩余必填问题；保存证据不代表Runtime导出或游戏运行",
     "目标 SDK/Kit 的 package id、版本、source、INDEX、Scanner 类型发现与 EnabledSDKs/EnabledKits 单格映射证据（适用时）",
     "ConfigRuntimeSO 导出结果",
-    "Unity 编译证据"
+    "Unity 编译证据",
+    "ConfigWindow/Action/Pipify入口区别；需要构建时Master当前坐标、Runtime与全部启用场景Asset/App渠道一致及显式preflight结果",
+    "完整多平台任务的逐平台导出/编译记录、独立基线与串行恢复；不把BatchSnapshot称完整freeze",
+    "本轮临时场景/Runtime/设置清场与恢复，持久配置任务保留目标改动",
+    "inspect-panel live serialized field types/current values/unknown defaults, mask and group coordinates; patch-panels complete physical differences, single-Master save and readonly Verify",
+    "normalize-master explicit anchor, clone idempotency and complete redacted physical differences; file/meta/full-state freeze, single-Master save or no-op, readonly Verify, then renewed Inspect and patch Plan; static normalization does not prove Runtime export or compilation",
+    "ensure-panel-references exact installed whitelist/source/assembly/MVID and all physical group additions, preserved old lists/values, sole Master receipt and readonly Verify; subsequent field patch and formal Runtime export checked independently",
+    "Privacy patch-panels full final physical-coordinate credential retention guard; 26 isolated EditMode cases are local guard evidence, not key rotation, saved-data migration or device acceptance",
+    "coordinate-switch current Active BuildTarget/platform, exact CurrentChannel/CurrentDevelopMode leaf writes, full file/state freeze, sole Master save or no-op and readonly Verify of actual selection; independent Runtime formal export and compilation remain required for the full configuration task"
   ]
 }

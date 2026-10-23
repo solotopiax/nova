@@ -52,7 +52,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Editor
         {
             context.RegisterActivityName(c_ActivityName);
 
-            context.AddManifestRules(new ManifestRuleSet
+            context.AddManifestRules(CreateAndroidManifestRules());
+
+            Log.Debug(LogTag.Editor, "[FirebasePlugin] Android 预处理完成：ActivityName 已注册，MessageForwardingService 已注入，default_notification_icon meta-data 已注入。");
+        }
+
+        /// <summary>返回原Android固定规则树；仅构造领域纯数据，不读配置、上下文或执行SDK回调。</summary>
+        /// <returns>原meta-data与MessageForwardingService完整规则，不在此Apply或写盘。</returns>
+        internal static ManifestRuleSet CreateAndroidManifestRules() => new ManifestRuleSet
             {
                 MetaDatas = new[]
                 {
@@ -65,10 +72,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Editor
                         Permission = "android.permission.BIND_JOB_SERVICE",
                     }
                 }
-            });
-
-            Log.Debug(LogTag.Editor, "[FirebasePlugin] Android 预处理完成：ActivityName 已注册，MessageForwardingService 已注入，default_notification_icon meta-data 已注入。");
-        }
+            };
 
 #if UNITY_IOS
         /// <summary>

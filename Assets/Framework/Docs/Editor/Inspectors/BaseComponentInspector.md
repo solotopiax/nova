@@ -78,3 +78,11 @@ public override void OnInspectorGUI()
 
 - [IEditorRuntimeDrawer.md](../Definitions/IEditorRuntimeDrawer.md)
 - [Editor.md](../Editor.md)
+
+## 数据来源与失败边界
+
+InitializeTemplatePath 在已有值为空时写默认模板路径并 Apply，已有非空值原样保留；只读模板提示只是不编辑模板字段，创建按钮仍可建目录、覆盖目标同名 Excel 并触发刷新。属性版 GenerateFromTemplate 要求目标目录已经存在，ByPath 版会先建目录；没有覆盖预览、备份或多文件事务，也不因复制成功自动登记 Unit 或完成正式导出。
+
+Packages 与项目相对路径解析用于定位，不是目录归属安全门，不限制所有 `..` 或任意绝对路径。模板标签默认宽度为 95，普通 Inspector 为 180，可被覆写；DevelopMode 颜色/多值只是序列化场景快照，不校验当前配置或 Runtime 生效。
+
+FinalRefreshInspectorGUI 依次 Apply、Repaint、恢复 labelWidth，不含 SaveAssets 或运行时 setter；Apply/Repaint 抛错会跳过后续恢复。基类与子类绘制序列没有统一 finally 保证，编译状态 hook 也不等同于触发编译或确认编译通过。

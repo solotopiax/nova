@@ -4,29 +4,64 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
       "kind": "workspace-inspection",
       "entry": "business data ownership and existing Nova.Config/Nova.Persist startup and call sites",
-      "when": "只读确认业务数据归属、当前加载顺序、classify/item、既有 PersistComponent 与 ConfigRuntime 前置，不修改配置资产"
+      "when": "只读确认业务数据归属、实际平台/宿主、加载顺序、classify/item、存档格式、既有 PersistComponent 与 ConfigRuntime 前置；诊断不保存、迁移或删除数据"
     },
     {
       "kind": "unity-editor-automation",
       "entry": "PersistComponentInspector and ConfigWindow read-only inspection; Unity script refresh, compilation and Play Mode persistence inspection",
-      "when": "只读核验现有存储实现、当前 ConfigRuntime 坐标与 Privacy AES 前置，并在编译后执行 Play 验证；不修改 Unity 资产"
+      "when": "只读核验现有存储实现与当前配置，并在已授权测试范围编译后执行 Play 验证；需保持数据文件原状时避免可能懒加载/恢复或建立数据库连接的 Inspector 视图"
     },
     {
       "kind": "workspace-edit",
       "entry": "confirmed business persistence source and local Play probe",
-      "when": "只修改已冻结的业务数据模型、读写/保存/清理调用和探针，不改 PersistComponent、Config 或生成物"
+      "when": "只修改已冻结的项目业务数据模型、读写/保存/清理或版本化迁移方法和隔离探针；复用既有方法，不改 PersistComponent、Config、生成物或真实存档文件，真实维护运行单独冻结数据集"
     },
     {
       "kind": "csharp-api",
       "entry": "Nova.Config.LoadAsync / Nova.Persist.LoadAsync / Nova.Persist.PlayerPrefs / FileFragment / SQLite / IPersistManager.Save / RemoveItem / RemoveAll",
-      "when": "在已确认的 Config 后 Persist 顺序、存储实现、保存时机和清理范围内执行既有公开持久化 API；不执行任意 C#"
+      "when": "仅描述项目既有业务实现中的公开存储调用，按 Config 后 Persist 的加载、保存/删除/迁移契约使用；不是可调度 MCP，也不允许临时 C# 或反射私有 Inspector 方法"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "resolved com.solotopia.nova.framework.memory.protection Nova/Docs/INDEX.md, NovaFramework.MemoryProtection.Runtime API and business asmdef reference, business integer owner, existing Config startup and MemoryProtectionConfigs in PrivacyConfigs.ExtensionConfigsJson",
+      "when": "内存防护分支从实际安装的独立核心包和业务源码核对 ProtectedInt/ProtectedLong API、程序集引用、可信初值/生命周期、失败边界、本包扩展开关和后端实际状态；缺包复用已授权 nova-project-manage-upm-package，ACTk 为另一个可选商业插件。可推断路径由 Agent 取得，不读秘密或改存档，不从 Framework 版本下界假定此包已安装"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed business ProtectedInt/ProtectedLong field ownership, guarded access, ordinary-number JSON boundary and isolated memory-protection probe",
+      "when": "按 references/memory-protection.md 仅编辑授权业务模型、读写/提交失败处理、必要的 NovaFramework.MemoryProtection.Runtime 业务 asmdef 引用和隔离探针；复用既有 owner 与启动，不加模块或场景组件，不修改 Framework/本包实现、真实存档、配置、其它程序集身份/依赖、插件或生成物，不安装 ACTk"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "ProtectedInt(string,int) / ProtectedLong(string,long) / ProtectedInt.TryRead / ProtectedInt.TryWrite / ProtectedLong.TryRead / ProtectedLong.TryWrite / IsProtected / IsQuarantined / Dispose / MemoryProtection.IsActive / MemoryProtection.DetectionEnabled / MemoryProtection.KeyRotationEnabled / MemoryProtection.ActkVersion / MemoryProtection.TamperDetected / Util.Json.Serialize / Util.Json.Deserialize",
+      "when": "独立核心包的公开业务内存防护 API，命名空间仍为 NovaFramework.Runtime；仅主线程用于授权源码，Try 失败输出0不得结算或保存，JSON保持普通整数，无后端只证明普通兼容。本包Manager自动注册并在Config已加载后的轮询/首次访问初始化，逆序关闭先于SDK；业务不接管初始化/轮询/Shutdown，不是可调度MCP Action，不用存档维护Action代替"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "confirmed persistence schema, classify/item, saved-file metadata, redacted existing logs and recovery ownership",
+      "when": "只读定位已有存档保存、格式、坏档、恢复或重复迁移问题；不读取明文秘密，不用 Load/Save/Inspector 编辑或加密开关代替诊断"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.persistence.inspect-data",
+      "when": "同强类型Action保原FileFragment严格全集、PP默认metadata/独立indexed-value与SQLite四文件metadata scope。Privacy另用operation=inspect-privacy-aes、storage=PrivacyAES、dataScope=current-editor-privacy-aes-data、双ack=true；完整冻结当前Editor标准三存储/激活Master当前Privacy逻辑组/配对Runtime及源摘要，无生成/Save/AES/sourceSHA写字段。Privacy检查的Plan/Execute/Verify均重读源；SQLite AES已启用且主库存在时打开既有库，执行真实BEGIN IMMEDIATE/ROLLBACK并取得写事务锁，可能改变WAL/SHM。不转换/提交玩家值或保存配置不表示物理零写，内部数据/秘密不输出；默认SQLite四文件metadata仍不开库，metadata摘要不能冒逻辑一致快照。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.persistence.migrate-encryption",
+      "when": "同Action保原storage/scope值AES分支及PP显式globalSave；独立operation=rotate-sqlite-cipher仅macOS Editor标准SQLite非空→不同非空密码、sourceSHA、generated=true或已有opaquehandle，在独立封存/backup后同库rekey并保存唯一密码字段。operation=rotate-privacy-aes用PrivacyAES固定scope/sourceSHA/双ack/globalSave=true/同凭据策略，当前标准三后端旧AES数据→正常SaveWorkingCopy整Privacy组→正式Runtime Export，不改AppAes/Cipher/resource keys。跨资源非原子，提交后partial保材料，不重放。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.persistence.recover-maintenance",
+      "when": "原partial或提交后恢复新建独立Plan，绑定原operationId/migrationRecoveryToken；各自schema1/2/3/4完整原/新状态及备份重核，Cipher/Privacy由当前项目nativeVault取旧新与独立保护秘密。恢复原限定数据/字段或正常Master/Runtime导出，拒第三方漂移；Privacy末尾门禁/清场失败保partial可同原token重新计划，保正式恢复材料，不重放迁移。"
     }
   ],
   "inputs": [
@@ -35,59 +70,116 @@
       "required": true
     },
     {
-      "name": "configRuntimeCoordinateAndPersistComponentReadiness",
+      "name": "operationModeAndExistingOrTestDataBoundary",
       "required": true
+    },
+    {
+      "name": "configRuntimeCoordinateAndPersistComponentReadiness",
+      "required": false,
+      "constraint": "业务存储接入必需；诊断或类型化维护只冻结该分支实际要求的目标、Config或配对Runtime，默认metadata检查不要求Master/Privacy。仅内存防护时核对已解析独立包、业务Runtime程序集引用、当前Config及MemoryProtectionConfigs扩展的两个开关；只有实际使用持久化才要求PersistComponent。缺商业后端不阻止普通存取，实际防护验收保持partial"
     },
     {
       "name": "businessDataModelAndClassifyItemContract",
-      "required": true
+      "required": false,
+      "constraint": "业务存储接入必需，classify/item只适用于实际业务存档读写；诊断及inspect/migrate/recover类型化维护不要求新建业务模型或classify/item。仅内存防护时冻结业务整数owner、稳定FieldId与可信初值，不为满足输入新建存档契约"
     },
     {
       "name": "selectedStorageImplementationAndPlatformSupport",
-      "required": true
+      "required": false,
+      "constraint": "业务存储接入必需；诊断和类型化维护按其精确storage/dataScope核对现存后端与宿主限制。仅内存防护无需选择存储后端，按当前包API与主线程入口检查；涉及存档时保留原后端和平台限制"
     },
     {
       "name": "configThenPersistLoadOrderAndExistingStartupOwner",
-      "required": true
+      "required": false,
+      "constraint": "业务存储接入必需；诊断和当前Editor类型化维护不启动业务或进入Play，按维护Action的稳定EditMode和占用边界执行，不为补输入另建启动入口"
     },
     {
       "name": "saveDurabilityAndAutosaveContract",
-      "required": true
+      "required": false,
+      "constraint": "业务存储接入必需；类型化维护使用自身提交、独立重读、恢复与PP全局Save确认门，不要求业务自动保存策略或Play耐久性探针，不推导设备耐久性。仅内存防护冻结失败后不得继续保存的业务边界，不要求新建Save或耐久性探针；真实存档接入仍要求独立耐久性证据"
     },
     {
       "name": "cleanupScopeAndDeletionConfirmation",
-      "required": true
+      "required": false,
+      "constraint": "业务任务包含清理时必需；诊断不删除数据，类型化维护按已冻结范围及原Operation保留正式恢复材料，不为补输入增加删除动作。内存防护只清理本轮隔离探针、日志与测试对象，不删除真实存档；真实持久化清理仍按精确分类/条目单独授权"
     },
     {
       "name": "privacyAesPrerequisiteAndSQLiteCipherBoundary",
-      "required": true
+      "required": false,
+      "constraint": "业务调用实际启用加密时必需；诊断和类型化维护只核其分支已有加密前置，metadata检查不读取秘密，Cipher/Privacy维护使用已声明生成策略或合法opaquehandle，不要求用户提供明文。内存密钥由后端管理，不要求Privacy AES/Cipher明文、handle或存档维护Action；只有既有真实存档调用才叠加其加密前置"
     },
     {
       "name": "playReadWriteDurabilityAndCleanupProbe",
-      "required": true
+      "required": false,
+      "constraint": "业务存储接入必需；只读诊断和inspect/migrate/recover类型化维护不要求Play探针，使用对应Action的精确范围、原回执、提交及恢复后验，不声称Player/设备耐久性。内存防护采用隔离正常读写、失败阻断、状态和普通整数JSON探针，不把同内存验证当真实存档耐久性或实际ACTk防护证据"
     },
     {
       "name": "allowedWriteSet",
       "required": true
+    },
+    {
+      "name": "migrationSourceTargetVersionConflictRetentionRecoveryAndReplayContract",
+      "required": false
+    },
+    {
+      "name": "memoryProtectionBusinessFieldOwnershipTrustedInitialValueAndFailureBoundary",
+      "required": false,
+      "constraint": "内存防护分支必需：Agent从授权源码推断owner/命名空间/int或long/读取修改保存释放点，冻结稳定FieldId、可信初值与失败后的结算提交边界；仅不能推断的玩法或可信恢复规则向用户确认，不要求用户提供可查询路径"
+    },
+    {
+      "name": "memoryProtectionActualBackendStateMainThreadAndIsolatedProbe",
+      "required": false,
+      "constraint": "内存防护分支必需：核对当前API、Config加载责任、IsActive/字段IsProtected和IsQuarantined/ActkVersion及两个开关；只改业务源码和隔离探针，无后端兼容不等于防护生效，不安装插件或更改配置，不把公开C# API当作可调度MCP Action"
+    },
+    {
+      "name": "fileFragmentMaintenanceTargetGuidGlobalObjectIdDataScopeSourceShaAndOriginalMigrationRecoveryToken",
+      "required": false
+    },
+    {
+      "name": "metadataInspectionTargetGuidGlobalObjectIdExactStorageAndCurrentEditorDataScope",
+      "required": false
+    },
+    {
+      "name": "editorValueMaintenanceExactStorageScopeSourceShaAndGlobalSaveAcknowledgement",
+      "required": false,
+      "constraint": "PP managed-indexed scope+sourceSha256+enableAES+acknowledgeGlobalSave=true；SQLite managed-data scope+metadataSHA前探测+enableAES。仅值AES切换，Cipher/Privacy需下方独立typedoperation。Plan/Verify可能写WAL/SHM。"
+    },
+    {
+      "name": "cipherRotationOperationSourceShaAndCredentialPolicy",
+      "required": false,
+      "constraint": "rotate-sqlite-cipher；SQLite/current-editor-sqlite-managed-data；唯一target/sourceSHA；generateNewCredential=true或省略且已有targetCredentialHandle；enableAES/ackGlobalSave/Privacy双ack禁止。macOS Editor宿主，旧新均非空不同，不替换活库。"
+    },
+    {
+      "name": "privacyRotationCurrentEditorDefaultConsumerScopeAndCredentialPolicy",
+      "required": false,
+      "constraint": "inspect-privacy-aes或rotate-privacy-aes；PrivacyAES/current-editor-privacy-aes-data；双ack=true。迁移另sourceSHA/ackGlobalSave=true和generated或已有opaquehandle，enableAES禁止。冻结当前标准三存储/当前Privacy组/配对MasterRuntime/外部默认AES消费者范围；设备、其它独立坐标与外部服务不包含。"
     }
   ],
   "effects": [
-    "workspace-write"
+    "read",
+    "workspace-write",
+    "unity-write",
+    "credential"
   ],
   "writeScope": {
     "allow": [
       "confirmed business persistence C# source in the frozen business assembly and namespace",
-      "confirmed business data model and local persistence call sites",
-      "confirmed local C# Play probe used to observe load, durability and cleanup of test data"
+      "confirmed business data model, local persistence call sites and versioned migration source; implementing a method does not authorize running it against existing player data",
+      "confirmed local C# Play probe and explicitly isolated test classify/item used to observe load, durability, cleanup and migration; never existing player data",
+      "内存防护：已授权业务整数模型、稳定逻辑字段名、主线程读写/结算/保存失败处理、普通数值JSON边界与对称释放，冻结业务asmdef中必要的NovaFramework.MemoryProtection.Runtime引用；隔离内存探针，不读写真实玩家存档或接管包生命周期",
+      "受控值AES维护：冻结Editor FileFragment共享全集、PP已索引字符串或SQLite标准schema/值；唯一自有普通Prefab所选AES单字段，以及Library/Nova/AgentActions/PersistenceMaintenance/<operationId>受保护backup/journal，仅同三Action；PP Save全局副作用必须显式接受",
+      "独立Cipher typed分支：当前Editor标准SQLite同库密码轮换、唯一自有普通Prefab m_SQLiteCipherPassword、固定before-cipher.db/schema3journal与本项目Keychain；先封存重读，不删除或替换活库",
+      "独立Privacy typed分支：已启用AES且现存的标准FF全集/PP已索引字符串/SQLite标准值、激活Master当前Privacy逻辑组、配对Runtime正规导出、固定受保护恢复文件/schema4journal/owned启动标记/项目Keychain；PP全局Save须明确接受"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
       "Assets/Framework/Scripts/Runtime/Modules/Persist/**",
-      "PersistComponent, ConfigMasterSO, ConfigRuntimeSO, Privacy AES Key/IV or SQLite CipherPassword",
-      "Nova.prefab, Prefab, Scene or handwritten Unity YAML",
-      "business asmdef, namespace, SQLite plugin, generated ConfigRuntime output or unrelated business data",
-      "real user save data, unconfirmed classify/item, cleanup target, storage selection, save timing or encryption prerequisite",
+      "UPMPackages/com.solotopia.nova.framework.memory.protection/** and resolved package/provider/vendor source; consumer integration never rewrites Framework, optional core package or third-party implementation",
+      "各typed维护分支明确冻结的字段/配置组之外的PersistComponent、ConfigMasterSO、ConfigRuntimeSO、App AES、Privacy其它独立组、SQLite Cipher或资源密钥；不得旁路patch",
+      "各typed维护分支所允许的唯一自有普通Prefab/配置资产之外的Prefab/Scene、嵌套/变体、自定义Manager以及handwritten Unity YAML",
+      "business assembly name, namespace or unrelated asmdef dependencies; only the frozen memory-protection branch may add its required NovaFramework.MemoryProtection.Runtime reference; SQLite plugin, handwritten generated ConfigRuntime output or unrelated business data",
+      "未获精确授权或三项维护 Action 范围以外的 real user save data or persisted-file edits, unconfirmed classify/item, cleanup or migration target, storage selection, save timing, schema conflict or encryption prerequisite",
       "Bundle or Player output, device installation, external service or unrelated business code"
     ]
   },
@@ -98,19 +190,27 @@
     "persist-component-readiness",
     "business-persistence-source-set",
     "business-persistence-data-schema",
-    "persistence-play-probe-session"
+    "persistence-play-probe-session",
+    "memory-protection-business-field-owner",
+    "memory-protection-isolated-probe-session",
+    "persistence-storage-and-classify-item-set",
+    "persistence-schema-version-and-migration-session",
+    "serialized-target-assets",
+    "persistence-data",
+    "config-master"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
       "ambiguous project root, ConfigRuntime coordinate, PersistComponent readiness, data model, classify/item, storage selection, platform support, startup owner, save timing, cleanup scope, encryption prerequisite or Play probe",
       "create or replace business persistence source, data contract, storage call site, save timing, cleanup behavior or local Play probe",
+      "内存防护目标字段、可信初值/恢复来源、结算或保存失败边界、业务写集或隔离探针存在无法从项目取得的歧义；插件购买/导入或修改Config不由业务字段接入授权隐含",
       "change storage implementation, automatic save policy, UseAESEncrypt, SQLite CipherPassword, Privacy AES Key/IV, PersistComponent, ConfigMasterSO or ConfigRuntimeSO",
       "delete or migrate persisted data, target non-test data, build Bundle or Player, install to device, external write, credential use, Git commit or push"
     ],
-    "rule": "确认唯一 ConfigRuntime 坐标与既有 Persist 前置、数据模型、classify/item、存储实现和平台、Config 后 Persist 的加载所有者、保存耐久性、清理目标、加密前置、Play 探针和最小写入集；任一输入、坐标或范围变化后旧确认失效。"
+    "rule": "按metadata、内部值检查、业务实现、值AES、Cipher和Privacy独立scope区分授权。读取真实参数来源/default/当前状态冻结精确Plan；SQL逻辑Plan/Verify真实事务可改伴随文件，Privacy检查的Plan/Execute/Verify也会在SQLite AES已启用且主库存在时打开既有库并BEGIN IMMEDIATE/ROLLBACK，取得写事务锁且可能改变WAL/SHM；不转换/提交玩家值或保存配置不表示物理零写，默认SQLite metadata仍不开库，lease只约束Nova登记连接。PP值维护与Privacy轮换显式ackGlobalSave=true，承认无关dirty可能落盘且恢复不能撤销；Privacy另双scope ack=true，限当前Editor/default消费者，不能冒全平台全存档。Cipher/Privacy仅macOSnativeVault封存重读后写入，generated为默认便捷策略，preset必须已有合法projecthandle。仅执行当前Gateway token，已有同范围授权不重复询问，漂移重新冻结；秘密不输出，提交后partial保现场，独立恢复不重放。内存防护是独立业务源码分支，只冻结实际适用输入：现有路径/类型/入口由Agent查询，未使用存档时不强求classify/item/Save/AES或耐久性输入。只写授权业务、必要Runtime程序集引用和隔离探针，不调用三项存档维护Action，不购买/安装商业插件或改配置、真实存档及Framework/本包实现；独立包安装复用既有包管理Operation和既有精确授权，不由字段接入隐含。已有同范围业务授权持续有效，缺少后端如实报告普通兼容和未防护。"
   },
-  "minimumEvidence": "play",
+  "minimumEvidence": "static",
   "resultStates": [
     "success",
     "partial",
@@ -123,6 +223,15 @@
     "Unity 编译无本次新增错误",
     "Play Mode 中先完成 Nova.Config.LoadAsync 再完成 Nova.Persist.LoadAsync，随后由选定存储实现完成目标写入与读取的证据",
     "Save 后通过独立读取、重载或等价耐久性边界验证的证据，而非同一缓存内 Set 后 Get",
-    "本次范围包含清理时，已确认测试数据在该存储实现要求的保存/删除边界后不再可读的证据"
+    "本次范围包含清理时，已确认测试数据在该存储实现要求的保存/删除边界后不再可读的证据",
+    "诊断或迁移分支按 references/maintenance.md 单独记录：静态诊断不计 Play 成功，schema迁移需源/目标、独立读取、失败保留与重复运行证据；真实数据、WebGL/设备耐久性不由隔离Play替代",
+    "Editor FileFragment维护分支：严格全文件/主备历史值转换重读、全集原/新SHA、Unity唯一字段保存后验与恢复材料；成功只表示当前Editor本地维护，不代表业务接入Play或Player/设备耐久性",
+    "PlayerPrefs/SQLite元数据分支：当前标准目标与固定范围、有界双次稳定观察、metadataSha256、playerValues=not_read/durableState=unknown/writeMaintenanceSupported=false；结果不证明全键空间、全局草稿、SQLite逻辑一致性/活动连接或迁移前置，metadata摘要不能用于FileFragment迁移",
+    "PP/SQLite值维护：精确storage/scope、PP已索引sourceSHA与全局Save接受，SQL metadata前探测+事务逻辑SHA/schema/lease、原厂受保护backup与原/新值重读、所选单字段保存、原Operation独立恢复；计划/后验可能产生SQL伴随文件，不当metadata只读或设备耐久性验收",
+    "Cipher当前Editor：独立nativeVault旧/新/backup秘密封存并重读、sqlcipher_export加密backup全逻辑核验、同库rekey/commit、完整值不变、唯一密码字段Save+Verify、原Operation独立恢复与第三方漂移拒；Player/device耐久性另验",
+    "Privacy当前Editor：冻结完整标准三后端与当前Privacy逻辑组/配对MasterRuntime/消费者范围，旧数据严格重读、新数据完整对等、独立受保护恢复材料、正常SaveWorkingCopy与正规Runtime Export、Yoo已冻同值文件保留、全体最终状态/marker清场；中断独立恢复，PP全局Save旁效应不能回滚",
+    "内存防护：独立包真实解析路径/版本、NovaFramework.MemoryProtection.Runtime业务引用、MemoryProtectionConfigs扩展、当前公开API与业务owner/FieldId/可信初值、Config及实际存档加载顺序，TryRead/TryWrite失败不继续结算或保存、主线程和Dispose/通知注销源码证据；不把false输出0用作可信值",
+    "内存防护运行：按请求目标分别记录编译、隔离读写/异常阻断/普通整数JSON、IsActive与字段IsProtected/IsQuarantined；无后端只证明普通兼容，实际防护缺后端或真实异常验证时为partial，Player/设备/HybridCLR和TGA接收另验",
+    "共同START_HERE清场门：清本轮临时探针、测试资产/日志/目录并恢复非目标状态、必要Refresh与git status；正式业务源及用户要求保留的恢复材料不得当测试垃圾删除"
   ]
 }

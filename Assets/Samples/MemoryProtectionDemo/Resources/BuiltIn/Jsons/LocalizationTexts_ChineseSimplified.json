@@ -1,0 +1,24 @@
+{
+  "Launcher_Localization": [
+    { "Name": "Downloading", "Value": "正在下载中......" },
+    { "Name": "TitleForcedDownload", "Value": "发现更新" },
+    { "Name": "ContentForcedDownload", "Value": "检测到新版本，请立即更新。" },
+    { "Name": "ConfirmForcedDownload", "Value": "前往更新" },
+    { "Name": "CancelForcedDownload", "Value": "退出游戏" },
+    { "Name": "TitleRecommendedDownload", "Value": "发现更新" },
+    { "Name": "ContentRecommendedDownload", "Value": "检测到新版本，是否前往更新？" },
+    { "Name": "ConfirmRecommendedDownload", "Value": "前往更新" },
+    { "Name": "CancelRecommendedDownload", "Value": "暂不更新" },
+    { "Name": "TitleHotfixFailed", "Value": "更新失败" },
+    { "Name": "ContentHotfixFailed", "Value": "更新失败，是否重试？" },
+    { "Name": "ConfirmHotfixFailed", "Value": "重试" },
+    { "Name": "CancelHotfixFailed", "Value": "退出游戏" },
+    { "Name": "TitlePreloadFailed", "Value": "预加载失败" },
+    { "Name": "ContentPreloadFailed", "Value": "预加载失败，是否重试？" },
+    { "Name": "ConfirmPreloadFailed", "Value": "重试" },
+    { "Name": "CancelPreloadFailed", "Value": "退出" },
+    {"Name": "TitleAppDownloaded", "Value": "更新文件已保存"},
+    {"Name": "ContentAppDownloaded", "Value": "更新文件已保存。确认后推荐更新继续启动，强制更新退出应用。"},
+    {"Name": "ConfirmAppDownloaded", "Value": "确认"}
+  ]
+}

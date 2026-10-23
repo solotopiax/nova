@@ -56,7 +56,7 @@ Unity IAP 5.x 票据（`order.Info.Receipt`）JSON 解析工具，带 productId 
 ### §5 完整公开 API
 
 ```csharp
-// 解析票据，命中缓存且票据未变化时直接返回缓存结果；失败时返回 null
+// 空票据或反序列化结果为 null 时返回 null；JSON 格式异常会传播
 internal static MobileReceiptInfo Parse(string productId, string receiptJson)
 
 // 清除所有缓存（由 MobileStore.DisposeAsync 调用）
@@ -79,6 +79,8 @@ Parse(productId, receiptJson):
 ```
 
 **缓存粒度**：per-productId，同一商品的 Receipt 变化（如补单后重新拉取）会触发重新解析。
+
+缓存是进程静态字典，每个 SKU 仅一份最新票据，不按 UID 或交易号分区；命中时返回同一个可变 DTO，不是深复制。非空票据配 null productId 会在字典操作时抛错；外层或 Google 嵌套 JSON 格式错误会传播，解析得到 null 不会主动删除旧缓存。Store 标识按精确 `GooglePlay` / `AppleAppStore` 比较，其他值仍可解析成 DTO，但计算出的订单号/token 为空。解析器不验证签名、包名、SKU、账号或支付状态，保存 Signature 字段不等于验签；缓存访问也没有多线程同步保证。
 
 ### §10 常见误区
 
@@ -114,9 +116,9 @@ uid + tableId + receiptParam 三值与 GUID 字符串互转工具，用于购买
 
 | 段 | hex 范围 | 字节 | 内容 | 编码方式 |
 |---|---|---|---|---|
-| uid | `[0,8)` | 4 | 用户 UID | **转大写后左补 0**（支持字母数字，业务约束 ≤8 字符） |
+| uid | `[0,8)` | 4 | 用户 UID | **转大写后左补 0**（ASCII 十六进制，业务约束 ≤8 字符） |
 | tableId | `[8,16)` | 4 | 商品配置表行 ID | **数值左补 0**（业务约束 ≤8 位十进制） |
-| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **转大写后左补 0**（支持字母数字，业务约束 ≤16 字符） |
+| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **转大写后左补 0**（ASCII 十六进制，业务约束 ≤16 字符） |
 
 > uid / receiptParam 允许包含字母，不再要求能解析为 long；编码前统一转大写，tableId 仍按数值写入。三段组合后正好是标准 `8-4-4-4-12` GUID 字符串。
 
@@ -154,6 +156,8 @@ result = raw[0..8]-raw[8..12]-raw[12..16]-raw[16..20]-raw[20..32]
 **iOS `AppAccountToken`**：iOS 要求 UUID 格式的 `Guid`，`Encode` 结果恰好是标准 GUID 字符串，`PurchaseService.ApplyPurchaseContext` 中直接 `Guid.TryParse(uuid, out Guid)` 后写入。
 
 **校验**：范围/格式校验在 `MobilePurchaseService.TryValidatePassthroughParams`，由 `PayAsync` 入口调用——tableId 超 8 位、uid 超 8 位或 receiptParam 超 16 位、uid / receiptParam 含非十六进制字符、或非空值以 `0` 开头时，都直接拒绝支付（`IAPMobileErrorCode.InvalidPassthroughParam`），不会发起平台购买。后两项避免 iOS `AppAccountToken` 不是合法 GUID，或固定槽位解码去除补零后丢失原值。空值仍表示不透传。`ApplyPurchaseContext` 只做纯编码，不再重复校验；codec 自身同样只做纯编解码。
+
+调用方的 tableId 编码上限是 `99,999,999`，与 SKU Excel 允许的 `4,294,967,295` 是不同边界；codec 直接调用不会重复执行该校验，过长字符串不会先截断到各槽宽，最终取前 32 字符会丢失或错移字段。解码只移除连字符、检查总长度并取槽，tableId 槽按十六进制解析；uid/ReceiptParam 槽不独立验证十六进制或调用方身份，去前导 0 会丢失真实前导零。解码非空不是认证通过。失败回调可用当前 InPay 或 SKU 反查兜底，也不构成 UID/交易号归属校验。
 
 ### §10 常见误区
 

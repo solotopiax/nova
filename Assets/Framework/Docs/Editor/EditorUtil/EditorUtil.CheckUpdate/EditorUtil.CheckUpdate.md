@@ -234,3 +234,9 @@ EditorUtil.CheckUpdate.ClearSkip();
 - [CheckUpdateWindow.md](../../Windows/CheckUpdateWindow.md) — 版本更新提示窗口
 - [PlugPalsWindow.md](../../Windows/PlugPalsWindow.md) — UPM 包管理窗口（依赖其 `FetchRemotePackagesAsync` / `ReadInstalledVersions`）
 - [Editor.md](../../Editor.md) — Editor 层级总览
+
+## 查询、来源和跳过存档边界
+
+外网与内部仓依次查询，各侧异常只 Warning 并投影为空列表；空列表同时可能代表禁用、失败或无升级，不是明确的检查成功收据。UpdateInfo 只保存包名、当前和最新版本，不携 registry URL；合并不去重，同属性的两个来源仍保留。列表显示排序中的版本是文本排序，不等同 ImportantUpdates 使用的完整 SemVer。
+
+手动检查不应用 skip；启动检查按 external/internal 分类键过滤。单列表 MarkSkip 默认外网，两来源应分开传，分类键不绑定 URL，换仓后可能继续使用旧 skip。ClearSkip 清全部来源/包。存档同步直接写，失败仅日志无成功值；显式 JSON SkipVersions:null 不自动修复，后续过滤/写入可抛。启动 delayCall 没有 batchmode、编译/Play 或请求取消门，只负责查询和提示，不升级包。

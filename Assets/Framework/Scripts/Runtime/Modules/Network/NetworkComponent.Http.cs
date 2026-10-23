@@ -78,6 +78,71 @@ namespace NovaFramework.Runtime
             return m_HttpManager.PostRawDataAsync(url, contentBytes, requestTimeout, headerInfos);
         }
 
+        /// <summary>发送可取消单URL GET；旧自定义HttpManager不支持此能力时在发送前明确拒绝。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>取消为失败响应，调用方须finally归池；不会取消已完成的服务端业务。</returns>
+        public UniTask<HttpResponse> GetAsync(string url, float requestTimeout, string headerInfos, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", nameof(url));
+            return RequireCancellableHttpManager().GetAsync(url, requestTimeout, headerInfos, cancellationToken);
+        }
+
+        /// <summary>发送可取消字符串POST，保留旧URL校验与编码；原参数必填以避免default调用歧义。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="contentString">按 UTF-8 编码的请求体，null 按旧语义为空。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的成功或失败响应。</returns>
+        public UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout, string headerInfos, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", nameof(url));
+            return RequireCancellableHttpManager().PostAsync(url, contentString, requestTimeout, headerInfos, cancellationToken);
+        }
+
+        /// <summary>发送可取消原始字节POST，保留URL及非null字节校验，不增加主备重放。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="contentBytes">原始请求体字节。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的成功或失败响应。</returns>
+        public UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout, string headerInfos, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", nameof(url));
+            if (contentBytes == null) throw new ArgumentNullException(nameof(contentBytes));
+            return RequireCancellableHttpManager().PostRawDataAsync(url, contentBytes, requestTimeout, headerInfos, cancellationToken);
+        }
+
+        /// <summary>发送可取消multipart上传，字段与文件处理沿用原传输；不支持能力时不发送。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="bodyJsonData">一级表单字段 JSON，可为 null。</param>
+        /// <param name="fileBytes">文件内容字节。</param>
+        /// <param name="fileName">上传文件名。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的成功或取消失败响应。</returns>
+        public UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout, string headerInfos, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", nameof(url));
+            if (fileBytes == null) throw new ArgumentNullException(nameof(fileBytes));
+            if (string.IsNullOrEmpty(fileName)) throw new ArgumentException("Value cannot be null or empty.", nameof(fileName));
+            return RequireCancellableHttpManager().PostFileAsync(url, bodyJsonData, fileBytes, fileName, requestTimeout, headerInfos, cancellationToken);
+        }
+
+        /// <summary>只通过公开可选能力接口取得取消入口，不更改旧IHttpManager契约，也不以停止等待假装物理取消。</summary>
+        /// <returns>支持物理取消的当前HTTP管理器。</returns>
+        /// <exception cref="NotSupportedException">旧自定义HTTP管理器未实现ICancellableHttpManager，发送前拒绝。</exception>
+        private ICancellableHttpManager RequireCancellableHttpManager()
+        {
+            if (m_HttpManager is ICancellableHttpManager cancellable) return cancellable;
+            throw new NotSupportedException("当前 HTTP 管理器未实现 ICancellableHttpManager，无法取消正在进行的请求。");
+        }
+
         /// <summary>
         /// 使用冻结的请求数据按主备地址执行业务协议 POST，切换与重试策略完全由网络底层负责。
         /// </summary>

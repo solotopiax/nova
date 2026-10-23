@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
+using UnityEngine;
 using UnityEngine.Scripting;
 
 using FeedbackLevel = NovaFramework.Sdk.IAP.Samples.Runtime.BaseDemoView.FeedbackLevel;
@@ -104,17 +105,19 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 调用 Voucher 钱包刷新接口并把结果转换为 Core 基础文本模型。
+        /// 调用 Voucher 钱包刷新接口；等待后核对原 Bridge，失效页面不再渲染余额。
         /// </summary>
         /// <returns>异步任务。</returns>
         private async UniTask RefreshAndRenderAsync()
         {
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge)) return;
             VoucherWalletSnapshot wallet = await RefreshWalletAsync();
-            RenderWallet(wallet);
+            if (IsCurrentBridge(bridge)) RenderWallet(wallet);
         }
 
         /// <summary>
-        /// 调用测试发放接口并渲染服务端返回的新钱包快照。
+        /// 调用测试发放接口，仅向仍持有原 Bridge 的 Core Panel 渲染服务端返回的新钱包快照。
         /// </summary>
         /// <param name="grantVoucher">是否发放兑换券。</param>
         /// <param name="assetId">资产类型 ID。</param>
@@ -122,8 +125,9 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// <returns>异步任务。</returns>
         private async UniTask TestGrantAndRenderAsync(bool grantVoucher, int assetId, int quantity)
         {
-            if (m_Bridge == null || !m_Bridge.TryInitialize()
-                || !m_Bridge.IAP.TryGetCapability(out IIAPVoucherTestCapable capability))
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge) || !bridge.TryInitialize()
+                || !bridge.IAP.TryGetCapability(out IIAPVoucherTestCapable capability))
             {
                 m_Bridge?.AppendFeedback("Voucher 测试发放能力不可用。", FeedbackLevel.Warn);
                 return;
@@ -134,8 +138,10 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 VoucherTestGrantRequest request = grantVoucher
                     ? new VoucherTestGrantRequest(new[] { new VoucherGrantLine(assetId, quantity) }, null)
                     : new VoucherTestGrantRequest(null, new[] { new CoinGrantLine(assetId, quantity) });
-                VoucherTestGrantResult result = await capability.TestGrantAsync(request, m_Bridge.CancellationToken);
-                m_Bridge.AppendFeedback(result.IsSuccess
+                var cancellationToken = bridge.CancellationToken;
+                VoucherTestGrantResult result = await capability.TestGrantAsync(request, cancellationToken);
+                if (!IsCurrentBridge(bridge)) return;
+                bridge.AppendFeedback(result.IsSuccess
                         ? "模拟发放成功。"
                         : "模拟发放失败：" + result.ErrorCode + "，" + result.ErrorMessage,
                     result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
@@ -143,32 +149,36 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("模拟发放已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("模拟发放已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("模拟发放异常：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("模拟发放异常：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
             }
         }
 
         /// <summary>
-        /// 创建服务端幂等报价订单并支付，完成后刷新钱包。
+        /// 创建服务端幂等报价订单并支付，仅在原 Bridge 仍有效时继续刷新钱包。
         /// </summary>
         /// <param name="tableId">商品表行 ID。</param>
         /// <returns>异步任务。</returns>
         private async UniTask PayAndRefreshAsync(long tableId)
         {
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge)) return;
             await PayAsync(tableId);
-            await RefreshAndRenderAsync();
+            if (IsCurrentBridge(bridge)) await RefreshAndRenderAsync();
         }
 
         /// <summary>
-        /// 刷新当前账号 Voucher 钱包。
+        /// 使用本次 Bridge 的令牌刷新当前账号 Voucher 钱包；关闭后的结果不再写页面反馈。
         /// </summary>
         /// <returns>服务端最新钱包；能力不可用时返回空。</returns>
         private async UniTask<VoucherWalletSnapshot> RefreshWalletAsync()
         {
-            if (!TryGetVoucherCapability(out IIAPVoucherCapable capability))
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge) || !TryGetVoucherCapability(out IIAPVoucherCapable capability))
             {
                 m_Bridge?.AppendFeedback("Voucher 钱包能力不可用。", FeedbackLevel.Warn);
                 return null;
@@ -176,33 +186,37 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
             try
             {
-                VoucherRefreshResult result = await capability.RefreshWalletAsync(m_Bridge.CancellationToken);
-                m_Bridge.AppendFeedback(result.IsSuccess
-                        ? "Voucher 钱包刷新完成。"
-                        : "Voucher 钱包刷新失败：" + result.ErrorCode + "，" + result.ErrorMessage,
-                    result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
+                var cancellationToken = bridge.CancellationToken;
+                VoucherRefreshResult result = await capability.RefreshWalletAsync(cancellationToken);
+                if (IsCurrentBridge(bridge))
+                    bridge.AppendFeedback(result.IsSuccess
+                            ? "Voucher 钱包刷新完成。"
+                            : "Voucher 钱包刷新失败：" + result.ErrorCode + "，" + result.ErrorMessage,
+                        result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
                 return result.Wallet;
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("Voucher 钱包刷新已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("Voucher 钱包刷新已取消。", FeedbackLevel.Warn);
                 return capability.Wallet;
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("Voucher 钱包刷新异常：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("Voucher 钱包刷新异常：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
                 return capability.Wallet;
             }
         }
 
         /// <summary>
-        /// 使用当前钱包创建不可变报价并发起 Voucher 支付。
+        /// 使用当前钱包创建不可变报价并发起 Voucher 支付；失效 Bridge 不再恢复页面按钮或显示反馈。
         /// </summary>
         /// <param name="tableId">商品表行 ID。</param>
         /// <returns>异步任务。</returns>
         private async UniTask PayAsync(long tableId)
         {
-            if (!TryGetVoucherCapability(out IIAPVoucherCapable capability))
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge) || !TryGetVoucherCapability(out IIAPVoucherCapable capability))
             {
                 m_Bridge?.AppendFeedback("Voucher 支付能力不可用。", FeedbackLevel.Warn);
                 return;
@@ -221,29 +235,43 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 return;
             }
 
-            m_Bridge.SetPayInteractable(false);
+            var cancellationToken = bridge.CancellationToken;
+            IAPPlugin iap = bridge.IAP;
+            bridge.SetPayInteractable(false);
             try
             {
                 var request = new IAPVoucherRequest(quote)
                 {
                     CustomData = DemoIAPBridge.BuildCustomData(tableId),
                 };
-                IAPResult result = await m_Bridge.IAP.PayAsync<IAPResult>(request, m_Bridge.CancellationToken);
-                m_Bridge.AppendFeedback("Voucher 支付结果：" + DemoIAPBridge.FormatResult(result),
-                    result != null && result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
+                IAPResult result = await iap.PayAsync<IAPResult>(request, cancellationToken);
+                if (IsCurrentBridge(bridge))
+                    bridge.AppendFeedback("Voucher 支付结果：" + DemoIAPBridge.FormatResult(result),
+                        result != null && result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("Voucher 支付已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("Voucher 支付已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("Voucher 支付异常：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("Voucher 支付异常：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
             }
             finally
             {
-                m_Bridge.SetPayInteractable(!m_Bridge.IsDisposed);
+                if (IsCurrentBridge(bridge)) bridge.SetPayInteractable(true);
             }
+        }
+
+        /// <summary>
+        /// 核对钱包或支付操作仍属于本模块会话，关闭后的结果不渲染新页面或触发下一次刷新。
+        /// </summary>
+        /// <param name="bridge">操作开始时保存的 Bridge。</param>
+        /// <returns>模块仍持有同一未释放 Bridge 时返回 true。</returns>
+        private bool IsCurrentBridge(DemoIAPBridge bridge)
+        {
+            return bridge != null && !bridge.IsDisposed && ReferenceEquals(m_Bridge, bridge);
         }
 
         /// <summary>

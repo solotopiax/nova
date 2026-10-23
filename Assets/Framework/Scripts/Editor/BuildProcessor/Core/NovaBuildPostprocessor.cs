@@ -81,6 +81,7 @@ namespace NovaFramework.Editor
                 Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] Android 后处理：{processor.GetType().Name}");
                 processor.OnPostprocessBuildOnAndroid(report, NovaBuildShared.Context);
             }
+            NovaBuildParentObservers.ObservePost(report, NovaBuildShared.Context, NovaBuildShared.Processors);
 
             foreach (var processor in NovaBuildShared.Processors)
             {

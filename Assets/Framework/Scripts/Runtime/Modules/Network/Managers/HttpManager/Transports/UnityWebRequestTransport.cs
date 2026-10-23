@@ -72,6 +72,18 @@ namespace NovaFramework.Runtime
             return PostBytesAsync(url, bodyBytes, requestTimeout, headerInfos, "POST", CancellationToken.None);
         }
 
+        /// <summary>发送可取消的UTF8字符串POST字节，物理取消与RawData共用PostBytesAsync。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="bodyBytes">已编码的请求体字节，沿用原 Content-Type。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>using释放UWR后返回池化响应，取消为失败响应。</returns>
+        public UniTask<HttpResponse> PostAsync(string url, byte[] bodyBytes, float requestTimeout, string headerInfos, CancellationToken cancellationToken)
+        {
+            return PostBytesAsync(url, bodyBytes, requestTimeout, headerInfos, "POST", cancellationToken);
+        }
+
         /// <summary>
         /// 异步发送原始二进制 POST 请求。
         /// </summary>
@@ -100,13 +112,28 @@ namespace NovaFramework.Runtime
         /// <param name="requestTimeout">请求总超时时间（秒），负数使用默认值。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
         /// <returns>HTTP 响应。</returns>
+        public UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout, string headerInfos)
+        {
+            return PostFileAsync(url, bodyJsonData, fileBytes, fileName, requestTimeout, headerInfos, CancellationToken.None);
+        }
+
+        /// <summary>发送可取消multipart上传；字段编码与旧入口相同，using在所有终态释放UWR及handler。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="bodyJsonData">一级表单字段 JSON，可为 null。</param>
+        /// <param name="fileBytes">文件内容字节。</param>
+        /// <param name="fileName">上传文件名。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的成功或取消失败响应。</returns>
         public async UniTask<HttpResponse> PostFileAsync(
             string url,
             string bodyJsonData,
             byte[] fileBytes,
             string fileName,
             float requestTimeout,
-            string headerInfos)
+            string headerInfos,
+            CancellationToken cancellationToken)
         {
             var sections = new List<IMultipartFormSection>();
             if (!string.IsNullOrEmpty(bodyJsonData))
@@ -126,7 +153,7 @@ namespace NovaFramework.Runtime
 
             using UnityWebRequest request = UnityWebRequest.Post(url, sections);
             ApplyHeaderInfos(request, headerInfos);
-            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), "POST File", CancellationToken.None);
+            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), "POST File", cancellationToken);
         }
 
         /// <summary>
@@ -202,11 +229,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 执行普通请求，并用实时钟补足 UnityWebRequest 秒级超时的零值语义。
+        /// 执行普通请求，发送前处理预取消，进行中轮询取消并Abort；使用实时钟补足秒级超时的零值语义。
         /// </summary>
         /// <param name="request">已配置的请求。</param>
         /// <param name="timeoutSeconds">请求总超时时间（秒）。</param>
         /// <param name="requestTag">日志使用的请求标签。</param>
+        /// <param name="cancellationToken">发送前及每次Update轮询的物理取消令牌。</param>
         /// <returns>HTTP 响应。</returns>
         private static async UniTask<HttpResponse> ExecuteRequestAsync(
             UnityWebRequest request,
@@ -214,6 +242,9 @@ namespace NovaFramework.Runtime
             string requestTag,
             CancellationToken cancellationToken)
         {
+            // 在真正Send前再次核令牌，取消请求不创建成功响应或访问服务端。
+            if (cancellationToken.IsCancellationRequested)
+                return HttpResponse.Create(0, null, null, null, "Request cancelled.", false, 0, -1L, HttpDeliveryState.NotReachedServer);
             float startTime = Time.realtimeSinceStartup;
             if (timeoutSeconds > 0f)
             {
@@ -257,7 +288,8 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 执行下载请求并监视取消、进度与空闲超时。
+        /// 缓冲式下载并监视取消、进度和空闲超时，不设置整次下载总超时、不写文件。
+        /// 当前先发送再在未完成循环中检查取消；预取消仍可能发送，不能套用普通请求发送前拒绝的语义。
         /// </summary>
         /// <param name="url">下载 URL。</param>
         /// <param name="idleTimeout">空闲超时时间（秒）。</param>
@@ -463,11 +495,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 向调用方报告一次下载进度，并在回调结束后归还中间响应。
+        /// 报告一次借用的下载中间响应，回调结束后自动归池；回调异常返回 false 停止后续回调，下载继续。
         /// </summary>
         /// <param name="request">当前下载请求。</param>
         /// <param name="progressCallback">下载进度回调。</param>
         /// <param name="downloadedBytes">已下载字节数。</param>
+        /// <returns>回调正常完成为 true；未提供或回调抛出为 false。</returns>
         private static bool ReportProgress(UnityWebRequest request, Action<HttpResponse> progressCallback, long downloadedBytes)
         {
             if (progressCallback == null)

@@ -51,6 +51,12 @@ override bool Equals(NetChannelType channelType, string serverAddress)
   └─ Bytes      = recvBytes[8..]（Protobuf 编码字节流，原样保留）
 ```
 
+非 WebGL 接收时先识别 WebSocket `Close` 控制帧：直接结束本次接收，不获取池化消息、不按 Nova 8 字节协议头解包；主动释放正在接收的 Socket 也作为正常结束处理。
+
+这里的 TcpPb 仍使用 WebSocket binary，并非裸 TCP。封包只拷贝 Bytes，不解析 Protobuf，错误消息类型会因显式转换抛异常。认证先核消息类型与 AuthenticatePb ID；validator 为 null 的默认成功不等于服务端已校验账号，validator 自身异常仍可传播。
+
+非 WebGL 汇总分片至 EndOfMessage 再解包，当前没有额外正文大小上限。两平台分支都先借池对象，再读 8 字节头并分配/复制余下 Bytes；短头或长度异常会被捕获为 null，但已经借出的对象没有在该 catch 归还。只有成功返回给通道的消息才进入上层 finally 回池，畸形包失败不能沿用正常消息的释放保证。
+
 ## 关联文档
 
 - [NetChannelBase](NetChannelBase.md)

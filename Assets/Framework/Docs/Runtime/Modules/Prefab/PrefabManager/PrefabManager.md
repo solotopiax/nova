@@ -116,6 +116,16 @@
 - `Destroy(go)` 和直接 `Object.Destroy(go)` 最终都会走同一条回收回调；统一用 `Nova.Prefab.Destroy(go)` 只是为了语义更清晰。
 - `RecordedInstances` 是诊断视图，不保证用于高频业务逻辑查询是高效的。
 
+## 参数、失败与退出边界
+
+`location` 是 `IAssetManager` 资源地址，原样转发，不是文件系统路径；`parent=null` 放在场景根。`ct=default` 不主动取消，只传到异步资源加载，取得句柄后没有额外取消检查，也不控制已经创建的实例。加载返回空资产会记录错误、释放本次句柄并返回 `null`；泛型版本缺少目标组件同样返回 `null`，但已经创建的 GameObject 与句柄仍登记，不能把返回空组件解释为没有实例。
+
+取得句柄之后的 `Object.Instantiate`、`AddComponent` 或登记异常没有统一 `finally` 兜底，可能留下未释放句柄或部分记录。销毁回调先清 Tag 字段，再通知 Manager；Manager 先移除句柄字典，再 `Release`，最后移除诊断列表，释放异常会跳过列表清理。`Destroy(null)` 跳过，非本 Manager 跟踪的对象也会收到 Unity 销毁请求，不做归属校验。
+
+`Initialize` 仅注入配置和依赖，不清旧记录、不预加载；缺少资源 Manager 时配置字段可能已赋值。`Shutdown` 不销毁仍存活的 GameObject，也不取消在途异步加载；逐句柄释放异常会中断后续清理。正常清表后迟到的 Tag 销毁回调查不到记录就返回。诊断列表是实时只读接口视图，保留的旧结构体副本仍可能引用已销毁的 Unity 对象；Component 在 Manager 未就绪时才把诊断数量/列表回退为 `0`/空集合。
+
+上述流程属于内置 `PrefabManager`；`IPrefabManager` 和 `PrefabManagerBase` 的无体声明不自行执行，也不保证自定义实现具有相同内部状态与异常恢复。
+
 ## 继续阅读
 
 关键源码：

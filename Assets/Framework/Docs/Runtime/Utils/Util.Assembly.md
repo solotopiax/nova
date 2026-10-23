@@ -44,7 +44,7 @@ public static System.Reflection.Assembly GetAssembly(string assemblyName);
 ### 类型收集
 
 ```csharp
-/// 将所有已加载程序集中的类型写入调用方提供的 List（零分配）。
+/// 清空并写入调用方提供的 List；程序集反射仍可分配。
 public static void GetTypes(List<Type> results);
 ```
 
@@ -65,9 +65,19 @@ public static string[] GetTypeNames(Type typeBase, string assemblyName = null);
 /// 限定单个程序集的子类名称收集，避免跨程序集越界扫描。
 public static string[] GetTypeNames(Type baseType, System.Reflection.Assembly targetAssembly);
 
-/// 零分配重载：将子类名称写入调用方提供的 List（按 Ordinal 排序）。
+/// 复用列表重载：清空并写入子类名称（按 Ordinal 排序）。
 public static void GetTypeNames(Type typeBase, List<string> results, string assemblyName = null);
 ```
+
+---
+
+## 查询边界
+
+`GetAssembly` 匹配已缓存程序集的简单名称（区分大小写），空名称抛异常，未命中返回 `null`。静态构造和 `RefreshAssemblies` 只重新取得当前 AppDomain 快照，不加载 DLL，也不清空已命中的类型缓存。`GetAssemblies` 直接返回当前数组引用，调用方应避免修改元素。
+
+`GetType` 的缓存键只有 `typeName`；缓存命中和首先执行的 `Type.GetType(typeName)` 都先于 `assemblyName` 过滤。指定程序集的后备分支实际查询 `assemblyName + "." + typeName`，因此不能把第二个参数当成对完整类型名的强制程序集校验。无程序集参数时按快照逐个查询，未找到返回 `null`，失败结果不缓存。
+
+`GetTypeNames` 只筛选 `IsClass && !IsAbstract && baseType.IsAssignableFrom(type)`，可包含基类本身及开放泛型，不证明可构造、已裁剪保留或可热更新执行。结果按 Ordinal 排序；仅 `ReflectionTypeLoadException` 会恢复其中非空的已加载类型，其他异常传播。`GetTypes(List<Type>)` 没有该恢复或排序，异常前列表可能已有部分结果。所有列表重载都会先清空调用方列表，且没有统一并发快照事务。
 
 ---
 
@@ -94,7 +104,7 @@ Type t = Util.Assembly.GetType("NovaFramework.Runtime.UIManager");
 // 指定程序集缩小查找范围
 Type t2 = Util.Assembly.GetType("XxxManager", "NovaFramework.Runtime");
 
-// 零分配获取所有类型
+// 复用列表收集所有类型
 List<Type> allTypes = new List<Type>();
 Util.Assembly.GetTypes(allTypes);
 

@@ -18,7 +18,7 @@ namespace NovaFramework.Runtime
     /// 配置管理器基类；继承 FrameworkManager 并声明 IConfigManager 的所有 abstract 成员。
     /// 派生类 ConfigManager 提供 AB 异步加载并以 ConfigRuntimeSO 为数据源直读的具体实现。
     /// </summary>
-    internal abstract class ConfigManagerBase : FrameworkManager, IConfigManager, IAppConfigManager
+    internal abstract class ConfigManagerBase : FrameworkManager, IConfigManager, IAppConfigManager, IPrivacyConfigProvider
     {
         /// <summary>
         /// 管理器优先级；Config 需早于使用方，取 10（低于默认 0 以外的其他业务模块）。
@@ -58,6 +58,11 @@ namespace NovaFramework.Runtime
         /// 应用运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
         public abstract AppConfigs AppConfigs { get; }
+
+        /// <summary>
+        /// 隐私运行时配置；加载完成后由可选框架包读取，未加载时返回 null。
+        /// </summary>
+        public abstract PrivacyConfigs PrivacyConfigs { get; }
 
         /// <summary>
         /// 当前解析后的 Namespace。

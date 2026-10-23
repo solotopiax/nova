@@ -1,0 +1,27 @@
+{
+  "name": "NovaFramework.SDK.AdMobAdPlugin.Tests.Editor",
+  "references": [
+    "NovaFramework.Runtime",
+    "NovaFramework.SDK.AdPlugin.Runtime",
+    "NovaFramework.SDK.AdMobAdPlugin.Runtime",
+    "UniTask"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS",
+    "NOVA_GOOGLE_MOBILE_ADS"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.google.ads.mobile",
+      "expression": "[11.5.0,12.0.0)",
+      "define": "NOVA_GOOGLE_MOBILE_ADS"
+    }
+  ]
+}

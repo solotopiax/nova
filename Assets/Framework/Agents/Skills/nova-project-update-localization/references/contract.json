@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -16,17 +16,92 @@
     {
       "kind": "unity-editor-api",
       "entry": "LocalizationComponentInspector and TextLocalizing",
-      "when": "更新已确认的本地化设置或既有 UI 绑定"
+      "when": "仅底层Inspector事实/配置导航，不是MCP可执行入口；实际写入使用本契约已声明的共享Unity或受控settings入口"
     },
     {
       "kind": "agent-action",
       "entry": "nova.project.localization.export",
-      "when": "导出确认范围内的文本、字体、类型或支持语言产物"
+      "when": "导出确认范围内的文本、字体、类型或支持语言产物；复用 live Plan 的 Settings/来源/模板工具/完整写集与按scope适用的 MasterNamespace 冻结，新Receipt严核来源/配置/产物，代码另等本次compile/type；旧Receipt仅原摘要兼容+警告，不继承新完整验收"
     },
     {
       "kind": "csharp-api",
       "entry": "Nova.Localization.SetLanguageSync / SetLanguageAsync",
-      "when": "在 Play Mode 中切换冻结的验证语言"
+      "when": "仅授权业务源码调用与Play观察的底层公开API，不是可调度方法入口；用本契约workspace-edit实现真实可达消费路径"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.inspect-target",
+      "when": "表或本地化设置分支：读取项目自有普通SO或精确Prefab组件的真实字段、类型、tooltip、当前值及可写边界；严格Schema可表示时才执行，聚合/复杂字段不可写则使用已核共享Unity路线，禁止保存凭据聚合对象"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.patch-target",
+      "when": "表或本地化设置分支：精确目标及字段值已授权，预演后仅保存一个自有Prefab或普通SO文件，并只读Verify；严格Schema可表示时才执行，聚合/复杂字段不可写则使用已核共享Unity路线，禁止保存凭据聚合对象"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_asset(action=search|get_info|get_components) + find_gameobjects + mcpforunity://scene/gameobject/{instance_id}/components + manage_prefabs(action=get_info|get_hierarchy)",
+      "when": "仅确认的表/本地化设置与绑定；只读发现实际项目自有场景/Prefab目标、完整路径、当前组件身份/索引、字段及变体/嵌套来源；不把临时instanceID当持久标识或缺失事件字段当空列表"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "unity_reflect(action=get_type|get_member)",
+      "when": "仅确认的表/本地化设置与绑定；只读核实精确组件类型、程序集、字段setter或UnityEvent目标方法的public实例签名与重载，不执行方法"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_components(action=set_property, target=<current GameObject ID>, search_method=by_id, component_type=<FullName>, component_index=<confirmed zero-based index>, property=<verified property>, value=<typed JSON>)",
+      "when": "仅确认的表/本地化设置与绑定；已确认场景或当前Stage的已有内置/业务组件字段及UnityEvent完整持久列表；先核实草稿/生命周期/敏感边界，逐次写入读回，工具仅标脏、不提供Nova Plan/Receipt或保存保证"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_scene(action=get_loaded_scenes|get_active|set_active_scene|load|save|close_scene)",
+      "when": "仅确认的表/本地化设置与绑定；按已确认scenePath保留加载/草稿基线并只保存实际活动的目标场景；load仅必要additive、close仅本轮无脏态新增场景，save不同path会SaveAs，不保存其它场景"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs(action=modify_contents, prefab_path=<confirmed owned prefab>, target=<unique full object path>, component_properties=<confirmed unique component type fields>)",
+      "when": "仅确认的表/本地化设置与绑定；Prefab变体/嵌套外层或内置组件有唯一对象及同类组件、无跨上下文内部引用时，隔离Load/Save指定Prefab；冻结当前override与源资产影响，保存后只读核对字段及来源，不能默认Apply/Revert或Unpack"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs(action=open_prefab_stage|save_prefab_stage|close_prefab_stage) + manage_components(action=set_property)",
+      "when": "仅确认的表/本地化设置与绑定；同Prefab内部事件引用或重复组件索引需要真实Stage上下文时；只使用本轮无既有草稿的目标Stage，save_prefab_stage含全局SaveAssets，缺无关脏资产证明或精确额外保存授权则明确该具体gap"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "confirmed saved .unity/.prefab/.asset or UXML/USS file + meta + git diff + current Unity component/scene/prefab readback",
+      "when": "共享MCP没有RecoveryToken时，只读核对真实持久字段/事件列表/Prefab override、源资产未变和准确写集；文本序列化可只读核对，二进制或localId无法定位时报告具体缺证据，禁止手写YAML"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> inspect --source <relativeSource> [--layout localization-texts] [--sheet <name> --row-key <field> --key-json <JSON> --column <field> --row-key-type <type> --type <type>]",
+      "when": "已有非敏感标量保留原source-edit限制；已授权Key/语言追加复用同CLI的layout=localization-texts精确请求，按Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md冻结sourceSHA/真实Language枚举SHA、完整源/生成根、全validSheet/原Key译文与新Key全部最终语言，1–256项/8192格，仅追加不shift/delete/rename；source success后原Operation核全有效Unit语言并正式localization.export+完整请求语言Play。"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> plan --request - --plan Library/Nova/AgentActions/TableSource/<task>-plan.json; python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> execute --plan <planRelative> --confirmation-token <planId> --receipt Library/Nova/AgentActions/TableSource/<task>-receipt.json; python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> verify --receipt <receiptRelative>",
+      "when": "已有非敏感标量保留原source-edit限制；已授权Key/语言追加复用同CLI的layout=localization-texts精确请求，按Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md冻结sourceSHA/真实Language枚举SHA、完整源/生成根、全validSheet/原Key译文与新Key全部最终语言，1–256项/8192格，仅追加不shift/delete/rename；source success后原Operation核全有效Unit语言并正式localization.export+完整请求语言Play。"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> inspect|plan|execute|verify <same documented arguments>",
+      "when": "已有非敏感标量保留原source-edit限制；已授权Key/语言追加复用同CLI的layout=localization-texts精确请求，按Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md冻结sourceSHA/真实Language枚举SHA、完整源/生成根、全validSheet/原Key译文与新Key全部最终语言，1–256项/8192格，仅追加不shift/delete/rename；source success后原Operation核全有效Unit语言并正式localization.export+完整请求语言Play。Windows复用同实现。"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs modify_contents / manage_components set_property for confirmed TextLocalizing node mappings",
+      "when": "按当前Provider Schema串行补唯一缺失TextLocalizing并保存真实m_LocalizingKeyName/m_LocalizingFontMark；已存在不重复挂，相同值跳过，遵守edit-settings目标/override/Stage保存门，不全工程FixMissingInPrefabs、不手写YAML"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed project-owned localization startup/UIView owner and requested-language-set text/font probe",
+      "when": "仅在任务要求且现有入口缺少观察点时修改正式业务Source，复用现有语言初始化与切换，不写Framework/生成产物；运行时setter不冒充持久绑定"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity compilation and existing business localization entry Play requested-language-set text/font readback",
+      "when": "执行已保存业务入口完成Load/InitCurrentLanguage后逐一验证完整冻结请求语言集合，核实际TMP文字/方向/字体与布局；请求三种必须三种全部通过、单语言只验该项；GetText静态预览或部分语言截图不计完整成功"
     }
   ],
   "inputs": [
@@ -52,7 +127,23 @@
     },
     {
       "name": "playVerificationLanguages",
-      "required": true
+      "required": true,
+      "constraint": "当前用户请求的完整冻结语言集合逐项验证，明确三种不得截两种，明确单语言不扩大；只要求切换且未给集合时冻结现有基准与目标最少两种。此验收集合不自动更改支持语言列表或无关源数据。"
+    },
+    {
+      "name": "localizationSourceStructureRequestAndWholeWorkbookFinalLanguagesAndRuntimeLanguageDeclarationHash",
+      "required": false,
+      "constraint": "仅Key/语言追加分支：source/sourceHash/sourceRoots/generatedRoots/layout=localization-texts与addLanguages或addKeys，全部validSheet一致和完整最终译文，实际随包Language枚举hash；不接受普通cells混合、删除改名或字体结构。"
+    },
+    {
+      "name": "localizationExportSettingsSourcesTargetScopeAndWriteSet",
+      "required": false,
+      "description": "由 Agent 从当前 live Plan 自动读取：已保存活动场景、唯一 Nova/LocalizationComponent、现有 LocalizationSettings、精确 target=text/font 和 scope=all/code、实际 Unit/源文件、数据格式/类型与数据路径、代码生成所需现有数据、实际模板/工具与来源快照、正式产物/删除/配置缓存/临时与 .meta 完整 writeSet；仅 export-code-data 分支要求全部适用项，不要求 TextLocalizing 绑定、业务入口或 Play 语言集合。languages/data 不属于此 profile。 text/font的data仍冻结持久配置的MasterNamespace；languages/data只冻结实际输入，不要求Master；此profile仍仅text/font all/code。"
+    },
+    {
+      "name": "activeConfigMasterAndGeneratedNamespace",
+      "required": false,
+      "description": "text/font 全部 scope 均按当前 Action 必需：由 Agent 读取 ProjectSettings/Nova/Globals.json 的 configMasterGuid/configMasterPathHint 与实际可加载 ConfigMasterSO 的 GUID/资产路径及原文件摘要，冻结顶层 Namespace；all/code 纯导出 profile 另验预期生成类型全名，不读取 ConfigRuntime.Namespace 或维度解析值。未绑定、身份/源字节/值漂移时 blocked；已绑定 Master 明确空值允许 global namespace。languages/data 只发布语言数据和临时配置，不要求 Master，也不证明代码 Namespace 或运行时加载；不要求 Collector、账号或端点。"
     }
   ],
   "effects": [
@@ -65,7 +156,10 @@
       "confirmed localization text or font source entries",
       "confirmed LocalizationComponent settings through Unity Editor or MCP",
       "confirmed existing TextLocalizing bindings through Unity Editor or MCP",
-      "confirmed localization generated text, font, type and supported-language output"
+      "confirmed localization generated text, font, type and supported-language output",
+      "confirmed project-owned localization-texts xlsx append-only Key/Language cells through the same source CLI; no column shifting or other ZIP member changes",
+      "current Localization Action Plan explicitly frozen formal outputs/deletions, regenerated _configs and output-manifest where applicable, temporary workspace and listed file/directory .meta; no handwritten generated output or expansion beyond live writeSet",
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -80,7 +174,8 @@
     "asset-database",
     "localization-source",
     "localization-output",
-    "selected-prefab"
+    "selected-prefab",
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -90,7 +185,7 @@
       "replace non-generated asset or change a TextLocalizing binding",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定源数据范围、已有 UI 绑定、导出范围和验证语言；任一范围变化后旧确认失效。"
+    "rule": "确认绑定实际源范围、已有UI绑定、正式导出范围与完整验证语言；Key/语言追加冻结全部最终译文/物理写集，复用既有CLI计划；已有同范围明确授权不重复询问，实际范围/包语言声明漂移重新冻结。 完整更新的全链输入适用于业务/绑定更新；export-code-data 仅冻结 profile.requiredInputs、当前导出 Action PlanId 与完整 writeSet，target 仅 text/font 且 scope 仅 all/code；危险副作用原确认门全部继承，源/身份/值或范围漂移重新Plan。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -101,7 +196,42 @@
   ],
   "evidence": [
     "定向源数据与既有 TextLocalizing 绑定 diff",
+    "Key/语言追加时，同CLI Plan/Receipt整sourceSHA、真实Language声明SHA、全validSheet/Key/语言集合与限定物理写集只读Verify；完整有效Unit一致性/正式导出/请求语言Play另验",
     "选定文本、字体、类型和语言列表导出结果",
-    "Unity 编译和 Play Mode 双语言切换证据"
+    "Unity 编译和 Play Mode 覆盖完整请求语言集合的实际文本/必要字体与切换证据",
+    "适用导出的 live Plan 来源冻结：实际源/Settings/模板工具、允许Sync重建的配置与完整写集；text/font all/code另有persisted Master原字节/GUID/path/顶层Namespace及生成类型全名",
+    "新来源契约Receipt完整输入/配置/正式产物及删除范围与SHA验收，code包含本次编译token和实际载入类型身份；只读Verify不重放，来源/配置/证据缺失或漂移不能success",
+    "旧Receipt原checksum success及边界Warnings只证明历史产物摘要，不视为新输入冻结/配置Namespace/本次compile/type完整验收，也不替代global Play",
+    "export-code-data profile仅text/font all/code的compile+artifact及清场；完整更新仍逐一验证请求语言Play与必要字体，不借profile降低data/languages或业务验收",
+    "Localization新Receipt sourceContractVersion=1 明确版本/完整字段，显式null或损坏新字段不降为旧；text/font全部scope冻结持久配置Namespace，languages/data只数据+临时配置；仅代码范围需compilationToken和实际类型"
+  ],
+  "taskProfiles": [
+    {
+      "id": "export-code-data",
+      "description": "仅正式导出已有 LocalizationSettings 的 text/font 且 scope=all/code；复用原导出Action与来源/Namespace/本次代码编译和类型验收，不要求UI绑定、业务入口或Play，不代表文本显示或字体适配已成功。languages或data不属于该profile，完整更新global play、全部禁止/锁/幂等与危险确认门保留。",
+      "taskIds": [
+        "localization.export"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "localizationExportSettingsSourcesTargetScopeAndWriteSet",
+        "activeConfigMasterAndGeneratedNamespace"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "agent-action",
+          "entry": "nova.project.localization.export"
+        }
+      ],
+      "minimumEvidence": "compile",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ]
+    }
   ]
 }

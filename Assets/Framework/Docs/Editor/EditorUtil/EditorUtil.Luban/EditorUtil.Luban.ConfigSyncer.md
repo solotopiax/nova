@@ -96,14 +96,16 @@ public static void CleanTempDir(string tempDirPath)
 
 ```
 SyncFromInspector
-  ├── RuntimeProvider.GetNamespace() 取 topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Namespace）
+  ├── RuntimeProvider.GetNamespace() 取 topModule（Globals 锚定的激活 ConfigMasterSO 顶层 Namespace）
   ├── _configs/ 不存在 → InitializeConfigDir
   ├── UpdateLubanConfTopModule（更新 luban.conf）
   ├── LubanSchemaManifestBuilder.Build
   │     ├── 默认扫描当前 Profile 的所有 Excel；提供 scanValueTypes 时扫描模块已投影的实际输入
-  │     ├── 在内存中构建并验证完整快照
-  │     └── 原子保存 _configs/nova-export-manifest.json
-  ├── GenerateTablesXml（只读取该快照）
+  │     └── 在内存中构建并验证完整快照
+  ├── 保存原 __tables__.xml 字节（不存在时为 null）
+  ├── GenerateTablesXml（使用同一快照，以 .tmp + Replace/Move 发布 XML）
+  ├── LubanSchemaManifestStore.Save（独立保存 manifest）
+  │     └── 保存失败 → RestoreTablesXml；回滚失败抛 AggregateException
   └── 返回 LubanSchemaManifest 给 Pipeline 后续阶段复用
 ```
 
@@ -115,11 +117,11 @@ SyncFromInspector
 |------|------|
 | luban.conf 的 dataDir | 配置为 `".."`（即 _configs 的父目录 = sourceDirPath），使 __tables__.xml 中的路径相对于 sourceDirPath 解析 |
 | 编码问题 | 所有文件写入使用 `s_Utf8NoBom`（UTF-8 无 BOM），避免 Luban CLI 解析失败 |
-| 扫描失败 | 缺失或不可读的源文件会中止同步；旧 manifest 和旧 `__tables__.xml` 保持不变，Luban 不会被调用 |
+| 扫描失败 | 缺失或不可读的源文件会中止同步，不调用 Luban；此前 `luban.conf` 或初始化目录可能已经改变，不会整体回滚 |
 | 预处理后的类型名 | 模块若改变了 Sheet/CSV 名，必须通过 Pipeline 上下文提供 `SchemaValueTypeScanner`；否则默认扫描原始 Excel，manifest 会与实际输入不一致 |
 | manifest 归属 | `_configs/nova-export-manifest.json` 是 Editor-only、可由 Excel 重建的派生文件；整个 `_configs/` 被忽略且不承载手写定义 |
 | 是否删除 `_configs/` | 对仍使用该链的专用模块，它是可重建缓存；Table Inspector 不读取该目录 |
-| 陈旧缓存 | 每次 Pipeline 调用 Luban 前都会重新扫描 Excel 并原子替换 XML 与 manifest，旧缓存不会直接参与新一轮导出 |
+| 陈旧缓存与回滚 | 每次 Pipeline 调用 Luban 前重建快照并分别保存 XML、manifest；manifest 保存失败才尝试恢复 XML，不恢复 conf 或初始目录。这不是多文件原子事务 |
 
 ---
 

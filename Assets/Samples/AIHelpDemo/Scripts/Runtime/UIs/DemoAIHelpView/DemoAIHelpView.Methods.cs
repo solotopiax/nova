@@ -12,6 +12,7 @@
 using System.Collections.Generic;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AIHelp.Runtime;
+using TMPro;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -46,6 +47,40 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
         /// 缓存的 AIHelpPlugin 引用，用于订阅 / 退订消息事件。
         /// </summary>
         private AIHelpPlugin m_AIHelp;
+
+        /// <summary>
+        /// 当前 View 实例拥有的动态登出按钮；不增加 Prefab 序列化字段，也不复用关闭客服按钮。
+        /// </summary>
+        private UnityEngine.UI.Button m_LogoutButton;
+
+        /// <summary>
+        /// 克隆登录按钮的外观，在其后创建独立登出入口；全新点击事件避免继承模板的登录回调。
+        /// 重复初始化只保留当前 View 的同一个按钮，随 View 对象销毁，不在关闭页面时触发登出。
+        /// </summary>
+        private void CreateLogoutButton()
+        {
+            if (m_LogoutButton != null)
+            {
+                return;
+            }
+            if (m_LoginButton == null || m_InteractionRoot == null)
+            {
+                AppendFeedback("登出按钮缺少登录按钮或交互区绑定，未创建入口。", FeedbackLevel.Error);
+                return;
+            }
+
+            m_LogoutButton = Instantiate(m_LoginButton, m_InteractionRoot, false);
+            m_LogoutButton.gameObject.name = "LogoutButton";
+            m_LogoutButton.transform.SetSiblingIndex(m_LoginButton.transform.GetSiblingIndex() + 1);
+            m_LogoutButton.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+            m_LogoutButton.onClick.AddListener(OnLogoutClick);
+            TMP_Text label = m_LogoutButton.transform.Find("Text")?.GetComponent<TMP_Text>();
+            if (label != null)
+            {
+                label.text = "退出账号并重置客服资料";
+            }
+            SetButtonApiHint(m_LogoutButton, "EndLoginSession() / ResetUserInfo()");
+        }
 
         /// <summary>
         /// 绑定按钮点击回调并设置就近 API 提示。
@@ -192,6 +227,52 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
             AppendFeedback(
                 $"已调用 Login(\"{DemoUid}\")；UpdateUserInfo(name=\"{userName}\", serverId=\"{serverId}\", tags=[{string.Join(",", userTags)}], customData={customDataJson})",
                 FeedbackLevel.Success);
+        }
+
+        /// <summary>
+        /// 显式结束当前 SDK 账号会话，再重置已就绪 AIHelp 的用户资料，避免旧账号被晚初始化补交。
+        /// 每次有效点击同步调用一次，不自动重试；不关闭客服 UI、当前 View 或 SDK，也不注销服务端账号。
+        /// </summary>
+        private void OnLogoutClick()
+        {
+            if (!Available)
+            {
+                return;
+            }
+            SDKComponent sdk = Nova.SDK;
+            if (sdk == null || sdk.SDKManager == null)
+            {
+                AppendFeedback("SDK 尚未初始化，未结束账号会话或重置客服资料。", FeedbackLevel.Warn);
+                return;
+            }
+
+            try
+            {
+                // 先清理统一账号快照；AIHelp 未实现会话结束接收接口，随后必须显式重置。
+                sdk.EndLoginSession();
+            }
+            catch (System.Exception)
+            {
+                AppendFeedback("结束 SDK 账号会话时发生异常，尚未调用客服资料重置。", FeedbackLevel.Error);
+                return;
+            }
+
+            if (sdk.GetPluginInitializationState<AIHelpPlugin>() != SDKPluginInitializationState.Ready ||
+                !sdk.TryGet(out AIHelpPlugin plugin))
+            {
+                AppendFeedback("已结束 SDK 账号会话；AIHelp 尚未就绪，未调用资料重置。就绪后可再次点击。", FeedbackLevel.Warn);
+                return;
+            }
+
+            try
+            {
+                plugin.ResetUserInfo();
+                AppendFeedback("已调用 EndLoginSession() 和 ResetUserInfo()；客服资料的实际重置仍需平台验证。", FeedbackLevel.Info);
+            }
+            catch (System.Exception)
+            {
+                AppendFeedback("SDK 账号会话已结束，但客服资料重置调用异常；请检查插件后再次点击。", FeedbackLevel.Error);
+            }
         }
 
         /// <summary>

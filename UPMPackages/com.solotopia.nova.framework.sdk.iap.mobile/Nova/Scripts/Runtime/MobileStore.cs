@@ -24,8 +24,22 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 核心业务逻辑分布在 8 个内部服务中（Extended/Store/Init/Purchase/Validation/Product/Restore/Subscription）。
     /// </summary>
     [IAPStore(IAPStoreType.Mobile)]
-    public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable
+    public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable, IIAPStorePauseListener, IIAPStoreFocusListener
     {
+        // [UnityIAP-FocusRefetch-Workaround] Unity IAP 5.3.0~5.4.4 Google 回到前台重拉会覆盖 FetchPurchases 回调，官方修复后删除。
+        /// <summary>
+        /// 应用暂停或恢复：转交 RestoreService 记录前后台切换，恢复时按需重新拉取平台已有购买。
+        /// </summary>
+        /// <param name="isPaused">true 表示进入后台，false 表示恢复前台。</param>
+        void IIAPStorePauseListener.OnPause(bool isPaused) => m_Hub?.RestoreService?.OnAppForegroundChanged(!isPaused);
+
+        // [UnityIAP-FocusRefetch-Workaround]
+        /// <summary>
+        /// 应用焦点变化：转交 RestoreService 记录前后台切换，恢复时按需重新拉取平台已有购买。
+        /// </summary>
+        /// <param name="hasFocus">true 表示获得焦点，false 表示失去焦点。</param>
+        void IIAPStoreFocusListener.OnFocus(bool hasFocus) => m_Hub?.RestoreService?.OnAppForegroundChanged(hasFocus);
+
         /// <summary>
         /// 当前商店的渠道类型，固定为 Mobile。
         /// </summary>

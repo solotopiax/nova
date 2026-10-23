@@ -8,6 +8,7 @@
  * descrip:   DemoAdView 演示 View — 字段与属性
  ***************************************************************/
 
+using System.Threading;
 using NovaFramework.SDK.AdPlugin.Runtime;
 using TMPro;
 using UnityEngine;
@@ -53,5 +54,10 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// 是否已经订阅 AdPlugin.Events，防止 OnOpen 重入导致重复注册。
         /// </summary>
         private bool m_EventsSubscribed;
+
+        /// <summary>
+        /// 当前页面打开期间的业务等待令牌，关闭页面只取消等待。
+        /// </summary>
+        private CancellationTokenSource m_AdViewCts;
     }
 }

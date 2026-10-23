@@ -14,6 +14,9 @@ using Newtonsoft.Json.Linq;
 
 namespace NovaFramework.Samples.Runtime
 {
+/// <summary>
+/// Map1
+/// </summary>
 
 public sealed partial class Map1 : Luban.BeanBase
 {

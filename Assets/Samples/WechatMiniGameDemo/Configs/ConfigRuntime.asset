@@ -28,11 +28,11 @@ MonoBehaviour:
   Platform: 3
   Channel: 4
   EnabledSDKConfigs:
-  - rid: 2095149326272823296
-  - rid: 2095149326272823297
+  - rid: 6078458057645096964
+  - rid: 6078458057645096965
   EnabledKitConfigs:
-  - rid: 2095149326272823298
-  - rid: 2095149326272823299
+  - rid: 6078458057645096966
+  - rid: 6078458057645096967
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -64,7 +64,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2095149326272823296
+    - rid: 6078458057645096964
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -75,7 +75,7 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 2095149326272823297
+    - rid: 6078458057645096965
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
         m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
@@ -118,12 +118,12 @@ MonoBehaviour:
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
         m_EnableMemoryWarning: 1
-    - rid: 2095149326272823298
+    - rid: 6078458057645096966
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 2095149326272823299
+    - rid: 6078458057645096967
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind

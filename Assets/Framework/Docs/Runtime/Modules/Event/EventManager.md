@@ -71,16 +71,16 @@
 
 ### 4. Fire 与 FireNow 是两条完全不同的路径
 
-- `Fire(sender, e)`：线程安全入队，下一次 `Update()` 分发
+- `Fire(sender, e)`：锁内入队，后续 `Update()` 搬运并按限额分发
 - `FireNow(sender, e)`：立即同步分发，不是线程安全调用
 
-调用方如果需要跨线程安全，只能走 `Fire()`。
+入队锁不保护事件对象内容、引用池 helper 或其它 API；跨线程发布仍须确保载荷独占及实际 helper 的线程条件。
 
 ### 5. EventData 在分发后会被归还引用池
 
-无论是排队分发还是立即分发，`EventPool` 在处理完成后都会 `ReferencePool.Put(e)`。
+正常派发、默认处理器派发，以及不允许无处理器的拒绝分支，都会调用 `ReferencePool.Put(e)`；拒绝分支先归还再抛错。排队派发另由 `Update()` 的 `finally` 归还包装节点。
 
-这也是为什么事件对象不能在 handler 外长期持有。
+事件数据本身没有总 `finally` 回收保证：日志、遍历或 `Put` 的异常仍可能中断回收。`Clear()` / `Shutdown()` 直接清队列，不逐项归还尚未派发的包装节点或事件数据。因此业务既不能在 handler 外长期持有已交池对象，也不能把关闭队列当作完整引用池回收。
 
 ## 高价值 API 面
 
@@ -96,7 +96,15 @@
 - `FireNow()` 不会经过队列，也不提供线程安全保证。
 - `EventData.Clone()` 默认不支持；如果异步逻辑要跨 handler 生命周期持有数据，需要子类自己实现深拷贝。
 - 当 `EventPoolMode` 不允许无处理器时，未命中 handler 的事件会抛异常，而不是静默吞掉。
-- `Count` 反映的是待分发事件数量，不是订阅者数量。
+- `Count` 仅反映 incoming 队列数量，不含处理队列积压；HandlerCount 是事件 ID 组数，不是委托总数。
+
+## 初始化、诊断和归属
+
+构造器先建默认空池，Component Awake 创建 Manager、Start 才复制配置。Initialize 先 Shutdown 旧池，之后才读取 config，新配置为 null/创建失败时旧订阅及队列可能已清，不回滚，也不热绑定 DTO。配置负上限不拒绝，Update 仅对正数限流；mode 的未知位不预检。Priority=1 规定较早 Update、较晚 Shutdown，不保证模块 Start 顺序。
+
+GetHandlers 返回新的委托列表或未知 ID 的 null，修改列表不修改订阅，但元素仍持原目标引用。GetRegisteredEventIDs 返回当前池 Keys 实时只读视图；换池后旧视图不跟随新池。Component 的 EventCount/EventHandlerCount 对缺 Manager 返回 0，int GetHandlers/ID 集合查询返回 null；其余多数 API（包括泛型 GetHandlers）直接解引用，不能把这些兜底值当成已就绪证据。Component OnDestroy 只断 Manager 引用，全局组承担 Shutdown；池没有 destroyed 守卫，关闭后对象仍可再次调用。
+
+接口与 Base 抽象声明不执行这些行为；Base 的泛型包装先取得类型 ID 再转发整数重载，即使后续空委托或缺订阅失败也可能已登记类型。ID、sender、委托均按调用方值传递，不从配置表自动绑定业务生命周期。
 
 ## 继续阅读
 

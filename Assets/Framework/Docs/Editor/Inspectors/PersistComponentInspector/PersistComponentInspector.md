@@ -18,7 +18,7 @@ Editor 模式下，Inspector 通过 `EditorUtil.Config.WorkspaceActive.Get()` �
 | `PersistComponentInspector.Visitors.cs` | `partial PersistComponentInspector` | 字段：全部 `SerializedProperty` 引用与 `List<string>` 类型名列表 |
 | `PersistComponentInspector.Methods.cs` | `partial PersistComponentInspector` | 私有方法：`DrawConfigs`（配置区总入口）、`DrawManagerSection`（管理器区）、`DrawEncryptSection`（加密区）、`DrawAutoSaveSection`（自动保存间隔区）、`DrawDataSection` / `DrawGlobalSearchBar` / `DrawBackendSearchBar` / `DrawRuntimeData` / `DrawEditorData`（数据区）、`DrawItemRow`（条目行共用绘制）、`MatchSearch` / `ContainsIgnoreCase`（全局与各存储实现搜索匹配）、`TryReadFragmentFile` / `WriteFragmentFile` / `DecodeForDisplay` / `EncodeForStorage`（FF 文件与 AES 双向处理）、`DrawClassifyFoldout` |
 | `PersistComponentInspector.PlayerPrefs.cs` | `partial PersistComponentInspector` | PlayerPrefs 存储实现特定绘制与交互逻辑 |
-| `PersistComponentInspector.FileFragment.cs` | `partial PersistComponentInspector` | FileFragment 存储实现特定绘制与交互逻辑（含 `EditorUtil.FileWatcher` 目录监控） |
+| `PersistComponentInspector.FileFragment.cs` | `partial PersistComponentInspector` | FileFragment 存储实现特定绘制与交互逻辑（打开时扫描缓存，无目录监控） |
 | `PersistComponentInspector.SQLite.cs` | `partial PersistComponentInspector` | SQLite 存储实现特定绘制与交互逻辑（含 `EditorUtil.FileSystem.DeletePath` 清理导出路径） |
 
 ---
@@ -139,13 +139,13 @@ Runtime 模式（Play 中）：
 
 ## § 12 注意事项
 
-**SQLite 密码缓冲与存档转换**：`m_TmpSQLiteCipherPassword` 是临时文本框，不会立即写回序列化字段。当它 ≠ `m_SQLiteCipherPassword.stringValue` 时，"存档转换" 按钮解除灰显；点击后 Inspector 删除旧库（含 `-shm` / `-wal` / `-journal` 附属文件）、按当前内存数据原样重建新库并应用新 Cipher 密码，AES 条目状态保持不变。
+**SQLite 密码缓冲与存档转换**：`m_TmpSQLiteCipherPassword` 是临时文本框，不会立即写回序列化字段。当它 ≠ `m_SQLiteCipherPassword.stringValue` 时，"存档转换" 按钮解除灰显；点击后 Inspector 删除旧库（含 `-shm` / `-wal` / `-journal` 附属文件）、按当前内存数据重建新库并应用新 Cipher 密码，AES 条目状态保持不变。该路径先删后建，没有全量原字节备份或独立恢复收据；异常后不能承诺原库可恢复。
 
-**FileFragment 文件兼容**：Editor 数据区与 Runtime 共用版本化二进制编解码和崩溃安全写入。编辑条目会保留上一版 `.bak`；切换 AES 时会让正式文件与备份同时使用新的加密状态；删除分类时同步删除正式文件、备份与残留临时文件。
+**FileFragment 文件兼容**：Editor 数据区与 Runtime 共用版本化二进制编解码和崩溃安全写入。编辑条目会保留上一版 `.bak`；Inspector 切换 AES 时重写正式文件并以新状态同步备份，不能把该 `.bak` 当作整次迁移前的历史备份；删除分类时同步删除正式文件、备份与残留临时文件。需要冻结全集、保留原主/备字节并独立恢复时使用 [受控 FileFragment 维护](../../EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md)。
 
 **Play 模式 SQLite 连接切换**：进入 Play 前通过 `EditorApplication.playModeStateChanged` 关闭 Editor 侧 SQLite 连接，退出 Play 后经 `delayCall` 在 Inspector 仍有效时重建连接；避免 Play 期间 Editor 侧与 Runtime 侧同时持有同一数据库句柄。
 
-**AES 迁移立即执行**：切换可编辑的 AES Toggle 时，立即对该存储实现已存数据做明文 ↔ 密文批量迁移，保证开关状态与实际存储格式始终一致；Inspector 始终以明文展示。WebGL 下 SQLite 组为禁用展示，不触发迁移。
+**AES 迁移立即执行**：切换可编辑的 AES Toggle 时，立即对该存储实现已存数据做明文 ↔ 密文批量迁移；这不是跨配置、文件和数据库的事务，也不自动暂停运行中的存档写入。`AES.DecryptString` 在解密异常时返回空字符串，PlayerPrefs 与 SQLite 的旧迁移路径可能把损坏密文覆盖为空值，不能保证失败时保留原数据。迁移前必须停止 Play 并保留完整原数据备份，不能用通用字段编辑代替数据迁移。Inspector 以明文展示；WebGL 下 SQLite 组为禁用展示，不触发迁移。
 
 **WebGL 平台**：SQLite 存储实现在 WebGL 上以静默空操作运行，Initialize 输出警告，Get 返回默认值，Set 被忽略；Editor 面板保持与 Android / iOS 相同的 SQLite 区块可见性，管理器、AES、Cipher 密码、存档转换、自动保存和数据区等暂不支持的交互统一置灰，不执行存档迁移或本地库操作。
 
@@ -159,5 +159,14 @@ Runtime 模式（Play 中）：
 
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [PersistComponent.md](../../../Runtime/Modules/Persist/PersistComponent.md)
-- [EditorUtil.FileWatcher.md](../../EditorUtil/EditorUtil.FileWatcher/EditorUtil.FileWatcher.md)
 - [EditorUtil.FileSystem.md](../../EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.md)
+
+## 数据来源与失败边界
+
+Inspector 的存档区是打开时取得的缓存，没有 FileWatcher 自动更新。PlayerPrefs 只覆盖其索引记录的键；FileFragment 初始化还会从孤立 `.dat.bak` 推导主档并尝试恢复，读取可能写回正式档，运行展示的分类列表却仍按顶层 `.dat` 枚举。未保存的新分类、缓存外新文件或索引外键不能从“全部清除”的 UI 名称推定已覆盖。FF 删除先删 tmp/bak、确认二者消失才删主档；之后移除缓存，底层删除未抛并不独立证明文件消失。
+
+AES 凭据在 OnEnable 按当时配置解析并缓存，要求 UTF-8 恰好 16 字节，不是 16 字符，也不证明能解当前档。退出 Play 的 SQLite 重连没有重新解析 AES；Master.ExportTarget 也不必等于运行中实际载入的 Config。PP/SQLite 的 EncodeForStorage 在开启 AES 但凭据无效时仍返回原明文，调用方可继续保存；展示解码失败可回落原密文。搜索 PP/SQLite Editor 缓存使用 raw 值，不先解密。不能把只读标签、非空开关或搜索结果当作加解密正确性的证明。
+
+行编辑先使用局部/快照缓冲，按钮里的 ExitGUI 会跳过函数末尾 ref 回写，因此保存/删除回调必须自行维护缓存和编辑状态。写入失败、迁移失败及配置开关已经 Apply 后都没有整体补偿；某些 Clear 按钮也可能在返回新的搜索字符串之前退出 GUI。Runtime 展示只调用 Manager 查询，但下层 getter 仍可能惰性载入或更新缓存，不等于底层完全无状态变化。
+
+SQLite 编辑、Cipher 转换和 Windows 预览按 Name/Value 表结构工作，不保留任意多列表 schema。预览库是固定 `game_preview.db`，可能覆盖旧预览，条目 AES 状态原样保留；Apply 会清正式表再回写，没有来源 hash/并发冻结或全量备份，错误可留部分结果。Cipher 转换先删正式库再写新密码与重建，失败不恢复旧库。连接关闭异常也可能阻断置空/重连，其生命周期不能升级为始终成功释放。

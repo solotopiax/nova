@@ -22,6 +22,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
     public sealed class DemoIAPThirdPayPanelView : MonoBehaviour
     {
         /// <summary>
+        /// ThirdPay 奖励参数测试卡的运行时节点名。
+        /// </summary>
+        private const string c_RewardCardName = "ProductCard_ThirdPayReward_1";
+
+        /// <summary>
         /// 第三方支付 Panel 自己的滚动区域。
         /// </summary>
         [SerializeField] private ScrollRect m_ScrollRect;
@@ -77,6 +82,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private Action<long> m_PayRequested;
 
         /// <summary>
+        /// ThirdPay 可选模块注入的奖励参数支付回调。
+        /// </summary>
+        private Action<long> m_RewardPayRequested;
+
+        /// <summary>
         /// 调试国家变更回调。
         /// </summary>
         private Action<string> m_DebugCountryChanged;
@@ -119,12 +129,14 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// </summary>
         /// <param name="productTitleBuilder">商品标题构建回调。</param>
         /// <param name="payRequested">第三方支付回调。</param>
+        /// <param name="rewardPayRequested">携带首充和额外赠送奖励的第三方支付回调。</param>
         /// <param name="debugCountryChanged">调试国家变更回调。</param>
         /// <param name="skipPaymentInformationChanged">跳过第三方支付信息页变更回调。</param>
-        internal void Configure(Func<long, string> productTitleBuilder, Action<long> payRequested, Action<string> debugCountryChanged, Action<bool> skipPaymentInformationChanged)
+        internal void Configure(Func<long, string> productTitleBuilder, Action<long> payRequested, Action<long> rewardPayRequested, Action<string> debugCountryChanged, Action<bool> skipPaymentInformationChanged)
         {
             m_ProductTitleBuilder = productTitleBuilder;
             m_PayRequested = payRequested;
+            m_RewardPayRequested = rewardPayRequested;
             m_DebugCountryChanged = debugCountryChanged;
             m_SkipPaymentInformationChanged = skipPaymentInformationChanged;
             ConfigureDebugControls();
@@ -186,10 +198,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 return;
             }
 
-            for (int i = 0; i < DemoIAPProductCatalog.AllProductIds.Length; i++)
+            for (int i = 0; i < DemoIAPProductCatalog.ThirdPayProductIds.Length; i++)
             {
-                BuildProductCard(DemoIAPProductCatalog.AllProductIds[i]);
+                BuildProductCard(DemoIAPProductCatalog.ThirdPayProductIds[i]);
             }
+            BuildRewardProductCard();
         }
 
         /// <summary>
@@ -289,6 +302,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             m_ProductTitles.Clear();
             m_ProductTitleBuilder = null;
             m_PayRequested = null;
+            m_RewardPayRequested = null;
             m_DebugCountryChanged = null;
             m_SkipPaymentInformationChanged = null;
         }
@@ -319,6 +333,34 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             Button payButton = card.Find("PayButton")?.GetComponent<Button>();
             DemoIAPView.BindButton(payButton, "第三方支付", "IAPThirdPayRequest → OpenURL",
                 () => m_PayRequested?.Invoke(tableId));
+            if (payButton != null)
+            {
+                m_PayButtons.Add(payButton);
+            }
+        }
+
+        /// <summary>
+        /// 创建固定使用商品 1 的首充与额外赠送奖励参数测试卡。
+        /// </summary>
+        private void BuildRewardProductCard()
+        {
+            RectTransform card = Instantiate(m_ProductCardTemplate, m_ProductList);
+            card.name = c_RewardCardName;
+            card.gameObject.SetActive(true);
+            m_RuntimeCards.Add(card.gameObject);
+
+            TMP_Text title = card.Find("ProductTitle")?.GetComponent<TMP_Text>();
+            if (title != null)
+            {
+                title.text = "ID" + DemoIAPProductCatalog.ThirdPayRewardTableId + " [首充+额外赠送]";
+            }
+            TMP_Text meta = card.Find("ProductMeta")?.GetComponent<TMP_Text>();
+            if (meta != null)
+            {
+                meta.text = "首充 " + DemoIAPProductCatalog.ThirdPayFirstRechargeRewardItemId + " × " + DemoIAPProductCatalog.ThirdPayFirstRechargeRewardQuantity + "，额外赠送 " + DemoIAPProductCatalog.ThirdPayExtraBonusRewardItemId + " × " + DemoIAPProductCatalog.ThirdPayExtraBonusRewardQuantity;
+            }
+            Button payButton = card.Find("PayButton")?.GetComponent<Button>();
+            DemoIAPView.BindButton(payButton, "奖励参数支付", "FirstRechargeReward + ExtraBonusReward", () => m_RewardPayRequested?.Invoke(DemoIAPProductCatalog.ThirdPayRewardTableId));
             if (payButton != null)
             {
                 m_PayButtons.Add(payButton);

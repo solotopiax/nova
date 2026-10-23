@@ -175,17 +175,19 @@ namespace NovaFramework.Editor
             Rect deleteRect = new Rect(rect.xMax - 24f, rowY, 22f, rowH);
             Color prevColor = GUI.color;
             GUI.color = new Color(0.75f, 0.25f, 0.25f);
-            // 删除按钮依赖 index 闭包 + 需要立即修改列表，允许裸用 GUI.Button
+            // 删除仅发起延迟编辑；捕获资产及条目身份，切换 Batch 后不能删除新列表同索引。
             if (GUI.Button(deleteRect, "×", EditorStyles.miniButton))
             {
                 // 延迟到 Repaint 之外执行，避免在 Layout/Repaint 阶段直接修改集合
-                int capturedIndex = index;
-                EditorApplication.delayCall += () =>
+                PipifySettingsSO capturedSettings = m_Settings;
+                Batch capturedBatch = m_Settings.Batches[m_SelectedBatchIndex];
+                BatchItem capturedItem = item;
+                ScheduleBatchEdit(() =>
                 {
-                    if (m_Settings == null || m_SelectedBatchIndex < 0 || m_SelectedBatchIndex >= m_Settings.Batches.Count) return;
-                    Batch b = m_Settings.Batches[m_SelectedBatchIndex];
-                    if (capturedIndex < 0 || capturedIndex >= b.Items.Count) return;
-                    b.Items.RemoveAt(capturedIndex);
+                    if (m_Settings != capturedSettings || capturedSettings == null || !capturedSettings.Batches.Contains(capturedBatch)) return;
+                    int capturedIndex = capturedBatch.Items.IndexOf(capturedItem);
+                    if (capturedIndex < 0) return;
+                    capturedBatch.Items.RemoveAt(capturedIndex);
                     // 删除后所有 > capturedIndex 的 key 均移位，整表清空最安全
                     InvalidateParamsCache(-1);
                     m_ExpandedItemIndices.Clear();
@@ -193,7 +195,7 @@ namespace NovaFramework.Editor
                     m_ItemsListBoundBatchIndex = -1;
                     EnsureItemsListForSelectedBatch();
                     MarkDirty();
-                };
+                });
             }
             GUI.color = prevColor;
 
@@ -345,8 +347,7 @@ namespace NovaFramework.Editor
             PipifySteps.PackageParams after,
             bool exportAsGoogleAndroidProject)
         {
-            return !IsAndroidDevelopmentAabSigningRisk(before, exportAsGoogleAndroidProject) &&
-                   IsAndroidDevelopmentAabSigningRisk(after, exportAsGoogleAndroidProject);
+            return EditorUtil.Pipify.ConfigurationEditing.ShouldConfirmAndroidRisk(before, after, exportAsGoogleAndroidProject);
         }
 
         /// <summary>
@@ -437,9 +438,7 @@ namespace NovaFramework.Editor
         /// <returns>支持时返回 true，否则 false。</returns>
         private static bool IsSupportedFieldType(FieldInfo field)
         {
-            Type ft = field.FieldType;
-            if (ft == typeof(string) || ft == typeof(bool) || ft == typeof(int) || ft == typeof(float) || ft.IsEnum) return true;
-            return false;
+            return EditorUtil.Pipify.ConfigurationEditing.SupportsField(field);
         }
 
         /// <summary>
@@ -454,33 +453,7 @@ namespace NovaFramework.Editor
         /// <returns>可见时返回 true。</returns>
         private static bool IsFieldVisible(FieldInfo field, object paramsInstance, Type paramsType)
         {
-            return IsFieldVisibleInternal(field, paramsInstance, paramsType, new HashSet<string>());
-        }
-
-        /// <summary>
-        /// IsFieldVisible 递归内部实现，携带已访问字段名集合防止循环依赖。
-        /// </summary>
-        /// <param name="field">字段元信息。</param>
-        /// <param name="paramsInstance">参数对象实例。</param>
-        /// <param name="paramsType">参数对象类型。</param>
-        /// <param name="visited">已访问字段名集合（防环）。</param>
-        /// <returns>可见时返回 true。</returns>
-        private static bool IsFieldVisibleInternal(FieldInfo field, object paramsInstance, Type paramsType, HashSet<string> visited)
-        {
-            PipifyVisibleWhenAttribute attr = field.GetCustomAttribute<PipifyVisibleWhenAttribute>();
-            if (attr == null) return true;
-            FieldInfo dep = paramsType.GetField(attr.DependsOn, BindingFlags.Public | BindingFlags.Instance);
-            if (dep == null) return true;
-            // 防环：依赖字段已在本次递归路径中 → 视为可见，避免死循环
-            if (!visited.Add(dep.Name)) return true;
-            // 传递性：依赖字段自身不可见 → 本字段一并隐藏
-            if (!IsFieldVisibleInternal(dep, paramsInstance, paramsType, visited)) return false;
-            object depValue = dep.GetValue(paramsInstance);
-            if (depValue == null) return false;
-            int intValue;
-            try { intValue = Convert.ToInt32(depValue); }
-            catch { return true; }
-            return attr.AnyOf != null && attr.AnyOf.Contains(intValue);
+            return EditorUtil.Pipify.ConfigurationEditing.IsFieldVisible(field, paramsInstance, paramsType);
         }
 
         /// <summary>
@@ -577,14 +550,8 @@ namespace NovaFramework.Editor
         /// <returns>true 表示字段只读。</returns>
         private static bool IsParamFieldReadOnly(FieldInfo field, object paramsInstance)
         {
-            if (field.GetCustomAttribute<PipifyReadOnlyAttribute>() != null)
-            {
-                return true;
-            }
-
-            return paramsInstance is PipifySteps.GooglePlayUploadParams p && !PipifySteps.IsGooglePlayManualReviewAvailable(p) &&
-                field.DeclaringType == typeof(PipifySteps.GooglePlayUploadParams) &&
-                field.Name == nameof(PipifySteps.GooglePlayUploadParams.ChangesNotSentForReview);
+            return !EditorUtil.Pipify.ConfigurationEditing.SupportsField(field) ||
+                EditorUtil.Pipify.ConfigurationEditing.IsReadOnly(field, paramsInstance);
         }
 
         /// <summary>
@@ -637,28 +604,7 @@ namespace NovaFramework.Editor
         /// <returns>按声明顺序排列的可选枚举值。</returns>
         private static List<Enum> GetEnumValues(FieldInfo field, object paramsInstance)
         {
-            Array rawValues = Enum.GetValues(field.FieldType);
-            var values = new List<Enum>(rawValues.Length);
-            bool filterConfigNoneChannel = paramsInstance is PipifySteps.ConfigExportParams &&
-                field.Name == nameof(PipifySteps.ConfigExportParams.Channel);
-            bool filterWebGLBundledCopy = field.Name == nameof(AssetBundleBuildArgs.BundledCopyOption) &&
-                (paramsInstance is AssetBundleBuildArgs assetBundle && assetBundle.Target == BuildTarget.WebGL
-                 || paramsInstance is RawFileBuildArgs rawFile && rawFile.Target == BuildTarget.WebGL);
-            for (int i = 0; i < rawValues.Length; i++)
-            {
-                var value = (Enum)rawValues.GetValue(i);
-                if (filterConfigNoneChannel && value.Equals(ChannelType.None))
-                {
-                    continue;
-                }
-                if (filterWebGLBundledCopy &&
-                    !EditorUtil.BundleBuilder.IsWebGLBundledCopyOptionSupported((YooAsset.Editor.EBundledCopyOption)value))
-                {
-                    continue;
-                }
-                values.Add(value);
-            }
-            return values;
+            return EditorUtil.Pipify.ConfigurationEditing.GetEnumValues(field, paramsInstance);
         }
 
         /// <summary>
@@ -1281,11 +1227,7 @@ namespace NovaFramework.Editor
                 return cachedDisplays;
             }
 
-            bool buildService = interfaceType == typeof(YooAsset.IBundleEncryptor)
-                || interfaceType == typeof(YooAsset.IManifestEncryptor) || interfaceType == typeof(YooAsset.IManifestDecryptor);
-            string[] typeNames = buildService
-                ? YooAsset.Editor.EditorAssemblyUtility.GetBuildServiceTypes(interfaceType).Select(type => type.FullName).ToArray()
-                : EditorUtil.TypeCache.GetTypeNames(interfaceType);
+            string[] typeNames = EditorUtil.Pipify.ConfigurationEditing.GetDropdownOptions(interfaceType);
             int total = typeNames?.Length ?? 0;
             string[] displays = new string[total];
             string[] names = new string[total];
@@ -1326,45 +1268,23 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 反射调用 PipifyDynamicDropdown 指向的无参 static 方法获取动态选项数组；任何异常返回 null。
+        /// 由共享参数服务解析窗口动态下拉；自动化入口只开放已核实的固定提供者。
         /// </summary>
         /// <param name="attr">动态下拉特性。</param>
         /// <returns>选项数组；失败时返回 null。</returns>
         private static string[] ResolveDynamicDropdownOptions(PipifyDynamicDropdownAttribute attr)
         {
-            try
-            {
-                MethodInfo m = attr.ProviderType.GetMethod(attr.MethodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
-                if (m == null) return null;
-                object result = m.Invoke(null, null);
-                return result as string[];
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.Editor, "[PipifyWindow] 解析动态下拉选项失败：{0}.{1} 异常：{2}", attr.ProviderType.Name, attr.MethodName, ex.Message);
-                return null;
-            }
+            return EditorUtil.Pipify.ConfigurationEditing.ResolveWindowDynamicDropdown(attr);
         }
 
         /// <summary>
-        /// 反射调用 PipifyDynamicDefault 指向的无参 static 方法获取动态默认值字符串；任何异常返回空串。
+        /// 由共享参数服务解析窗口动态占位值，不把提示值写回存档。
         /// </summary>
         /// <param name="attr">动态默认值特性。</param>
         /// <returns>默认值字符串；调用失败返回空串。</returns>
         private static string ResolveDynamicDefault(PipifyDynamicDefaultAttribute attr)
         {
-            try
-            {
-                MethodInfo m = attr.ProviderType.GetMethod(attr.MethodName, BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
-                if (m == null) return string.Empty;
-                object result = m.Invoke(null, null);
-                return result as string ?? string.Empty;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.Editor, "[PipifyWindow] 解析动态默认值失败：{0}.{1} 异常：{2}", attr.ProviderType.Name, attr.MethodName, ex.Message);
-                return string.Empty;
-            }
+            return EditorUtil.Pipify.ConfigurationEditing.ResolveWindowDynamicDefault(attr);
         }
 
         /// <summary>

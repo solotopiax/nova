@@ -254,7 +254,12 @@ class NovaSkillsToolTests(unittest.TestCase):
     def _write_action_sources(
         self, registered_action_ids: list[str], exposed_action_ids: list[str]
     ) -> None:
-        """写入最小 Handler 与 MCP 策略源码，模拟 Framework 的静态事实。"""
+        """写入最小 Handler、MCP 策略和项目边界，避免夹具继承外层真实仓来源。"""
+        packages_root = self.root / "Packages"
+        packages_root.mkdir(exist_ok=True)
+        (packages_root / "manifest.json").write_text(
+            '{"dependencies":{}}', encoding="utf-8"
+        )
         handlers_root = (
             self.agents_root.parent
             / "Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Test"
@@ -306,6 +311,168 @@ class NovaSkillsToolTests(unittest.TestCase):
         tool = load_tool()
 
         self.assertEqual([], tool.validate_agents_root(self.agents_root))
+
+    def _write_cached_framework(self, mcp_entry: dict | None) -> Path:
+        """建立嵌套于开发仓的消费缓存，保留外层 MCP 作为误选对照。"""
+        packages_root = self.project_root / "Packages"
+        packages_root.mkdir(parents=True, exist_ok=True)
+        dependencies = {
+            "com.solotopia.nova.framework": {"source": "registry", "version": "0.6.9"}
+        }
+        if mcp_entry is not None:
+            dependencies["com.solotopia.nova.framework.mcp"] = mcp_entry
+        (packages_root / "packages-lock.json").write_text(
+            json.dumps({"dependencies": dependencies}), encoding="utf-8"
+        )
+        (packages_root / "manifest.json").write_text(
+            json.dumps({"dependencies": {"com.solotopia.nova.framework": "0.6.9"}}),
+            encoding="utf-8",
+        )
+        framework_root = (
+            self.project_root / "Library/PackageCache/com.solotopia.nova.framework@frameworkhash"
+        )
+        shutil.copytree(self.agents_root.parent, framework_root)
+        return framework_root
+
+    def _write_mcp_gateway_package(
+        self, package_root: Path, version: str, action_ids: list[str]
+    ) -> Path:
+        """写入带真实包身份的网关夹具，区分旧缓存、当前缓存与外层源码。"""
+        package_root.mkdir(parents=True, exist_ok=True)
+        (package_root / "package.json").write_text(
+            json.dumps({"name": "com.solotopia.nova.framework.mcp", "version": version}),
+            encoding="utf-8",
+        )
+        gateway = package_root / "Nova/Editor/NovaProjectActionGateway.cs"
+        gateway.parent.mkdir(parents=True, exist_ok=True)
+        gateway.write_text(
+            "\n".join(f'new ExposurePolicy("{action_id}"),' for action_id in action_ids),
+            encoding="utf-8",
+        )
+        return gateway
+
+    def test_cached_framework_uses_locked_mcp_instead_of_outer_development_source(self):
+        """消费校验必须使用同工程锁定版本，不能混入外层仓或旧缓存的白名单。"""
+        self._write_action_sources(["nova.project.test.run"], ["nova.project.outer.run"])
+        self._set_action_adapters(
+            "nova-project-router",
+            [{"kind": "agent-action", "entry": "nova.project.test.run", "when": "测试"}],
+        )
+        framework_root = self._write_cached_framework({"source": "registry", "version": "0.1.4"})
+        self._write_mcp_gateway_package(
+            framework_root.parent / "com.solotopia.nova.framework.mcp@olderhash",
+            "0.1.3", ["nova.project.older.run"],
+        )
+        expected = self._write_mcp_gateway_package(
+            framework_root.parent / "com.solotopia.nova.framework.mcp@currenthash",
+            "0.1.4", ["nova.project.test.run"],
+        )
+        tool = load_tool()
+        self.assertEqual(expected.resolve(), tool._find_mcp_gateway(framework_root))
+        self.assertEqual([], tool.validate_agents_root(framework_root / "Agents"))
+
+    def test_cached_framework_rejects_missing_locked_mcp_without_outer_fallback(self):
+        """锁定 MCP 缺失时，即使外层网关与旧版缓存存在也必须明确失败。"""
+        self._write_action_sources(["nova.project.test.run"], ["nova.project.test.run"])
+        framework_root = self._write_cached_framework({"source": "registry", "version": "0.1.4"})
+        self._write_mcp_gateway_package(
+            framework_root.parent / "com.solotopia.nova.framework.mcp@oldhash",
+            "0.1.3", ["nova.project.test.run"],
+        )
+        with self.assertRaisesRegex(RuntimeError, "未找到 lock 指定的 MCP"):
+            load_tool()._find_mcp_gateway(framework_root)
+
+    def test_cached_framework_rejects_missing_mcp_lock(self):
+        """没有 MCP lock 时不凭唯一缓存或外层源码猜测已解析来源。"""
+        framework_root = self._write_cached_framework(None)
+        self._write_mcp_gateway_package(
+            framework_root.parent / "com.solotopia.nova.framework.mcp@currenthash",
+            "0.1.4", ["nova.project.test.run"],
+        )
+        with self.assertRaisesRegex(RuntimeError, "缺少 MCP 解析条目"):
+            load_tool()._find_mcp_gateway(framework_root)
+
+    def test_cached_framework_rejects_duplicate_matching_mcp_packages(self):
+        """多个同版缓存均匹配 lock 时拒绝按目录排序任取一份。"""
+        framework_root = self._write_cached_framework({"source": "registry", "version": "0.1.4"})
+        for suffix in ("firsthash", "secondhash"):
+            self._write_mcp_gateway_package(
+                framework_root.parent / f"com.solotopia.nova.framework.mcp@{suffix}",
+                "0.1.4", ["nova.project.test.run"],
+            )
+        with self.assertRaisesRegex(RuntimeError, "多个匹配 lock"):
+            load_tool()._find_mcp_gateway(framework_root)
+
+    def test_cached_framework_resolves_git_mcp_by_locked_hash(self):
+        """Git MCP 只选 lock hash 对应缓存，包内相同版本号不能替代来源身份。"""
+        framework_root = self._write_cached_framework(
+            {"source": "git", "version": "https://example.test/mcp.git", "hash": "abc123456789"}
+        )
+        self._write_mcp_gateway_package(
+            framework_root.parent / "com.solotopia.nova.framework.mcp@def123",
+            "0.1.4", ["nova.project.wrong.run"],
+        )
+        expected = self._write_mcp_gateway_package(
+            framework_root.parent / "com.solotopia.nova.framework.mcp@abc123",
+            "0.1.4", ["nova.project.test.run"],
+        )
+        self.assertEqual(expected.resolve(), load_tool()._find_mcp_gateway(framework_root))
+
+    def test_cached_framework_resolves_local_mcp_from_lock(self):
+        """缓存 Framework 可使用同工程 lock 显式声明的本地 MCP 路径。"""
+        framework_root = self._write_cached_framework({"source": "local", "version": "file:../LocalMcp"})
+        expected = self._write_mcp_gateway_package(
+            self.project_root / "LocalMcp", "0.1.4", ["nova.project.test.run"]
+        )
+        self.assertEqual(expected.resolve(), load_tool()._find_mcp_gateway(framework_root))
+
+    def test_cached_framework_resolves_embedded_mcp_and_rejects_source_drift(self):
+        """嵌入 MCP 须与 lock 一致，残留嵌入目录不能被 registry 缓存掩盖。"""
+        framework_root = self._write_cached_framework({"source": "embedded", "version": "0.1.4"})
+        expected = self._write_mcp_gateway_package(
+            self.project_root / "Packages/com.solotopia.nova.framework.mcp",
+            "0.1.4", ["nova.project.test.run"],
+        )
+        tool = load_tool()
+        self.assertEqual(expected.resolve(), tool._find_mcp_gateway(framework_root))
+        lock_path = self.project_root / "Packages/packages-lock.json"
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        lock["dependencies"]["com.solotopia.nova.framework.mcp"]["source"] = "registry"
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+        with self.assertRaisesRegex(RuntimeError, "嵌入目录与 lock source 不一致"):
+            tool._find_mcp_gateway(framework_root)
+
+    def test_development_gateway_lookup_stops_at_nearest_unity_project(self):
+        """嵌套开发工程缺 MCP 时，不允许越过自身 manifest 使用外层网关。"""
+        self._write_action_sources(["nova.project.test.run"], ["nova.project.test.run"])
+        packages_root = self.project_root / "Packages"
+        packages_root.mkdir(parents=True)
+        (packages_root / "manifest.json").write_text('{"dependencies":{}}', encoding="utf-8")
+        framework_root = self.project_root / "Assets/Framework"
+        framework_root.mkdir(parents=True)
+        with self.assertRaisesRegex(RuntimeError, "未找到"):
+            load_tool()._find_mcp_gateway(framework_root)
+
+    def test_cached_framework_resolves_embedded_mcp_with_file_version(self):
+        """Unity embedded lock 的 file: 目录描述不与包内语义版本号比较。"""
+        framework_root = self._write_cached_framework(
+            {"source": "embedded", "version": "file:com.solotopia.nova.framework.mcp"}
+        )
+        expected = self._write_mcp_gateway_package(
+            self.project_root / "Packages/com.solotopia.nova.framework.mcp",
+            "0.1.4", ["nova.project.test.run"],
+        )
+        self.assertEqual(expected.resolve(), load_tool()._find_mcp_gateway(framework_root))
+
+    def test_development_gateway_lookup_rejects_ambiguous_sources(self):
+        """开发仓同时提供两个不同网关来源时，不能依赖查找顺序选包。"""
+        self._write_action_sources(["nova.project.test.run"], ["nova.project.test.run"])
+        self._write_mcp_gateway_package(
+            self.root / "Packages/com.solotopia.nova.framework.mcp",
+            "0.1.4", ["nova.project.other.run"],
+        )
+        with self.assertRaisesRegex(RuntimeError, "多个 MCP 网关来源"):
+            load_tool()._find_mcp_gateway(self.agents_root.parent)
 
     def test_validate_accepts_all_registered_agent_actions_exposed(self):
         """全部已注册 Project Action 均进入显式白名单时应通过。"""
@@ -630,6 +797,8 @@ class NovaSkillsToolTests(unittest.TestCase):
                 "nova-project-export-tables",
                 "nova-project-integrate-table",
                 "nova-project-configure-runtime",
+                "nova-project-edit-settings",
+                "nova-project-configure-pipeline",
                 "nova-project-diagnose-startup",
                 "nova-project-ui-create-view",
                 "nova-project-update-ui-view",
@@ -696,6 +865,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         input_requirements = {
             item["name"]: item["required"] for item in contract["inputs"]
         }
+        inputs_by_name = {item["name"]: item for item in contract["inputs"]}
         adapter_entries = {item["entry"] for item in contract["actionAdapters"]}
         skill_content = (
             agents_root
@@ -722,14 +892,33 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("testEndpointAccountAndSuccessProbe", input_names)
         self.assertNotIn("testEndpointAndSuccessProbe", input_names)
         self.assertTrue(input_requirements["authenticationContract"])
-        self.assertTrue(input_requirements["testEndpointAccountAndSuccessProbe"])
+        # 普通既有单URL取消维护需要真实延迟探针；账号和表源仅按协议/路由分支要求。
+        self.assertFalse(input_requirements["testEndpointAccountAndSuccessProbe"])
+        self.assertFalse(input_requirements["hostKeyAndNetCmdSource"])
+        self.assertFalse(input_requirements["httpCancellationOwnerManagerSupportAndResponseOwnership"])
+        self.assertIn("新协议接入", inputs_by_name["testEndpointAccountAndSuccessProbe"]["description"])
+        self.assertIn("账号仅认证要求时必需", inputs_by_name["testEndpointAccountAndSuccessProbe"]["description"])
+        self.assertIn("既有单URL取消维护", inputs_by_name["hostKeyAndNetCmdSource"]["description"])
+        self.assertIn("受控延迟探针", inputs_by_name["httpCancellationOwnerManagerSupportAndResponseOwnership"]["description"])
         self.assertIn("nova.project.network.export", adapter_entries)
         self.assertTrue(any("Nova.Network.LoadAsync" in entry for entry in adapter_entries))
         self.assertIn("nova.project.network.export", skill_content)
         self.assertNotIn("export.network.hostkey.data", adapter_entries)
         self.assertIn("不猜测协议", skill_content)
         self.assertIn("4xx / 5xx", skill_content)
-        self.assertIn("内部 `NetService`", skill_content)
+        self.assertIn("不得直接调用面向 Sibling Kit 的隐藏 `NetService` / `NetBuilder`", skill_content)
+        http_api = next(
+            adapter for adapter in contract["actionAdapters"]
+            if adapter["kind"] == "csharp-api" and adapter["entry"].startswith("Nova.Network.LoadAsync")
+        )
+        for boundary in ("ICancellableHttpManager", "ct-last", "Abort返回失败响应", "finally唯一回池", "不强制新表导出或新账号"):
+            self.assertIn(boundary, http_api["when"])
+        export_api = next(adapter for adapter in contract["actionAdapters"] if adapter["entry"] == "nova.project.network.export")
+        self.assertIn("既有单URL取消维护", export_api["when"])
+        self.assertIn("跳过", export_api["when"])
+        self.assertIn("不能用Mock或仅取消包装等待证明物理Abort", skill_content)
+        self.assertIn("不要求新增表加载或登录账号", skill_content)
+        self.assertIn("AttachExternalCancellation", " ".join(contract["writeScope"]["deny"]))
         self.assertIn("无测试端点、账号或成功探针时返回 `blocked`", skill_content)
         self.assertIn("输入已确认且已执行允许步骤", skill_content)
         self.assertIn(f"当前 Catalog 共 {len(catalog['skills'])} 项", agents_index)
@@ -742,21 +931,17 @@ class NovaSkillsToolTests(unittest.TestCase):
         router_network_ambiguity_line = next(
             line
             for line in router_content.splitlines()
-            if line.startswith("| 登录 / 领奖 / 业务 API |")
+            if line.startswith("| 登录 / 领奖 / 业务 API / HTTP取消 |")
         )
         router_network_route_line = next(
             line
             for line in router_content.splitlines()
             if "nova-project-integrate-network-api" in line
         )
-        self.assertIn(
-            "HostKey / NetCmd 行、协议、认证、请求/响应、重放语义、业务调用入口、测试端点、测试账号和成功探针",
-            router_network_ambiguity_line,
-        )
-        self.assertIn(
-            "已确认协议、认证、路由、请求/响应、重放语义、业务调用入口、测试端点、测试账号和成功探针",
-            router_network_route_line,
-        )
+        for boundary in ("新协议", "HostKey/NetCmd", "认证与账号", "既有单URL", "Manager", "Owner/token", "受控探针", "不无条件要求表导出或账号"):
+            self.assertIn(boundary, router_network_ambiguity_line)
+        for boundary in ("新协议或路由/认证变化", "HostKey/NetCmd", "重放语义", "既有单URL维护", "生命周期", "不强制导表", "账号"):
+            self.assertIn(boundary, router_network_route_line)
         confirmation_content = json.dumps(contract["confirmation"], ensure_ascii=False)
         evidence_content = json.dumps(contract["evidence"], ensure_ascii=False)
         for required_confirmation_input in ("authentication", "测试账号", "成功探针"):
@@ -779,12 +964,36 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         for skill_id in (
             "nova-project-integrate-event",
-            "nova-project-integrate-persistence",
             "nova-project-integrate-content-scene",
         ):
             self.assertEqual(["workspace-write"], entries[skill_id]["effects"])
             self.assertEqual("play", entries[skill_id]["minimumEvidence"])
             self.assertEqual([], contract(skill_id)["requires"])
+
+        persistence = contract("nova-project-integrate-persistence")
+        self.assertEqual(
+            ["read", "workspace-write", "unity-write", "credential"],
+            entries["nova-project-integrate-persistence"]["effects"],
+        )
+        self.assertEqual("static", entries["nova-project-integrate-persistence"]["minimumEvidence"])
+        self.assertEqual([], persistence["requires"])
+        maintenance_entries = {
+            adapter["entry"] for adapter in persistence["actionAdapters"]
+            if adapter["kind"] == "agent-action"
+        }
+        self.assertEqual({
+            "nova.project.persistence.inspect-data",
+            "nova.project.persistence.migrate-encryption",
+            "nova.project.persistence.recover-maintenance",
+        }, maintenance_entries)
+        metadata_input = next(
+            item for item in persistence["inputs"]
+            if item["name"] == "metadataInspectionTargetGuidGlobalObjectIdExactStorageAndCurrentEditorDataScope"
+        )
+        self.assertFalse(metadata_input["required"])
+        metadata_reference = (agents_root / "Skills" / "nova-project-integrate-persistence" / "references" / "maintenance.md").read_text(encoding="utf-8")
+        for boundary in ("targetGuid/globalObjectId", "storage=PlayerPrefs", "SQLite", "dataScope=current-editor-global-data"):
+            self.assertIn(boundary, metadata_reference)
 
         for skill_id in (
             "nova-project-diagnose-build",
@@ -895,7 +1104,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("不得默认使用 `export.excel.all`", skill_content)
         self.assertIn("YooAssetEditorConfigsMask", skill_content)
         self.assertIn("ResolveYooAsset", skill_content)
-        self.assertIn("不得调用 `YooAssetInjector.LoadBundleCollector`", skill_content)
+        self.assertIn("nova.project.config.inspect-bundle-collector", skill_content)
         self.assertTrue(
             {
                 "active-config-master",
@@ -921,10 +1130,8 @@ class NovaSkillsToolTests(unittest.TestCase):
             "真实 AudioClip、Collector、地址、Sound 表、声音组、加载入口、业务触发、停止生命周期和实际播放成功探针",
             router_sound_ambiguity_line,
         )
-        self.assertIn(
-            "已确认声音表、真实 AudioClip、Collector、地址、声音组、加载入口、业务触发、停止生命周期和实际播放探针",
-            router_sound_route_line,
-        )
+        for boundary in ("声音表", "真实 AudioClip", "Collector", "地址", "声音组", "播放/停止", "加载 Owner", "触发代码", "实际播放与停止", "nova-project-integrate-sound"):
+            self.assertIn(boundary, router_sound_route_line)
         self.assertIn("$nova-project-integrate-sound", openai_yaml)
         for relative_path in (
             "SKILL.md",
@@ -1138,7 +1345,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertTrue(child_allowed_scope <= workflow_allowed_scope)
         self.assertTrue(set(table["locks"]) <= set(workflow["locks"]))
         self.assertTrue(
-            {"workspace-edit", "unity-editor-api", "agent-action", "csharp-api", "unity-editor-automation", "unity-menu"}
+            {"workspace-edit", "unity-editor-api", "agent-action", "csharp-api", "unity-editor-automation"}
             <= workflow_adapter_kinds
         )
         self.assertIn("ProjectId", workflow_confirmation)
@@ -1364,7 +1571,10 @@ class NovaSkillsToolTests(unittest.TestCase):
         content = skill_path.read_text(encoding="utf-8")
 
         self.assertIn("不手工编辑生成的 C# / JSON", content)
-        self.assertIn("仅通过第 4 步选定 UI 导出 Action 更新本次变更必需的生成物", content)
+        self.assertIn("`nova.project.ui.export`", content)
+        self.assertIn("recovery_token", content)
+        self.assertIn("没有受控 Action 时保持 `partial`", content)
+        self.assertNotIn("当前 Registry 没有 `nova.project.ui.export`", content)
 
     def test_quick_start_documents_package_snapshot_and_project_local_boundary(self):
         """快速入口必须区分开发仓真源、安装态快照和项目本地投影。"""
@@ -3048,6 +3258,790 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             )
 
         self.assertEqual(1, exit_code)
+
+
+class NovaTaskCoverageTests(unittest.TestCase):
+    """验证任务只声明当次验收要求，来源指纹与入口发现不形成运行通过结论。"""
+
+    def setUp(self):
+        """复用隔离包夹具，建立准确业务源、可复用契约与一个受控任务。"""
+        self.fixture = NovaSkillsToolTests()
+        self.fixture.setUp()
+        self.addCleanup(self.fixture.tearDown)
+        self.tool = load_tool()
+        self.project = self.fixture.project_root
+        self.project.mkdir()
+        self.agents = self.fixture.agents_root
+        self.skill = "nova-project-ui-create-view"
+        self.contract_path = self.agents / "Skills" / self.skill / "references/contract.json"
+        self.contract = json.loads(self.contract_path.read_text())
+        self.contract["actionAdapters"] = [
+            {"kind": "agent-action", "entry": "nova.project.ui.export", "when": "冻结单一导出范围"},
+            {"kind": "csharp-api", "entry": "Example.Export", "when": "业务源码接入"},
+            {"kind": "workspace-edit", "entry": "Business.cs", "when": "业务源码接入"},
+        ]
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.source = self.project / "Business.cs"
+        self.source.write_text("class Business { void Export() {} }")
+        self.function = "Business.cs#Business.Export()"
+        self.reference = "Assets/Framework/Agents/Skills/" + self.skill + "/SKILL.md"
+        self.task = {
+            "id": "ui.export", "goal": "导出已有页面数据", "skill": self.skill,
+            "reference": self.reference, "functions": [self.function],
+            "execution": {"mode": "controlled", "adapters": [
+                {"kind": "agent-action", "entry": "nova.project.ui.export", "relation": "direct"},
+            ], "conditions": ["冻结已有源与输出范围"], "gaps": []},
+            "verification": {"additionalRequired": []},
+        }
+        self.coverage = {"features": [{"id": "ui", "sources": ["Business.cs"],
+                                      "taskScope": "consumer", "taskRefs": [self.task["id"]]}],
+                         "userTasks": [self.task]}
+        self.entries = {"actions": {"nova.project.ui.export"}, "pipify": set(), "cli": set()}
+
+    def report(self, states=None):
+        """传入真实可调用集合的测试替身；不执行 Unity、目标函数或任何写入。"""
+        return self.tool.execution_coverage_report(
+            self.project, self.agents, self.coverage,
+            function_states={self.function: "current"} if states is None else states,
+            available_entries=self.entries,
+        )
+
+    def test_current_source_and_direct_adapter_defer_runtime_verification(self):
+        """来源指纹匹配且入口存在仍只派生当次要求，不伪造语义或运行通过。"""
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        row = result["items"][0]
+        self.assertEqual("current", row["sourceStatus"])
+        self.assertEqual("not-performed", row["semanticReview"])
+        self.assertNotIn("sourceReviewStatus", row)
+        self.assertEqual("declared-controlled", row["executionStatus"])
+        self.assertEqual("verify-at-execution", row["validation"]["status"])
+        self.assertEqual(["compile"], row["validation"]["required"])
+        self.assertEqual("ephemeral", row["validation"]["retention"])
+        self.assertEqual({"status", "required", "retention", "boundary"}, set(row["validation"]))
+        self.assertEqual({"userTasks", "executionGaps", "pendingTaskFamilies", "taskScopes"}, set(result["summary"]))
+        self.assertEqual([], result["warnings"])
+
+    def configure_export_profile(self):
+        """在独立 Skill 真源授权窄导出任务；完整业务契约仍保留 Play 要求。"""
+        self.contract["minimumEvidence"] = "play"
+        self.profile = {
+            "id": "export-code-data", "description": "仅导出已有代码与数据，不接入运行业务",
+            "taskIds": [self.task["id"]], "requiredInputs": [self.contract["inputs"][0]["name"]],
+            "actionAdapters": [{"kind": "agent-action", "entry": "nova.project.ui.export"}],
+            "minimumEvidence": "compile", "additionalEvidence": ["artifact"],
+            "effects": list(self.contract["effects"]),
+        }
+        self.contract["taskProfiles"] = [self.profile]
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.task["profile"] = self.profile["id"]
+
+    def configure_workflow_profile(self, selected=False):
+        """把隔离父任务改为显式 Workflow，保留完整原依赖而单独选择子 Operation。"""
+        self.configure_export_profile()
+        self.child = "nova-project-router"
+        self.child_path = self.agents / "Skills" / self.child / "references/contract.json"
+        self.child_contract = json.loads(self.child_path.read_text())
+        self.child_contract.update(
+            kind="operation", minimumEvidence="play",
+            effects=["unity-write"], inputs=[{"name": "childTarget", "required": True}],
+            actionAdapters=[{"kind": "cli", "entry": "child-cli", "when": "隔离子任务"}],
+            locks=["child-resource"],
+            confirmation={"requiredFor": ["child target"], "rule": "保留精确子目标确认"},
+        )
+        self.child_path.write_text(json.dumps(self.child_contract))
+        catalog_path = self.agents / "catalog.json"
+        catalog = json.loads(catalog_path.read_text())
+        for entry in catalog["skills"]:
+            if entry["id"] == self.child:
+                entry.update(kind="operation", minimumEvidence="play", effects=["unity-write"])
+            elif entry["id"] == self.skill:
+                entry.update(kind="workflow", minimumEvidence="play")
+        catalog_path.write_text(json.dumps(catalog))
+        self.contract.update(kind="workflow", requires=[self.child], locks=["parent-resource"],
+                             writeScope={"allow": ["parent exact target"], "deny": ["other target"]},
+                             confirmation={"requiredFor": ["parent target"], "rule": "保留精确父目标确认"})
+        self.profile.update(minimumEvidence="static", effects=["workspace-write"],
+                            requires=[self.child] if selected else [])
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.entries["cli"].add("child-cli")
+
+    def test_workflow_profile_empty_dag_preserves_full_contract_and_requirements(self):
+        """空子 DAG 只派生窄目标要求，父与未选依赖安全契约仍完整保留。"""
+        self.configure_workflow_profile()
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        row = result["items"][0]
+        self.assertEqual("verify-at-execution", row["validation"]["status"])
+        self.assertEqual(["artifact", "static"], row["validation"]["required"])
+        self.assertEqual([], row["selectedRequiredSkills"])
+        self.assertEqual(["workspace-write"], row["effectiveEffects"])
+        self.assertEqual(self.contract["locks"], row["contract"]["locks"])
+        self.assertEqual(self.contract["confirmation"], row["contract"]["confirmation"])
+        self.assertEqual(self.contract["writeScope"], row["contract"]["writeScope"])
+        self.assertEqual(self.child_contract["locks"], row["reusedContracts"][self.child]["locks"])
+        self.assertEqual("play", row["contract"]["minimumEvidence"])
+        self.assertIn(self.child, row["reusedSkills"])
+
+    def test_workflow_profile_selected_child_inherits_inputs_effects_and_evidence(self):
+        """选中子节点不能被父画像省略输入、副作用、独立 Play 要求或安全契约。"""
+        self.configure_workflow_profile(selected=True)
+        self.task["execution"]["adapters"].append({"kind": "cli", "entry": "child-cli", "relation": "prerequisite"})
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        row = result["items"][0]
+        self.assertEqual([self.child], row["selectedRequiredSkills"])
+        self.assertEqual(["artifact", "play", "static"], row["validation"]["required"])
+        self.assertEqual("verify-at-execution", row["validation"]["status"])
+        self.assertEqual(["workspace-write", "unity-write"], row["effectiveEffects"])
+        self.assertIn({"name": "childTarget", "required": True}, row["effectiveInputs"])
+        self.assertEqual(self.child_contract["confirmation"], row["reusedContracts"][self.child]["confirmation"])
+
+    def test_workflow_profile_rejects_undeclared_unselected_and_missing_direct_entries(self):
+        """分支不能借未选节点、父白名单外入口或缺少权威 direct 来扩展执行。"""
+        self.configure_workflow_profile()
+        for relation in ("direct", "prerequisite", "verify"):
+            with self.subTest(relation=relation):
+                self.task["execution"]["adapters"].append({"kind": "cli", "entry": "child-cli", "relation": relation})
+                self.assertFalse(self.report()["valid"])
+                self.task["execution"]["adapters"].pop()
+        self.task["execution"]["adapters"].append({"kind": "csharp-api", "entry": "Example.Export", "relation": "verify"})
+        self.assertFalse(self.report()["valid"])
+        self.task["execution"]["adapters"].pop()
+        self.task["execution"]["adapters"][0]["relation"] = "verify"
+        self.assertFalse(self.report()["valid"])
+
+    def test_workflow_profile_dag_is_explicit_subset_and_cannot_hide_risk(self):
+        """Workflow 必须显式选择真实无环子集，父与选中子节点高风险门不能省略。"""
+        self.configure_workflow_profile()
+        original = json.loads(json.dumps(self.contract))
+        for selection in ([self.child, self.child], [self.skill], ["nova-project-unknown"], "all", [None]):
+            with self.subTest(selection=selection):
+                self.contract["taskProfiles"][0]["requires"] = selection
+                self.contract_path.write_text(json.dumps(self.contract))
+                self.assertFalse(self.report()["valid"])
+        self.contract = original
+        self.profile = self.contract["taskProfiles"][0]
+        self.profile["requires"] = [self.child]
+        self.contract_path.write_text(json.dumps(self.contract))
+        for effect in ("external-write", "credential", "build"):
+            with self.subTest(effect=effect):
+                candidate = json.loads(json.dumps(self.child_contract))
+                candidate["effects"].append(effect)
+                self.child_path.write_text(json.dumps(candidate))
+                self.assertFalse(self.report()["valid"])
+        self.child_contract["requires"] = [self.skill]
+        self.child_path.write_text(json.dumps(self.child_contract))
+        self.assertFalse(self.report()["valid"])
+
+    def test_workflow_profile_preserves_selected_build_and_external_evidence(self):
+        """父与选中子节点声明风险时，同时保留独立构建及外部产物验收。"""
+        self.configure_workflow_profile(selected=True)
+        self.contract["effects"].extend(["external-write", "credential", "build"])
+        self.profile["effects"].extend(["external-write", "credential", "build"])
+        self.profile["minimumEvidence"] = "player-build"
+        self.profile["additionalEvidence"].append("external")
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.child_contract.update(effects=["build", "external-write", "credential"], minimumEvidence="bundle-build")
+        self.child_path.write_text(json.dumps(self.child_contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(["artifact", "bundle-build", "external", "player-build"], result["items"][0]["validation"]["required"])
+
+    def test_workflow_profile_child_only_risk_is_inherited_without_copying_parent_catalog(self):
+        """选中子节点的风险可显式声明于画像，父 Catalog 无需复制；未选风险不能冒认。"""
+        self.configure_workflow_profile(selected=True)
+        self.child_contract["effects"].extend(["credential", "external-write"])
+        self.child_path.write_text(json.dumps(self.child_contract))
+        self.profile["effects"].extend(["credential", "external-write"])
+        self.profile["additionalEvidence"].append("external")
+        self.contract_path.write_text(json.dumps(self.contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        row = result["items"][0]
+        self.assertIn("credential", row["effectiveEffects"])
+        self.assertIn("external", row["validation"]["required"])
+        self.assertNotIn("credential", row["contract"]["effects"])
+        self.profile["requires"] = []
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.assertFalse(self.report()["valid"])
+
+    def test_workflow_profile_parent_alias_cannot_bypass_child_contract(self):
+        """父列表重复引用子入口也必须选择子 DAG，不能省略子输入与验收门。"""
+        self.configure_workflow_profile()
+        self.contract["actionAdapters"].extend(self.child_contract["actionAdapters"])
+        self.profile["actionAdapters"] = [{"kind": "cli", "entry": "child-cli"}]
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.task["execution"]["adapters"] = [{"kind": "cli", "entry": "child-cli", "relation": "direct"}]
+        self.assertFalse(self.report()["valid"])
+        self.profile["requires"] = [self.child]
+        self.contract_path.write_text(json.dumps(self.contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        row = result["items"][0]
+        self.assertIn("play", row["validation"]["required"])
+        self.assertIn({"name": "childTarget", "required": True}, row["effectiveInputs"])
+
+    def test_workflow_profile_schema_is_checked_without_task_references(self):
+        """未被任务引用的父风险非法画像也必须全局阻断，不能因不存结果而跳过契约门。"""
+        self.configure_workflow_profile()
+        self.coverage["features"] = []
+        self.coverage["userTasks"] = []
+        self.contract["effects"].append("credential")
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.assertFalse(self.report()["valid"])
+
+    def test_workflow_profile_unselected_risk_does_not_execute_or_lower_full_workflow(self):
+        """未选凭据节点保留复用契约，空 DAG 不执行它；省略画像仍保留完整验收门。"""
+        self.configure_workflow_profile()
+        self.child_contract["effects"].extend(["credential", "external-write"])
+        self.child_path.write_text(json.dumps(self.child_contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        row = result["items"][0]
+        self.assertEqual(["workspace-write"], row["effectiveEffects"])
+        self.assertEqual("verify-at-execution", row["validation"]["status"])
+        self.assertIn("credential", row["reusedContracts"][self.child]["effects"])
+        del self.task["profile"]
+        row = self.report()["items"][0]
+        self.assertIn("external", row["validation"]["required"])
+        self.assertIn("play", row["validation"]["required"])
+        self.assertIn("credential", row["effectiveEffects"])
+
+    def test_profile_requires_compile_and_artifact_without_lowering_default(self):
+        """窄分支保留编译及产物要求；省略分支仍按完整 Play 门在执行时验收。"""
+        self.configure_export_profile()
+        row = self.report()["items"][0]
+        self.assertEqual(["artifact", "compile"], row["validation"]["required"])
+        self.assertEqual("verify-at-execution", row["validation"]["status"])
+        self.assertEqual("play", self.contract["minimumEvidence"])
+        del self.task["profile"]
+        self.assertEqual(["play"], self.report()["items"][0]["validation"]["required"])
+
+    def test_profile_rejects_unknown_id_other_task_and_extra_direct_entry(self):
+        """任务只能引用已授权分支，不能借名字或附加执行入口自行下调证据。"""
+        self.configure_export_profile()
+        self.task["profile"] = "unknown"
+        self.assertFalse(self.report()["valid"])
+        self.task["profile"] = self.profile["id"]
+        self.profile["taskIds"] = ["other.export"]
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.assertFalse(self.report()["valid"])
+        self.profile["taskIds"] = [self.task["id"]]
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.task["execution"]["adapters"].append({"kind": "workspace-edit", "entry": "Business.cs", "relation": "direct"})
+        self.assertFalse(self.report()["valid"])
+
+    def test_profile_rejects_historical_results_instead_of_reusing_other_branch(self):
+        """同一任务旧分支的报告也不得保存在 coverage，更不能用于本轮成功结论。"""
+        self.configure_export_profile()
+        self.task["verification"]["evidence"] = [{"kind": "compile", "status": "passed", "context": {"profileId": "old-branch"}}]
+        result = self.report()
+        self.assertFalse(result["valid"])
+        self.assertEqual("invalid", result["items"][0]["validation"]["status"])
+        self.assertEqual({"status", "required", "retention", "boundary"}, set(result["items"][0]["validation"]))
+
+    def test_profile_schema_rejects_safety_overrides_and_dependency_omission(self):
+        """权威分支不能覆盖安全约束、引用未知输入、伪造Adapter或忽略Workflow依赖。"""
+        self.configure_export_profile()
+        original = json.loads(json.dumps(self.contract))
+        for field, value in [("locks", []), ("requiredInputs", ["unknown"]),
+                             ("actionAdapters", [{"kind": "csharp-api", "entry": "Example.Export"}]),
+                             ("minimumEvidence", "artifact"), ("effects", ["external-write"]),
+                             ("additionalEvidence", ["unknown"]), ("taskIds", ["ui.export", "ui.export"])]:
+            with self.subTest(field=field):
+                candidate = json.loads(json.dumps(original))
+                candidate["taskProfiles"][0][field] = value
+                self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+        for field, value in [("kind", "workflow"), ("requires", ["nova-project-router"])]:
+            candidate = json.loads(json.dumps(original))
+            candidate[field] = value
+            self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+        # 原契约即使登记空白文本，任务分支也必须与 Unity 的严格文本门一致。
+        candidate = json.loads(json.dumps(original))
+        candidate["actionAdapters"].append({"kind": "pipify", "entry": " ", "when": "旧登记"})
+        candidate["taskProfiles"][0]["actionAdapters"] = [{"kind": "pipify", "entry": " "}]
+        self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+
+    def test_profile_preserves_external_credential_build_and_independent_external_evidence(self):
+        """即使由Skill定义窄分支，也不能省略高风险副作用及对应外部或构建验收。"""
+        self.configure_export_profile()
+        for effect in ["external-write", "credential", "build"]:
+            candidate = json.loads(json.dumps(self.contract))
+            candidate["effects"].append(effect)
+            self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+        candidate = json.loads(json.dumps(self.contract))
+        candidate["effects"].append("external-write")
+        candidate["taskProfiles"][0]["effects"].append("external-write")
+        self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+        candidate["taskProfiles"][0]["additionalEvidence"].append("external")
+        self.assertEqual([], self.tool._validate_contract_shape(self.skill, candidate))
+
+    def test_profile_keeps_additional_device_requirement(self):
+        """窄分支不移除任务额外要求的设备证据，静态查询仍不声称实际通过。"""
+        self.configure_export_profile()
+        self.task["verification"]["additionalRequired"] = ["device"]
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(["artifact", "compile", "device"], result["items"][0]["validation"]["required"])
+        self.assertEqual("verify-at-execution", result["items"][0]["validation"]["status"])
+
+    def test_missing_task_declarations_are_rejected(self):
+        """任务声明为必填项；未发布结构不保留旧表兼容分支。"""
+        self.coverage = {"features": [{"id": "legacy"}]}
+        result = self.report()
+        self.assertFalse(result["valid"])
+        self.assertIn("coverage.userTasks 缺少必需的任务声明数组", result["errors"])
+
+    def test_prerequisite_and_csharp_api_cannot_be_controlled_execution(self):
+        """前置 Action 与裸 C# API 都不能作为稳定受控任务的执行证明。"""
+        self.task["execution"]["adapters"][0]["relation"] = "prerequisite"
+        self.assertFalse(self.report()["valid"])
+        self.task["execution"]["adapters"] = [{"kind": "csharp-api", "entry": "Example.Export", "relation": "direct"}]
+        self.assertFalse(self.report()["valid"])
+
+    def test_router_and_unrelated_family_do_not_cover_business_operation(self):
+        """泛 Router 查阅不能映射为业务操作，跨族空关联也会阻断。"""
+        self.coverage["features"][0]["sources"] = ["Unrelated.cs"]
+        self.assertFalse(self.report()["valid"])
+        self.coverage["features"][0]["sources"] = ["Business.cs"]
+        path = self.agents / "Skills/nova-project-router/references/contract.json"
+        router = json.loads(path.read_text())
+        router["actionAdapters"] = self.contract["actionAdapters"]
+        path.write_text(json.dumps(router))
+        self.task["skill"] = "nova-project-router"
+        self.assertFalse(self.report()["valid"])
+
+    def test_static_report_never_reads_history_or_claims_live_success(self):
+        """静态查询不读取任何运行证据；真实宿主仍须由当次连接确认。"""
+        with mock.patch.object(self.tool, "_task_file_state", side_effect=AssertionError("不应读取运行证据")):
+            result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual("verify-at-execution", result["items"][0]["validation"]["status"])
+        self.assertEqual("unknown; must query the connected host and live describe", result["items"][0]["liveAvailability"])
+
+    def test_historical_result_is_rejected_without_reading_its_paths(self):
+        """历史字段即使引用缺失或项目外文件也只报结构错误，不能触发历史文件扫描。"""
+        self.task["verification"]["evidence"] = [{"record": {"path": "../outside.md", "sha256": "a" * 64}}]
+        with mock.patch.object(self.tool, "_task_file_state", side_effect=AssertionError("不应读取旧文件")):
+            result = self.report()
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("verification" in error for error in result["errors"]))
+
+    def test_player_does_not_replace_play_device_or_external_requirements(self):
+        """各证据轴独立保留；Player 要求不替代交互、设备效果或后台结果。"""
+        self.task["verification"]["additionalRequired"] = ["player-build", "play", "device", "external"]
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(["compile", "device", "external", "play", "player-build"], result["items"][0]["validation"]["required"])
+        self.assertEqual("verify-at-execution", result["items"][0]["validation"]["status"])
+
+    def test_verification_rejects_unknown_kinds_and_extra_result_fields(self):
+        """结构校验保留已知证据种类与单一声明面，不能混入结果状态等第二套契约。"""
+        for verification in ({}, [], {"additionalRequired": "device"},
+                             {"additionalRequired": ["unknown"]},
+                             {"additionalRequired": [], "status": "passed"}):
+            with self.subTest(verification=verification):
+                self.task["verification"] = verification
+                self.assertFalse(self.report()["valid"])
+
+    def test_task_reference_rejects_path_traversal_and_unavailable_source(self):
+        """删除历史结果读取不放宽实际任务引用的路径边界和文件可达性。"""
+        for reference in ("../outside.md", "/outside.md", "missing.md"):
+            with self.subTest(reference=reference):
+                self.task["reference"] = reference
+                self.assertFalse(self.report()["valid"])
+
+    def test_verification_rejects_nonempty_or_malformed_legacy_fields(self):
+        """非空历史结果、冻结目标和错误类型均阻断，避免回流至 Git 或发布包。"""
+        for field, values in (("evidence", ([{"status": "passed"}], {}, "", None)),
+                              ("expectedContext", ({"platform": "Android"}, [], "", None))):
+            for value in values:
+                with self.subTest(field=field, value=value):
+                    self.task["verification"] = {"additionalRequired": [], field: value}
+                    result = self.report()
+                    self.assertFalse(result["valid"])
+                    self.assertTrue(any("verification" in error for error in result["errors"]))
+
+    def test_verification_rejects_retired_fields_even_when_empty(self):
+        """未发布协议无需旧空字段兼容；历史容器不能重返当前任务导航。"""
+        self.task["verification"].update(evidence=[], expectedContext={})
+        result = self.report()
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("verification" in error for error in result["errors"]))
+
+    def test_stale_source_remains_separate_from_execution_validation(self):
+        """陈旧来源单独提示；指纹状态与人工语义审查、当次运行验收分别报告。"""
+        row = self.report({self.function: "stale"})["items"][0]
+        self.assertEqual("stale", row["sourceStatus"])
+        self.assertEqual("not-performed", row["semanticReview"])
+        self.assertEqual("verify-at-execution", row["validation"]["status"])
+
+    def test_missing_or_unknown_source_never_becomes_semantically_reviewed(self):
+        """不可达与未知来源不能被声明为已审，也不自动降低任务最低证据。"""
+        for state in ("unavailable", "unknown", "not_applicable"):
+            with self.subTest(state=state):
+                row = self.report({self.function: state})["items"][0]
+                self.assertEqual(state, row["sourceStatus"])
+                self.assertEqual("not-performed", row["semanticReview"])
+                self.assertEqual(["compile"], row["validation"]["required"])
+
+    def test_business_integration_and_explicit_gap_are_separate(self):
+        """业务代码接入方式与需要人工或尚未实现的缺口分别可见。"""
+        self.task["execution"].update(mode="business-integration", adapters=[{"kind": "workspace-edit", "entry": "Business.cs", "relation": "direct"}])
+        self.assertEqual("declared-business-integration", self.report()["items"][0]["executionStatus"])
+        self.task["execution"].update(mode="unimplemented", adapters=[], gaps=["缺实现"])
+        result = self.report()
+        self.assertTrue(result["valid"])
+        self.assertEqual(1, result["summary"]["executionGaps"])
+        self.assertEqual("gap", result["items"][0]["executionStatus"])
+        self.assertEqual("verify-at-execution", result["items"][0]["validation"]["status"])
+        self.assertEqual(["用户任务执行缺口：ui.export"], result["warnings"])
+
+    def test_developer_scope_is_not_a_consumer_skill_or_package_requirement(self):
+        """消费包可保留开发导航边界，开发 Skill 不进入消费 Catalog 或安装要求。"""
+        self.coverage["features"] = [{"id": "developer", "taskScope": "developer", "developerReferences": [".agents/skills/nova-publish/SKILL.md"]}]
+        self.assertTrue(self.report()["valid"])
+        self.coverage["features"][0]["developerReferences"] = [".agents/skills/nova-project-router/SKILL.md"]
+        self.assertFalse(self.report()["valid"])
+
+    def test_reused_operation_adds_its_contract_and_evidence_requirements(self):
+        """Workflow 复用 Operation 时保留其契约和独立要求，不只检查外层最低门。"""
+        required_skill = "nova-project-router"
+        self.contract["requires"] = [required_skill]
+        self.contract_path.write_text(json.dumps(self.contract))
+        row = self.report()["items"][0]
+        self.assertEqual(["compile", "static"], row["validation"]["required"])
+        self.assertIn(required_skill, row["reusedContracts"])
+
+    def test_package_relative_reference_uses_current_installed_snapshot(self):
+        """任务引用以解析快照为真源，不要求消费工程存在主仓 Assets/Framework 路径。"""
+        self.assertFalse((self.project / self.reference).exists())
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual("verify-at-execution", result["items"][0]["validation"]["status"])
+
+    def test_live_exposure_loss_rejects_declared_controlled_adapter(self):
+        """真实注册开放集合缺失时，静态 Skill 声明不能让任务继续称有受控入口。"""
+        self.entries["actions"] = set()
+        result = self.report()
+        self.assertFalse(result["valid"])
+        self.assertEqual("invalid", result["items"][0]["entryStatus"])
+
+    def test_external_write_contract_always_requires_external_result(self):
+        """外部写入契约即使最低证据为静态，也必须取得精确远端结果。"""
+        self.contract["effects"].append("external-write")
+        self.contract_path.write_text(json.dumps(self.contract))
+        row = self.report()["items"][0]["validation"]
+        self.assertIn("external", row["required"])
+        self.assertEqual("verify-at-execution", row["status"])
+
+    def test_incidental_build_telemetry_accepts_local_completion_without_hiding_effects(self):
+        """显式本地生成策略只免附带遥测收件，原副作用、确认、写入与锁原样保留。"""
+        self.contract["effects"].extend(["external-write", "credential"])
+        self.contract["externalCompletionPolicy"] = "incidental-build-telemetry"
+        for minimum in ("compile", "bundle-build", "player-build"):
+            with self.subTest(minimum=minimum):
+                self.contract["minimumEvidence"] = minimum
+                self.contract_path.write_text(json.dumps(self.contract))
+                result = self.report()
+                self.assertTrue(result["valid"], result["errors"])
+                row = result["items"][0]
+                self.assertEqual([minimum], row["validation"]["required"])
+                self.assertEqual("verify-at-execution", row["validation"]["status"])
+                self.assertIn("external-write", row["effectiveEffects"])
+                self.assertIn("credential", row["effectiveEffects"])
+                for field in ("effects", "confirmation", "writeScope", "locks"):
+                    self.assertEqual(self.contract[field], row["contract"][field])
+
+    def test_incidental_build_telemetry_rejects_unknown_policy_and_nonlocal_scope(self):
+        """未知声明、业务运行或静态上传、依赖链及非操作类型不得获得本地遥测豁免。"""
+        self.contract["effects"].append("external-write")
+        self.contract["externalCompletionPolicy"] = "incidental-build-telemetry"
+        for field, value in (
+            ("externalCompletionPolicy", "unknown"), ("externalCompletionPolicy", None),
+            ("externalCompletionPolicy", []), ("kind", "workflow"), ("kind", "router"),
+            ("requires", ["nova-project-router"]), ("minimumEvidence", "static"),
+            ("minimumEvidence", "play"), ("minimumEvidence", "external"),
+            ("minimumEvidence", []),
+            ("effects", ["workspace-write"]),
+        ):
+            with self.subTest(field=field, value=value):
+                candidate = json.loads(json.dumps(self.contract))
+                candidate[field] = value
+                errors = self.tool._validate_contract_shape(self.skill, candidate)
+                self.assertTrue(any("externalCompletionPolicy" in error for error in errors), errors)
+        self.contract["externalCompletionPolicy"] = "unknown"
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.assertFalse(self.report()["valid"])
+
+    def test_external_upload_without_policy_still_requires_remote_result(self):
+        """静态最低门的上传类操作没有明确策略时继续要求外部结果。"""
+        self.contract.update(minimumEvidence="static")
+        self.contract["effects"].append("external-write")
+        self.contract_path.write_text(json.dumps(self.contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(["external", "static"], result["items"][0]["validation"]["required"])
+
+    def test_incidental_build_telemetry_keeps_explicit_task_external_requirement(self):
+        """任务额外明确要求的远端结果不被附带遥测策略删除。"""
+        self.contract["effects"].append("external-write")
+        self.contract["externalCompletionPolicy"] = "incidental-build-telemetry"
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.task["verification"]["additionalRequired"] = ["external"]
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(["compile", "external"], result["items"][0]["validation"]["required"])
+
+    def test_incidental_build_telemetry_profile_keeps_explicit_external_and_safety(self):
+        """合法顶层策略支持窄本地分支，但不允许分支隐藏风险或覆盖显式外部要求。"""
+        self.configure_export_profile()
+        self.contract.update(minimumEvidence="player-build",
+                             externalCompletionPolicy="incidental-build-telemetry")
+        self.contract["effects"].extend(["external-write", "credential", "build"])
+        self.profile.update(minimumEvidence="player-build", effects=list(self.contract["effects"]))
+        self.contract_path.write_text(json.dumps(self.contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertNotIn("external", result["items"][0]["validation"]["required"])
+        self.profile["additionalEvidence"].append("external")
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.assertIn("external", self.report()["items"][0]["validation"]["required"])
+        for effect in ("external-write", "credential", "build"):
+            with self.subTest(effect=effect):
+                candidate = json.loads(json.dumps(self.contract))
+                candidate["taskProfiles"][0]["effects"].remove(effect)
+                self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+        candidate = json.loads(json.dumps(self.contract))
+        candidate["taskProfiles"][0]["externalCompletionPolicy"] = "incidental-build-telemetry"
+        self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+
+    def test_incidental_build_telemetry_does_not_exempt_another_external_dag_node(self):
+        """混合工作流逐节点判定，本地子节点不能免除另一个真实外部操作的结果。"""
+        self.configure_workflow_profile(selected=True)
+        del self.task["profile"]
+        del self.contract["taskProfiles"]
+        self.child_contract.update(minimumEvidence="compile", effects=["external-write"],
+                                   externalCompletionPolicy="incidental-build-telemetry")
+        self.child_path.write_text(json.dumps(self.child_contract))
+        self.contract_path.write_text(json.dumps(self.contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertNotIn("external", result["items"][0]["validation"]["required"])
+        self.contract["effects"].append("external-write")
+        self.contract_path.write_text(json.dumps(self.contract))
+        self.assertIn("external", self.report()["items"][0]["validation"]["required"])
+        self.contract["effects"].remove("external-write")
+        remote = "nova-project-remote-delivery"
+        self.fixture._append_skill(remote)
+        remote_path = self.agents / "Skills" / remote / "references/contract.json"
+        remote_contract = json.loads(remote_path.read_text())
+        remote_contract["effects"].append("external-write")
+        remote_path.write_text(json.dumps(remote_contract))
+        self.contract["requires"].append(remote)
+        self.contract_path.write_text(json.dumps(self.contract))
+        result = self.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertIn("external", result["items"][0]["validation"]["required"])
+
+
+class NovaAabDeviceEvidenceTests(unittest.TestCase):
+    """只验证既有AAB设备分支的证据隔离，不运行bundletool、设备或Unity。"""
+
+    def setUp(self):
+        """借用隔离工程夹具，将原UI操作替换为真实Player契约的精确AAB安装分支。"""
+        self.base = NovaTaskCoverageTests()
+        self.base.setUp()
+        self.addCleanup(self.base.doCleanups)
+        self.tool = self.base.tool
+        self.project = self.base.project
+        self.skill = "nova-project-build-player"
+        old = self.base.agents / "Skills" / self.base.skill
+        new = self.base.agents / "Skills" / self.skill
+        old.rename(new)
+        actual = TOOL_PATH.parents[1] / "Skills" / self.skill / "references/contract.json"
+        self.contract = json.loads(actual.read_text())
+        self.profile = self.contract["taskProfiles"][0]
+        self.base.skill = self.skill
+        self.base.contract = self.contract
+        self.base.contract_path = new / "references/contract.json"
+        self.base.contract_path.write_text(json.dumps(self.contract))
+        self.base.reference = "Assets/Framework/Agents/Skills/" + self.skill + "/SKILL.md"
+        catalog = self.base.fixture._read_catalog()
+        for entry in catalog["skills"]:
+            if entry["id"] == "nova-project-ui-create-view":
+                entry.update(id=self.skill, path="Skills/" + self.skill,
+                             effects=self.contract["effects"], minimumEvidence="player-build")
+        catalog["capabilityGroups"]["ui"] = [self.skill]
+        self.base.fixture._write_catalog(catalog)
+        self.task = self.base.task
+        self.task.update(id="device.install.aab", goal="既有AAB转APK集并安装", skill=self.skill,
+                         reference=self.base.reference, profile=self.profile["id"])
+        self.task["execution"]["adapters"] = [{"kind": "cli", "entry": self.tool.AAB_DEVICE_CLI, "relation": "direct"}]
+        self.task["verification"]["additionalRequired"] = ["device"]
+        self.base.coverage["features"][0]["taskRefs"] = [self.task["id"]]
+        self.base.entries["cli"] = {self.tool.AAB_DEVICE_CLI}
+
+    def make_evidence(self, mutation=None):
+        """创建可独立改变的正式回执替身，保留原AAB并模拟已清理的临时APKS。"""
+        aab = self.project / "existing.aab"
+        aab.write_bytes(b"isolated-existing-aab")
+        aab_ref = {"path": aab.name, "sha256": hashlib.sha256(aab.read_bytes()).hexdigest()}
+        serial = "isolated-device-selection"
+        certificate = "e" * 64
+        context = {"profileId": self.profile["id"], "platform": "Android",
+                   "device": "Fixture;serial-sha256:" + hashlib.sha256(serial.encode()).hexdigest(),
+                   "application": "fixture.app", "target": "sha256:" + aab_ref["sha256"]}
+        values = {
+            "executionPlan": {"selectedArtifact": {"path": str(aab), "sha256": aab_ref["sha256"]},
+                              "deviceSerial": serial, "packageName": "fixture.app",
+                              "outputApks": str(self.project / "temporary.apks"),
+                              "actualSigning": {"certificateSha256": certificate}},
+            "toolDeviceIdentity": {"tools": [{"id": name, "path": "/fixture/" + name, "sha256": "a" * 64}
+                                               for name in ("java", "bundletool", "adb")],
+                                   "versions": {"bundletool": "1.17.2"},
+                                   "device": {"serial": serial, "model": "Fixture", "api": "33", "abiList": "arm64-v8a"}},
+            "buildResult": {"exitCode": 0, "outputExists": True},
+            "apkSetVerification": {"apksSha256": "b" * 64, "apksBytes": 30,
+                                   "apks": [{"entry": entry, "size": 10, "sha256": str(i + 1) * 64,
+                                             "certificateSha256": certificate} for i, entry in enumerate(
+                                       ("splits/base-master.apk", "splits/base-arm64_v8a.apk", "asset-slices/pack.apk"))]},
+            "cleanupResult": {key: True for key in ("inputAabAndKeystoreUnchanged", "ownTemporaryFilesRemoved",
+                                                    "passwordFilesRemoved", "bundletoolExtractionDirectoryAbsent")},
+        }
+        receipt = {"schemaVersion": 1, "inputAab": aab_ref, "expectedApkCount": 3,
+                   "outputApksPath": values["executionPlan"]["outputApks"]}
+        if mutation is not None:
+            mutation(values, receipt)
+        artifacts = [aab_ref]
+        for name, value in values.items():
+            path = self.project / (name + ".json")
+            path.write_text(json.dumps(value))
+            reference = {"path": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+            receipt[name] = reference
+            artifacts.append(reference)
+        evidence = {"kind": "apk-set-build", "status": "passed",
+                    "context": dict(context, taskId=self.task["id"])}
+        path = self.project / "apk-set-result.json"
+        path.write_text(json.dumps({"apkSetBuild": receipt}))
+        evidence.update(record={"path": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}, artifacts=artifacts)
+        return evidence
+
+    def test_complete_apk_set_is_checked_ephemerally_and_device_requirement_stays_independent(self):
+        """当次 APK 集回执只验证转换层；任务声明继续保留独立设备要求且不保存结果。"""
+        evidence = self.make_evidence()
+        self.assertEqual([], self.receipt_errors(evidence))
+        result = self.base.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual("verify-at-execution", result["items"][0]["validation"]["status"])
+        self.assertEqual(["apk-set-build", "device"], result["items"][0]["validation"]["required"])
+        self.assertEqual({"additionalRequired": ["device"]}, self.task["verification"])
+
+    def receipt_errors(self, evidence):
+        """按需传入本次回执，不把运行结果写进 coverage 真源。"""
+        return self.tool._apk_set_build_evidence_errors(
+            evidence, self.task, self.project, self.base.agents, None,
+        )
+
+    def test_apk_count_empty_duplicate_and_missing_base_are_rejected(self):
+        """正式清单必须数量吻合、非空、无重复且包含基础APK。"""
+        for mode in ("count", "empty", "duplicate", "base"):
+            with self.subTest(mode=mode):
+                def mutate(values, receipt):
+                    """只改变本子例的APK数量或完整清单。"""
+                    apks = values["apkSetVerification"]["apks"]
+                    if mode == "count": receipt["expectedApkCount"] = 2
+                    elif mode == "empty": apks.clear()
+                    elif mode == "duplicate": apks[1]["entry"] = apks[0]["entry"]
+                    else: apks[0]["entry"] = "splits/other.apk"
+                self.assertTrue(self.receipt_errors(self.make_evidence(mutate)))
+
+    def test_signing_device_and_source_binding_are_independent(self):
+        """不一致的签名、设备原观察或源 AAB 字节变化均拒绝通过本次回执校验。"""
+        for mode in ("signing", "device", "source"):
+            with self.subTest(mode=mode):
+                def mutate(values, receipt):
+                    """只改变一个APK签名、一个冻结设备或源摘要。"""
+                    if mode == "signing": values["apkSetVerification"]["apks"][1]["certificateSha256"] = "f" * 64
+                    elif mode == "device": values["toolDeviceIdentity"]["device"]["serial"] = "different-selection"
+                    else: values["executionPlan"]["selectedArtifact"]["sha256"] = "f" * 64
+                self.assertTrue(self.receipt_errors(self.make_evidence(mutate)))
+        evidence = self.make_evidence()
+        (self.project / "existing.aab").write_bytes(b"changed")
+        self.assertTrue(self.receipt_errors(evidence))
+
+    def test_receipt_context_cannot_inherit_another_device_or_profile(self):
+        """精确回执仍须与本次内存中的设备、应用、源和任务分支一致。"""
+        for key, value in (("device", "another-device"), ("application", "other.app"),
+                           ("target", "sha256:" + "a" * 64), ("platform", "iOS"),
+                           ("profileId", "other-profile"), ("taskId", "other.task")):
+            with self.subTest(key=key):
+                evidence = self.make_evidence()
+                evidence["context"][key] = value
+                self.assertTrue(self.receipt_errors(evidence))
+
+    def test_failed_build_missing_tool_and_incomplete_cleanup_are_rejected(self):
+        """成功回执、工具身份和清场均必需，不能用APK文件名替代。"""
+        for mode in ("exit", "tool", "cleanup", "output"):
+            with self.subTest(mode=mode):
+                def mutate(values, receipt):
+                    """逐项移除必须的执行、工具、输出或清场事实。"""
+                    if mode == "exit": values["buildResult"]["exitCode"] = 1
+                    elif mode == "tool": values["toolDeviceIdentity"]["tools"].pop()
+                    elif mode == "cleanup": values["cleanupResult"]["passwordFilesRemoved"] = False
+                    else: receipt["outputApksPath"] = "/other.apks"
+                self.assertTrue(self.receipt_errors(self.make_evidence(mutate)))
+
+    def test_profile_is_exact_and_cannot_remove_safety_effects(self):
+        """新级别只准单一AAB任务/CLI，原副作用和独立设备门不能省。"""
+        for mode in ("task", "cli", "credential", "device", "inputs", "skill"):
+            with self.subTest(mode=mode):
+                candidate = json.loads(json.dumps(self.contract))
+                profile = candidate["taskProfiles"][0]
+                if mode == "task": profile["taskIds"] = ["build.player"]
+                elif mode == "cli": profile["actionAdapters"][0]["entry"] = "other-cli"
+                elif mode == "credential": profile["effects"].remove("credential")
+                elif mode == "device": profile["additionalEvidence"] = []
+                elif mode == "inputs": profile["requiredInputs"].remove("deviceInstallScope")
+                skill = self.skill if mode != "skill" else "nova-project-build-bundles"
+                self.assertTrue(self.tool._validate_contract_shape(skill, candidate))
+
+    def test_default_player_and_generic_minimum_do_not_accept_apk_set_build(self):
+        """默认 Player、一般 Skill 和普通任务追加不能降级为 APK 集要求。"""
+        evidence = self.make_evidence()
+        del self.task["profile"]
+        self.assertTrue(self.receipt_errors(evidence))
+        result = self.base.report()
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertIn("player-build", result["items"][0]["validation"]["required"])
+        self.task["verification"]["additionalRequired"].append("apk-set-build")
+        self.assertFalse(self.base.report()["valid"])
+        self.assertNotIn("apk-set-build", self.tool.MINIMUM_EVIDENCE_LEVELS)
+        candidate = json.loads(json.dumps(self.contract))
+        candidate["minimumEvidence"] = "apk-set-build"
+        self.assertTrue(self.tool._validate_contract_shape(self.skill, candidate))
+
+    def test_ephemeral_receipt_requires_actual_safe_files_and_matching_hashes(self):
+        """独立调用仍验证附件真实字节、安全路径及可达性，不信任内存中的通过标记。"""
+        for mode in ("source", "record", "attachment", "missing", "traversal", "status", "artifacts"):
+            with self.subTest(mode=mode):
+                evidence = self.make_evidence()
+                if mode == "source":
+                    (self.project / "existing.aab").write_bytes(b"changed")
+                elif mode == "record":
+                    (self.project / evidence["record"]["path"]).write_text("changed")
+                elif mode == "attachment":
+                    (self.project / "cleanupResult.json").write_text("changed")
+                elif mode == "missing":
+                    (self.project / "cleanupResult.json").unlink()
+                elif mode == "traversal":
+                    evidence["record"]["path"] = "../outside.json"
+                elif mode == "status":
+                    evidence["status"] = "partial"
+                else:
+                    evidence["artifacts"] = []
+                self.assertTrue(self.receipt_errors(evidence))
 
 
 if __name__ == "__main__":

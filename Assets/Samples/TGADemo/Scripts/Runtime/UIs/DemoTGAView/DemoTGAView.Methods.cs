@@ -363,8 +363,9 @@ namespace NovaFramework.Sdk.Tga.Samples.Runtime
         }
 
         /// <summary>
-        /// 登录流程。
+        /// 通过 GameLogin 完成账号登录并展示响应；Kit 已通知 SDK，不在页面重复交付登录事件。
         /// </summary>
+        /// <returns>登录与响应展示异步任务。</returns>
         private async UniTaskVoid LoginAsync()
         {
             string openId = string.Empty;
@@ -375,11 +376,6 @@ namespace NovaFramework.Sdk.Tga.Samples.Runtime
                 if (resp.IsSuccess)
                 {
                     string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
-                    if (!string.IsNullOrEmpty(uid) && Nova.SDK != null)
-                    {
-                        Nova.SDK.Login(uid);
-                    }
-
                     AppendFeedback($"Nova.Network.Kit<Login>().Async(string.Empty, \"{openId}\", {forceNewAccount}) -> IsSuccess=true, UID={uid}", FeedbackLevel.Success);
                 }
                 else

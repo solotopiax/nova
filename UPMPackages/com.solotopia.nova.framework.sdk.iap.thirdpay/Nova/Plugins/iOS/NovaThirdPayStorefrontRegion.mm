@@ -13,7 +13,8 @@ void NovaThirdPayGetStorefrontRegion(NovaThirdPayStorefrontRegionCallback callba
         NSString *countryCode = @"";
         NSString *identifier = @"";
 
-        if (@available(iOS 11.0, *)) {
+        // StoreKit storefront 从 iOS 13 起可用；低版本继续使用既有 Locale 回退。
+        if (@available(iOS 13.0, *)) {
             SKStorefront *storefront = [SKPaymentQueue defaultQueue].storefront;
             if (storefront != nil) {
                 countryCode = storefront.countryCode ?: @"";

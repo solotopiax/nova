@@ -137,7 +137,7 @@ namespace NovaFramework.Runtime
         int Priority { get; }
 
         /// <summary>
-        /// 当前是否可用（初始化成功后为 true，失败后永久为 false）。
+        /// 当前是否可用；具体状态由实现管理，默认 Manager 只向业务暴露已就绪插件。
         /// </summary>
         bool IsAvailable { get; }
 

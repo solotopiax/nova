@@ -206,10 +206,10 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 在全部 Binding 构造成功后原子替换当前查询缓存。
+        /// 先构造全部 Binding 容器，成功后清空旧缓存并逐个注册；引用解析或注册失败可能留下空缓存或部分新表，不回滚。
         /// </summary>
         /// <param name="loadedBindings">已加载的 Binding 与数据。</param>
-        /// <returns>是否注册了至少一张表。</returns>
+        /// <returns>最终查询字典是否非空；容器没有提供表时的注册 false 不阻止继续注册。</returns>
         private bool ReplaceTables(IReadOnlyList<LoadedBinding> loadedBindings)
         {
             var containers = new List<ILubanTables>(loadedBindings.Count);

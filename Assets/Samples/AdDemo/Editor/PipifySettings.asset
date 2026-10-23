@@ -105,14 +105,12 @@ MonoBehaviour:
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
-    - m_StepId: export.config
-      m_ParamsJson: 
-    - m_StepId: bundlebuilder.build
-      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"OutputFolderPath":"Build"}'
-    - m_StepId: shell.open_folder
-      m_ParamsJson: '{"Path":"Build"}'
+      m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 1,\r\n  \"DevelopmentBuild\":
+        false,\r\n  \"SplitApplicationBinary\": false,\r\n  \"BuildAppBundle\": false,\r\n 
+        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\r\n 
+        \"AndroidKeystorePass\": \"\",\r\n  \"AndroidKeyalias\": \"solotopia\",\r\n 
+        \"AndroidKeyaliasPass\": \"\",\r\n  \"OutputFolderPath\": \"Builds/Android\"\r\n}"
   - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Description: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Items:
@@ -121,7 +119,8 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"DevelopmentBuild":false,"OutputPath":"Build/Nova.apk"}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"DevelopmentBuild\": false,\n  \"OutputFolderPath\":
+        \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "Localization\u5BFC\u51FA\u6D4B\u8BD5"

@@ -29,9 +29,8 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// HTTP 响应数据，封装请求完成后的状态码、正文、原始字节、响应头及错误信息。
     /// 🔴 红线：本类是 IReference，由 Create 从 ReferencePool 获取。
-    /// 调用方持有 return value 的 IHttpManager.XxxAsync 必须用 try/finally 在使用完后
-    /// ReferencePool.Put(response) 归还；归还前后字段值会被 Clear() 清空，
-    /// 需要的字段必须在 Put 之前拷贝到局部变量。
+    /// IHttpManager.XxxAsync 的最终响应由调用方在 try/finally 中唯一归还；下载进度中间响应由框架归还。
+    /// Put 时 Clear 清空响应字段，归还后禁止继续访问对象；保存数组/字典引用并不等于深拷贝。
     /// </summary>
     public sealed class HttpResponse : IReference
     {
@@ -44,7 +43,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从引用池中获取 HttpResponse 并初始化所有字段。
+        /// 从引用池获取并初始化全部字段；字节数组和响应头原样持有，不深拷贝，正状态码强制标记服务器已响应。
         /// </summary>
         /// <param name="statusCode">HTTP 状态码。</param>
         /// <param name="body">响应正文字符串。</param>
@@ -54,6 +53,10 @@ namespace NovaFramework.Runtime
         /// <param name="isSuccess">请求是否成功。</param>
         /// <param name="downloadedBytes">已下载的字节数。</param>
         /// <param name="totalBytes">总字节数，未知时为 -1。</param>
+        /// <param name="deliveryState">无正状态码时采用的到达状态。</param>
+        /// <param name="transportState">底层传输结果名称，仅供内部诊断。</param>
+        /// <param name="uploadedBytes">底层已上传字节数。</param>
+        /// <param name="totalBytesIsKnown">总量是否来自明确长度而非完成字节数回退。</param>
         /// <returns>初始化完成的 HttpResponse 实例。</returns>
         internal static HttpResponse Create(
             int statusCode,
@@ -91,12 +94,12 @@ namespace NovaFramework.Runtime
         public int StatusCode { get; private set; }
 
         /// <summary>
-        /// 响应正文字符串，请求失败或无正文时为 null。
+        /// 响应正文字符串，无正文时可能为 null；失败响应仍可能保留服务器正文。
         /// </summary>
         public string Body { get; private set; }
 
         /// <summary>
-        /// 响应原始字节数组，请求失败或无正文时为 null。
+        /// 响应原始字节数组，无内容时可能为 null；取消或失败仍可能保留部分内容。
         /// </summary>
         public byte[] RawData { get; private set; }
 
@@ -156,7 +159,7 @@ namespace NovaFramework.Runtime
         public float DownloadProgress => TotalBytes > 0 ? Math.Max(0f, Math.Min(1f, (float)DownloadedBytes / TotalBytes)) : 0f;
 
         /// <summary>
-        /// 清理引用，将所有字段重置为默认值。
+        /// 将字段重置为池复用默认值，不取消请求、不释放 UWR，也不擦除其他引用持有的数组或字典。
         /// </summary>
         public void Clear()
         {

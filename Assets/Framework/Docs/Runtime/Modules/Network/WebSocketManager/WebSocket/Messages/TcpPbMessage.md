@@ -44,6 +44,8 @@ override int GetBodyLength()
 override void Reset()
 ```
 
+Initialize 先虚 Reset，再向通道分配本协议序列号，Bytes 原样保存输入数组引用，不验证 Protobuf 格式、不复制。调用者修改该数组会影响后续封包；null 通道等异常可发生在字段已复位之后。Bytes 为 null 时长度为 0。Reset 清 CommandID/SequenceID 并将 Bytes 置 null，不擦除原数组，也不归还消息对象。
+
 ## 关联文档
 
 - [NetMessageTcpBase](NetMessageTcpBase.md)

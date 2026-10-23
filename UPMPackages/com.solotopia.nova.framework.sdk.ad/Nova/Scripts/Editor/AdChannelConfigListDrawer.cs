@@ -19,9 +19,7 @@ using NovaFramework.SDK.AdPlugin.Runtime;
 namespace NovaFramework.SDK.AdPlugin.Editor
 {
     /// <summary>
-    /// AdChannelConfigList 的自定义 PropertyDrawer。
-    /// 继承 SerializeReferenceListDrawer 泛型基类，仅重写全局字段绘制（5 个全局配置字段）
-    /// 以及 HeaderTitle / GetEntryLabel / FilterAddableType / EmptyAddMenuLabel 4 个抽象 hook。
+    /// 渠道配置列表的自定义绘制，按动态高度显示全局开关、组重试序列、国家码超时与渠道项。
     /// </summary>
     [CustomPropertyDrawer(typeof(AdChannelConfigList))]
     public sealed class AdChannelConfigListDrawer : SerializeReferenceListDrawer<IAdChannelConfig, AdChannelConfigList>
@@ -54,16 +52,22 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         /// <inheritdoc/>
         protected override string EmptyAddMenuLabel => "无可用渠道配置实现";
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 以广告渠道名称标识列表项，保持与现有渠道类型一致。
+        /// </summary>
         protected override string GetEntryLabel(IAdChannelConfig item, int index) => item.Channel.ToString();
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 只允许向列表添加可实例化的渠道配置类型。
+        /// </summary>
         protected override bool FilterAddableType(Type type)
         {
             return !type.IsAbstract && !type.IsInterface;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 按声明顺序绘制全局开关、组重试等待序列及国家码等待超时。
+        /// </summary>
         protected override float DrawGlobalFields(Rect position, float startY, SerializedProperty property, AdChannelConfigList wrapper)
         {
             float lineH = EditorGUIUtility.singleLineHeight;
@@ -73,8 +77,7 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_EnableBidding", "竞价模式");
             y = DrawIntSliderWithHelp(position, y, lineH, lineStep, property, "m_BannerIlrdInterval", "Banner上报ILRD间隔");
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_MuteAd", "广告静音");
-            y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_RetryLoadAdMaxNum", "加载重试次数");
-            y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_RetryLoadAdInterv", "重试加载间隔(秒)");
+            y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_GroupRetryIntervalsSeconds", "广告组重试间隔（秒）");
             SerializedProperty countryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property);
             y = DrawFieldWithHelp(
                 position,
@@ -90,20 +93,26 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             return y - startY;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 根据数组展开状态计算全局字段与说明高度，保证渠道列表和国家码字段不重叠。
+        /// </summary>
         protected override float GetGlobalFieldsHeight(SerializedProperty property, AdChannelConfigList wrapper)
         {
             float lineStep = EditorGUIUtility.singleLineHeight + 2f;
             bool hasCountryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property) != null;
-            float h = lineStep * (hasCountryCodeWaitTimeout ? 6f : 5f) + c_GlobalSectionSpacing;
+            SerializedProperty retryIntervals = property.FindPropertyRelative("m_GroupRetryIntervalsSeconds");
+            float h = lineStep * (hasCountryCodeWaitTimeout ? 4f : 3f) + c_GlobalSectionSpacing;
+            if (retryIntervals != null)
+            {
+                h += EditorGUI.GetPropertyHeight(retryIntervals, true) + 2f;
+            }
             // 使用 EditorGUIUtility.currentViewWidth 近似可用宽度，
             // 与基类 GetEntryHeight 同款策略对齐，避免 HelpBox 高度估算偏差。
             float availableWidth = EditorGUIUtility.currentViewWidth;
             h += CalcGlobalTooltipHeight("m_EnableBidding", availableWidth);
             h += CalcGlobalTooltipHeight("m_BannerIlrdInterval", availableWidth);
             h += CalcGlobalTooltipHeight("m_MuteAd", availableWidth);
-            h += CalcGlobalTooltipHeight("m_RetryLoadAdMaxNum", availableWidth);
-            h += CalcGlobalTooltipHeight("m_RetryLoadAdInterv", availableWidth);
+            h += CalcGlobalTooltipHeight("m_GroupRetryIntervalsSeconds", availableWidth);
             if (hasCountryCodeWaitTimeout)
             {
                 h += CalcTooltipHeight(typeof(AdPluginConfig), c_CountryCodeWaitTimeoutFieldName, availableWidth);
@@ -129,7 +138,7 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         }
 
         /// <summary>
-        /// 绘制指定 SerializedProperty 及其 Tooltip HelpBox。
+        /// 按含子项的动态高度绘制指定属性及说明，支持重试间隔数组展开和编辑。
         /// </summary>
         /// <param name="position">Inspector 完整矩形。</param>
         /// <param name="y">当前绘制 y 坐标。</param>
@@ -140,22 +149,15 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         /// <param name="fieldName">字段名（含 m_ 前缀）。</param>
         /// <param name="label">显示标签文本。</param>
         /// <returns>绘制完成后的新 y 值。</returns>
-        private static float DrawFieldWithHelp(
-            Rect position,
-            float y,
-            float lineH,
-            float lineStep,
-            SerializedProperty prop,
-            Type tooltipOwnerType,
-            string fieldName,
-            string label)
+        private static float DrawFieldWithHelp(Rect position, float y, float lineH, float lineStep, SerializedProperty prop, Type tooltipOwnerType, string fieldName, string label)
         {
             if (prop == null)
             {
                 return y;
             }
-            EditorUtil.Draw.PropertyField(new Rect(position.x, y, position.width, lineH), prop, label);
-            y += lineStep;
+            float fieldHeight = EditorGUI.GetPropertyHeight(prop, true);
+            EditorUtil.Draw.PropertyField(new Rect(position.x, y, position.width, fieldHeight), prop, label, true);
+            y += fieldHeight + lineStep - lineH;
             string tooltip = EditorUtil.Reflect.GetFieldTooltip(tooltipOwnerType, fieldName);
             if (!string.IsNullOrEmpty(tooltip))
             {

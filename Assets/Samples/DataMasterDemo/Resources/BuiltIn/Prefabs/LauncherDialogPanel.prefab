@@ -289,6 +289,15 @@ MonoBehaviour:
   - m_DialogType: 1
     m_Text: {fileID: 2451934401975789477}
     m_LocalizationKey: CancelRecommendedDownload
+  - m_DialogType: 4
+    m_Text: {fileID: 3583280057476486700}
+    m_LocalizationKey: TitleAppDownloaded
+  - m_DialogType: 4
+    m_Text: {fileID: 5106665361167220564}
+    m_LocalizationKey: ContentAppDownloaded
+  - m_DialogType: 4
+    m_Text: {fileID: 6930341479938514655}
+    m_LocalizationKey: ConfirmAppDownloaded
 --- !u!1 &3598151000351990454
 GameObject:
   m_ObjectHideFlags: 0

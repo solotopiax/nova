@@ -25,7 +25,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         private static NovaLinkedList<FrameworkManager> s_FrameworkManagers = new NovaLinkedList<FrameworkManager>();
         /// <summary>
-        /// 框架管理器接口类型缓存字典，<接口类型, 管理器实例>。
+        /// 框架管理器接口类型缓存字典，以接口类型为键、管理器实例为值。
         /// </summary>
         private static Dictionary<Type, FrameworkManager> s_ManagerCache = new Dictionary<Type, FrameworkManager>();
 
@@ -42,6 +42,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 所有框架管理器轮询。
         /// </summary>
+        /// <remarks>按 Priority 升序同步执行；单个 Update 异常直接传播，并中断本帧后续 Manager。</remarks>
         public static void Update()
         {
             foreach (FrameworkManager manager in s_FrameworkManagers)
@@ -53,6 +54,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 关闭并清理所有框架模块。
         /// </summary>
+        /// <remarks>按 Priority 降序执行。单个 Shutdown 异常中断后续关闭；finally 仍清全局默认 AES、注册表、查询缓存与引用池，不代表各模块清理均已完成。</remarks>
         public static void Shutdown()
         {
             try

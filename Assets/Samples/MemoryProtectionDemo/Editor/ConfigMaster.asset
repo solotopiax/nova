@@ -1,0 +1,1056 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9d17fb1ec904d88aed1cb3be70705a, type: 3}
+  m_Name: ConfigMaster
+  m_EditorClassIdentifier: NovaFramework.Editor::NovaFramework.Editor.ConfigMasterSO
+  ConfigSchemaVersion: 1
+  Namespace: NovaFramework.Memory.Protection.Samples.Runtime
+  EnabledSDKs: []
+  EnabledKits: []
+  Custom:
+    Entries:
+    - Key: ThirdIAPOpen
+      Value: false
+    - Key: ThirdIAPIOSOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPAndroidOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPSkipGoogleMsgAlertShow
+      Value: false
+    - Key: GlobalSwitchThirdIAPOpen
+      Value: false
+  AppConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  PrivacyConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  SDKMasks: []
+  KitMasks: []
+  NamespaceMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  HybridEditorConfigsMask:
+    ByPlatform: 1
+    ByChannel: 0
+    ByDevelopMode: 0
+  YooAssetEditorConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  CDNEditorConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  NamespaceOverrides: []
+  CDNEditorConfigs:
+    Endpoint: YOUR_CDN_ENDPOINT
+    AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+    AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+    PresetOSSPath: YOUR_OSS_PATH
+    VersionCheckLocalFilePath: Bundles/{Platform}/{Package}/AppDownloadRules.json
+    VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
+    LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    AutoLinkLatestVersion: 1
+    RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AutoLinkLatestAssetCheckVersionFiles: 1
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
+    ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+    Token: YOUR_CLOUDFLARE_API_TOKEN
+    CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  ResourceEncryption:
+    DimensionMask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+    ClientCodeOutputDirectory:
+    GeneratedCodeAssetPath:
+    Packages: []
+  ResourceKeysMigrated: 1
+  CDNEditorConfigsOverrides:
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 1
+    Config:
+      Endpoint: YOUR_CDN_ENDPOINT
+      AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+      AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+      PresetOSSPath: YOUR_OSS_PATH
+      VersionCheckLocalFilePath: ProjectSettings/Nova/AppDownloadRules.json
+      VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
+      LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+      AutoLinkLatestVersion: 1
+      RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      AssetCheckWhitelistDeviceIDs: []
+      AssetCheckWhitelistRemoteFilePath: 
+      AutoLinkLatestAssetCheckVersionFiles: 1
+      AssetCheckManifestBytesLocalFilePath: 
+      AssetCheckManifestHashLocalFilePath: 
+      AssetCheckPackageVersionLocalFilePath: 
+      AssetCheckVersionRemoteDirectory: 
+      ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+      Token: YOUR_CLOUDFLARE_API_TOKEN
+      CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 0
+    Config:
+      Endpoint: YOUR_CDN_ENDPOINT
+      AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+      AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+      PresetOSSPath: YOUR_OSS_PATH
+      VersionCheckLocalFilePath: ProjectSettings/Nova/AppDownloadRules.json
+      VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
+      LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+      AutoLinkLatestVersion: 1
+      RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      AssetCheckWhitelistDeviceIDs: []
+      AssetCheckWhitelistRemoteFilePath: 
+      AutoLinkLatestAssetCheckVersionFiles: 1
+      AssetCheckManifestBytesLocalFilePath: 
+      AssetCheckManifestHashLocalFilePath: 
+      AssetCheckPackageVersionLocalFilePath: 
+      AssetCheckVersionRemoteDirectory: 
+      ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+      Token: YOUR_CLOUDFLARE_API_TOKEN
+      CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  HybridEditorConfigs:
+    AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Memory.Protection.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/GameDlls/NovaFramework.Memory.Protection.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Memory.Protection.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/MemoryProtectionDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+  HybridEditorConfigsOverrides:
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Memory.Protection.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/GameDlls/NovaFramework.Memory.Protection.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Memory.Protection.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/MemoryProtectionDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 2
+    Channel: 0
+    DevelopMode: 0
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Memory.Protection.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/GameDlls/NovaFramework.Memory.Protection.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Memory.Protection.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/HybridCLRGenerate/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 3
+    Channel: 0
+    DevelopMode: 0
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Memory.Protection.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/MemoryProtectionDemo/Dlls/GameDlls/NovaFramework.Memory.Protection.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Memory.Protection.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/MemoryProtectionDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 1
+    Channel: 0
+    DevelopMode: 1
+  YooAssetEditorConfigs:
+    YooAssetSettingsPath: Assets/Samples/MemoryProtectionDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/MemoryProtectionDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
+  YooAssetEditorConfigsOverrides:
+  - YooAssetSettingsPath: Assets/Samples/MemoryProtectionDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/MemoryProtectionDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
+    Platform: 0
+    Channel: 0
+    DevelopMode: 1
+  - YooAssetSettingsPath: Assets/Samples/MemoryProtectionDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/MemoryProtectionDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
+    Platform: 0
+    Channel: 0
+    DevelopMode: 0
+  CurrentDevelopMode: 0
+  CurrentChannel: 1
+  ExportTarget: {fileID: 11400000, guid: 9c57a4acb3744f08a098bebbbe0be274, type: 2}
+  m_Entries:
+  - Platform: 1
+    Channel: 1
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 1
+    Channel: 2
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 1
+    Channel: 3
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 1
+    Channel: 4
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 1
+    Channel: 5
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 1
+    Channel: 6
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 1
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 2
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 3
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 4
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 5
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 6
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 1
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 2
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 3
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 4
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 5
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 6
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+        PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+        InfoPlistUsageDescriptions: '{}'
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  m_PrivacyInfoDefaultApplied: 1
+  references:
+    version: 2
+    RefIds: []

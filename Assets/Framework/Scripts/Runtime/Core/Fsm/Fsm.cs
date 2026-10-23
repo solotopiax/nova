@@ -301,7 +301,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 向运行中的状态机动态追加状态，适用于热更 Assembly.Load 后注册业务状态。
-        /// 全部校验通过后才执行写入，保证 m_States 原子更新。
+        /// 全部参数校验通过后才执行写入；已登记状态的 OnInit 失败不回滚，底层分配异常仍向上传播。
         /// </summary>
         /// <param name="states">待追加的状态实例列表，不允许为空或包含 null。</param>
         public void AddStates(params FsmState<T>[] states)

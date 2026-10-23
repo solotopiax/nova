@@ -329,51 +329,62 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 按当前编辑坐标自动整理 WorkingCopy 后写回真实资产；仅保存配置，不生成运行配置或密钥源码。
+        /// 通过共享设计态保存链提交当前编辑坐标；保存后刷新界面，不生成运行配置或密钥源码。
         /// </summary>
+        /// <param name="rebuildWorkingCopy">默认重建当前窗口副本；关窗和切坐标调用可保留副本，由其后续流程处理。</param>
+        /// <returns>真实资产保存完成时返回 true；保存失败保留草稿，写入已开始时明确报告边界。</returns>
         private bool CommitWorkingCopyToAsset(bool rebuildWorkingCopy = true)
         {
             if (m_Master == null || m_WorkingCopy == null) return false;
-            m_MasterSO?.ApplyModifiedProperties();
+            EditorUtil.Config.DesignTimeEditing.SaveResult result;
             try
             {
-                EditorUtil.Config.DimensionProjector.NormalizeForSave(m_WorkingCopy, m_MasterSO,
+                result = EditorUtil.Config.DesignTimeEditing.SaveWorkingCopy(m_Master, m_WorkingCopy, m_MasterSO,
                     new EditorUtil.Config.DimensionProjector.Coord(
-                        m_EditingPlatform, m_WorkingCopy.CurrentChannel, m_WorkingCopy.CurrentDevelopMode));
+                        m_EditingPlatform, m_WorkingCopy.CurrentChannel, m_WorkingCopy.CurrentDevelopMode),
+                    new EditorUtil.Config.DesignTimeEditing.SaveOptions
+                    {
+                        SaveAllAssets = true,
+                        CompleteLegacyMigration = true,
+                    });
             }
-            catch (System.Exception exception)
+            catch (EditorUtil.Config.DesignTimeEditing.DesignTimeSaveException exception)
             {
-                Debug.LogError("[ConfigWindow] 配置未保存：" + exception.Message);
-                ScheduleSaveFailedDialog();
+                string detail = exception.InnerException?.Message ?? exception.Message;
+                if (exception.FailureStage == "resource-key-validation")
+                    m_ResourceKeyError = detail;
+                Debug.LogError(exception.WriteStarted
+                    ? "[ConfigWindow] 配置保存未完成，真实资产写入已开始，请核对资产和草稿：" + detail
+                    : "[ConfigWindow] 配置未保存：" + detail);
+                if (exception.FailureStage != "resource-key-validation") ScheduleSaveFailedDialog(exception.WriteStarted);
                 return false;
             }
-            // 保存只提交设计态配置；源码目录和程序集校验在导出时执行。
-            try { ResourceKeyStore.Validate(m_WorkingCopy.ResourceEncryption); }
-            catch (System.Exception exception)
-            {
-                m_ResourceKeyError = exception.Message;
-                Debug.LogError("[ConfigWindow] 配置未保存：" + exception.Message);
-                return false;
-            }
-            EditorUtility.CopySerialized(m_WorkingCopy, m_Master);
-            // CopySerialized 会连带复制 WorkingCopy 的 (Clone) 后缀名，此处用资产文件名还原
-            string assetPath = AssetDatabase.GetAssetPath(m_Master);
-            if (!string.IsNullOrEmpty(assetPath))
-                m_Master.name = System.IO.Path.GetFileNameWithoutExtension(assetPath);
-            EditorUtility.SetDirty(m_Master);
-            AssetDatabase.SaveAssets();
-            // 密钥配置正式保存后再收尾旧配置迁移，不生成客户端源码。
-            try { ResourceKeyStore.CompleteLegacyMigration(m_Master); }
-            catch (System.Exception exception) { Debug.LogError("[ConfigWindow] 旧密钥文件尚未清理：" + exception.Message); }
+            if (!result.Committed) return false;
+            if (!string.IsNullOrEmpty(result.MigrationWarning))
+                Debug.LogError("[ConfigWindow] 旧密钥文件尚未清理：" + result.MigrationWarning);
+            m_ResourceKeyError = null;
             m_IsDirty = false;
             m_HasSavedChangesPendingExport = true;
-            // 保存后重建 WorkingCopy，保持后续编辑基于最新已落盘状态
+            // 当前窗口是否重建由原调用参数决定；其他无草稿窗口经适配器刷新。
             if (rebuildWorkingCopy)
             {
-                DestroyWorkingCopy();
-                RebuildWorkingCopy();
+                try
+                {
+                    DestroyWorkingCopy();
+                    RebuildWorkingCopy();
+                }
+                catch (System.Exception)
+                {
+                    Debug.LogWarning("[ConfigWindow] 配置已保存，但工作副本刷新失败，请重新打开配置窗口。");
+                }
             }
-            EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master);
+            m_IsPublishingSaveNotification = true;
+            try
+            {
+                foreach (string warning in EditorUtil.Config.DesignTimeEditing.NotifyMasterSaved(m_Master))
+                    Debug.LogWarning("[ConfigWindow] " + warning);
+            }
+            finally { m_IsPublishingSaveNotification = false; }
             return true;
         }
 

@@ -4,19 +4,29 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "workspace-edit",
-      "entry": "project-confirmed Luban source editor",
-      "when": "修改已经冻结的 Schema、Excel 或表范围"
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> inspect --source <relativeSource> [--sheet <name> --row-key <field> --key-json <JSON> --column <field> --row-key-type <type> --type <type>] [--layout table-fields --schema <relative.xml> --table <exactName>]",
+      "when": "明确请求修改既有源数据时，先只读识别xlsx/UTF8 csv结构、唯一键、字段和sourceHash；敏感字段拒绝读写；追加字段明确使用table-fields，同时读取SchemaHash/唯一readSchemaFromFile映射、普通原列与全行键"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> plan --request - --plan Library/Nova/AgentActions/TableSource/<task>-plan.json; python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> execute --plan <planRelative> --confirmation-token <planId> --receipt Library/Nova/AgentActions/TableSource/<task>-receipt.json; python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> verify --receipt <receiptRelative>",
+      "when": "已有非敏感标量单元格、完整源/生成根边界、beforeValue及整文件hash已确认时，1至256项按单次Plan编辑源再只读验证；默认导出不调用；普通字段追加复用table-fields的Schema/结构/保留proof和明确default或全键values，后续正式导出代码及数据"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> inspect|plan|execute|verify <same documented arguments>",
+      "when": "Windows复用相同随包表源CLI和source-edit参考；不新增第二实现"
     },
     {
       "kind": "unity-editor-api",
       "entry": "TableComponentInspector",
-      "when": "配置已确认的 Luban Project、导出描述和运行时加载描述"
+      "when": "仅底层Inspector事实/配置导航，不是MCP可执行入口；实际写入使用本契约已声明的共享Unity或受控settings入口"
     },
     {
       "kind": "agent-action",
@@ -26,7 +36,62 @@
     {
       "kind": "csharp-api",
       "entry": "Nova.Table.LoadAsync / LoadSync / HasTable<T> / GetTable<T>",
-      "when": "在 Play Mode 中加载并读取冻结的目标表"
+      "when": "仅授权业务源码调用与Play观察的底层公开API，不是可调度方法入口；用本契约workspace-edit实现真实可达消费路径"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.inspect-target",
+      "when": "表或本地化设置分支：读取项目自有普通SO或精确Prefab组件的真实字段、类型、tooltip、当前值及可写边界；严格Schema可表示时才执行，聚合/复杂字段不可写则使用已核共享Unity路线，禁止保存凭据聚合对象"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.patch-target",
+      "when": "表或本地化设置分支：精确目标及字段值已授权，预演后仅保存一个自有Prefab或普通SO文件，并只读Verify；严格Schema可表示时才执行，聚合/复杂字段不可写则使用已核共享Unity路线，禁止保存凭据聚合对象"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_asset(action=search|get_info|get_components) + find_gameobjects + mcpforunity://scene/gameobject/{instance_id}/components + manage_prefabs(action=get_info|get_hierarchy)",
+      "when": "仅确认的表/本地化设置与绑定；只读发现实际项目自有场景/Prefab目标、完整路径、当前组件身份/索引、字段及变体/嵌套来源；不把临时instanceID当持久标识或缺失事件字段当空列表"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "unity_reflect(action=get_type|get_member)",
+      "when": "仅确认的表/本地化设置与绑定；只读核实精确组件类型、程序集、字段setter或UnityEvent目标方法的public实例签名与重载，不执行方法"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_components(action=set_property, target=<current GameObject ID>, search_method=by_id, component_type=<FullName>, component_index=<confirmed zero-based index>, property=<verified property>, value=<typed JSON>)",
+      "when": "仅确认的表/本地化设置与绑定；已确认场景或当前Stage的已有内置/业务组件字段及UnityEvent完整持久列表；先核实草稿/生命周期/敏感边界，逐次写入读回，工具仅标脏、不提供Nova Plan/Receipt或保存保证"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_scene(action=get_loaded_scenes|get_active|set_active_scene|load|save|close_scene)",
+      "when": "仅确认的表/本地化设置与绑定；按已确认scenePath保留加载/草稿基线并只保存实际活动的目标场景；load仅必要additive、close仅本轮无脏态新增场景，save不同path会SaveAs，不保存其它场景"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs(action=modify_contents, prefab_path=<confirmed owned prefab>, target=<unique full object path>, component_properties=<confirmed unique component type fields>)",
+      "when": "仅确认的表/本地化设置与绑定；Prefab变体/嵌套外层或内置组件有唯一对象及同类组件、无跨上下文内部引用时，隔离Load/Save指定Prefab；冻结当前override与源资产影响，保存后只读核对字段及来源，不能默认Apply/Revert或Unpack"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs(action=open_prefab_stage|save_prefab_stage|close_prefab_stage) + manage_components(action=set_property)",
+      "when": "仅确认的表/本地化设置与绑定；同Prefab内部事件引用或重复组件索引需要真实Stage上下文时；只使用本轮无既有草稿的目标Stage，save_prefab_stage含全局SaveAssets，缺无关脏资产证明或精确额外保存授权则明确该具体gap"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "confirmed saved .unity/.prefab/.asset or UXML/USS file + meta + git diff + current Unity component/scene/prefab readback",
+      "when": "共享MCP没有RecoveryToken时，只读核对真实持久字段/事件列表/Prefab override、源资产未变和准确写集；文本序列化可只读核对，二进制或localId无法定位时报告具体缺证据，禁止手写YAML"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed project-owned Table startup/load owner and exact business table read probe",
+      "when": "在已授权业务程序集内复用Nova.Table公开API实现真实可达加载/读取；保持现有初始化所有权，逐目标表类型/行字段验证，不修改Framework/生成代码、不用临时任意代码调度器"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity compilation and existing business Table entry Play load and exact table-row readback",
+      "when": "执行已保存的业务入口，核对Load成功后具体HasTable/GetTable与冻结值；Count非空或IsLoadOver不能代替目标表验收，Play态和测试数据清场独立"
     }
   ],
   "inputs": [
@@ -49,6 +114,11 @@
     {
       "name": "targetTableTypeAndReadProbe",
       "required": true
+    },
+    {
+      "name": "sourceCellEdits",
+      "required": false,
+      "constraint": "用户同时要求源数据调整时：实际source/sourceHash/sourceRoots/generatedRoots和1至256个已有非敏感单元格，唯一rowKey/key/column、type、beforeValue/value；不插删行、不改Schema或公式、宏、复杂类型；或layout=table-fields的已有自描述xlsx，schema/schemaHash/table/sheet/rowKey/rowKeyType及addFields普通name/type/comment/default或全键values，最多256字段/8192格，拒复杂Schema/空值/重复或未知键"
     }
   ],
   "effects": [
@@ -58,17 +128,19 @@
   ],
   "writeScope": {
     "allow": [
-      "confirmed Luban schema and data source",
+      "confirmed Luban schema through its dedicated editor; existing project-owned xlsx/csv non-sensitive scalar cells or strict table-fields append-only ordinary fields in self-described xlsx through shared nova_table_source.py",
       "confirmed TableComponent settings through Unity Editor or MCP",
       "confirmed table code and data output for the selected export description",
-      "confirmed business read probe"
+      "confirmed business read probe",
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
       "handwritten Prefab or Scene YAML",
       "manual edits to generated table output",
-      "unrelated Luban project, export description or output"
+      "unrelated Luban project, export description or output",
+      "macro/formula modification, row insertion/deletion, duplicate key cells, arbitrary source/generated boundaries or secret/identity field edits through the generic source CLI"
     ]
   },
   "locks": [
@@ -76,7 +148,8 @@
     "asset-database",
     "table-settings",
     "table-export-output",
-    "active-scene"
+    "active-scene",
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -84,9 +157,10 @@
       "ambiguous table source, schema, ProjectId, DescriptionId, output, DataTarget or Asset address",
       "create or change a table schema, source or runtime load description",
       "replace non-generated asset",
-      "delete, external write, credential use, Git commit or push"
+      "delete, external write, credential use, Git commit or push",
+      "explicit existing scalar source edits or strict table-fields ordinary field additions and exact source CLI Plan before the separately planned official export"
     ],
-    "rule": "确认绑定表源、导出描述、运行时加载映射和读取样例；任何一项改变后旧确认失效。"
+    "rule": "确认绑定表源、导出描述、运行时加载映射和读取样例；任何一项改变后旧确认失效。 源CLI仅已有标量单元格或严格table-fields追加普通字段，另绑定整文件hash、beforeValue或全结构Schema/原键/类型/默认或逐行值，以及真实源/生成根；只完成源写入不足以称接入成功。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -98,6 +172,8 @@
   "evidence": [
     "选定 Luban 输入与 TableSettings 映射",
     "精确导出结果和 Unity 编译",
-    "Play Mode 加载、HasTable 和 GetTable 读取证据"
+    "Play Mode 加载、HasTable 和 GetTable 读取证据",
+    "optional source CLI inspect identity/hash, unique row key and strict scalar type, single-use Plan/Receipt and readonly whole-file/cell Verify, followed by official export and requested compile/Play evidence",
+    "table-fields分支额外Verify新字段元数据/全行值、旧字段/行键、SchemaHash、原Sheet XML和非目标ZIP原压缩记录；正式code+data导出及编译/请求Play证据独立"
   ]
 }

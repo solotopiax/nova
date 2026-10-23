@@ -16,7 +16,8 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// PlayerPrefs 持久化管理器。
     /// 存储模型：classify → item → value（string），全部写入 Unity PlayerPrefs。
-    /// IO 优化：SetXxx 仅写内存 + 脏标记，Update 检测脏标记后批量落盘，避免高频写入触发多次磁盘刷新。
+    /// SetXxx 先调用当前平台的字符串写入并标脏，Update 按自动保存间隔刷新索引并调用平台 Save。
+    /// Unity 默认实现延迟全局刷盘；微信、支付宝小游戏的底层写入使用同步 Storage API。
     /// </summary>
     internal sealed partial class PlayerPrefsManager : PersistManagerBase<PlayerPrefsManagerConfig>, IPlayerPrefsManager
     {
@@ -61,7 +62,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从 PlayerPrefs 加载全部分类索引到内存。
+        /// 清空并重建分类和条目索引，不扫描原始值键，也不重置已有脏标记。
         /// </summary>
         /// <returns>成功返回 true。</returns>
         public override UniTask<bool> Load()
@@ -86,7 +87,8 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 将指定分类的索引及值落盘。
-        /// 注意：PlayerPrefs 底层不支持分类保存，此方法等同于全量落盘。
+        /// 只刷新该分类的脏索引，底层 Save 仍提交整个 PlayerPrefs 缓存；其他分类索引和脏标记不自动刷新。
+        /// 本分类脏标记在平台 Save 前移除，平台保存异常时不会自动恢复。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <returns>成功返回 true。</returns>
@@ -110,7 +112,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 判断指定条目是否存在。
+        /// 判断内存分类索引中是否存在条目，不核实平台原始值键。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <param name="item">条目名。</param>
@@ -296,7 +298,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 读取字符串值。
+        /// 读取字符串值；原始值为空时返回默认值，否则按配置解密，解密异常继续传播。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <param name="item">条目名。</param>
@@ -349,11 +351,11 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 写入字符串值。
+        /// 写入字符串值；null 转为空串并保留条目，不等同于删除。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <param name="item">条目名。</param>
-        /// <param name="value">要写入的值。</param>
+        /// <param name="value">要写入的值，null 按空字符串处理。</param>
         public override void SetString(string classify, string item, string value)
         {
             WriteValue(classify, item, value ?? string.Empty);

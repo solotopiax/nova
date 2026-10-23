@@ -28,7 +28,7 @@
 
 ### 2. 加载成功或失败后都会回收
 
-无论结果如何，`LoadAndPlaySoundAsync(...)` 最终都会把它 `ReferencePool.Put(...)`。
+正常成功、放弃、空资源及已处理的失败路径会调用 `ReferencePool.Put(...)`；不是外层 finally，池操作或异常处理本身仍可能中断。它保存原 SoundGroup 引用，Shutdown 不会自动取消正在等待的请求或让这个引用失效。
 
 ### 3. 回收时会级联回收 `PlaySoundParams`
 

@@ -64,11 +64,21 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Editor
                 return;
             }
 
-            var ruleSet = new ManifestRuleSet
+            var ruleSet = CreateAndroidManifestRules(context.ActivityName, oneLinkHost, oneLinkPathPrefix, oneLinkScheme);
+
+            context.AddManifestRules(ruleSet);
+
+            Log.Debug(LogTag.Editor, $"[AppsFlyerPlugin] OneLink 规则已注入：Activity={context.ActivityName}, Host={oneLinkHost}, PathPrefix={oneLinkPathPrefix}, Scheme={oneLinkScheme}");
+        }
+
+        /// <summary>原OneLink规则构造的纯入口；不改变空配置早退，不写properties或调用Import。</summary>
+        /// <param name="activityName">原回调此时读取的Context ActivityName。</param><param name="host">原OneLinkHost，可空。</param><param name="pathPrefix">原OneLinkPathPrefix，可空。</param><param name="scheme">原OneLinkFallbackName，可空。</param>
+        /// <returns>与原内联树逐字段相同的规则；调用方负责原分支与AddManifestRules。</returns>
+        internal static ManifestRuleSet CreateAndroidManifestRules(string activityName, string host, string pathPrefix, string scheme) => new ManifestRuleSet
             {
                 Activities = new[]
                 {
-                    new ActivityRule(context.ActivityName, exported: true, ManifestRuleMode.Merge)
+                    new ActivityRule(activityName, exported: true, ManifestRuleMode.Merge)
                     {
                         UseMainActivity = true,
                         IntentFilters = new[]
@@ -79,24 +89,19 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Editor
                                 Mode = ManifestRuleMode.Replace,
                                 Actions = new[] { "android.intent.action.VIEW" },
                                 Categories = new[] { "android.intent.category.DEFAULT", "android.intent.category.BROWSABLE" },
-                                Data = new IntentData { Scheme = "https", Host = oneLinkHost, PathPrefix = oneLinkPathPrefix }
+                                Data = new IntentData { Scheme = "https", Host = host, PathPrefix = pathPrefix }
                             },
                             new IntentFilterRule
                             {
                                 Mode = ManifestRuleMode.Replace,
                                 Actions = new[] { "android.intent.action.VIEW" },
                                 Categories = new[] { "android.intent.category.DEFAULT", "android.intent.category.BROWSABLE" },
-                                Data = new IntentData { Scheme = oneLinkScheme }
+                                Data = new IntentData { Scheme = scheme }
                             }
                         }
                     }
                 }
             };
-
-            context.AddManifestRules(ruleSet);
-
-            Log.Debug(LogTag.Editor, $"[AppsFlyerPlugin] OneLink 规则已注入：Activity={context.ActivityName}, Host={oneLinkHost}, PathPrefix={oneLinkPathPrefix}, Scheme={oneLinkScheme}");
-        }
 
         /// <summary>
         /// 确保 Gradle properties 模板中存在指定属性；已有同名属性时直接覆盖，避免重复追加。

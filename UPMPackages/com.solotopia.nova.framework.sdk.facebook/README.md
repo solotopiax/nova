@@ -1,10 +1,12 @@
 # Nova Framework - SDK - Facebook
 
-> 当前版本：`0.1.15`
+> 当前版本：`0.1.16`
 
 Package name: `com.solotopia.nova.framework.sdk.facebook`
 
 This package wraps the official Facebook Unity SDK `18.0.0` in Nova's UPM package layout and exposes `FacebookPlugin`.
+
+完整文档入口见 [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)。
 
 ## What This Package Contains
 

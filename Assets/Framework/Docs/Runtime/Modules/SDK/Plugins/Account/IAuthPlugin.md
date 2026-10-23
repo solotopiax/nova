@@ -19,6 +19,8 @@ public interface IAuthPlugin : ISDKPlugin
 
 当前登录数据由具体插件暴露，例如 `GoogleSignInPlugin.CurrentUserData`。
 
+`provider`、ct 与返回的 `AuthResult` 属于第三方登录流程；`IsLoggedIn` 只反映实现的插件状态，不能替代游戏服验证。业务应在服务端确认 UID 后再调用 `Nova.SDK.Login` 或 `RegisterAndLogin` 分发会话。Logout 的平台动作由实现定义，不代表游戏服注销或删除账号；`EndLoginSession` 也不是原生 Logout 的替代入口。
+
 ## 使用示例
 
 ```csharp

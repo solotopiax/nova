@@ -18,6 +18,16 @@ namespace NovaFramework.SDK.IAP.Runtime
     public sealed class IAPThirdPayRequest : IAPRequest
     {
         /// <summary>
+        /// 首充奖励，仅随本次加密支付 URL 传给网页端使用；没有奖励时为 null。
+        /// </summary>
+        public IAPThirdPayRewardItem FirstRechargeReward;
+
+        /// <summary>
+        /// 额外赠送奖励，仅随本次加密支付 URL 传给网页端使用；没有奖励时为 null。
+        /// </summary>
+        public IAPThirdPayRewardItem ExtraBonusReward;
+
+        /// <summary>
         /// 当前请求对应的渠道类型，固定为 ThirdPay。
         /// </summary>
         public override IAPStoreType StoreType => IAPStoreType.ThirdPay;

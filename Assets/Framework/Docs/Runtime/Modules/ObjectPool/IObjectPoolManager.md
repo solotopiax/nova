@@ -40,9 +40,9 @@
 ### 3. 全局释放与单池释放不同层级
 
 - `Release()`：通知每个池按自己的规则释放当前可释放对象
-- `ReleaseAllUnused()`：通知每个池强制释放全部未使用对象
+- `ReleaseAllUnused()`：通知每个池跳过容量与过期筛选，释放全部当前可释放的未使用对象；仍保护锁定对象及 `CustomCanReleaseFlag == false` 的对象
 
-接口层并不承诺“立刻清空所有对象”。
+两个全局入口都先按池的 `Priority` 升序遍历；接口层并不承诺“立刻清空所有对象”。
 
 ### 4. 查询返回的是池，不是对象
 
@@ -68,6 +68,10 @@
 - 池键是否仍然包含名称维度
 - 单取 / 多取的语义是否变化
 - `Release()` 与 `ReleaseAllUnused()` 的边界是否变化
+
+## 参数与所有权边界
+
+接口/Base 抽象声明不执行上述默认实现。Initialize 当前空体、Type/Name/predicate 的校验和查询结果生命周期，及 Destroy 按键而非引用同一性等实际边界，见 ObjectPoolManager；外部实现须另核。
 
 ## 相关实现
 

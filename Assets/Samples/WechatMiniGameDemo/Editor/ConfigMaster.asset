@@ -1502,8 +1502,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1001
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1514,8 +1518,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1002
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1526,8 +1534,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1003
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1538,8 +1550,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1004
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1550,8 +1566,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1005
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1562,8 +1582,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1006
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1574,8 +1598,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1007
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1586,8 +1614,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1008
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1598,8 +1630,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1009
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1610,8 +1646,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1010
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1622,8 +1662,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1011
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1634,8 +1678,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1012
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1646,8 +1694,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1013
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1658,8 +1710,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1014
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1670,8 +1726,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1015
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1682,8 +1742,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1016
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1694,8 +1758,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1017
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1706,8 +1774,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1018
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1718,8 +1790,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1019
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1730,8 +1806,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1020
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1742,8 +1822,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1021
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1754,8 +1838,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1022
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1766,8 +1854,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1023
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1778,8 +1870,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1024
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1790,8 +1886,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1025
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1802,8 +1902,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1026
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1814,8 +1918,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1027
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1826,8 +1934,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1028
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1838,8 +1950,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1029
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1850,8 +1966,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1030
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1862,8 +1982,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1031
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1874,8 +1998,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1032
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1886,8 +2014,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1033
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1898,8 +2030,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1034
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
@@ -1910,8 +2046,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1035
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -1921,13 +2061,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -1939,13 +2079,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -1957,13 +2097,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -1975,13 +2115,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -1993,13 +2133,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2011,13 +2151,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2029,13 +2169,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2047,13 +2187,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2065,13 +2205,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2083,13 +2223,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2101,13 +2241,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2119,13 +2259,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2137,13 +2277,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2155,13 +2295,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2173,13 +2313,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2191,13 +2331,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2209,13 +2349,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2227,13 +2367,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2245,13 +2385,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2263,13 +2403,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2281,13 +2421,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2299,13 +2439,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2317,13 +2457,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2335,13 +2475,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2353,13 +2493,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2371,13 +2511,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2389,13 +2529,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2407,13 +2547,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2425,13 +2565,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2443,13 +2583,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2461,13 +2601,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2479,13 +2619,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2497,13 +2637,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2515,13 +2655,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2533,13 +2673,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -4722,8 +4862,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728730
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -4733,13 +4877,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1

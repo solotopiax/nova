@@ -64,7 +64,7 @@ namespace NovaFramework.Samples.Runtime
         private IObjectPool<DemoBullet> m_BulletPool;
 
         /// <summary>
-        /// 视图初始化：注册按钮事件，设置标题与 API 副标题。
+        /// 注册按钮事件与 API 提示；Spawn 使用 DemoBullet 的实际注册名称。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         protected override void OnInit(object userData)
@@ -82,7 +82,7 @@ namespace NovaFramework.Samples.Runtime
             if (m_SpawnButton != null)
             {
                 m_SpawnButton.onClick.AddListener(OnSpawnButtonClick);
-                SetButtonApiHint(m_SpawnButton, "Nova.ObjectPool.GetObjectPool<T>().Get()");
+                SetButtonApiHint(m_SpawnButton, "IObjectPool<DemoBullet>.Get(\"DemoBullet\")");
             }
 
             if (m_RecycleButton != null)
@@ -115,17 +115,14 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 视图打开：尝试获取已有对象池并刷新统计。
+        /// 打开时重新查询 DemoBullet 池；Manager 不可用时清空旧池引用并刷新统计。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
 
-            if (Nova.ObjectPool != null)
-            {
-                m_BulletPool = Nova.ObjectPool.GetObjectPool<DemoBullet>();
-            }
+            m_BulletPool = Nova.ObjectPool != null ? Nova.ObjectPool.GetObjectPool<DemoBullet>() : null;
 
             RefreshStats();
         }
@@ -157,7 +154,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// Spawn 按钮点击：从对象池 Get 一个 DemoBullet 对象。
+        /// 按真实注册名取出一个 DemoBullet；已有持有对象时拒绝再次取用，避免覆盖唯一归还引用。
         /// </summary>
         private void OnSpawnButtonClick()
         {
@@ -167,14 +164,20 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            if (!m_BulletPool.CanGet())
+            if (m_CurrentBullet != null)
+            {
+                AppendFeedback("当前 DemoBullet 尚未回收，请先 Recycle", FeedbackLevel.Warn);
+                return;
+            }
+
+            if (!m_BulletPool.CanGet("DemoBullet"))
             {
                 DemoBullet newBullet = DemoBullet.Create();
                 m_BulletPool.Register(newBullet, false);
             }
 
-            m_CurrentBullet = m_BulletPool.Get();
-            AppendFeedback($"Nova.ObjectPool.GetObjectPool<DemoBullet>().Get() -> Count={m_BulletPool.Count} CanRelease={m_BulletPool.CanReleaseCount}", FeedbackLevel.Success);
+            m_CurrentBullet = m_BulletPool.Get("DemoBullet");
+            AppendFeedback($"IObjectPool<DemoBullet>.Get(\"DemoBullet\") -> Count={m_BulletPool.Count} CanRelease={m_BulletPool.CanReleaseCount}", FeedbackLevel.Success);
             RefreshStats();
         }
 

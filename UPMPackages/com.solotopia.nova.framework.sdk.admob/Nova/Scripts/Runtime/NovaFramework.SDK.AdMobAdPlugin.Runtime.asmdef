@@ -13,6 +13,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.google.ads.mobile",
+            "expression": "[11.5.0,12.0.0)",
+            "define": "NOVA_GOOGLE_MOBILE_ADS"
+        }
+    ],
     "noEngineReferences": false
 }

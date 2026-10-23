@@ -66,13 +66,16 @@ namespace NovaFramework.Runtime
             }
         }
 
+        /// <summary>
+        /// 计算最小宽度，不提供最大宽度、首选宽度或弹性宽度约束。
+        /// </summary>
         public override void CalculateLayoutInputHorizontal()
         {
             base.CalculateLayoutInputHorizontal();
 
             var minWidth = GetGreatestMinimumChildWidth() + padding.left + padding.right;
 
-            SetLayoutInputForAxis(minWidth, -1, -1, 0);
+            SetLayoutInputForAxis(minWidth, -1f, -1, -1, 0);
         }
 
         public override void SetLayoutHorizontal()
@@ -91,11 +94,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// Main layout method
+        /// 计算流式行高，并按指定轴更新布局输入或子项位置；不提供最大尺寸约束。
         /// </summary>
-        /// <param name="width">Width to calculate the layout with</param>
-        /// <param name="axis">0 for horizontal axis, 1 for vertical</param>
-        /// <param name="layoutInput">If true, sets the layout input for the axis. If false, sets child position for axis</param>
+        /// <param name="width">保留的调用参数；工作宽度实际读取当前 RectTransform 并扣除 padding。</param>
+        /// <param name="axis">布局轴：0 为水平，1 为垂直。</param>
+        /// <param name="layoutInput">为 true 时写入垂直布局输入，否则设置该轴子项位置。</param>
+        /// <returns>包含行间距和上下 padding 的总高度。</returns>
         public float SetLayout(float width, int axis, bool layoutInput)
         {
             var groupHeight = rectTransform.rect.height;
@@ -181,7 +185,7 @@ namespace NovaFramework.Runtime
             {
                 if (axis == 1)
                 {
-                    SetLayoutInputForAxis(yOffset, yOffset, -1, axis);
+                    SetLayoutInputForAxis(yOffset, -1f, yOffset, -1, axis);
                 }
             }
 

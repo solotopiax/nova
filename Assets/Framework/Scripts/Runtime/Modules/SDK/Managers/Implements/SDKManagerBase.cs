@@ -16,7 +16,7 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// SDK 管理器抽象基类，继承 FrameworkManager 并声明 ISDKManager 全部契约为 abstract。
-    /// Priority = 16，SDK 模块在大部分核心模块（Event=7、ObjectPool=6 等）之后轮询，最后 Shutdown。
+    /// Priority = 16；管理器组按优先级升序 Update、逆序 Shutdown，数值不表示插件已就绪。
     /// 唯一实现类为 SDKManager（internal sealed partial），通过 Util.TypeCreator.Create 注入。
     /// </summary>
     internal abstract class SDKManagerBase : FrameworkManager, ISDKManager, ISDKRegistrationManager
@@ -35,11 +35,11 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 异步批量初始化 ConfigMaster.EnabledSDKs 启用的插件。
-        /// 按 ISDKPlugin.Priority 升序分桶，同桶内 UniTask.WhenAll 并行；单插件失败隔离（不影响其他插件与主流程）。
+        /// 只等待声明的能力依赖，无依赖插件并发启动；单插件失败隔离（不影响其他插件与主流程）。
         /// 完成后 IsInitialized 置为 true。
         /// </summary>
         /// <param name="ct">取消令牌；传入 CancellationToken.None 时不可取消。</param>
-        /// <returns>所有批次初始化完成的异步任务。</returns>
+        /// <returns>所有插件到达最终初始化状态的异步任务。</returns>
         public abstract UniTask InitializeAsync(CancellationToken ct = default);
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace NovaFramework.Runtime
 
         public abstract void Login(string userId, IReadOnlyDictionary<string, object> userProperties);
 
-        /// <summary>明确新用户注册并建立登录会话；同一 UID 本次生命周期内只注册一次。</summary>
+        /// <summary>明确新用户注册并建立登录会话；基类回退只执行 Login，具体注册能力由实现提供。</summary>
         public virtual void RegisterAndLogin(string userId) => Login(userId);
 
         /// <summary>显式结束当前登录会话。</summary>
@@ -135,7 +135,7 @@ namespace NovaFramework.Runtime
         public abstract override void Update();
 
         /// <summary>
-        /// 关闭并清理管理器（内部 await DisposeAsync 完成释放）。
+        /// 关闭并清理管理器；默认实现发起 DisposeAsync 后立即返回，不等待异步释放完成。
         /// </summary>
         public abstract override void Shutdown();
     }

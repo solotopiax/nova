@@ -49,18 +49,23 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 异步初始化所有 Manager。由 ProcedurePreload 显式 await，保证后续业务读写命中已就绪状态。
-        /// 幂等：首次调用启动三个存储实现的 Initialize WhenAll，重复调用返回同一 UniTask。
+        /// 幂等：首次调用启动三个存储实现的 Initialize WhenAll；共享任务支持并发与完成后重复等待。
         /// </summary>
         /// <returns>三个存储实现初始化完成的 UniTask。</returns>
         public UniTask LoadAsync()
         {
-            if (m_LoadTask.HasValue)
+#if UNITY_EDITOR
+            // Editor 隐私存档维护未结束时先拒绝读取，包含禁用 Domain Reload 的已有加载任务。
+            PrivacyAesMaintenanceGuard.AssertReady();
+#endif
+            if (m_LoadTask != null)
             {
-                return m_LoadTask.Value;
+                return m_LoadTask.Task;
             }
 
-            m_LoadTask = RunLoadAsync();
-            return m_LoadTask.Value;
+            // AsyncLazy 统一保存结果并分发多个等待者；不直接复用已消费的异步状态机任务。
+            m_LoadTask = RunLoadAsync().ToAsyncLazy();
+            return m_LoadTask.Task;
         }
 
         /// <summary>

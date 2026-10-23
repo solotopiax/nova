@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NovaFramework.Runtime;
 using UnityEditor;
@@ -57,12 +58,21 @@ namespace NovaFramework.Editor
         [Serializable]
         private sealed class Receipt
         {
+            public int receiptVersion;
             public string scope;
             public string scenePath;
             public string componentId;
+            public string settingsHash;
             public string developMode;
             public string[] targets;
+            public Output[] expectedOutputs;
             public Output[] outputs;
+            public int sourceContractVersion;
+            public DataModuleExportActionCommon.NamespaceSourceSnapshot namespaceSource;
+            public DataModuleExportActionCommon.InputSnapshot inputSnapshot;
+            public DataModuleExportActionCommon.ConfigurationSnapshot[] configurations;
+            public GenerateActionCommon.Artifact[] configurationArtifacts;
+            public string compilationToken;
         }
 
         private sealed class State
@@ -76,6 +86,9 @@ namespace NovaFramework.Editor
             public NetworkSettings NetworkSettings;
             public ProtoSettings ProtoSettings;
             public Output[] Outputs;
+            public DataModuleExportActionCommon.NamespaceSourceSnapshot NamespaceSource;
+            public DataModuleExportActionCommon.InputSnapshot InputSnapshot;
+            public DataModuleExportActionCommon.ConfigurationSnapshot[] Configurations;
         }
 
         /// <summary>
@@ -84,7 +97,7 @@ namespace NovaFramework.Editor
         protected override bool TryValidateRequest(Request request, out string error)
         {
             error = null;
-            if (!TryNormalizeScope(request?.scope, out _))
+            if (!TryNormalizeScope(request?.scope, out string scope))
             {
                 error = "scope 只允许 all、code 或 data。";
                 return false;
@@ -95,7 +108,7 @@ namespace NovaFramework.Editor
                 return false;
             }
             if (!TryNormalizeTargets(request.targets, out string[] targets, out error)) return false;
-            if (string.Equals(request.scope, "data", StringComparison.OrdinalIgnoreCase) && targets.Contains("proto"))
+            if (scope == "data" && targets.Contains("proto"))
             {
                 error = "Proto 只生成代码，不能使用 data scope。";
                 return false;
@@ -108,6 +121,8 @@ namespace NovaFramework.Editor
         /// </summary>
         public override Task<AgentActionHandlerPlan> PlanAsync(Request request, AgentActionExecutionContext context)
         {
+            // 直接领域调用与 Dispatcher 调用共享相同校验，避免绕过规范化后的组合限制。
+            if (!TryValidateRequest(request, out string validationError)) return Blocked(validationError);
             if (!NetworkSettingsResolver.TryResolve(out NetworkSettingsResolver.Resolved resolved, out string resolveError))
             {
                 return Blocked(resolveError);
@@ -119,8 +134,23 @@ namespace NovaFramework.Editor
                 return Blocked(error);
             }
 
-            string[] writeSet = outputs.Select(output => output.kind == "data" ? output.path : output.path.TrimEnd('/') + "/**")
-                .Distinct(StringComparer.Ordinal).OrderBy(path => path, StringComparer.Ordinal).ToArray();
+            bool includesCode = DataModuleExportActionCommon.IncludesCode(scope);
+            if (includesCode && GeneratedExportCompilationState.IsPending()) return Blocked("已有导出编译待完成，请先 Verify 该收据。");
+            DataModuleExportActionCommon.NamespaceSourceSnapshot namespaceSource = null;
+            if (targets.Any(target => target != "proto") &&
+                !DataModuleExportActionCommon.TryCaptureNamespaceSource(context.CancellationToken, out namespaceSource, out error)) return Blocked(error);
+            DataModuleExportActionCommon.ConfigurationSnapshot[] configurations;
+            DataModuleExportActionCommon.InputSnapshot inputSnapshot;
+            string[] writeSet;
+            try
+            {
+                configurations = BuildConfigurations(resolved.NetworkSettings, outputs, targets, scope);
+                inputSnapshot = CaptureInputSnapshot(resolved, configurations, targets, scope, context);
+                writeSet = BuildCompleteWriteSet(outputs, configurations, resolved.NetworkSettings?.DataFormat ?? LubanDataFormat.Json);
+                if ((namespaceSource != null && !DataModuleExportActionCommon.TryVerifyNamespaceSource(namespaceSource, context.CancellationToken, out error)) ||
+                    !DataModuleExportActionCommon.TryVerifyInputs(inputSnapshot, context.CancellationToken, out error)) return Blocked(error);
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException)) { return Blocked(exception.Message); }
             var state = new State
             {
                 Scope = scope,
@@ -132,6 +162,7 @@ namespace NovaFramework.Editor
                 NetworkSettings = resolved.NetworkSettings,
                 ProtoSettings = resolved.ProtoSettings,
                 Outputs = outputs,
+                NamespaceSource = namespaceSource, InputSnapshot = inputSnapshot, Configurations = configurations,
             };
             var receipt = CreateReceipt(state, Array.Empty<Output>());
             return Task.FromResult(new AgentActionHandlerPlan
@@ -171,6 +202,22 @@ namespace NovaFramework.Editor
                 }
             }
 
+            try
+            {
+                if (!DataModuleExportActionCommon.HasExactInputScope(frozen.InputSnapshot,
+                        CaptureInputSnapshot(current, frozen.Configurations, frozen.Targets, frozen.Scope, context)))
+                    return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", "实际模板、协议或工具输入根已变化，请重新 Plan。"));
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException))
+            { return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", exception.Message)); }
+            string sourceError = null;
+            if ((frozen.Targets.Any(target => target != "proto") &&
+                 !DataModuleExportActionCommon.TryVerifyNamespaceSource(frozen.NamespaceSource, context.CancellationToken, out sourceError)) ||
+                !DataModuleExportActionCommon.TryVerifyInputs(frozen.InputSnapshot, context.CancellationToken, out sourceError))
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", sourceError));
+            if (DataModuleExportActionCommon.IncludesCode(frozen.Scope) && GeneratedExportCompilationState.IsPending())
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", "已有导出编译待完成，请先 Verify 该收据。"));
+
             foreach (string target in frozen.Targets)
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
@@ -200,21 +247,37 @@ namespace NovaFramework.Editor
                     "Network 已导出，但产物取证失败：" + exception.Message));
             }
 
-            Receipt receipt = CreateReceipt(frozen, captured);
-            AgentActionResult result = AgentActionResult.Create(c_ActionId, "partial", "Network 已导出，等待 Verify 核对产物摘要。");
-            result.ReceiptJson = Util.Json.Serialize(receipt);
-            result.DataJson = result.ReceiptJson;
-            result.Artifacts.AddRange(captured.Select(output => output.artifact.path).Distinct(StringComparer.Ordinal));
-            result.Evidence.Add("Execute 仅调用现有 Network HostKey/NetCmd/Proto Exporter，并记录输出 SHA-256。");
-            if (captured.Any(output => output.kind == "code"))
+            try
             {
-                result.Warnings.Add("代码产物摘要不等于 Unity 编译成功；domain reload 后应继续 Verify。");
+                string sourceErrorAfter = null;
+                if ((frozen.NamespaceSource != null && !DataModuleExportActionCommon.TryVerifyNamespaceSource(frozen.NamespaceSource, context.CancellationToken, out sourceErrorAfter)) ||
+                    !DataModuleExportActionCommon.TryVerifyUnchangedInputs(frozen.InputSnapshot, frozen.Configurations, context.CancellationToken, out sourceErrorAfter) ||
+                    (frozen.Configurations.Length > 0 && !DataModuleExportActionCommon.TryVerifyExportedConfigurations(frozen.NamespaceSource, frozen.Configurations, context.CancellationToken, out sourceErrorAfter)))
+                    return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", sourceErrorAfter));
+                Receipt receipt = CreateReceipt(frozen, captured);
+                receipt.configurationArtifacts = DataModuleExportActionCommon.CaptureConfigurationArtifacts(frozen.Configurations, context.CancellationToken);
+                receipt.compilationToken = DataModuleExportActionCommon.IncludesCode(frozen.Scope) ? Guid.NewGuid().ToString("N") : null;
+                AgentActionResult result = AgentActionResult.Create(c_ActionId, "partial", "Network 已导出，等待 Verify 核对产物摘要。");
+                result.ReceiptJson = Util.Json.Serialize(receipt);
+                result.DataJson = result.ReceiptJson;
+                if (DataModuleExportActionCommon.IncludesCode(frozen.Scope))
+                    GeneratedExportCompilationState.Schedule(receipt.compilationToken, GenerateActionCommon.ComputeTextHash(result.ReceiptJson));
+                result.Artifacts.AddRange(captured.Select(output => output.artifact.path).Distinct(StringComparer.Ordinal));
+                result.Evidence.Add("Execute 仅调用现有 Network HostKey/NetCmd/Proto Exporter，并记录输出 SHA-256。");
+                if (captured.Any(output => output.kind == "code"))
+                {
+                    result.Warnings.Add("代码产物摘要不等于 Unity 编译成功；domain reload 后应继续 Verify。");
+                }
+                return Task.FromResult(result);
             }
-            return Task.FromResult(result);
+            catch (Exception exception) when (!(exception is OperationCanceledException))
+            {
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", "Network 已导出但来源或配置取证失败：" + exception.Message));
+            }
         }
 
         /// <summary>
-        /// 只读核对 Network 导出产物与 SHA-256 摘要。
+        /// 只读核对计划冻结的完整输出集合、产物类型与 SHA-256；旧 Receipt 缺证据时保持 partial。
         /// </summary>
         public override Task<AgentActionResult> VerifyAsync(string receiptJson, AgentActionExecutionContext context)
         {
@@ -227,10 +290,11 @@ namespace NovaFramework.Editor
             {
                 return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", "Network Export Receipt 无法解析：" + exception.Message));
             }
-            if (receipt?.targets == null || receipt.targets.Length == 0 || receipt.outputs == null || receipt.outputs.Length == 0 ||
-                receipt.outputs.Any(output => output?.artifact == null))
+            if (receipt == null || receipt.receiptVersion != 2 ||
+                !TryValidateOutputEvidence(receipt.scope, receipt.targets, receipt.expectedOutputs, receipt.outputs, out _))
             {
-                return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", "Network Export Receipt 尚无完整产物证据。"));
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial",
+                    "Network Export Receipt 尚无完整冻结范围及产物证据。"));
             }
             if (!GenerateActionCommon.TryVerifyArtifacts(receipt.outputs.Select(output => output.artifact),
                     context.CancellationToken, out GenerateActionCommon.Artifact[] actual, out string error))
@@ -240,14 +304,89 @@ namespace NovaFramework.Editor
                 return Task.FromResult(partial);
             }
 
+            bool sourceContract;
+            try { sourceContract = DataModuleExportActionCommon.HasSourceContract(receiptJson); }
+            catch (Exception exception) { return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", exception.Message)); }
+            if (sourceContract)
+            {
+                if (!TryVerifySourceScope(receipt, context, out error)) return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", error));
+                bool needsNamespace = receipt.targets.Any(target => target != "proto");
+                if (receipt.sourceContractVersion != 1 || receipt.configurations == null || (needsNamespace && receipt.configurations.Length == 0) ||
+                    (needsNamespace && !DataModuleExportActionCommon.TryVerifyNamespaceSource(receipt.namespaceSource, context.CancellationToken, out error)) ||
+                    !DataModuleExportActionCommon.TryVerifyUnchangedInputs(receipt.inputSnapshot, receipt.configurations, context.CancellationToken, out error) ||
+                    !DataModuleExportActionCommon.TryVerifyConfigurationArtifacts(receipt.configurations, receipt.configurationArtifacts, context.CancellationToken, out error) ||
+                    (needsNamespace && !DataModuleExportActionCommon.TryVerifyExportedConfigurations(receipt.namespaceSource, receipt.configurations, context.CancellationToken, out error)))
+                    return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", error ?? "新 Network 收据缺少完整来源或配置证据。"));
+                if (DataModuleExportActionCommon.IncludesCode(receipt.scope) &&
+                    (!GeneratedExportCompilationState.TryVerify(receipt.compilationToken, GenerateActionCommon.ComputeTextHash(Util.Json.Serialize(receipt)), true, out error) ||
+                     (needsNamespace && !DataModuleExportActionCommon.TryVerifyLoadedTypes(receipt.namespaceSource, receipt.configurations, out error))))
+                    return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial", error));
+            }
             AgentActionResult success = AgentActionResult.Create(c_ActionId, "success", "Network 输出范围与 SHA-256 已只读核对。");
-            success.EvidenceKinds = AgentActionEvidence.Static | AgentActionEvidence.Artifact;
+            success.EvidenceKinds = (sourceContract && DataModuleExportActionCommon.IncludesCode(receipt.scope)
+                ? AgentActionEvidence.Static | AgentActionEvidence.Compile : AgentActionEvidence.Static) | AgentActionEvidence.Artifact;
+            if (!sourceContract) success.Warnings.Add("缺命名空间/输入快照，仅历史产物摘要；不证明新契约。");
             success.DataJson = Util.Json.Serialize(receipt.outputs);
             success.Artifacts.AddRange(actual.Select(artifact => artifact.path).Distinct(StringComparer.Ordinal));
             success.Evidence.AddRange(receipt.outputs.Select(output =>
                 $"{output.target}/{output.kind}：{output.artifact.fileCount} 个文件，SHA-256={output.artifact.sha256}"));
             success.Evidence.Add("Verify 未调用 Exporter、AssetDatabase.Refresh 或任何恢复写入。");
             return Task.FromResult(success);
+        }
+
+        /// <summary>
+        /// 核对冻结范围与执行产物一一对应，拒绝缺项、重复、跨目标、错误类型及路径替换。
+        /// 仅解析项目内路径，不读取当前设置重建旧计划，也不修改任何文件。
+        /// </summary>
+        internal static bool TryValidateOutputEvidence(string scope, string[] targets, Output[] expected,
+            Output[] outputs, out string error)
+        {
+            error = "冻结输出范围与产物记录不完整或不一致。";
+            if (!TryNormalizeScope(scope, out string normalizedScope) || scope != normalizedScope ||
+                !TryNormalizeTargets(targets, out string[] normalizedTargets, out _) ||
+                !targets.SequenceEqual(normalizedTargets) ||
+                (scope == "data" && targets.Contains("proto")) ||
+                expected == null || expected.Length == 0 || outputs == null || outputs.Length != expected.Length)
+            {
+                return false;
+            }
+
+            StringComparer pathComparer = IOPath.DirectorySeparatorChar == '\\'
+                ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+            var expectedKeys = new HashSet<string>(pathComparer);
+            foreach (Output output in expected)
+            {
+                if (output == null || !targets.Contains(output.target) ||
+                    (output.kind != "code" && output.kind != "data") ||
+                    (output.target == "proto" && output.kind != "code") ||
+                    (scope != "all" && output.kind != scope) ||
+                    !GenerateActionCommon.TryResolveProjectPath(output.path, "冻结输出路径", out string fullPath, out _)) return false;
+                fullPath = fullPath.TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar);
+                if (!expectedKeys.Add(output.target + "\n" + output.kind + "\n" + fullPath)) return false;
+            }
+            foreach (string target in targets)
+            {
+                string[] kinds = target == "proto" ? new[] { "code" } :
+                    scope == "all" ? new[] { "code", "data" } : new[] { scope };
+                if (kinds.Any(kind => !expected.Any(output => output.target == target && output.kind == kind))) return false;
+            }
+
+            var actualKeys = new HashSet<string>(pathComparer);
+            foreach (Output output in outputs)
+            {
+                if (output?.artifact == null || !targets.Contains(output.target) ||
+                    (output.kind != "code" && output.kind != "data") ||
+                    !GenerateActionCommon.TryResolveProjectPath(output.path, "产物输出路径", out string fullPath, out _) ||
+                    !GenerateActionCommon.TryResolveProjectPath(output.artifact.path, "产物摘要路径", out string artifactPath, out _)) return false;
+                fullPath = fullPath.TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar);
+                artifactPath = artifactPath.TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar);
+                if (!pathComparer.Equals(fullPath, artifactPath) ||
+                    output.artifact.kind != (output.kind == "data" ? "file" : "directory") ||
+                    !actualKeys.Add(output.target + "\n" + output.kind + "\n" + fullPath)) return false;
+            }
+            if (!expectedKeys.SetEquals(actualKeys)) return false;
+            error = null;
+            return true;
         }
 
         /// <summary>
@@ -289,6 +428,13 @@ namespace NovaFramework.Editor
             var result = new List<Output>();
             developMode = null;
             error = null;
+            if (!TryNormalizeScope(scope, out string normalizedScope) || scope != normalizedScope ||
+                !TryNormalizeTargets(targets, out string[] normalizedTargets, out error) ||
+                !targets.SequenceEqual(normalizedTargets) || (scope == "data" && targets.Contains("proto")))
+            {
+                error ??= "Network 导出范围或目标组合无效。";
+                return Fail(out outputs);
+            }
             foreach (string target in targets)
             {
                 if (target == "proto")
@@ -446,7 +592,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private static bool ExecuteTarget(string target, string scope, string developMode, NetworkSettings network, ProtoSettings proto)
         {
-            if (target == "proto") return EditorUtil.Network.ProtoExporter.ExportAllProtos(proto);
+            if (target == "proto") return scope != "data" && EditorUtil.Network.ProtoExporter.ExportAllProtos(proto);
             if (target == "hostkey")
             {
                 if (!Enum.TryParse(developMode, out DevelopMode frozenMode)) return false;
@@ -467,15 +613,100 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 从冻结状态和实际产物创建恢复 Receipt。
+        /// 从冻结状态和实际产物创建版本 2 Receipt，保留独立的完整预期输出用于只读核验。
         /// </summary>
         private static Receipt CreateReceipt(State state, Output[] outputs)
         {
             return new Receipt
             {
-                scope = state.Scope, scenePath = state.ScenePath, componentId = state.ComponentId,
+                receiptVersion = 2,
+                scope = state.Scope, scenePath = state.ScenePath, componentId = state.ComponentId, settingsHash = state.SettingsHash,
                 developMode = state.DevelopMode, targets = state.Targets, outputs = outputs,
+                sourceContractVersion = 1, namespaceSource = state.NamespaceSource, inputSnapshot = state.InputSnapshot,
+                configurations = state.Configurations,
+                expectedOutputs = state.Outputs.Select(output => new Output
+                {
+                    target = output.target, kind = output.kind, path = output.path,
+                }).ToArray(),
             };
+        }
+
+        /// <summary>HostKey/NetCmd 固定 Profile 共用源快照；Proto 直接走 protoc，不建立 Master 或 Luban 配置依赖。</summary>
+        private static DataModuleExportActionCommon.ConfigurationSnapshot[] BuildConfigurations(NetworkSettings settings,
+            Output[] outputs, string[] targets, string scope)
+        {
+            var configurations = new List<DataModuleExportActionCommon.ConfigurationSnapshot>();
+            foreach (string target in targets.Where(value => value != "proto"))
+            {
+                IDataTableSettings table = target == "hostkey" ? settings.HostKeySettings : settings.NetCmdSettings;
+                EditorUtil.Luban.LubanExportProfile profile = target == "hostkey" ? EditorUtil.Luban.LubanExportProfiles.NetworkHostKey : EditorUtil.Luban.LubanExportProfiles.NetworkCmd;
+                configurations.Add(DataModuleExportActionCommon.CreateConfigurationSnapshot(profile, table.SourceDirPath,
+                    outputs.FirstOrDefault(output => output.target == target && output.kind == "code")?.path,
+                    table.Units.Select(unit => unit.SourcePath), DataModuleExportActionCommon.IncludesCode(scope), true));
+            }
+            return configurations.ToArray();
+        }
+
+        /// <summary>冻结网络源表、配置、模板和实际工具；Proto 同时冻结根目录 imports 与 protoc include，仍不解析业务类型。</summary>
+        private static DataModuleExportActionCommon.InputSnapshot CaptureInputSnapshot(NetworkSettingsResolver.Resolved resolved,
+            DataModuleExportActionCommon.ConfigurationSnapshot[] configurations, string[] targets, string scope, AgentActionExecutionContext context)
+        {
+            var files = new List<string> { resolved.ScenePath };
+            files.AddRange(configurations.SelectMany(DataModuleExportActionCommon.ConfigurationFiles));
+            files.AddRange(configurations.SelectMany(configuration => configuration.sourcePaths.Select(source => IOPath.Combine(configuration.sourceDirectory, source))));
+            if (scope == "code")
+                foreach (string target in targets.Where(value => value != "proto"))
+                {
+                    IDataTableSettings settings = target == "hostkey" ? resolved.NetworkSettings.HostKeySettings : resolved.NetworkSettings.NetCmdSettings;
+                    files.AddRange(settings.Units.Select(unit => unit.DatasExportPath).Where(path => !string.IsNullOrWhiteSpace(path)));
+                }
+            var directories = configurations.SelectMany(configuration => EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs(configuration.profileId) ?? Array.Empty<string>()).ToList();
+            if (configurations.Length > 0)
+            {
+                string luban = EditorUtil.Luban.CliRunner.GetLubanDllPath();
+                if (string.IsNullOrWhiteSpace(luban)) throw new InvalidDataException("Luban 工具未安装，不能冻结实际生成工具。");
+                directories.Add(IOPath.GetDirectoryName(luban));
+            }
+            if (targets.Contains("proto"))
+            {
+                directories.Add(resolved.ProtoSettings.ProtoSourceDirPath);
+                string protoc = EditorUtil.Proto.CliRunner.GetProtocPath();
+                if (string.IsNullOrWhiteSpace(protoc)) throw new InvalidDataException("protoc 工具未安装，不能冻结实际生成工具。");
+                files.Add(protoc);
+                string include = EditorUtil.Proto.CliRunner.GetProtocIncludePath();
+                if (!string.IsNullOrWhiteSpace(include)) directories.Add(include);
+            }
+            return DataModuleExportActionCommon.CaptureInputs(files, directories, context.CancellationToken);
+        }
+
+        /// <summary>展示配置/meta 以及数据反格式删除；代码保持现有目录边界，Proto 不增加 Luban 写入。</summary>
+        private static string[] BuildCompleteWriteSet(Output[] outputs,
+            DataModuleExportActionCommon.ConfigurationSnapshot[] configurations, LubanDataFormat format) =>
+            DataModuleExportActionCommon.BuildWriteSet(DataModuleExportActionCommon.EnumerateFileWritePaths(outputs.Where(output => output.kind == "data")
+                .SelectMany(output => new[] { output.path, IOPath.ChangeExtension(output.path, format == LubanDataFormat.Json ? ".bytes" : ".json") }))
+                .Concat(DataModuleExportActionCommon.EnumerateDirectoryWritePaths(outputs.Where(output => output.kind == "code").Select(output => output.path)))
+                .Concat(DataModuleExportActionCommon.EnumerateConfigurationWritePaths(configurations)));
+
+        /// <summary>只读将新收据绑定当前 Network 设置、目标与完整输入；Proto 不因这一校验附加 Master 依赖。</summary>
+        private static bool TryVerifySourceScope(Receipt receipt, AgentActionExecutionContext context, out string error)
+        {
+            error = "新 Network 收据的来源或目标范围不完整。";
+            try
+            {
+                if (!NetworkSettingsResolver.TryResolve(out var resolved, out error) || resolved.ScenePath != receipt.scenePath ||
+                    resolved.ComponentId != receipt.componentId || resolved.SettingsHash != receipt.settingsHash ||
+                    !TryBuildOutputs(resolved, receipt.scope, receipt.targets, out Output[] outputs, out string mode, out error) ||
+                    mode != receipt.developMode || !TryValidateOutputEvidence(receipt.scope, receipt.targets, outputs, receipt.outputs, out error)) return false;
+                DataModuleExportActionCommon.ConfigurationSnapshot[] configurations = BuildConfigurations(resolved.NetworkSettings, outputs, receipt.targets, receipt.scope);
+                if (!Newtonsoft.Json.Linq.JToken.DeepEquals(Newtonsoft.Json.Linq.JToken.FromObject(configurations),
+                        receipt.configurations == null ? null : Newtonsoft.Json.Linq.JToken.FromObject(receipt.configurations)) ||
+                    !DataModuleExportActionCommon.HasExactInputScope(receipt.inputSnapshot,
+                        CaptureInputSnapshot(resolved, configurations, receipt.targets, receipt.scope, context)))
+                { error = "新 Network 收据的 Profile、输出或完整输入范围与当前领域设置不一致。"; return false; }
+                error = null;
+                return true;
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException)) { error = exception.Message; return false; }
         }
 
         /// <summary>

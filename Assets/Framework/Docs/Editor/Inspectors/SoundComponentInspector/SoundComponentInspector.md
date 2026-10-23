@@ -190,3 +190,11 @@ Sound 管理器：  [SoundManager ▼]
 - [EditorUtil.Draw.SourceFileTree.md](../../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md)
 - [EditorUtil.Luban.ExportHelper.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md)
 - [EditorUtil.Luban.DataTypeNameHelper.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md)
+
+## 同步、输入与执行边界
+
+全量导出先 Apply 后重新读实际 SoundSettings；单文件数据与代码回调不先 Apply，可能读到尚未同步的旧设置。数据路径参数只作非空门禁，真实目标来自匹配 Unit；代码回调没有找到 Unit 时仍以 relevantFileNames=null 调用 ExportCode，可能扩大为全量代码范围。公开 void 包装与按钮结束都不构成正式产物或运行播放验收。
+
+watcher 只绑定 OnEnable 时已存在的 `_configs` 路径；目录变化、首次生成没有自动重绑，删除通知也会设存在标记。新增 SoundGroupShell 可能复制前项序列化值，不保证构造默认、名称唯一或代理数有效；Play 下编辑也不等于运行 setter 已同步。运行折叠区当前只显示 enabled 与组数量，没有逐组详情或声音播放验证。
+
+SoundTemplate 的 Name/AssetLocation/TypeName/GroupName 决定声音身份与分组，Priority/Loop/Volume/SpatialBlend 保持 int/bool/float 语义；Background/Music/loop=true/volume=1/spatialBlend=0 是模板样例，不是消费项目的默认音效。

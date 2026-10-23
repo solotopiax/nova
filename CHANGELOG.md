@@ -8,13 +8,29 @@
 
 ## [Unreleased]
 
-### Added
+## [0.7.1] - 2026-10-23
 
 ### Changed
 
+- NovaSpark 默认显式安装 Framework、Nova Framework - MCP 与 Nova Framework - MemoryProtection，同步检测缺失及版本不一致；Anti-Cheat Toolkit 保持按需安装。
+
+## [0.7.0] - 2026-10-23
+
+### Changed
+
+- 功能交付纳入 AGENTS、Docs、Minds、Agents 四向同步与逐函数能力暴露门；日常健康检查和主仓 UPM 预检共用覆盖校验，防止源码、文档、输入与执行契约漂移。
+
+- nova-publish 支持 CHANGELOG Important 多行声明的开发维护、发版前全文核对与修改补充询问，并在签名包上传前校验声明归档和日志完整一致性。
+
+- 调整 Agent 知识维护与发布门禁：说明归源码/XML 和既有 Docs，派生索引使用本地缓存及脱敏发布快照，路径变化只更新导航，不续签历史审查。
+
 ### Fixed
 
+- 修正 NovaSpark 首次安装完成后打开 PlugPals 的菜单路径为 `Nova/Open PlugPals`，避免因多余空格报菜单不存在、反复重试并无法自动删除火种脚本。
+
 ### Breaking
+
+- Nova 最低支持 Unity 6000.6.7f1，统一包元数据、Skill 契约和 NovaSpark 安装门；适配新版对象身份与布局接口。
 
 ## [0.6.39] - 2026-10-12
 

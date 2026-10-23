@@ -52,3 +52,5 @@
 - [ILocalizationFontRow.md](ILocalizationFontRow.md)
 - [LocalizationManager.md](LocalizationManager.md)
 - [TextLocalizing.md](TextLocalizing.md)
+
+该 DTO 不实现 ILocalizationFontRow。除 FontSizeScaleRatio=1 外字符串属性默认 null，setter 原样保存，不验证语言、Mark、地址或比例，也不触发任何加载；不能把 DTO 默认值当成生成数据行接口的默认契约。

@@ -80,6 +80,10 @@ WebGL 的启动 Group 例外：`TagsOnLaunch` 由框架在成功后 Release，�
 
 调用方不应该假设这些动作会在资源加载后自动发生。
 
+内置 `AssetManager.ClearUnusedCacheAsync()` 要求目标包的实际 Manifest 已可用；未就绪时不调度清理并抛 `InvalidOperationException`。底层操作报告失败时，也会抛出包含包名、状态和错误的异常，外部消费者应处理这一失败结果；自定义 Manager 的内部行为需由对应实现确认。
+
+传入已经取消的 `ct` 不会启动清理；清理开始后的取消只停止等待，不保证底层删除立即停止，也不会回滚已删除文件。正常返回表示底层报告成功，清理范围与实际磁盘释放量仍需用文件前后结果核验。
+
 ## 最小 API 面
 
 - 启动：`BootstrapAsync()` / `LoadManifestAsync()`

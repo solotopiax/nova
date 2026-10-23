@@ -22,6 +22,8 @@
 - `DebugManager.Initialize(...)` 会校验两个列表长度是否一致
 - 初始化阶段会把最后一档阈值回填为当前磁盘总空间，作为兜底档位
 
+新对象默认 Enabled=false、两列表为空，PlatformName 仅保存传入文本；实际平台按列表位置选择，不按名称查找。DTO 不验证平台名、阈值顺序或间隔范围，也不启动检测；Manager 持有原引用并会修改末阈值，业务不能把传入配置视为不可变快照。
+
 ## 当前应查看
 
 - [../DebugComponent.md](../DebugComponent.md)

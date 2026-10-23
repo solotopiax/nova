@@ -90,7 +90,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 关闭 Manager，取消所有进行中的异步操作并销毁底层资源系统。
+        /// 关闭 Manager 的取消源并销毁全局 YooAsset；多数 Load 使用调用方令牌，未链接此取消源。
         /// </summary>
         public override void Shutdown()
         {

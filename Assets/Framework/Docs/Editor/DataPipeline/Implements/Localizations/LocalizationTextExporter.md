@@ -85,3 +85,11 @@ internal static bool ExportSupportedLanguages(...);
 - [EditorUtil.Luban.GeneratedOutput.md](../../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.GeneratedOutput.md)
 - [EditorUtil.Localization.TextExporter.md](../../../EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md)
 - [EditorUtil.Luban.Pipeline.md](../../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
+
+## 验证、旧语言与后置失败
+
+JSON 暂存核 JObject，Binary 本层只核存在，不做完整 schema/解码。代码核文件存在，Map 校验按有效字符 Key 查属性文本/计数，不拒 C# 保留字，无有效 Key 时可跳过 region/计数；仍须编译。代码单独导出取 Ordinal 第一语言，JSON 缺正式种子可跳 Map，Binary 从源 Key/Desc 生成；All 的映射 manifest 取最后语言并依赖先前语言集合一致契约。
+
+旧语言删除只针对当前仍配置 Unit、当前后缀和现存 Language 枚举展开路径，不删除其 meta、另一格式或已移除 Unit/枚举名。暂存 Unit 的部分路径固定，但 Mode/Index/AssetLocation 仍实时转发原对象。支持语言子导出只登记到父事务，不自行 Apply；显式内部语言序列排序但不去重/校枚举。
+
+Load/首次清理失败可能尚未进入内层 finally；清理异常可遮原错并跳 Refresh。Apply 已成功而 Refresh 失败也可返回 false，不能自动重放；共享 OutputApplier 的恢复失败边界继续适用。

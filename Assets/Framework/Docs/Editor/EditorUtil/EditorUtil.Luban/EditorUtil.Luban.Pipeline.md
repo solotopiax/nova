@@ -47,7 +47,7 @@ EditorUtil (public static partial class)
 | `TargetUnit` | `IDataTableUnitSetting` | 目标单元设置（单文件导出时指定，为 null 时处理全部） |
 | `EffectiveUnits` | `IReadOnlyList<IDataTableUnitSetting>` | （只读属性）优先使用 RegionUnits，回退到 Settings?.Units |
 
-内部字段 `Profile`、`MinHeaderRowCount`、`SchemaValueTypeScanner` 和 `SchemaManifest` 分别保存当前导出 Profile、最小表头行数、可选的实际输入类型扫描器和本次导出的结构快照。默认扫描原始 Excel；像 Network HostKeys 这样先投影为 CSV 的专用模块可提供扫描器，使 manifest 与 Luban 实际输入保持一致。这些字段不对 Runtime 或 Inspector 序列化开放。
+内部字段 `Profile`、`MinHeaderRowCount`、`SchemaValueTypeScanner` 和 `SchemaManifest` 分别保存当前导出 Profile、Sheet 总行数阈值、可选的实际输入类型扫描器和本次导出的结构快照。当前上下文与九个内置 Profile 的阈值均默认 5，不据此验证表头结构。默认扫描原始 Excel；像 Network HostKeys 这样先投影为 CSV 的专用模块可提供扫描器，使 manifest 与 Luban 实际输入保持一致。这些字段不对 Runtime 或 Inspector 序列化开放。
 
 ---
 
@@ -85,28 +85,29 @@ public static bool ExportAll(LubanExportContext ctx)
 ```
 ExportData(ctx)
   ├── Environment.LubanChecker.Check() → 未就绪时 ConfigWindow.OpenLubanSection(envResult) + return false
-  ├── SyncSchema：默认扫描 Excel，或使用上下文提供的实际输入扫描器；从同一快照原子生成 __tables__.xml，再保存 manifest
+  ├── SyncSchema：先初始化/更新 conf，再扫描实际输入、构建 manifest、发布 XML、独立保存 manifest；不是整体原子事务
   ├── 创建临时目录 _luban_temp_{guid8}
   ├── CliRunner.RunDataExport → 临时目录
   ├── ctx.TargetUnit != null?
   │     ├── 是 → manifest.ResolveUnit + JsonMerger.MergeForUnit（单文件）
   │     └── 否 → JsonMerger.MergeAll(manifest)（全部）
-  ├── finally: 删除临时目录
-  └── finally: AssetDatabase.Refresh()
+  └── 进入 try 后 finally：先删除存在的临时目录，再 AssetDatabase.Refresh()
 ```
+
+`SyncSchema` 和临时路径构造在 `try` 外；此前失败不执行该 `finally`。删除目录抛出异常会阻止后续 Refresh。
 
 ### ExportCode 流程
 
 ```
 ExportCode(ctx)
   ├── Environment.LubanChecker.Check() → 未就绪时 ConfigWindow.OpenLubanSection(envResult) + return false
-  ├── SyncSchema：扫描 Excel，从同一快照原子生成 __tables__.xml，再保存 manifest
+  ├── SyncSchema：先初始化/更新 conf，再扫描实际输入、构建 manifest、发布 XML、独立保存 manifest；不是整体原子事务
   ├── 单文件时 BuildRelevantFileNames(manifest, sourcePath, managerName)
   ├── CliRunner.RunCodeGen → ctx.OutputCodeDir（直接输出到目标目录，无临时目录）
   ├── ctx.TargetUnit != null?
   │     ├── 是 → manifest.ResolveUnit + MapPropGen.GenerateForUnit（单文件）
   │     └── 否 → MapPropGen.GenerateAll(manifest)（全部）
-  └── AssetDatabase.Refresh()
+  └── 正常完成才 FlushLogsAfterRefresh；CLI 返回 false 或此前异常不保证 Refresh
 ```
 
 ### ExportAll 流程
@@ -114,21 +115,21 @@ ExportCode(ctx)
 ```
 ExportAll(ctx)
   ├── Environment.LubanChecker.Check() → 未就绪时 ConfigWindow.OpenLubanSection(envResult) + return false
-  ├── SyncSchema：扫描 Excel，从同一快照原子生成 __tables__.xml，再保存 manifest
+  ├── SyncSchema：先初始化/更新 conf，再扫描实际输入、构建 manifest、发布 XML、独立保存 manifest；不是整体原子事务
   ├── 创建临时目录 _luban_temp_{guid8}
   ├── ctx.OutputCodeDir 非空?
   │     ├── 是 → CliRunner.RunAll（代码输出到 OutputCodeDir，数据输出到临时目录）
   │     └── 否 → CliRunner.RunDataExport（仅数据，输出到临时目录）
   ├── JsonMerger.MergeAll(manifest)（全部合并）
   ├── MapPropGen.GenerateAll(manifest)（全部生成属性）
-  ├── finally: 删除临时目录
-  └── finally: AssetDatabase.Refresh()
+  ├── 成功路径 FlushLogsAfterRefresh
+  └── finally：尝试删除存在的临时目录（不执行 Refresh）
 ```
 
 ### 临时目录管理
 
 - 数据导出使用临时目录 `_luban_temp_{guid8}`（位于 SourceDirPath 下）
-- 临时目录在 `finally` 块中无条件删除，确保即使导出失败也不残留
+- 进入 `try` 后由 `finally` 尝试清理存在的临时目录；删除异常或 Unity 崩溃仍可能残留
 - 代码导出不需要临时目录（直接输出到最终目标目录）
 
 ---
@@ -161,12 +162,12 @@ bool dataSuccess = EditorUtil.Luban.Pipeline.ExportData(ctx);
 | 场景 | 说明 |
 |------|------|
 | 环境检查 guard | `ExportData` / `ExportCode` / `ExportAll` 首步执行 `LubanChecker.Check()`；仅 `.NET SDK` 版本低于/高于建议区间时输出 Warning 并继续，未安装、无法执行或缺少 `Luban.dll` 时仍自动弹出 `ConfigWindow` 并返回 false |
-| 临时目录残留 | 正常情况下 `finally` 块会清理。若 Unity 崩溃可能残留 `_luban_temp_*` 目录，需手动删除 |
-| AssetDatabase.Refresh | 每个导出方法结束时自动调用 `AssetDatabase.Refresh()`，无需外部再次调用 |
+| 临时目录残留 | 进入 `try` 后由 `finally` 尝试清理；删除失败或 Unity 崩溃可能残留 `_luban_temp_*` 目录，需核对归属后清理 |
+| AssetDatabase.Refresh | `ExportData` 的 finally 在成功清理临时目录后 Refresh；`ExportCode`、`ExportAll` 仅正常末尾 Refresh。失败路径不保证刷新，编译结束日志不代表编译通过 |
 | ExportAll 的 OutputCodeDir | 为 null 时退化为纯数据导出（仅调用 `RunDataExport`），不生成代码 |
 | RegionUnits vs Settings.Units | 当需要按地域区分单元配置时传入 `RegionUnits`；不区分地域时留 null，Pipeline 自动从 `Settings.Units` 取 |
 | manifest 一致性 | 每个导出入口只扫描一次；ConfigSyncer、XML、JsonMerger、MapPropGen 和单文件代码筛选共享 `ctx.SchemaManifest` |
-| 扫描/验证失败 | `SyncSchema` 抛出后不会进入 `CliRunner`；旧 manifest 与旧 `__tables__.xml` 不会被本次失败覆盖 |
+| 扫描/验证失败 | `SyncSchema` 失败不会调用 CLI；此前 conf/初始化目录可能已变，XML 回滚仅覆盖 manifest 保存失败 |
 
 ---
 
@@ -184,3 +185,13 @@ bool dataSuccess = EditorUtil.Luban.Pipeline.ExportData(ctx);
 - [IDataTableUnitSetting.md](../../../Runtime/Core/Table/IDataTableUnitSetting.md)
 - [TableComponentInspector.md](../../Inspectors/TableComponentInspector/TableComponentInspector.md)
 - [ConfigComponentInspector.md](../../Inspectors/ConfigComponentInspector/ConfigComponentInspector.md)
+
+## 原语与模块编排的边界
+
+直接 Pipeline/CLI 会写传入输出目录及源 `_configs`，不提供模块总事务；事务与租约由 UI、Network、Sound、Vibrate、Localization 的上层编排承担。ExportAll 的 TargetUnit 不限制 PackageAll/MapAll；单文件过滤文件名主要是日志辅助，不是完整发布集合。环境版本越界分支允许告警继续，不能单看 IsReady 推断 Pipeline 一定拒绝。
+
+JSON 聚合可继续处理后续 Unit，前项失败不回滚已写项；XML 缺失/无映射可返回 true 而不写目标。表名 lower 依当前文化，同名后项覆盖，JSON 值不限数组。Binary 打包按 lowerInvariant 表名排序，重复名拒绝，整包在内存拼装，单 Unit 可生成空包；退出码或计数都不能替代 Runtime 解码。
+
+代码 Map 生成按字符规则筛 key，不拒 C# 保留字；Desc 未完整转义，可能生成不可编译代码。缺 JSON/表文件可仅警告或空结果，计数包含跳过的不合法键，不代表实际合法属性数量。旧 marker 块按文本删除，无结束 marker 可截后文；只用于已确定的生成文件。编译完成事件在这里只延迟日志，没有判断错误或绑定本次完整编译。
+
+SchemaManifest 校验会就地规范路径/排序再可能失败，不是不可变快照；空 Units/Tables 可合法。路径规则不等于 IO 安全根；固定 .tmp/rollback 文件不提供并发锁。ConfigSyncer 仅更新 conf 的第一个 target 对象，错误可只日志；manifest 保存失败只恢复 XML，conf/初始化目录不回滚。扩展名大写 XLSX 会走非 Excel 输入拼接分支，调用方需保持真实源约定。

@@ -395,7 +395,7 @@ namespace NovaFramework.Editor
 
             /// <summary>
             /// 安装指定包：先按 dependencies + registry 命中检测缺库，缺失则引导并中止；
-            /// 全命中则为命中依赖自动配 scope 并写 manifest 触发 UPM 解析安装。
+            /// 全命中则先记录重要声明的单包或批量范围，再写 manifest 触发 UPM 解析安装；返回 true 仅表示已提交。
             /// </summary>
             public static bool InstallPackage(string manifestPath, string registryUrl, string registryName, PackageDisplayEntry entry, IReadOnlyDictionary<string, RegistrySource> knownRegistryPackages)
             {
@@ -438,8 +438,18 @@ namespace NovaFramework.Editor
 
                 ApplyInstallManifestChanges(manifest, registryUrl, registryName, entry, check);
 
-                SaveManifest(manifestPath, manifest);
+                string importantBatchId = ImportantUpdates.RecordUpgrade(entry);
+                try
+                {
+                    SaveManifest(manifestPath, manifest);
+                }
+                catch
+                {
+                    ImportantUpdates.CancelUpgrade(importantBatchId, entry.Name);
+                    throw;
+                }
                 ResolvePackages();
+                ImportantUpdates.UpgradeSubmitted();
 
                 entry.LockedVersion = entry.LatestVersion;
                 entry.IsDirectDependency = true;

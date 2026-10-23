@@ -68,11 +68,11 @@ private static void ResetStatics()
 
 ## 静态 Component 属性（Nova.Visitors.cs）
 
-> **线程可见性**：所有静态属性仅在主线程 `Start()` 中赋值，无 volatile / 内存屏障保护。后台线程不应直接读取这些属性，否则可能读到未初始化的 `null` 值。
+> **线程可见性**：`Self` 在主线程 `Awake()` 中赋值，其余静态 Component 属性在主线程 `Start()` 中赋值，无 volatile / 内存屏障保护。后台线程不应直接读取这些属性，否则可能读到未初始化的 `null` 值。
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| `Nova.Self` | `Nova` | Nova 自身引用（Start 赋值） |
+| `Nova.Self` | `Nova` | Nova 自身引用（Awake 单例校验后赋值） |
 | `Nova.Asset` | `AssetComponent` | 资源加载/卸载；`Nova.Asset.EnableHotfix: bool`（只读，委托 AssetComponent.m_EnableHotfix） |
 | `Nova.Config` | `ConfigComponent` | 配置数据（异步加载，LoadConfigAsync） |
 | `Nova.Prefab` | `PrefabComponent` | 预制体加载/缓存/实例化 |
@@ -102,9 +102,9 @@ private static void ResetStatics()
 | `m_RunInBackground` | `true` | `RunInBackground`（可读写） | `Application.runInBackground` |
 | `m_NeverSleep` | `true` | `NeverSleep`（可读写） | `Screen.sleepTimeout` |
 | `m_ReferenceStrictCheckType` | `AlwaysEnable` | — | 引用池严格检查模式（见下表） |
-| `m_CurTxtHelperTypeName` | `""` | `CurTxtHelperTypeName` | ITxtHelper 实现类型全名 |
-| `m_CurLogHelperTypeName` | `""` | `CurLogHelperTypeName` | ILogHelper 实现类型全名 |
-| `m_CurReferenceHelperTypeName` | `""` | `CurReferenceHelperTypeName` | IReferenceHelper 实现类型全名 |
+| `m_CurTxtHelperTypeName` | `null` | `CurTxtHelperTypeName` | ITxtHelper 实现类型全名 |
+| `m_CurLogHelperTypeName` | `null` | `CurLogHelperTypeName` | ILogHelper 实现类型全名 |
+| `m_CurReferenceHelperTypeName` | `null` | `CurReferenceHelperTypeName` | IReferenceHelper 实现类型全名 |
 
 **计算属性：**
 
@@ -131,7 +131,7 @@ Nova 使用 `[DefaultExecutionOrder(-1000)]` 确保其 `Awake()` 和 `Start()` �
 | 保证 | 含义 |
 |------|------|
 | **所有 Awake 先于所有 Start** | 所有 FrameworkComponent（含 Nova）的 `Awake()` 完成后，任何 `Start()` 才开始执行。因此 Nova.Start() 读取 `FrameworkComponentsGroup` 时，所有子组件已注册完毕 |
-| **同帧内 Start 不依赖顺序** | Nova.Start() 只做引用赋值，不调用任何 Manager；Manager 在各 Component.Start() 中独立创建。因此各 Component.Start() 执行顺序不影响结果 |
+| **创建与初始化分阶段** | 子组件通常在 `Awake()` 创建并注册自己的 Manager，`Start()` 获取跨组件依赖并调用 `Initialize(config)`。`Nova.Start()` 先聚合并校验组件，不代替各模块初始化；业务异步加载仍须等待对应的显式加载链，不能推断所有 `Start()` 无时序要求 |
 
 > **结论：所有 FrameworkComponent 必须挂载在场景中且 GameObject 处于 Active 状态**，否则其 `Awake()` 不执行，`Nova.Start()` 取到 `null`。
 
@@ -192,6 +192,16 @@ ClearStaticReferences();               // 清空所有静态 Component 属性
 | `static void ValidateComponent(FrameworkComponent, string)` | 校验组件非空，空时输出标准化错误日志 |
 
 ---
+
+## 状态和失败边界
+
+静态 getter 只取引用，private setter 只保存引用；聚合不加载或等待模块就绪。ClearStaticReferences 清 18 个引用而不 Dispose 对象，ResetStatics 还清安装时间内存缓存，不清持久化记录。OnDestroy 的 Manager Shutdown 若抛错，之后的 lowMemory 注销、静态引用和组件注册清理会被跳过；Update 的 Manager 异常同样向外传播。
+
+安装时间保存键为启动期 PlatformPlayerPrefs 的 `Nova.InstallTimeMs`，不是 Persist 分类表项。先用缓存，再以 InvariantCulture、NumberStyles.None 解析字符串并校验 `[1000000000000,9999999999999]`；仅校验 13 位范围，不证明真实安装日期或非未来。无效时取当前 UTC 并校验、SetString/Save 后才缓存，存储异常可阻断 Awake。
+
+运行时设置 getter 读取本字段，不反查 Unity 全局状态。GameSpeed setter 对负数和 NaN 取 0，正无穷仍会传给 Unity；Awake 直接采用序列化字段，绕过 setter。暂停已暂停时短路，恢复仅在字段表示暂停时使用旧缓存，正常速度按精确 `==1f` 判断；直接改 Time.timeScale 可使状态不一致。FrameRate 没有数值检查，常亮 false 使用 SystemSetting；实际后台和帧率效果受平台控制。
+
+Helper 初始化 try-catch 仅隔离正常日志处理的失败，catch 内日志仍可抛错。SetCultureInfo 也可能只完成部分设置后记录异常。严格检查只依据 ReferenceStrictCheckType 与 Editor/debugBuild，不等同 DevelopMode；未知枚举返回 false。lowMemory 依次清引用池、发起 UnloadUnusedAssets、GC，未等待资源卸载且不强制回收仍有引用的资源。OnApplicationPause/OnApplicationQuit 仅日志，不广播 SDK、不改变 GameSpeed，也不证明存档清理成功。QuitApplication 只是发起退出。
 
 ## 关联文档
 

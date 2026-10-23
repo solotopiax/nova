@@ -33,7 +33,7 @@ UnityEditor.EditorWindow
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `c_WindowTitle` | `const string` | `"Nova · CheckUpdate"` | 窗口标题 |
-| `c_MinWidth` | `const float` | `520f` | 窗口最小宽度 |
+| `c_MinWidth` | `const float` | `760f` | 窗口最小宽度 |
 | `c_MinHeight` | `const float` | `320f` | 窗口最小高度 |
 | `c_RowSpacing` | `const float` | `4f` | 行间距（singleLineHeight + c_RowSpacing = 行高） |
 | `c_UpgradeVersionHueCyclesPerSecond` | `const float` | `0.65f` | 可升级版本号彩虹色的每秒色相循环次数，与 PlugPals 保持一致 |
@@ -155,7 +155,7 @@ CheckUpdateWindow.Open();
 
 | 场景 | 说明 |
 |------|------|
-| `m_DontShowAgain` 生效时机 | 勾选后需**关闭窗口**才触发 `OnDisable` 写入 `MarkSkip`；直接点击 Close 调用 `Close()` 会触发 `OnDisable` |
+| `m_DontShowAgain` 生效时机 | 勾选后在窗口禁用（包括关闭、域重载）时触发 `OnDisable` 写入 `MarkSkip`；直接点击 Close 调用 `Close()` 会触发 `OnDisable` |
 | 重复打开防抖 | `Open()` 检查 `m_IsChecking`，若正在拉取则仅 Focus 不重新发起请求 |
 | Latest 列颜色含义 | 仅当前版本确实低于远端版本时，版本号以缓慢、平滑的彩虹色循环提示升级；其他条目保持普通文本色 |
 | 包名排序规则 | 外网与内部云仓库条目合并后统一按**包名**字母升序展示，不按仓库分组顺序绘制 |
@@ -172,3 +172,9 @@ CheckUpdateWindow.Open();
 - [PlugPalsWindow.md](PlugPalsWindow.md) — UPM 包管理窗口（同类窗口参考）
 - [EditorUtil.Draw.md](../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) — GUI 绘制工具集
 - [Editor.md](../Editor.md) — Editor 层级总览
+
+## 异步与关闭边界
+
+检查仅在 await 后核 singleton 非空，不绑定原窗口实例或请求身份；关闭再打开、或直接 Open(items) 后，旧检查仍可能覆盖新列表。Open(items) 不取消旧请求。日志按钮点击时重读当前 registry 配置，并按条目引用是否属于内部列表选来源，未知引用默认外网；展示期间换仓会让旧条目查询新 URL。所有查询使用 None token，无窗口关闭取消。
+
+“不再提示”在 OnDisable 保存，域重载/禁用也可能触发，并非只点关闭。两个来源分别存盘，后一步失败不回滚前一步；点击打开 PlugPals 后关闭同样会保存勾选。失败被下层转为空时会显示无更新，不能据此验收网络或版本检查。窄窗列宽、滚动区及部分颜色/缩进恢复没有完整异常保护，属于显示边界，不改变安装状态。

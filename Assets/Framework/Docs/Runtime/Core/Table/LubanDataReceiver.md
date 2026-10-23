@@ -106,6 +106,14 @@ bool success = await new LubanDataReceiver(
 - `Map` 模式的冲突检测依赖 `IndexField`；若字段为空，则不会做主键去重。
 - `OnParseDataAsset(byte[])` 的实现只是把 UTF-8 字节流转成字符串，再复用字符串解析逻辑。
 - 这个类只负责“拆数据到缓存”，不负责反射构造 `*Tables` 实例；那一步由 `LubanTablesLoader` 和对应模块管理器完成。
+- JSON 构造器保存 unit 的来源、Mode、IndexField 当时值，空字符串字段归空，之后修改 unit 不更新该 Receiver。字符串入口直接 JObject.Parse，无效文本异常传播；字节入口按 UTF-8/BOM 读取，捕获异常并返回 false。
+- Map 检查只比较已有数组的键与新增批次，不检查第一批内部、新批内部的重复或缺失字段。缓存 key 的 ToLower 使用当前文化。逐 Sheet 合并没有事务或统一锁，后段冲突/异常会保留前段写入；base 再回退 text 时可能重复处理已成功 Sheet。DataMap/SourceTracker 都是原可变字典引用，Clear 不释放已被其他引用持有的数据，也不保证与解析并发互斥。
+
+## Binary Unit 接收路径
+
+`LubanRuntimeData.CreateReceiver` 仅在 format 恰为 Binary 时创建 `LubanBinaryDataReceiver`，其余枚举值走 JSON；它只选接收器，不读取资源或构造 Tables。Binary 构造拒绝 null cache/unit/AssetLocation，但不拒绝空地址，不读取 Mode/IndexField。协议为 ASCII `NLBP`、版本 1、小端表数量，再逐个读取长度前缀 UTF-8 名称和原始 payload；读取长度拒绝负值、超过剩余或短读，UTF-8 默认替代坏序列，不验证名称与 Binding 一致。
+
+Binary 在 DataMap 锁内逐表保存独立字节数组和来源，现有或同包重复名称、截断、负数量、尾随字节等错误记录 Error 后返回 false；零表包也返回 false。已经加入的表不回滚，没有额外总表数/总字节预算。字符串解析固定 false，不能用文本代替 Binary；magic 比较是普通逐字节比较，既不恒定时间，也不是认证或加密校验。
 
 ## 关联文档
 

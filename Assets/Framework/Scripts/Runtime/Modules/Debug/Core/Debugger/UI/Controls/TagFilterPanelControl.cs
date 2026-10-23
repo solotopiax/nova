@@ -693,11 +693,11 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 统计 pending 集合中实际命中的叶子数量（与节点树对照，避免计入无效 key）。
+        /// 统计 pending 集合命中的全部树节点，含父节点；忽略树中不存在的 key，并非只计叶子。
         /// </summary>
         /// <param name="pending">当前 pending 集合。</param>
         /// <param name="nodes">节点字典。</param>
-        /// <returns>已选中叶子数量。</returns>
+        /// <returns>已选中的有效节点数量，包含父节点。</returns>
         private static int CountLeaves(HashSet<string> pending, SortedDictionary<string, TagNode> nodes)
         {
             int total = 0;

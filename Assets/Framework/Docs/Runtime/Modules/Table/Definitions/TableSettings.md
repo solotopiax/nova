@@ -53,6 +53,12 @@ Table 的工程配置、导出目录和加载描述中的 `AssetPath` 都保存�
 
 `Packages/com.solotopia.nova.framework/Templates/Luban/...` 是框架模板的持久化逻辑路径，不参与 Sample 根替换。执行导出时会根据当前安装形态解析为开发态 `Assets/Framework` 或消费态 Package resolved path；旧资产中已有的 `Assets/Framework/Templates/Luban/...` 仍兼容解析。`AssetAddress`、`DataFile` 和 Binding 类型不是文件路径，不参与自动纠正。
 
+## 默认描述构造
+
+new TableSettings 只初始化空 Projects 与 Runtime，不自动调用 CreateDefault。CreateDefault 返回 main/Main，ConfigPath 指向 MainDemo 的 luban.conf，并新建五个预设；CreateBuiltIn 无参根是 `Assets/Samples/MainDemo`，有参仅去尾斜杠，null 根变空而可形成 `/Scripts/...` 路径，不校验工程范围或实际存在。
+
+五预设 JSON/Binary/Protobuf Binary/Protobuf JSON/MsgPack 仅 JSON Enabled=true，Target 默认 table、OutputScope 默认 AllTables，代码/数据目录分别拼 Scripts/Runtime/DataTypes/Tables 与 Jsons/Tables。CodeTargets 按逗号 Split 而不 Trim/去重（null 会失败），DataTargets 只放单项；名称、ID、Format 和路径仅赋值。两个框架 Luban 模板逻辑目录随 DTO 保存，构造不读写配置、启动 CLI 或证明生成物存在。
+
 ## 多语言
 
 语言表、语言列和区域差异继续使用 Luban 原生 Target、Tags、字段变体、自定义模板与高级参数表达。Table 不限制这些机制，也不接管 Localization 模块自己的专用数据链。

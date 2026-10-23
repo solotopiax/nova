@@ -35,9 +35,9 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         private VoucherWalletData m_Current = VoucherWalletData.NotReady(string.Empty, 0);
 
         /// <summary>
-        /// 当前 generation 正在执行的钱包刷新任务。
+        /// 当前 generation 正在执行的钱包刷新共享完成源，支持未完成时并发等待。
         /// </summary>
-        private UniTask<VoucherRefreshResult> m_RefreshTask;
+        private AsyncLazy<VoucherRefreshResult> m_RefreshTask;
 
         /// <summary>
         /// 当前共享刷新任务所属的账号 generation。

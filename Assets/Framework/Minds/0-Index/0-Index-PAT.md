@@ -48,7 +48,7 @@ auto_generated: true
 
 - [PAT-05 L0/L1/L2 三级文档体系 + S 级标准](../2-Areas/Patterns/PAT-05-l0-l1-l2-docs.md) — Docs 采用 L0/L1/L2 分层并保持互不重复
 - [PAT-109 UPM Kit/SDK 包必备 Nova/Docs 文档目录](../2-Areas/Patterns/PAT-109-upm-package-docs-mandatory.md) — Kit/SDK 包必带 Nova/Docs 与 INDEX.md
-- [PAT-115 CHANGELOG 写人话](../2-Areas/Patterns/PAT-115-changelog-human-readable.md) — 每项变更一句用户视角概括，禁列字段、签名、文件清单
+- [PAT-115 CHANGELOG 与项目组文案写人话](../2-Areas/Patterns/PAT-115-changelog-human-readable.md) — 先讲功能作用，重要更新按实质筛选，变更分类有正文才出现
 - [PAT-116 cs↔Docs 镜像同步铁律](../2-Areas/Patterns/PAT-116-cs-doc-mirror-sync.md) — 代码事实变化时必须同轮刷新 Docs 镜像
 - [PAT-65 Demo 接口覆盖标准：8 维 + 取舍规则](../2-Areas/Patterns/PAT-65-demo-coverage-standard.md) — 8 维覆盖矩阵 + 重载族折叠 + 模块 12 叶子上限
 - [PAT-77 BaseDemoView 三段式 Demo View 模板](../2-Areas/Patterns/PAT-77-base-demo-view-three-zone-template.md) — 标题栏+交互区+反馈区三段式+Nova门面API演示
@@ -91,7 +91,7 @@ auto_generated: true
 - [PAT-10 IMGUI 自定义 Popup 必须 Layout.Horizontal 包裹 Label + 控件](../2-Areas/Patterns/PAT-10-imgui-popup-horizontal-wrap.md) — IMGUI Popup需横向包裹避免错位抖动
 - [PAT-128 Inspector 持久化 UI 状态勿每帧强写](../2-Areas/Patterns/PAT-128-inspector-oninspectorgui-state-antipattern.md) — 持久化 UI 状态只在 OnEnable 设一次，绘制回调禁每帧强写
 - [PAT-149 IMGUI Foldout 展开位移先查布局 margin 传播](../2-Areas/Patterns/PAT-149-imgui-foldout-margin-propagation-layout-shift.md) — Foldout 位移先量 Rect 并阻断 margin 传播
-- [PAT-20 Editor 配置详情页标题与缩进规则](../2-Areas/Patterns/PAT-20-editor-panel-title-indent.md) — Editor详情页统一标题内容边界区域留白与紧凑操作层级
+- [PAT-20 Editor 配置详情页标题与缩进规则](../2-Areas/Patterns/PAT-20-editor-panel-title-indent.md) — Editor详情页统一分区标题横线及操作状态与说明层级
 - [PAT-21 Inspector HelpBox 用户视角与多语义分行规则](../2-Areas/Patterns/PAT-21-inspector-helpbox-multiline.md) — HelpBox 只写用户需要的用途影响与操作且多条信息必须分行
 - [PAT-22 IMGUI TextField 切数据源前必须先释放焦点](../2-Areas/Patterns/PAT-22-imgui-textfield-focus-release.md) — IMGUI TextField编辑后需主动释放焦点
 - [PAT-24 Inspector 同层级编辑区对齐规则](../2-Areas/Patterns/PAT-24-inspector-row-vertical-alignment.md) — Inspector 同层级编辑区垂直对齐

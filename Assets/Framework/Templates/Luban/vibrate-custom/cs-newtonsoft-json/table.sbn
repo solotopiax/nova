@@ -10,7 +10,7 @@ using Luban;
     end
 
     func table_union_map_type_name
-        ret 'global::global::System.Collections.Generic.Dictionary<(' + (array.each __table.index_list @index_type_name | array.join ', ') + '), ' + (declaring_type_name __value_type)  + '>'
+        ret 'global::System.Collections.Generic.Dictionary<(' + (array.each __table.index_list @index_type_name | array.join ', ') + '), ' + (declaring_type_name __value_type)  + '>'
     end
 
     func table_key_list

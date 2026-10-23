@@ -58,6 +58,8 @@
 - 正在加载则等待同一个 `UniTaskCompletionSource`
 - 真正加载只会进入 Manager 一次
 
+成功后重复调用直返 true；进行中等待同一完成源，失败/异常转换为 false 后允许重试。IsLoadOver 只记录异步结果，不证明表组非空、插件已编译或设备真实振动；销毁不会由这个标志取消在途加载。
+
 ### 4. 组件层是纯门面
 
 组件公开的 `Play()`、`Play(VibrateType)`、`PlayCustom(...)`、`PlayEmphasis(...)`、`StopAll()`、`Enable`、`IsSupported`，本质都只是透传给 Manager。
@@ -66,7 +68,7 @@
 
 - `VibrateSettings` 为空会直接抛异常，不是忽略配置。
 - 组件层不区分插件可用性；设备支持与插件编译开关由 Manager 决定。
-- `LoadSync()` 是 fire-and-forget 门面，不返回是否成功。
+- `LoadSync()` 直接同步调用 Manager，不返回 bool，不设置 IsLoadOver，也不与异步加载合流；它不是异步 fire-and-forget。
 
 ## 继续阅读
 

@@ -145,8 +145,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 根据父节点宽度和祖父节点高度动态设置自身 LayoutElement 的 minWidth/minHeight，
-        /// 使本节点恰好填满父节点中其他兄弟节点之外的剩余空间。
+        /// 保留布局扩展位置；当前方法没有生效语句，不修改 LayoutElement 尺寸。
         /// </summary>
         private void ApplyLayoutElementSize()
         {

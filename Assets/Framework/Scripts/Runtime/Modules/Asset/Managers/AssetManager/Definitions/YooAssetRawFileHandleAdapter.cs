@@ -77,7 +77,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 释放句柄（引用计数 -1），并将适配器归还 ReferencePool。
+        /// 释放本次租约并在 finally 归池；重复保护只限实例未再次 Bind，归池后须丢弃旧引用。
         /// </summary>
         public void Release()
         {

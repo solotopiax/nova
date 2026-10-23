@@ -1,16 +1,16 @@
 # Framework Runtime
 
-**程序集**：`NovaFramework.Runtime.asmdef`  
+**程序集**：`NovaFramework.Runtime`（定义文件：`Scripts/Runtime/NovaFramework.Runtime.asmdef`）
+
 **命名空间**：`NovaFramework.Runtime`
 
 ## 入口说明
 
 `Runtime/` 只记录当前运行时代码事实：
 
-- `Core/`：通用基础设施，如集合、FSM、Log、Reference、Table、Path、Extensions。
-- `Modules/`：框架模块层，包含 `Nova`、各 `FrameworkComponent`、各 `FrameworkManager` 及其定义类型。
-
-当前 `Docs` 中不再把 `Tmp/` 当成 Runtime 正式子模块入口。
+- [Core/](Core/Core.md)：通用基础设施，如集合、FSM、Log、Reference、Table、Path、Extensions。
+- [Modules/](Modules/Modules.md)：框架模块层，包含 `Nova`、各 `FrameworkComponent`、各 `FrameworkManager` 及其定义类型。
+- [Utils/](Utils/Utils.md)：`Util` 工具文档导航；对应源码位于 `Scripts/Runtime/Core/Util/`。
 
 ## 模块导航
 

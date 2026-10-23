@@ -76,8 +76,8 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 这两个方法都只处理 UI 表数据：
 
 1. 遍历 `m_UnitSettings`
-2. 用 `LubanDataReceiver` 把 JSON 拆到 `LubanDataCache`
-3. 通过 `IConfigManager.Namespace` 调 `LubanTablesLoader.Load("UITables", namespace, loader)`
+2. 用 `LubanRuntimeData.CreateReceiver` 按 DataFormat 读取 JSON/Binary 到 `LubanDataCache`
+3. 通过 `IConfigManager.Namespace` 调 `LubanRuntimeData.LoadTables` 构造 `UITables`
 4. 从各表里抽出 `IUIViewRow`
 5. 填充 `m_UIViewRegistry`
 
@@ -86,6 +86,10 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 - 这里不会创建任何 UI 实例
 - 这里解决的是“泛型打开时能不能找到配置”
 - `UIManager` 本身没有 `IsLoadOver`，加载幂等和并发合并在 `UIComponent`
+
+空 Unit/空缓存可能返回 true，不证明有目标注册项；类型不匹配跳过并警告，空行/空 Name 跳过，重复 Name 保留首项并警告。注册表不在每次构建前自动清空，重载不是替换整份注册表的事务。泛型键是 `typeof(T).Name` 短名，跨 namespace 同名类型不会自动隔离。
+
+注册表资源委托取 TextAsset 后立即 Release 句柄再返回给解析器，后续 release 委托为空，未复制 bytes；因此不具备“解析完成才释放”的所有权保证，异常也没有统一 finally 补偿。
 
 ### 4. OpenUIView：先准备，再决定走对象池还是加载
 
@@ -103,6 +107,12 @@ UI 视图如果要走对象池，前提是这一步已经完成。
   - 同步版：立刻实例化 Prefab
   - 异步版：记入 `m_UIViewsBeingLoaded`，等待回调成功后再真正打开
 
+字符串省略参数时默认 PauseCoveredUIView=false、InObjectPools=true、userData=null；泛型入口从注册行读取 AssetLocation/UIGroupName/PauseCoveredUIView/InObjectPools，显式参数覆盖对应默认。池名由原资源地址得到，不做路径规范化；编号分配跳过已打开索引，但不同时检查 loading 编号。
+
+创建实例后会按分组父节点重新归零 localPosition/rotation/scale，并要求根上已有 UIView 子类，不能用任意 IUIView 实现替代这条 Prefab 入口。InternalOpen 按 OnInit→加入组/索引→OnOpen→Refresh 顺序执行，异常包装后传播，但已建立索引、池登记、实例没有完整回滚。UIView 的新实例初始化钩子自身还可能记录并吞异常，继续进入打开链。
+
+异步路径捕获资源/打开异常并转失败事件，事件订阅者异常会记录；主动关闭加载请求或 Shutdown 后的迟到实例走释放分支，不报打开失败。OpenUIViewInfo 来自引用池，Clear 清 group/userData 引用，不销毁业务对象。userData 跨加载等待时的有效性由调用者管理。
+
 ### 5. CloseUIView：先脱离分组，再进入回收队列
 
 已加载视图关闭时：
@@ -114,6 +124,10 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 5. 进入 `m_RecycleQueue`
 
 真正的实例归还 / 销毁，不在 `CloseUIView` 里立刻做，而是在 `Update()` 里按 `DestroyMaxNumPerFrame` 节流处理。
+
+`RemoveUIView` 内部可能先触发该视图的遮挡、暂停回调，随后才从分组移除；`OnClose`、`Refresh` 与入队也不是事务。任一回调抛异常会中断后续步骤，已经移除的分组或索引不会自动回滚。未知 `serialID`、空视图或无有效分组会抛异常，重复关闭不应当作幂等操作。批量关闭先收集已加载视图再逆序关闭，并检查其索引仍存在；它不包含正在加载的视图。关闭加载中视图只标记迟到释放，不取消底层 Prefab 加载。
+
+`Shutdown()` 先标记关闭，处理加载中和已加载视图，再直接清回收队列与内部引用；不能把清空队列解释为逐项执行了 `OnRecycle`、归池或销毁。实例池与 Prefab 的最终清理由各自 Manager 生命周期继续承担；关闭回调异常仍可能使本管理器后续清理中断。
 
 ### 6. UIGroup.Refresh：决定深度、遮挡、暂停
 
@@ -130,6 +144,22 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 - 下层视图会进入 `OnCover()`
 - 一旦某个视图 `PauseCoveredUIView == true`，它下面的视图都会进入暂停态
 - `Update()` 只驱动链表头开始那一段“连续未暂停”的视图
+
+组中每视图信息持有 Paused/Covered 标记，标记不等同 GameObject 当前 active 状态。Refresh 复制当前链表到共享快照再调用深度和状态回调，检查重入或视图移除；没有逐回调隔离或 finally，异常可留下快照与部分标记。组 Pause/Depth setter 先写字段再刷新，失败不回滚。
+
+AddUIView 不拒绝重复实例，链表与实例索引可能不一致；组 Refocus 只把节点移到头，Manager 再 Refresh 并调用视图 OnRefocus。Update 缓存下一节点并处理移除，但回调抛异常会阻断本帧后续视图。不要从回调调用顺序推导业务回调均已完成。
+
+### 7. 查询、回收与调优
+
+公开 GetAll/GetUIViews 的 List 重载校验后先 Clear 再填本次结果，数组重载为副本；组内部收集 helper 才是追加。结果只含当前已加载组/索引，不包括 loading、回收队列或闲置池；地址严格比较，不统一规范化。共享收集缓存不是线程安全/可重入快照。
+
+IsValidUIView 只检查非 null 和其 SerialID 是否存在，不比较索引中的实例引用；不能当强身份验证。Component 的 UIView 查询还会把 IUIView 强转 UIView，自定义接口实现可能失败。
+
+Update 出队后先 OnRecycle，再按 InObjectPools 归池或销毁；DestroyMaxNumPerFrame<=0 会让回收队列不推进，OnRecycle 异常中断后续处理。UIViewInstanceObject.Clear 只清包装，Release 才经 IPrefabManager.Destroy；仅 Clear 不能证明目标已销毁。
+
+实例池四项属性在池未创建时 getter 读初始化缓存，Manager setter 警告并丢弃该次修改；Component setter 会先保留自身字段再转发，二者不能混为同一保存层。SetUIViewTargetLocked 只锁对象池回收资格，不锁输入/遮挡；SetUIViewTargetPriority 只改该 target 的池优先级，不改 Canvas 深度。
+
+DefaultSafeAreaProvider 直接从 Screen.safeArea 给出 Left=xMin、Right=xMax、Top=yMin、Bottom=yMax、PixelRatio=1。Manager 计算宽=Right-Left、高=Bottom-Top，非 GUI y=Top，GUI y=ScreenHeight-height-Top，再乘 PixelRatio 并向上取整。返回物理像素，不自动夹屏幕范围、负尺寸或非有限数；外部 provider 的原点与比例必须按这套字段消费核对。
 
 ## 高价值 API 面
 

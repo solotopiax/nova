@@ -31,6 +31,8 @@ public class HttpSettings
 
 `RequestTimeout` 是每一次物理 HTTP 请求独享的完整总超时。候选链不会由候选数、轮数或重试次数推导额外的链路总超时；Nova.Network 的 HTTP API 将超时参数传为 -1 时使用此默认值。
 
+兼容属性 `BusinessRequestRoundCount` 读写同一个 BusinessFallbackRoundCount 字段，`EnableUwrTelemetry` 读写同一个 EnableUWRTracks 字段，没有独立开关或重试计数。setter 本身不 clamp，也不会自动更新已经 Initialize 的 Manager；Inspector 标注不代替运行时初始化校验。
+
 ## 使用位置
 
 ~~~csharp

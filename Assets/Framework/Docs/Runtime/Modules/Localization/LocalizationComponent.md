@@ -110,3 +110,9 @@
 - [LocalizationManagerConfig.md](LocalizationManagerConfig.md)
 - [LocalizationSettings.md](LocalizationSettings.md)
 - [LocalizationRefreshEventData.md](LocalizationRefreshEventData.md)
+
+## 启动输入与代理边界
+
+Awake 在创建 Manager 前先向 LocalizationBootstrapLanguage 发布 EditorLanguage/RuntimeLanguagePrefer/FallbackLanguage 策略；OnDestroy 不撤销该静态策略。Start 将 DataFormat、支持语言地址、文本/字体单元和固定持久化键传入 Manager，列表共用引用；Settings/Manager 没有额外 null 守卫。LocalizationSettings 访问器返回原设置对象，运行时改动不会自动导出或重新加载。
+
+Language 等访问器在 Manager 缺失时分别返回 Unspecified、索引 -1、名称空串，AutoFontAdapt 返回 false；这不同于直接读序列化字段。其余业务方法主要原样转发，无额外成功校验；LoadAsync true 与 InitCurrentLanguage 返回候选都不能证明当前文本已生效。

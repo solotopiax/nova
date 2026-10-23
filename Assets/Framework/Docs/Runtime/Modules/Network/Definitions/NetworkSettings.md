@@ -107,13 +107,15 @@ IReadOnlyList<IDataTableUnitSetting> IDataTableSettings.Units   // → HostKeyUn
 string IDataTableUnitSetting.SourcePath          // #if UNITY_EDITOR
 string IDataTableUnitSetting.DatasExportPath     // #if UNITY_EDITOR
 string IDataTableUnitSetting.ClassesExportPath   // #if UNITY_EDITOR
-string IDataTableUnitSetting.LubanInputPath      // #if UNITY_EDITOR，"_temp/" + Path.GetFileName(SourcePath)
+string IDataTableUnitSetting.LubanInputPath      // #if UNITY_EDITOR，"_temp/" + Path.GetFileNameWithoutExtension(SourcePath)
 string IDataTableUnitSetting.AssetLocation
 DataTableMode IDataTableUnitSetting.Mode         // 固定 Map
 string IDataTableUnitSetting.IndexField          // 固定 "Name"
 ```
 
 Excel Sheet 结构由 Network 导出器预过滤后交给 Pipeline 扫描，并保存在本次 Editor-only schema manifest 快照中；不进入该 Runtime 接口或单元序列化字段。
+
+Units 返回原列表的只读接口，并非复制或冻结；字段为 null 时每次返回新的空列表，不写回字段。Map/Name 是接口固定元数据，不验证表中 Name 真实存在或唯一；LubanInputPath 只去目录和扩展名，同名源文件仍可能撞临时名，getter 不核文件存在。
 
 HostKey 与 NetCmd 必须使用同一个 `DataFormat`。JSON 产物使用 `.json`，Binary 产物使用 `.bytes`；发布选中格式时会在同一事务中删除同名反格式文件及其 `.meta`。
 

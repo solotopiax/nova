@@ -55,7 +55,7 @@ IAP Products 支持在 Inspector 中通过 Excel 批量维护：
 - 为兼容旧表，导入器仍支持第一行直接写上述固定表头的 Excel。
 - `ProductType` 只接受 `IAPProductType` 枚举名：`Consumable`、`NonConsumable`、`Subscription`。
 - 阻断导入的校验项：`TableId` 必填且必须是 `1~4294967295` 范围内的整数且不重复，`ProductType` 必须是枚举名，`SubGroupID` 非空时必须是整数。
-- 其他字段允许为空；`EditorNote` 是编辑器备注，导入后也完全以 Excel 为准。
+- 其他字段允许为空；`EditorNote` 是商品配置备注，导入后完全以 Excel 为准，并随商品条目导出到 `ConfigRuntimeSO`。
 
 ## 3. 关键字段
 
@@ -113,9 +113,9 @@ public readonly ReplayEvent<IReadOnlyList<IAPResult>> NonConsumeRestored
 ```
 OnInitializeAsync(config, ct)
   ├── 重建 IAPPlugin 运行期后台任务取消源
-  ├── config as IAPPluginConfig，失败则 Warning 后返回
+  ├── config as IAPPluginConfig，缺失或类型不匹配则 Warning 后抛 InvalidOperationException
   ├── 应用 EnableIAPLog 到 IAPLog.SetEnabled
-  ├── Products 为空则 Warning 后返回，不创建 Store
+  ├── Products 为空则 Warning 后抛 InvalidOperationException，不创建 Store
   ├── BuildStoreContext(config)
   ├── BuildStoreConfigMap(config)
   ├── m_PurchasesTable = new IAPProductTableService(config.Products)
@@ -208,3 +208,25 @@ if (!result.IsSuccess)
 
 **误区 6：把 `EnableAlwaysPaySucceed` 当成移动端可用的运行时功能。**
 该开关只用于 Editor 调试支付链路。移动端编译产物不会包含 Store 的 mock 支付成功分支，且 `IAPPlugin` 构造上下文时会把该值强制置为 false。正式发货仍必须以服务端验单结果为准。
+
+## 8. 查询、配置编辑与失败边界
+
+### 商品表是初始化时的缓存
+
+`IAPProductTableService` 保留传入的商品列表和条目引用，只在构造时建立缓存；`IReadOnlyList` 不代表深度不可变，之后修改原列表或条目不会自动重建索引。`TableId` 为 0 的条目不入主键索引，负值没有在该层拒绝；`ProductID` 为空时不入 SKU 索引，非空值按区分大小写的 Ordinal 比较，重复主键和 SKU 保留首条。`ThirdProductID` 不参与该 SKU 索引。类型桶保留全部非空条目；订阅组桶只收录 `Subscription` 且 `SubGroupID != 0` 的条目，但 `AreInSameSubGroup` 本身只比较两个非空条目的非零组号，不额外验证商品类型。
+
+`IAPProductEntry` 的字符串源码初值为 null、数值为零；这些初值和 getter 不验证当前配置、平台 SKU、金额或币种。`ProductInfo` 仅保存平台展示文本；`IAPResult.IsSuccess`、`CanDeliver`、`OrderId`、到期时间及 `StoreType` 各有独立含义。稳定订单失败仍可携带订单号和补单标记，成功也可禁止发货；`WithStoreType` 修改并返回原结果对象，事件桥也不复制结果或列表。业务必须按结果域与 `CanDeliver` 判断，并自行实现发货幂等。
+
+### Inspector 和 Excel 只改配置源
+
+Excel 单元格统一裁剪首尾空白，列名和商品类型名区分大小写；额外列允许存在。标准九列表头优先，其次查首个 `##var` 行；A 列以任意 `##` 开头的行都会跳过。合法表头但没有商品数据可以得到 `Success=true` 和空列表；该标记只表示错误列表为空，不能证明商品足够初始化。解析器验证 TableId、ProductType、SubGroupID，不验证 SKU 是否已上架、价格正数/有限、币种或订阅组的业务有效性。某行的合法 ID 会先加入去重集合，之后该行其他列失败也不会撤回该 ID，因此后续相同 ID 仍报重复。
+
+导入确认后 `ApplyProducts` 记录 Undo、清空并逐项覆盖数组，随后 Apply/SetDirty；它不重新验证外部构造的商品 DTO，也没有跨字段回滚。中途异常可能留下部分序列化编辑。列表的重复 ID 红色标记只做提示；同数量的外部内容替换不一定使当前 Drawer 的过滤缓存立即失效。模板导出会覆盖用户所选文件，取消文件对话框才是无写入；当前模板路径查询只探项目的 `UPMPackages/...` 和 `Packages/...`，不能从找到开发态模板推断任意 registry 缓存布局已验收。
+
+这些操作不保存或重新导出 `ConfigRuntimeSO`。上传按钮在 Editor delayCall 中读取执行时已导出的 Runtime 配置，可能与 Inspector 当前未保存、未导出的 Products 不同；目录协议和一次提交边界见 [IAPProductCatalogProtocol.md](./IAPProductCatalogProtocol.md)。
+
+### 调度完成不保证所有 Store 完成
+
+Store 配置同类型重复时保留首条；发现顺序没有排序，`FindStore` 和 `TryGetCapability<T>` 取首个匹配实例，能力查询不额外验证启用或 Ready。反射只扫描当前已加载程序集；某程序集 `GetTypes` 出现 `ReflectionTypeLoadException` 时会跳过整个程序集。Store 类型检查不证明可构造、裁剪后仍存在或已经可支付。
+
+`PayAsync<T>` 使用 `as T` 转换结果，T 与实际结果不兼容时可能返回 null。Restore 只聚合能转换成 T 的结果。`SetStoreEnabled` 先改运行期开关再尝试懒初始化，初始化抛错不会自动恢复开关；它不改配置源，也不取消既有交易。后台任务入口只通知取消并捕获任务异常，不等待所有任务退场、不自动重试；取消回调、Store Dispose、事件监听或打点抛错仍可能中断后续收尾。账号切换、交易取消、平台退出及发货是不同动作，不能由一个入口正常返回互相推定。

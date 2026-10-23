@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-edit-settings",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.6.7f1"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.inspect-target",
+      "when": "读取项目自有普通SO或精确Prefab组件的真实字段、类型、tooltip、当前值及可写边界"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.patch-target",
+      "when": "精确目标及字段值已授权，预演后仅保存一个自有Prefab或普通SO文件，并只读Verify"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.settings.patch-build-defines",
+      "when": "精确Active NamedBuildTarget与最终完整symbols数组已授权；[]明确清空，Plan冻结全PlayerSettings及其他ProjectSettings文件；Execute只保存宏并等待本轮编译重载后Verify，漂移/草稿/写后失败不重放"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_asset(action=search|get_info|get_components) + find_gameobjects + mcpforunity://scene/gameobject/{instance_id}/components + manage_prefabs(action=get_info|get_hierarchy)",
+      "when": "只读发现实际项目自有场景/Prefab目标、完整路径、当前组件身份/索引、字段及变体/嵌套来源；不把临时instanceID当持久标识或缺失事件字段当空列表"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "unity_reflect(action=get_type|get_member)",
+      "when": "只读核实精确组件类型、程序集、字段setter或UnityEvent目标方法的public实例签名与重载，不执行方法"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_components(action=set_property, target=<current GameObject ID>, search_method=by_id, component_type=<FullName>, component_index=<confirmed zero-based index>, property=<verified property>, value=<typed JSON>)",
+      "when": "已确认场景或当前Stage的已有内置/业务组件字段及UnityEvent完整持久列表；先核实草稿/生命周期/敏感边界，逐次写入读回，工具仅标脏、不提供Nova Plan/Receipt或保存保证"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_scene(action=get_loaded_scenes|get_active|set_active_scene|load|save|close_scene)",
+      "when": "按已确认scenePath保留加载/草稿基线并只保存实际活动的目标场景；load仅必要additive、close仅本轮无脏态新增场景，save不同path会SaveAs，不保存其它场景"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs(action=modify_contents, prefab_path=<confirmed owned prefab>, target=<unique full object path>, component_properties=<confirmed unique component type fields>)",
+      "when": "Prefab变体/嵌套外层或内置组件有唯一对象及同类组件、无跨上下文内部引用时，隔离Load/Save指定Prefab；冻结当前override与源资产影响，保存后只读核对字段及来源，不能默认Apply/Revert或Unpack"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs(action=open_prefab_stage|save_prefab_stage|close_prefab_stage) + manage_components(action=set_property)",
+      "when": "同Prefab内部事件引用或重复组件索引需要真实Stage上下文时；只使用本轮无既有草稿的目标Stage，save_prefab_stage含全局SaveAssets，缺无关脏资产证明或精确额外保存授权则明确该具体gap"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_ui(action=read|update) or manage_ui(action=update_panel_settings, path=<confirmed PanelSettings>, settings=<supported typed fields>)",
+      "when": "已授权自有UI Toolkit UXML/USS持久文件，或已存在PanelSettings实际支持字段；不用于UGUI事件，不以视觉树修改冒充文件保存，PanelSettings全局SaveAssets须满足草稿保存门"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "confirmed saved .unity/.prefab/.asset or UXML/USS file + meta + git diff + current Unity component/scene/prefab readback",
+      "when": "共享MCP没有RecoveryToken时，只读核对真实持久字段/事件列表/Prefab override、源资产未变和准确写集；文本序列化可只读核对，二进制或localId无法定位时报告具体缺证据，禁止手写YAML"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "mcpforunity://menu-items + execute_menu_item(menu_path=Nova/Enable Logs/<verified fixed menu>)",
+      "when": "用户已授权Standalone/iOS/Android/WindowsStoreApps/WebGL五组框架日志宏切换，当前菜单存在且原宏完整冻结时复用现有固定代码；不以Editor输出证明Player日志或影响厂商自有日志"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_build(action=settings, property=defines, target=<explicit target>, value=<complete nonempty semicolon symbols or omitted read>)",
+      "when": "只读或已授权精确NamedBuildTarget宏修改；保留完整无关宏、核对持久ProjectSettings与重载后值，Debugger字段与禁用宏分别验证；empty value是读取，不能借占位宏或代码清空"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.App.CheckAsync(ct) / RecordRecommendedDownloadDismissed() / OpenStoreAsync(ct) / DownloadAsync(ct)",
+      "when": "按现有App更新结果和推荐取消归属、商店请求及Android Player HTTPS文件下载契约核对业务编排；下载结构/长度验证与原子文件提交不证明签名、目标版本或安装。不是可调度Action，实际网络/商店副作用按授权与平台验收。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Editor.EditorUtil.ScriptingDefineSymbols.GetScriptingDefineSymbols(NamedBuildTarget) / AddOrRemoveScriptingDefineSymbols(NamedBuildTarget, addSymbols, removeSymbols)",
+      "when": "底层公开API说明与现有固定入口语义核对；不当作新MCP Action或任意Type.Method执行路线"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed project-owned business UI/Procedure/Event/Persistence source entry for Nova runtime control",
+      "when": "按明确目标在项目自有正式UI/Procedure入口复用暂停/恢复/速度/退出、App检查/推荐取消/商店或Android APK下载及可选Native安装，持久字段与Launcher AppDownloaded绑定复用现有领域Operation。安装默认false、旧INativeManager兼容；source/保存/Play/Gradle/设备/系统确认分别验收，不修改Framework源、不用临时任意代码。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Runtime.Nova.Self.PauseGame / ResumeGame / ResetNormalGameSpeed / QuitApplication + FrameRate / GameSpeed / RunInBackground / NeverSleep",
+      "when": "已确认业务运行入口使用真实setter/缓存语义；暂停不是取消请求或暂停栈，退出不自动等待存档；源/字段保存、Play与Player/设备证据分开"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true,
+      "constraint": "从当前Unity工程和Provider项目事实发现并冻结；多实例工具路由不能改变其它Agent的全局实例"
+    },
+    {
+      "name": "targetGuid",
+      "required": false,
+      "constraint": "普通资产Action必填；其它分支冻结真实scenePath/prefabPath或自有UXML/USS/PanelSettings路径，必须是Assets自有目标，不接受包/vendor/generated资产"
+    },
+    {
+      "name": "globalObjectId",
+      "required": false,
+      "constraint": "普通Prefab资产Action组件必填；SO检查返回规范ID后复用。共享MCP使用当前上下文GameObject/组件instanceID与明确同类索引，重载后重新发现，不从同名猜测"
+    },
+    {
+      "name": "patches",
+      "required": false,
+      "constraint": "普通资产Action写入时1至64项，检查返回的精确propertyPath与严格JSON valueJson，不允许重复/重叠路径或任意方法代码"
+    },
+    {
+      "name": "sharedMcpTargetAndChanges",
+      "required": false,
+      "constraint": "共享分支必填目标scene/prefabPath、完整对象路径、FullName、当前组件身份/索引、已核实字段和真实JSON值及唯一保存文件；Prefab明确当前变体/外层override或源资产范围，生命周期回调须有领域契约"
+    },
+    {
+      "name": "editorDraftAndSaveBaseline",
+      "required": false,
+      "constraint": "共享写入必需：已加载场景路径/活动/isDirty、Stage路径/isDirty、目标文件/meta与原工作区差异；全局SaveAssets入口须有实际无关脏态证明或明确额外保存授权，git status不能代替内存证明"
+    },
+    {
+      "name": "unityEventBinding",
+      "required": false,
+      "constraint": "事件分支必填真实事件SerializedProperty根、完整原持久监听列表、目标组件身份/FullName/程序集、已核实方法签名/重载、模式/参数/调用状态及保留列表；内部Prefab引用用同次有效Stage，不用隔离get_hierarchy临时ID"
+    },
+    {
+      "name": "appUpdateOrDebuggerIntent",
+      "required": false,
+      "constraint": "命中维护分支时冻结实际AppComponent/DebugComponent、字段before/after、目标平台与已有Procedure或日志行为；字段默认由当前声明核实，Config导出快照不通用patch"
+    },
+    {
+      "name": "scriptingDefineTargetsAndCompleteBeforeAfter",
+      "required": false,
+      "constraint": "宏分支必需每NamedBuildTarget全原宏、保留无关宏后的最终列表及ProjectSettings草稿/保存范围；日志菜单与Inspector同步是五组写入，单组授权不用五组入口，不清空为占位宏"
+    },
+    {
+      "name": "runtimeControlBusinessEntryPauseOwnerSpeedAndExitPolicy",
+      "required": false,
+      "constraint": "运行控制接入分支必需自有source/可达入口及Unity持久绑定、有限非负速度、单一暂停拥有者与原速恢复、退出前真实保存/外部副作用策略；退出测试及临时运行态恢复须冻结范围"
+    },
+    {
+      "name": "namedBuildTargetAndFinalSymbols",
+      "required": false,
+      "constraint": "typed宏Action必需：Standalone/iOS/Android/WindowsStoreApps/WebGL且与Active BuildTarget组一致，BuildProfile.GetActiveBuildProfile必须为null，活动Profile阻断且不自动切换；symbols为完整最终ASCII标识数组，[]清空，禁止true/false、重复、分号和换行；从实际原全集核保留无关宏，不以shared MCP空value读取代替清空"
+    }
+  ],
+  "effects": [
+    "read",
+    "workspace-write",
+    "unity-write",
+    "credential"
+  ],
+  "writeScope": {
+    "allow": [
+      "one confirmed project-owned regular non-nested Prefab asset and exact MonoBehaviour through settings Action",
+      "one confirmed project-owned single-object ScriptableObject asset through settings Action",
+      "explicit existing serialized fields with supported strict JSON conversion",
+      "confirmed saved project-owned scene component values and this scene instance overrides through existing shared MCP, then exact active-scene save/readback",
+      "confirmed existing project-owned variant/outer nested Prefab or built-in component through unique-target modify_contents; current override/source scope and saved persistence verified",
+      "confirmed current Stage component and complete verified UnityEvent persistent list when exact references/signatures and save/global-draft boundary are established",
+      "confirmed existing project-owned UXML/USS update and supported PanelSettings values with actual save scope confirmed",
+      "explicit confirmed NamedBuildTarget scripting define changes in ProjectSettings/ProjectSettings.asset through existing fixed Nova log menus or supported shared MCP settings; preserve unrelated symbols and read back persisted values",
+      "explicit confirmed project-owned runtime-control business source and reachable entry through existing UI/Procedure/Event/Persistence operations with their exact binding/generated write scopes"
+    ],
+    "deny": [
+      "Packages/** and vendor, Plugins, Framework, generated or test asset targets",
+      "ConfigMasterSO, ConfigRuntimeSO and PipifySettingsSO generic patch",
+      "dynamic managed-reference type replacement or unknown subasset-container writes",
+      "unknown OnValidate/serialization/edit-mode lifecycle callbacks or bypass of domain draft protection",
+      "unrelated dirty assets, Inspector drafts or PrefabStage auto-save/discard",
+      "blind first-name/first-component selection or stale temporary Prefab-content instanceIDs",
+      "silent source-Prefab Apply/Revert/Unpack instead of authorized local override",
+      "incomplete original UnityEvent list, unknown target/method signature, or executing the callback while binding",
+      "global SaveAssets without actual unrelated-draft proof or exact additional-save authorization",
+      "arbitrary code, Type.Method execution and handwritten Unity YAML",
+      "external App update requests, store navigation, log upload or vendor/device execution without the task exact runtime authorization",
+      "generic patch of Config-exported App snapshots or duplicate RuntimeDebugger.Init in business source",
+      "Framework runtime source edits, arbitrary runtime execution or automatic Player/device exit while only local settings or business-source integration is authorized"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "serialized-target-assets",
+    "active-scene",
+    "prefab-stage",
+    "asset-database",
+    "project-settings",
+    "scripting-define-targets",
+    "domain-reload",
+    "player-settings",
+    "build-defines",
+    "ProjectSettings"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous target component or field value",
+      "write not covered by existing exact target and value authorization",
+      "credential field mutation",
+      "scene SaveAs, source-Prefab change instead of local override, or additional global-save targets",
+      "UnityEvent listener removal or binding target/mode/parameter choice outside confirmed intent",
+      "NamedBuildTarget or five-platform macro write set beyond the existing exact authorization",
+      "runtime exit test, pause-owner/restore policy or saving/external data mutation beyond the precise authorized business target"
+    ],
+    "rule": "普通Action绑定唯一资产、GlobalObjectId、精确字段和值及计划写集；Execute按当前Action确认token契约执行，已有授权不重复请求，漂移重新Plan。共享MCP无Nova token/Receipt，先核对工程实例、唯一对象/组件、草稿、字段before/after和精确场景/Prefab/事件保存范围；已有授权覆盖时直接执行。不能以宽泛自然语言扩大源资产、删除监听或全局保存范围；目标/上下文/值变化重新发现和核对。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "live SerializedProperty path/type/tooltip/current value and default unknown boundary for settings Action",
+    "target GUID/GlobalObjectId and verified project or resolved Nova package source identity",
+    "no-Apply pending-cache Plan and exact changed field write set for settings Action",
+    "one target save and entire serialized asset state/file hash Verify for settings Action",
+    "shared MCP actual tool Schema/availability, project instance, unique hierarchy/component index, original scene/Stage drafts and exact saved path",
+    "saved scene/Prefab values and persistent references/overrides plus parent/source asset hashes; in-memory success alone insufficient",
+    "UnityEvent complete prior-list preservation and saved target/method/mode/arguments/callState with verified signature; runtime interaction separately",
+    "global SaveAssets proof or precise missing controlled draft/single-target-save gap; no arbitrary-code fallback",
+    "UI Toolkit saved UXML/USS or supported PanelSettings readback, not transient visual-tree state",
+    "temporary validation cleanup and preserved authorized final assets",
+    "game, generated-output and device evidence separately when requested",
+    "new shared route source/Schema review is not live scene/variant/nested/event acceptance",
+    "AppComponent defaults/current serialized values, Config snapshot ownership and existing Procedure boundary; Android Player HTTPS APK file delivery, separate optional Native installation and WebGL App-check skip recorded",
+    "Debugger activation field plus exact target disable-macro consistency; font glyph and Player behavior separately",
+    "fixed log menu existence and five-target write set, complete unrelated-macro preservation and persisted ProjectSettings/readback; typed Action supports an explicit empty symbols array; missing current adapter or changed-code compile evidence is specific partial",
+    "runtime business branch: exact Nova.Self methods/property setters and initial defaults, reachable persistent entry, pause cache and single owner, repeated pause/restore/reset behavior, exit-before-save policy; local source/compile/Play and Player/device shutdown separate, temporary runtime state restored",
+    "typed build-defines: null active Build Profile and complete before/after/added/removed symbol sets and target/other ProjectSettings hashes; save a verified nonpersistent Instantiate copy of the unique native PlayerSettings via public SaveToSerializedFileAndForget, independently reload the exact saved file and destroy copies; require actual changed file hash and full expected snapshot before clearing dirty; Verify never clears dirty or saves and requires full expected state even when reload marks dirty; changed branch requires this operation compilation/reload token and zero errors before persisted Verify; no-op does not request compile",
+    "App文件下载与可选Native安装分别取证：HTTPS主备/取消/原子文件提交、默认false字段保存与真实Build Scene权限、APK签名/同包/current signer/递增versionCode及系统最终状态；Java/D8或Editor Unsupported不计Gradle/R8/真机安装，Launcher type4三行绑定及Procedure复用文件另验"
+  ]
+}

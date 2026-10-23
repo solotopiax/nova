@@ -45,6 +45,8 @@
 - `IPushPlugin`
 - `IRemoteConfigPlugin`
 - `IDeviceIdProvider`
+- `IIAPPlugin`、`IIAPRequest`、`IIAPResult`
+- `IUserPropertyPlugin`
 
 ### 4. 配置与条目层
 
@@ -79,6 +81,8 @@
 6. 登录成功时调用 `Nova.SDK.Login(uid, userProperties)`；框架保存属性快照，并在插件就绪时补交当前账号。切换账号再次调用 `Login`，登出调用 `EndLoginSession`。
 
 ## 关键边界
+
+支付公共接口只提供最小调用面：`IIAPRequest.TableId` 是商品表行 ID，价格与平台 ProductId 来自实际商品配置；`PayAsync<T>` 的结果类型必须匹配实现，否则 `as T` 可得到 null。恢复接口收集各 store 能转换为 T 的结果，不等于补单发货或完成外部验单。`IIAPResult` 的 `ErrorSource` 与 `ErrorCode` 必须联合解释，同一非零整数在不同错误域含义不同；OrderId 用于关联定位，早期失败可为 null，不能替代 receipt 或服务端确认。`IsSuccess`、客户端统计与最终发货各有边界，详见实际安装的 [IAP 包文档](../../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md)。
 
 - `SDKComponent` 只做入口与生命周期代理，不承载任何第三方 SDK 业务逻辑。
 - `SDKManager` 只编排插件，不暴露厂商 SDK 类型。

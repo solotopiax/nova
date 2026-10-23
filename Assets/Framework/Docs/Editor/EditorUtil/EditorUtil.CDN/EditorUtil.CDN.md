@@ -65,7 +65,7 @@ internal static UniTask<int> PurgeAsync(
 - **分批上限**：每批最多 100 条，保持原顺序切批。
 - **首个失败即停**：上传或清缓存均在首个失败处抛出 `InvalidOperationException` 并中止，进度条停留在失败点。
 - **Cloudflare 成功判定**：HTTP 2xx 之外还解析响应正文 `success` 字段；空正文或非法 JSON 一律按失败处理。失败时从响应正文截取最多 1024 字符作为错误摘要。
-- **Secret / Token 脱敏**：所有对外抛出的错误文本与响应摘要都会把非空的 `AccessKeySecret`、`Token` 原文替换为 `***`，避免对话框与日志泄露。注意 `CDNEditorConfigs` 在 ConfigMasterSO 资产中仍以明文序列化，脱敏只针对输出不代表存储加密。
+- **Secret / Token 脱敏**：核心包装的上传错误文本会把非空的 `AccessKeySecret`、`Token` 原文替换为 `***`，避免对话框与日志泄露。注意 `CDNEditorConfigs` 在 ConfigMasterSO 资产中仍以明文序列化，脱敏只针对输出不代表存储加密。
 - **静态校验前置**：`ValidateOssConfig` / `ValidateCloudflareConfig` 在发起任何网络请求前集中校验所有静态字段，让格式类错误（Endpoint 非标准地域域名、PresetOSSPath 非 oss:// 格式、Zone ID 非法等）在首个请求前暴露。Cloudflare API Token 需要 `Zone -> Cache Purge` 权限。
 - **UniTask 异步**：两个入口均返回 `UniTask<int>`，在 Editor 上以 `async UniTask` / `.Forget()` 驱动；ConfigWindow 侧用 `m_IsCdnDeploying` / `m_IsCdnPurging` 标志在按钮入口处做**重复点击保护**（进行中直接忽略），该保护在调用方而非 `EditorUtil.CDN` 内部。
 - **执行期配置快照**：ConfigWindow 在点击时通过 `DimensionalResolver.ResolveCDNEditorConfigs` 按当前维度坐标 Resolve 出独立 `CDNEditorConfigs` 快照再传入；该坐标的 Platform 实时映射 Unity Active BuildTarget，执行期间继续编辑面板不影响本次请求。
@@ -122,3 +122,13 @@ Debug.Log($"已清理 {purged} 条缓存路径。");
 - [Cloudflare Purge Cached Content](https://developers.cloudflare.com/api/resources/cache/methods/purge/)（purge API 与单次请求规则）
 - [Cloudflare Find account and zone IDs](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/)（Zone ID 查询）
 - [Cloudflare Create API token](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/)（API Token 创建）
+
+## 计划与远端提交的实际边界
+
+最新目录按 .version mtime 选，不核 manifest/hash/bundle 正文一致性，前后重复读 report 也未冻结文件 Hash。Try 方法只捕获列明的路径/IO错误，部分 GetFullPath/属性/解析异常仍可传播；越界路径的链接检查直接 false，所以必须先核根包含。普通目录回退会递归上传全部文件；完整 Yoo 目录才裁为三元数据和 report 引用的 bundles。版本指针可能插到上传首项，object key 不去重，同键覆盖和部分远端更新须调用方承担。
+
+Region 主要校 endpoint host，未完整限制 scheme/userinfo/path/port；oss:// 位置也未拒绝 userinfo，Object Key 只规整分隔符，不移除 . 或 ..。手工三版本文件仅校扩展名，不证明来自同版本。配置格式、宏或 Client 构造成功都不证明凭据权限。
+
+上传和 purge 顺序执行、首失败停止，没有取消、重试或远端回滚；进度回调异常也可在成功提交之后中断。核心捕获的上传异常仅对精确秘密原文脱敏，响应摘要主要替换 token，编码/分段秘密及未提供值不保证遮蔽。Cloudflare 默认分批 100，底层 BatchCacheUrls 只要求大小>=1，不自行限制<=100；URL 不限制到目标 zone 的 host。
+
+白名单 JSON 仅在远端位置有效时生成临时文件，无效位置可跳过 JSON 而继续三文件。临时写失败发生在调用方 finally 接管前可留目录；删除 helper 递归删给定路径父目录且吞清理错误，只能传本服务生成路径。它不检查所有权，不应用于任意本地文件。

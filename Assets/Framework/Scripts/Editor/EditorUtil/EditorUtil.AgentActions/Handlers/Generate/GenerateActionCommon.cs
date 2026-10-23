@@ -218,13 +218,16 @@ namespace NovaFramework.Editor
                 .Replace('\\', '/');
         }
 
+        /// <summary>
+        /// 按文件字节顺序计算 SHA-256；保留分块取消检查，并限制每文件临时缓冲以避免大量小文件分配大对象。
+        /// </summary>
         internal static string ComputeFileHash(string path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             using (SHA256 sha256 = SHA256.Create())
             using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                byte[] buffer = new byte[1024 * 1024];
+                byte[] buffer = new byte[64 * 1024];
                 int count;
                 while ((count = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {

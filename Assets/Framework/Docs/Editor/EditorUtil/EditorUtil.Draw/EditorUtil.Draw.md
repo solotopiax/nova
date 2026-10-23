@@ -218,3 +218,19 @@ void Draw.Panel.SelectDirectory(string label, SerializedProperty property)
 
 - [EditorUtil.md](../EditorUtil.md)
 - [BaseComponentInspector.md](../../Inspectors/BaseComponentInspector.md)
+
+## 交互、提交与异常的共同合同
+
+Draw 是 GUI 工具，灰显只限制鼠标/键盘交互，不阻止绘制回调中的自动补项、归一或 Apply。普通值控件返回新值，由调用者保存；Property 会 Apply 整个 SerializedObject 待改内容，PropertyField 不 Apply。带 runtimeSetter 的 Toggle/滑杆/Toolbar 在 Edit 写序列化，Play 只调用 setter，setter 为 null 仍可能通知完成；Rect IntSlider 等无 setter 重载在允许 Play 时仍写序列化。
+
+类型选择对未知/空值自动取首项，禁用态也可能补写并通知；缓存只看类型 List 的引用与 Count，等长改内容可能陈旧。枚举选择按 enumValueIndex 映射泛型 Enum.GetValues，未校实际枚举类型/索引；Flags 使用 intValue，超过 int32 可溢出。Float 网格不核映射委托/上界，绘制前的规范化也可能触发写入。PasswordField 只有视觉遮罩，存储仍明文。红框和 HelpBox 只显示，不是业务有效性或执行门。
+
+标准布局块、DisabledGroup、ScrollView 与部分颜色控件用 finally 恢复；普通字段、HelpBox 布局版、源码树缩进等并非全部异常安全，回调或 ExitGUI 可打断收尾。默认 Button 点击回调后 ExitGUI，即使回调为空也会结束事件；Rect 版与显式 exitGUI=false 分支不同。LinkButton 直接 OpenURL 不校 scheme，Confirm 只是系统对话框，不等于 Action 授权 token。
+
+Foldout key 在当前域全局共享，同 key 跨窗口联动；defaultOpen 只首次初始化，清全缓存影响所有调用者。GUIStyle 缓存是共享可变引用，不自动跟踪皮肤变化。全局缩进由调用者配对，工具不限制负值。
+
+## 延迟路径与可重排列表
+
+延迟路径面板捕获 SerializedProperty 引用，没有冻结目标生命周期或执行前复核；取消也通知回调。普通选择优先显式初始目录，其次有效历史/字段/工程根，允许保存工程外绝对路径。SelectFolderForFileDelay 保留的是登记时文件名，期间改字段可能被旧选择覆盖；SaveFileDelay 只选路径，不写文件。
+
+ReorderableRowList 要求每帧 BeginFrame→DrawRow→EndFrame，索引为底层列表索引，过滤行可留下空隙；GUI.enabled/Play 不自动阻止点击，DraggableNow 只限制起拖。拖拽中数量变化不重核原索引，回调异常可在 Reset/Use 前留下 hotControl；调用者应在异常出口 ResetDragState 并校验重排范围。

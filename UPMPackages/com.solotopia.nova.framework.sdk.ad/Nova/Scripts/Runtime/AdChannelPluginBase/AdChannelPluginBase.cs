@@ -18,17 +18,22 @@ using NovaFramework.Runtime;
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
     /// <summary>
-    /// 广告渠道插件公共基类，直接实现 IAdInternalPlugin。
-    /// 封装所有渠道共用逻辑：多 ID 状态机（AdUnit 池 + 重试调度 + eCPM 优先 Show）、
+    /// 广告渠道插件公共基类，实现 IAdInternalPlugin 与可选生命周期接口 IAdChannelLifecycle。
+    /// 封装所有渠道共用逻辑：广告组状态机（组内串行、组间并行、按序列重试及真实Ready收益选择）、
     /// 打点扇出（IMonetizeTrackPlugin）、七类事件通知，
     /// 以及通用三段式模板方法（OnRequestAsync / OnShowAsync）。
     /// MaxAdPlugin 等渠道继承此类，只需重写 InitChannelSDKAsync，
     /// 以及 OnRequestAsync / OnShowAsync（内部用 switch(format) 处理支持的格式）。
     /// 是否支持某 AdFormat 由 RegisterAdUnits 注册的槽位推导：注册即支持，未注册即不支持。
-    /// 线程契约：公开 API 由 Unity 主线程调用；渠道 SDK 回调中可直接调用 Raise*，基类仅把业务事件 fan-out 排入 Unity 主线程。
+    /// 线程契约：公开 API 由 Unity 主线程调用；渠道 SDK 回调中可直接调用 Raise*，基类将所有状态和业务事件串行排入Unity主线程，纯收益上报保持即时。
     /// </summary>
-    public abstract partial class AdChannelPluginBase : IAdInternalPlugin
+    public abstract partial class AdChannelPluginBase : IAdInternalPlugin, IAdChannelLifecycle
     {
+        /// <summary>
+        /// 创建渠道托管生命周期，缓存令牌用于幂等释放后的取消结果。
+        /// </summary>
+        protected AdChannelPluginBase() => m_ChannelLifetimeToken = m_ChannelLifetimeCts.Token;
+
         /// <summary>
         /// 渠道插件唯一名称；派生类必须实现，用于日志打点和 BuildBaseProps 标识来源渠道。
         /// </summary>
@@ -75,26 +80,40 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public event System.Action<AdResult> OnAdClosed;
 
         /// <summary>
-        /// 由 AdPlugin 在创建渠道实例后立即调用，将 AdChannelConfigList 上的全局广告开关写入渠道。
+        /// 创建渠道后应用全局开关，并复制有效重试间隔序列，使后续配置编辑不影响运行中的渠道。
         /// </summary>
-        /// <param name="globals">AdPluginConfig.ChannelConfigs，承载竞价 / Banner ILRD / 静音 / 加载重试等全局开关。</param>
+        /// <param name="globals">广告全局配置；为空或渠道已释放时忽略。</param>
         public void ApplyGlobalConfig(AdChannelConfigList globals)
         {
-            if (globals == null) return;
+            RequireAdMainThread();
+            if (m_IsDisposed || globals == null)
+            {
+                return;
+            }
             EnableBidding = globals.EnableBidding;
             BannerIlrdInterval = globals.BannerIlrdInterval;
             MuteAd = globals.MuteAd;
-            RetryLoadAdMaxNum = globals.RetryLoadAdMaxNum;
-            RetryLoadAdInterv = globals.RetryLoadAdInterv;
+            IReadOnlyList<float> configuredIntervals = globals.GroupRetryIntervalsSeconds;
+            float[] retryIntervals = new float[configuredIntervals.Count];
+            for (int i = 0; i < configuredIntervals.Count; i++)
+            {
+                retryIntervals[i] = configuredIntervals[i];
+            }
+            GroupRetryIntervalsSeconds = retryIntervals;
         }
 
         /// <summary>
+        /// 派生SDK渠道的初始化加载门，旧渠道默认可用以保持注册入口兼容。
+        /// </summary>
+        protected virtual bool IsChannelInitialized => true;
+
+        /// <summary>
         /// 查询指定格式当前已加载广告的最高预期收益（USD）。
-        /// 基类返回 0；支持收益感知的渠道重写此方法返回真实值。
+        /// 基类以真实Ready候选的收益为默认值，外部渠道已有override保持兼容。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <returns>最高预期收益（USD），无就绪广告时为 0。</returns>
-        public virtual float GetMaxRevenue(AdFormat format) => 0f;
+        public virtual float GetMaxRevenue(AdFormat format) => (float)(PickBestReadyUnit(format)?.Revenue ?? 0d);
 
         /// <summary>
         /// 获取当前渠道 SDK 返回的国家或地区代码；默认渠道无可用国家代码。
@@ -137,27 +156,100 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <param name="ct">取消令牌。</param>
         public async UniTask InitializeAsync(IAdChannelConfig config, CancellationToken ct)
         {
+            RequireAdMainThread();
+            if (m_IsDisposed) throw new ObjectDisposedException(Name);
+            ct.ThrowIfCancellationRequested();
             m_BannerIlrdPersistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
             CacheTrackPlugins();
-            await InitChannelSDKAsync(config, ct);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, ChannelLifetimeToken);
+            await InitChannelSDKAsync(config, linked.Token);
         }
 
         /// <summary>
-        /// 释放模板方法：取消延时重试任务并释放渠道 SDK，最后清除存储管理器缓存。
-        /// 由 AdPlugin 在 Dispose 时调用；派生类不得重写此方法，只能重写 DisposeChannelSDKAsync。
+        /// 释放渠道并共享本次清理结果；重复调用等待同一次清理，不因外部令牌取消而跳过。
         /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>释放完成的异步任务。</returns>
+        /// <param name="ct">兼容既有调用签名；释放过程不使用此令牌中止清理。</param>
+        /// <returns>渠道清理完成任务；清理失败时，各次调用观察到同一异常。</returns>
         public async UniTask DisposeAsync(CancellationToken ct)
         {
-            CancelAllRetryCts();
+            await UniTask.SwitchToMainThread();
+            if (m_ChannelDisposeCompletion == null)
+            {
+                // 先保存完成源，保证取消续体同步重入时仍复用当前清理。
+                m_ChannelDisposeCompletion = new UniTaskCompletionSource();
+                DisposeChannelAsync(m_ChannelDisposeCompletion).Forget();
+            }
+            await m_ChannelDisposeCompletion.Task;
+        }
+
+        /// <summary>
+        /// 关闭托管回调与广告组等待，执行派生 SDK 清理，并在清空缓存后完成共享释放结果。
+        /// 任一阶段失败仍继续后续清理；共享结果保留首先发生的异常。
+        /// </summary>
+        /// <param name="completion">首次释放创建的共享完成源。</param>
+        private async UniTask DisposeChannelAsync(UniTaskCompletionSource completion)
+        {
+            Exception failure = null;
             try
             {
-                await DisposeChannelSDKAsync(ct);
+                lock (m_AdCallbackQueueLock)
+                {
+                    m_IsDisposed = true;
+                    m_AdCallbackGeneration++;
+                    m_AdCallbackQueue.Clear();
+                }
+
+                try
+                {
+                    m_ChannelLifetimeCts.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                }
+
+                try
+                {
+                    CancelGroupRetriesAndBatches();
+                }
+                catch (Exception ex)
+                {
+                    failure ??= ex;
+                }
+
+                m_ActiveAdShow = null;
+                await DisposeChannelSDKAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                failure ??= ex;
             }
             finally
             {
+                // 派生异步清理可能在后台完成，缓存和业务事件仍在主线程清空。
+                await UniTask.SwitchToMainThread();
+                m_AdUnits.Clear();
+                m_AdGroups.Clear();
+                m_AdConfigFailures.Clear();
+                m_TrackPlugins = null;
                 m_BannerIlrdPersistManager = null;
+                m_ChannelLifetimeCts.Dispose();
+                OnAdRevenuePaid = null;
+                OnAdLoaded = null;
+                OnAdLoadFailed = null;
+                OnInitResult = null;
+                OnShowCompleted = null;
+                OnShowFailed = null;
+                OnAdClosed = null;
+
+                if (failure == null)
+                {
+                    completion.TrySetResult();
+                }
+                else
+                {
+                    completion.TrySetException(failure);
+                }
             }
         }
 
@@ -176,73 +268,17 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         protected virtual UniTask DisposeChannelSDKAsync(CancellationToken ct) => UniTask.CompletedTask;
 
         /// <summary>
-        /// 异步请求指定格式广告；遍历该 format 的 AdUnit 列表，对所有 Idle 槽位并行发起 OnRequestAsync，
+        /// 异步请求指定格式广告；每个空组首项并行发起，组内失败串行推进下一真实ID，
         /// SDK 回调通过 RaiseAdLoaded/RaiseAdLoadFailed 推进状态机。
         /// 任一广告位加载成功后立即返回 Success=true 的 AdLoadResult；全部失败或该渠道未注册该 format 时返回 Success=false 的 AdLoadResult。
         /// </summary>
         /// <param name="format">广告格式。</param>
-        /// <param name="reason">请求原因，默认 Auto；写入每个 AdUnit.LastReason 并随 nova_ad_request 事件上报。</param>
-        /// <param name="customProps">自定义属性字典，写入每个 AdUnit.RequestCustomProps；可为 null。</param>
+        /// <param name="reason">新轮原因，默认Auto；加入正在加载的轮不会覆盖其原因。</param>
+        /// <param name="customProps">新轮属性字典，将复制字典结构；加入正在加载轮只观察。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>首个完成的加载结果；全部失败时返回最后一次失败结果。</returns>
         public UniTask<AdLoadResult> RequestAsync(AdFormat format, AdRequestReason reason = AdRequestReason.Auto, Dictionary<string, object> customProps = null, CancellationToken ct = default)
-        {
-            if (!m_AdUnits.TryGetValue(format, out var units) || units.Count == 0)
-                return UniTask.FromResult(BuildLoadFailure(format, null, -1, $"[{Name}] 未注册 {format} 广告位。"));
-            var tcs = new UniTaskCompletionSource<AdLoadResult>();
-            var batch = new RequestBatch
-            {
-                Tcs = tcs,
-                PendingPlacementIds = new HashSet<string>(),
-            };
-            for (int i = 0; i < units.Count; i++)
-            {
-                var unit = units[i];
-                if (unit.State == AdUnitState.Ready)
-                {
-                    // 已有 Ready 槽位时，若 ct 已请求取消则直接返回取消；否则立即 SetResult。
-                    // 此时 tcs 已是 Completed，外部 await 不会被取消，无需注册 ct 回调。
-                    if (ct.IsCancellationRequested)
-                    {
-                        tcs.TrySetCanceled(ct);
-                        return tcs.Task;
-                    }
-                    var readyEvent = new AdLoadResult { Success = true, Format = format, PlacementId = unit.PlacementId, Revenue = unit.Revenue };
-                    tcs.TrySetResult(readyEvent);
-                    return tcs.Task;
-                }
-                if (unit.State == AdUnitState.Loading || unit.State == AdUnitState.Showing)
-                {
-                    batch.PendingPlacementIds.Add(unit.PlacementId);
-                    continue;
-                }
-                if (unit.RetryCts != null)
-                {
-                    batch.PendingPlacementIds.Add(unit.PlacementId);
-                    continue;
-                }
-                unit.LastReason = reason;
-                unit.RequestCustomProps = customProps;
-                unit.State = AdUnitState.Loading;
-                batch.PendingPlacementIds.Add(unit.PlacementId);
-                TrackAdRequest(format, unit.PlacementId, reason, customProps);
-                InvokeOnRequestSafeAsync(unit, format, ct).Forget();
-            }
-            if (batch.PendingPlacementIds.Count == 0)
-                return UniTask.FromResult(BuildLoadFailure(format, null, -2, $"[{Name}] 当前没有可请求的 {format} 广告位。"));
-            m_PendingBatches.Add(batch);
-            // 主线程契约：m_PendingBatches 及 batch 字段仅在主线程读写，ct.Register 回调亦在主线程执行（Unity 主线程取消场景）。
-            // 若未来出现 SDK 非主线程取消场景，需改用 UniTaskSynchronizationContext.Post 切回主线程后再操作。
-            if (ct.CanBeCanceled)
-            {
-                batch.Registration = ct.Register(() =>
-                {
-                    if (batch.Tcs.TrySetCanceled(ct))
-                        m_PendingBatches.Remove(batch);
-                });
-            }
-            return tcs.Task;
-        }
+            => RequestGroups(format, reason, customProps, ct);
 
         /// <summary>
         /// 查询指定格式广告是否已加载完毕；要求满足两个条件：
@@ -253,17 +289,17 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <returns>已加载完毕返回 true，未注册或无就绪槽位时返回 false。</returns>
-        public bool IsReady(AdFormat format)
+        public bool IsReady(AdFormat format) => PickBestReadyUnit(format) != null;
+
+        /// <summary>
+        /// 查询本渠道指定全屏格式是否仍占用原厂展示；业务await取消不解除占用。
+        /// </summary>
+        /// <param name="format">广告格式。</param>
+        /// <returns>当前原生展示占用属于该格式时为true。</returns>
+        public bool IsAdPlaying(AdFormat format)
         {
-            if (!m_AdUnits.TryGetValue(format, out var units)) return false;
-            for (int i = 0; i < units.Count; i++)
-            {
-                var unit = units[i];
-                if (unit.State != AdUnitState.Ready) continue;
-                if (!OnIsReady(format, unit.PlacementId)) continue;
-                return true;
-            }
-            return false;
+            RequireAdMainThread();
+            return !m_IsDisposed && m_ActiveAdShow != null && m_ActiveAdShow.Format == format;
         }
 
         /// <summary>
@@ -278,37 +314,44 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         protected virtual bool OnIsReady(AdFormat format, string placementId) => true;
 
         /// <summary>
-        /// 异步展示指定格式广告；从 Ready 槽位中按 Revenue 降序取最高 eCPM 的槽位展示。
-        /// 非 Banner 关闭或展示失败后自动触发 RequestAsync 续杯（Banner 不续杯）。
-        /// 该渠道未注册该 format 或无 Ready 槽位时返回失败结果。
-        /// OnShowAsync 抛出异常时槽位回置 Idle，防止永久卡在 Showing 状态。
+        /// 选择最高收益的真实Ready广告并展示；不可用时返回失败，全屏占用由真实终态或释放解除，终态后自动补量。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <param name="customProps">自定义属性字典，写入选中 AdUnit.ShowCustomProps；可为 null。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>广告展示结果。</returns>
-        public async UniTask<AdResult> ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default)
+        public UniTask<AdResult> ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default)
         {
+            RequireAdMainThread();
+            if (ct.IsCancellationRequested)
+            {
+                return UniTask.FromCanceled<AdResult>(ct);
+            }
+            if (m_IsDisposed)
+            {
+                return UniTask.FromCanceled<AdResult>(ChannelLifetimeToken);
+            }
+            if (!IsChannelInitialized)
+            {
+                return UniTask.FromResult(new AdResult { Format = format, ErrorMessage = "渠道SDK尚未初始化成功。" });
+            }
+            if (IsFullscreenAd(format) && m_ActiveAdShow != null)
+            {
+                return UniTask.FromResult(new AdResult { Format = format, ErrorMessage = "广告正在展示，不能重叠发出全屏Show。" });
+            }
             var unit = PickBestReadyUnit(format);
             if (unit == null)
-                return new AdResult { Success = false, Format = format, ErrorMessage = "no ready ad unit" };
-            unit.ShowCustomProps = customProps;
+            {
+                return UniTask.FromResult(new AdResult { Format = format, ErrorMessage = "当前没有真实可播广告。" });
+            }
+            unit.ShowCustomProps = SnapshotAdProps(customProps);
             unit.State = AdUnitState.Showing;
-            try
+            unit.Group.State = AdGroupState.Showing;
+            if (IsFullscreenAd(format))
             {
-                return await OnShowAsync(format, unit.PlacementId, ct);
+                m_ActiveAdShow = new ActiveAdShow { Format = format, PlacementId = unit.PlacementId };
             }
-            catch (OperationCanceledException)
-            {
-                unit.State = AdUnitState.Idle;
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.AD, $"[{Name}] OnShowAsync({format}, {unit.PlacementId}) 异常，槽位回置 Idle：{ex.Message}");
-                unit.State = AdUnitState.Idle;
-                return new AdResult { Success = false, Format = format, PlacementId = unit.PlacementId, ErrorMessage = ex.Message };
-            }
+            return InvokeOnShowSafeAsync(unit).AttachExternalCancellation(ChannelLifetimeToken).AttachExternalCancellation(ct);
         }
 
         /// <summary>

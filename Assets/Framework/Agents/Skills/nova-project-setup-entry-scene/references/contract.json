@@ -4,19 +4,14 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
       "kind": "unity-editor-automation",
-      "entry": "Unity Editor 自动化通道 entry scene, canonical Prefab and Build Settings editing",
-      "when": "在已确认范围内修改场景、connected instance 或启用场景顺序"
-    },
-    {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.ProjectGuard.ValidateQuick / ValidatePlay / ValidateBuild",
-      "when": "按当前场景或已确认 BuildTarget 收集 ProjectGuard 证据"
+      "entry": "Unity Editor 自动化通道 entry scene, canonical Prefab and Build Settings inspection/editing",
+      "when": "在已确认范围内检查或修改场景、connected instance 或启用场景顺序"
     },
     {
       "kind": "csharp-api",
@@ -94,6 +89,6 @@
     "入口场景中的 canonical Nova.prefab connected instance",
     "启用 Build Settings 场景与顺序",
     "Content 的显式加载和卸载责任",
-    "ProjectGuard Rule ID、路径和入口 Play smoke"
+    "实际场景层级、组件与引用检查，对象路径和入口 Play smoke"
   ]
 }

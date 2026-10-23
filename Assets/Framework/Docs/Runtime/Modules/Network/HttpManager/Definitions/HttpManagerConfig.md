@@ -26,6 +26,10 @@ public class HttpManagerConfig
 
 ## 使用位置
 
+`EnableUwrTelemetry` 与 `BusinessRequestRoundCount` 是带 Obsolete 的兼容属性，分别直接读写 `EnableUWRTracks` 与 `BusinessFallbackRoundCount`，不是另一组开关或计数。DTO 本身不做校验；内置 Manager 初始化时将轮数钳制为至少 1、重试次数钳制为至少 0，其余字段直接读取。此后修改配置对象不会更新已初始化的 Manager。
+
+每次 Initialize 都清除最近成功偏好并创建新的 UnityWebRequestTransport；它不是取消既有请求或安全重载传输的接口。管理器尚未 Initialize 时没有可用传输；Shutdown 会清引用/偏好，但不 Abort 在飞请求。
+
 ~~~csharp
 m_HttpManager.Initialize(new HttpManagerConfig
 {

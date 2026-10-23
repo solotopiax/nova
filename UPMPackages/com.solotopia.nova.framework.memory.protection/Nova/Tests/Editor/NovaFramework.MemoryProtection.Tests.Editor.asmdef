@@ -1,0 +1,26 @@
+{
+  "name": "NovaFramework.MemoryProtection.Tests.Editor",
+  "rootNamespace": "NovaFramework.MemoryProtection.Tests.Editor",
+  "references": [
+    "NovaFramework.Runtime",
+    "NovaFramework.Editor",
+    "NovaFramework.MemoryProtection.Runtime",
+    "NovaFramework.MemoryProtection.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Newtonsoft.Json.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

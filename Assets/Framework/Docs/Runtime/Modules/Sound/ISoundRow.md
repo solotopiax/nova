@@ -40,6 +40,7 @@ Luban 生成的声音 bean 只要实现这个接口，就能被 `SoundManager` �
 - 这不是编辑器字段全集，而是运行时真正消费的字段面
 - 它不直接包含一次性参数如 `FadeInSeconds`、`Pitch`，那些属于调用时参数对象
 - `SpatialBlend` 虽然是运行时字段，但默认参数构造目前并不会直接从这里拼出完整 `PlaySoundParams`
+- 当前按名称播放不消费 Desc，且没有把 SpatialBlend 应用到代理 AudioSource；0/1 的字段含义不能当作已启用 2D/3D 路由。接口没有默认值或自动校验，实际行来自表源。
 
 ## 风险点 / 易错点
 

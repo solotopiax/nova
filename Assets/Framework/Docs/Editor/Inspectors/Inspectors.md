@@ -3,7 +3,7 @@
 | 文档 | 说明 |
 |------|------|
 | [BaseComponentInspector.md](BaseComponentInspector.md) | 所有 Inspector 的抽象基类 |
-| [AssetComponentInspector/AssetComponentInspector.md](AssetComponentInspector/AssetComponentInspector.md) | 资源加载 Inspector（9 个 RuntimeDrawer） |
+| [AssetComponentInspector/AssetComponentInspector.md](AssetComponentInspector/AssetComponentInspector.md) | 资源加载 Inspector（Manager 与资源配置） |
 | [ConfigComponentInspector/ConfigComponentInspector.md](ConfigComponentInspector/ConfigComponentInspector.md) | 配置 Inspector |
 | [TableComponentInspector/TableComponentInspector.md](TableComponentInspector/TableComponentInspector.md) | 表格 Inspector |
 | [EventComponentInspector/EventComponentInspector.md](EventComponentInspector/EventComponentInspector.md) | 事件 Inspector |
@@ -12,7 +12,13 @@
 | [UIComponentInspector/UIComponentInspector.md](UIComponentInspector/UIComponentInspector.md) | UI Inspector |
 | [NetworkComponentInspector/NetworkComponentInspector.md](NetworkComponentInspector/NetworkComponentInspector.md) | 网络 Inspector |
 | [ProcedureComponentInspector/ProcedureComponentInspector.md](ProcedureComponentInspector/ProcedureComponentInspector.md) | 流程管理 Inspector |
+| [DebugComponentInspector/DebugComponentInspector.md](DebugComponentInspector/DebugComponentInspector.md) | 调试器、日志与磁盘监控配置 |
 | [PersistComponentInspector/PersistComponentInspector.md](PersistComponentInspector/PersistComponentInspector.md) | 持久化 Inspector |
+| [SDKComponentInspector/SDKComponentInspector.md](SDKComponentInspector/SDKComponentInspector.md) | SDK Manager、Plugin 条目与打点工具 |
+| [SDKComponentInspector/PluginEntriesDrawer.md](SDKComponentInspector/PluginEntriesDrawer.md) | Plugin 分组、启用状态与 Missing 条目处理 |
+| [LocalizationComponentInspector/LocalizationComponentInspector.md](LocalizationComponentInspector/LocalizationComponentInspector.md) | 文本、字体配置与本地化导出 |
+| [VibrateComponentInspector/VibrateComponentInspector.md](VibrateComponentInspector/VibrateComponentInspector.md) | 振动配置与导出 |
+| [SoundComponentInspector/SoundComponentInspector.md](SoundComponentInspector/SoundComponentInspector.md) | 声音配置与导出 |
 | [AppComponentInspector/AppComponentInspector.md](AppComponentInspector/AppComponentInspector.md) | 大版本检查 Inspector（Manager 选择器 + 3 组 Foldout 配置） |
 | [PrefabComponentInspector/PrefabComponentInspector.md](PrefabComponentInspector/PrefabComponentInspector.md) | Prefab 实例化 Inspector（Manager 选择器 + 单路径回收说明 + 运行时实例列表） |
 | [NativeComponentInspector/NativeComponentInspector.md](NativeComponentInspector/NativeComponentInspector.md) | Native Inspector（Manager 选择器 + 初始化配置 + 通知权限边界） |

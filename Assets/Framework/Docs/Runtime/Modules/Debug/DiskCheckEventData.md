@@ -31,6 +31,7 @@ public override void Clear();
 
 - 该对象来自 `ReferencePool`，订阅方不要跨回调长期持有
 - 发布方是 `DebugManager`，不是 `DebugComponent`
+- Create 只从池取对象并保存两个整数，不发布、不检查 -1 等无效空间；Clear 将两值归零。必须在事件有效回调范围内复制所需数值，不能跨 await 持有该事件对象。
 
 ## 关联文档
 

@@ -36,3 +36,9 @@
 
 - [../Editor.md](../Editor.md)
 - [./PlugPalsWindow.md](./PlugPalsWindow.md)
+
+## 本地发现的精度
+
+清单只从 lock dependencies 取包名，不核 version/source/depth、注册错误或实际 resolvedPath；Kit 前缀未检查点边界。仅直接 manifest 的小写 file: 按 Packages 相对解析，其他来源选择 PackageCache 中第一个 package@* 目录，未按 lock 精确版本匹配，也未覆盖 embedded/传递 file 引用。因此窗口内容是候选目录的本地元数据，不能证明实际加载的包版本或依赖满足。
+
+Proto 只读 Nova/Protos 顶层文件，不递归、无排序。解析/IO 异常直接传播，可留下部分列表；刷新仍在 GUI 同步执行，已打开窗口再次 Open 不一定重收集。展示的是完整原文，按 LF 数估算高度，不是协议编译或正式导出；GUI 缩进/ScrollView 没有完整 finally，动态字体生命周期未做专门释放。

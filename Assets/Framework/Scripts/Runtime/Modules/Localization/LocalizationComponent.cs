@@ -71,7 +71,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 异步加载本地化基础数据（语言列表 + 字体配置）。
         /// </summary>
-        /// <returns>是否加载成功。</returns>
+        /// <returns>基础加载流程结果；内置实现正常结束返回 true，不保证支持语言和字体完整。</returns>
         public UniTask<bool> LoadAsync()
         {
             return m_LocalizationManager.LoadAsync();
@@ -88,7 +88,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 根据优先级决定当前语言并同步加载对应文本数据。供 Procedure 调用完成语言初始化。
         /// </summary>
-        /// <returns>解析并设置后的语言。</returns>
+        /// <returns>解析得到的候选语言；切换可能被拒或加载失败，须另核实际 Language 与文本。</returns>
         public Language InitCurrentLanguageSync()
         {
             return m_LocalizationManager.InitCurrentLanguageSync();
@@ -97,7 +97,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 根据优先级决定当前语言并异步加载对应文本数据。供 Procedure 调用完成语言初始化。
         /// </summary>
-        /// <returns>解析并设置后的语言。</returns>
+        /// <returns>解析得到的候选语言；切换可能被拒或加载失败，须另核实际 Language 与文本。</returns>
         public UniTask<Language> InitCurrentLanguageAsync()
         {
             return m_LocalizationManager.InitCurrentLanguageAsync();
@@ -123,7 +123,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 根据优先级决定当前语言：持久化 > 系统语言 > 回退语言。
+        /// 按编辑器强制语言、终端偏好及持久化/系统/回退规则解析候选；此调用不加载文本。
         /// </summary>
         /// <returns>解析后的语言。</returns>
         public Language ResolveLanguage()

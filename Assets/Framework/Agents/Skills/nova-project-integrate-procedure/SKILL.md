@@ -1,6 +1,6 @@
 ---
 name: nova-project-integrate-procedure
-description: Use when 项目组要在现有 Nova 消费项目中新增或调整业务 Procedure，并需验证进入、离开、异步取消与下一状态跳转时使用。
+description: Use when 项目组要在现有 Nova 消费项目中新增或调整业务 Procedure，或把游戏业务 Service 接到既有流程，验证入口、状态跳转、退出和异步取消时使用。
 ---
 
 # Nova 接入业务 Procedure
@@ -11,15 +11,17 @@ description: Use when 项目组要在现有 Nova 消费项目中新增或调整�
 
 再读取 `references/contract.json`。仅在当前决策分支按需读取文档和项目事实：确认生命周期与流程级取消时读 `Docs/Runtime/Modules/Procedure/ProcedureBase.md`；确认框架启动扫描与业务流程边界时读 `Docs/Runtime/Modules/Procedure/ProcedureComponent.md`；确认现有延迟注册链时读 `Docs/Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.md`；确认状态查询、追加注册或跳转语义时读 `Docs/Runtime/Modules/Procedure/ProcedureManager.md` 与 `IProcedureManager.md`。只有项目使用 HybridCLR 且需要核对业务 DLL 交付事实时，才读取当前项目的 asmdef、ConfigRuntime/ConfigMaster 只读事实和 DLL 映射；不要递归加载全部 Procedure、Config、Asset 或 HybridCLR 文档。
 
+仅在用户要求“开始游戏、暂停/恢复、结算、重开、回大厅”等游戏控制行为，且需接现有业务Service/flow时，读取 [游戏业务Service与流程复用](references/business-flow.md)。先发现项目自己的状态与Service，再复用本Operation源码路径和已有UI/Event/Persistence/Network/SDK能力；不臆造`Nova.Game`或每种游戏行为一套Skill。
+
 ## 冻结输入与阻断门
 
-先冻结唯一项目根、目标业务 Procedure 类型与源码位置、业务程序集名、命名空间、是否由当前业务热更 DLL 交付、进入职责、离开职责、下一状态及跳转条件、既有调用点、异步任务与取消预期、允许写入集，以及可观察进入、离开、跳转和取消的 Play 探针。
+Procedure分支先冻结唯一项目根、目标业务 Procedure 类型与源码位置、业务程序集名、命名空间、是否由当前业务热更 DLL 交付、进入职责、离开职责、下一状态及跳转条件、既有调用点、异步任务与取消预期、允许写入集，以及可观察进入、离开、跳转和取消的 Play 探针。游戏Service分支按对应引用冻结现有入口、状态、Service契约与验收；不需要切Procedure的行为不强行新建类型或下一状态。
 
 - 业务 Procedure 必须位于项目业务 DLL 层并继承 `ProcedureBase`；不移动、不修改 `NovaFramework.Runtime` 中的框架内置 Procedure。目标若是框架启动链或 Framework API 改造，返回 `not_applicable`。
 - 复用现有 `ProcedureComponent` 的框架扫描与 `ProcedureLoadDll → RegisterAdditionalProcedures` 业务延迟注册链。不得创建第二个注册器、手工维护业务 Procedure 列表、在入口场景提前扫描业务程序集，或复制 `UniTask.Yield()` 延迟注册逻辑到业务层。
 - 程序集、命名空间、热更 DLL 归属、进入/离开职责、下一状态、调用点或 Play 探针任一不唯一时返回 `blocked`，不得根据文件名或相邻流程猜测。
-- 重写生命周期方法必须保留对应 `base` 调用。流程内异步工作必须绑定继承自 `ProcedureBase` 的 `CancellationToken`，在关键 `await` 后响应取消；不得另建脱离流程生命周期的长期任务来绕过离开取消。
-- 本 Skill 不自动修改入口 Scene、ConfigMaster/ConfigRuntime、`Nova.prefab`、`ProcedureComponent`、程序集装载配置或 DLL 生成物。若目标 Procedure 尚不在既有业务 DLL/命名空间/加载链中，先返回 `blocked` 并报告所需的独立配置或 DLL 刷新 Operation。
+- 重写生命周期方法必须保留对应 `base` 调用。流程内异步工作必须绑定继承自 `ProcedureBase` 的 `CancellationToken`，在关键 `await` 后响应取消；不得另建脱离流程生命周期的长期任务来绕过离开取消。`OnLeave`当前只Cancel，CTS在下次OnEnter/OnDestroy释放；不把字段手动Dispose或缓存跨进入的Token。
+- 本 Skill 不自动修改入口 Scene、ConfigMaster/ConfigRuntime、`Nova.prefab`、`ProcedureComponent`、程序集装载配置或 DLL 生成物。缺少现成调用点时，可在本次授权的项目业务源码内新增必要胶水，按业务引用复用现有 Service 与注册链；目标尚不在既有业务 DLL/命名空间/加载链时，先冻结实际归属并复用已获授权的独立配置或 DLL 刷新 Operation。缺必要归属或对应授权时阻断依赖步骤，不把可完成的源码工作当成流程已运行。
 
 ## Input → Action Adapter → Artifact → Evidence
 
@@ -32,8 +34,14 @@ description: Use when 项目组要在现有 Nova 消费项目中新增或调整�
 
 ## 实施与验证边界
 
+以下为Procedure变更链；Service只调用既有流程时按业务引用完成实际入口与生命周期验证，不为达到步骤形式新增Procedure或注册器。
+
 1. 先用只读证据确认目标类型落在已加载的业务程序集、完整类型名唯一，且既有 `ProcedureLoadDll` 会扫描该程序集；不要为“让它被发现”新增注册代码。
 2. 只编辑冻结的业务 Procedure 源码、必要的既有业务调用点和本地 Play 探针。进入时启动的异步工作使用当前流程 `CancellationToken`；离开职责不得与其他状态重复，状态切换放在已确认的触发点，切换后不再执行依赖旧状态的逻辑。
+
+   每个异步尝试固定本次进入的 token 与代际；关键 await、异常、重试回调及 finally 都核对该身份，防止旧任务操作重开的流程。已共享的模块初始化直接等待既有公开任务；重入时若暴露底层任务复用错误，保留失败证据并按框架维护范围修复，不能用调用方跳过初始化掩盖契约问题。
+
+   业务Service分支同样直接修改授权项目源码，调用项目已确认公开Service与`ProcedureBase/FsmState<IProcedureManager>/IFsm<IProcedureManager>`；有可复用Service时不新建Manager/全局注册器。输入、结果、错误/取消、跨局数据与唯一操作ID按业务引用冻结；API调用只是C#执行层，不能登记成不存在的可调度Action。
 3. 请求 Unity 刷新并等待编译完成。新增编译错误时停止，不改入口 Scene、Config、`Nova.prefab` 或 Framework 来绕过错误。
 4. 在 Unity Editor 自动化通道 Play Mode 沿冻结调用点触发目标流程，记录当前流程/Procedure History 或等价探针：目标已注册并进入；离开时异步任务观察到取消且不继续产生副作用；随后进入精确的下一状态。探针不得依赖发布包不存在的 Editor-only 历史作为产品逻辑。
 5. 只有业务层归属、编译、现有延迟注册、进入、离开、异步取消和下一状态 Play 证据全部成立才报告 `success`。已完成允许的源码步骤但无法取得 Play 证据时最高为 `partial`；关键输入不唯一或既有 DLL/注册链不覆盖目标类型时为 `blocked`；要求修改框架内置 Procedure 或建立第二注册机制时为 `not_applicable`。

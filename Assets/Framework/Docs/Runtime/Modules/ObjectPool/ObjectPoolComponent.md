@@ -89,7 +89,7 @@
 
 - 组件层不是对象池实现本体；排查释放顺序、重复创建、键冲突时必须直接看 `ObjectPoolManager`。
 - `Release()` 只释放“当前可释放对象”，不是强制清空所有对象。
-- `ReleaseAllUnused()` 才是“把所有未使用对象都释放掉”。
+- `ReleaseAllUnused()` 跳过容量与过期筛选，但只释放当前可释放的未使用对象；锁定及 `CustomCanReleaseFlag == false` 的对象仍保留。
 - `OnDestroy()` 这里只是清空 Manager 引用，不是对象池真正 `Shutdown()` 的执行点。
 
 ## 继续阅读

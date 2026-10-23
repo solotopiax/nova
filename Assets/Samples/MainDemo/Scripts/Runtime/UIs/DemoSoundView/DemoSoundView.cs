@@ -6,9 +6,9 @@
  * author:    taoye
  * created:   2026/05/23
  * descrip:   Modules 2.13 — Sound 模块演示视图（交互触发型）。
- *            演示声音播放/停止/暂停/恢复，以及 name 重载播放。
+ *            演示声音播放/停止/暂停/恢复，以及 name 重载播放与资源释放。
  *            API：Nova.Sound.PlaySound(group, location) / PlaySound(name) /
- *                 PlaySound(name, params) / StopSound / PauseSound / ResumeSound
+ *                 PlaySound(name, params) / StopSound / PauseSound / ResumeSound / ReleaseAssetBySerialID
  ***************************************************************/
 
 using NovaFramework.Runtime;
@@ -55,7 +55,7 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private Button m_PlayByNameWithParamsButton;
 
         /// <summary>
-        /// Stop 按钮，调用 StopSound 停止当前声音。
+        /// Stop 按钮，停止当前声音并释放本视图持有的资源。
         /// </summary>
 
         [SerializeField] private Button m_StopButton;
@@ -104,7 +104,8 @@ namespace NovaFramework.Samples.Runtime
         private const int c_InvalidSerialID = -1;
 
         /// <summary>
-        /// 当前播放的声音 SerialID，c_InvalidSerialID 表示无播放中的声音。
+        /// 本视图持有的声音请求 SerialID；暂停或自然结束后仍保留，显式结束时停止并释放。
+        /// c_InvalidSerialID 表示本视图没有持有声音请求。
         /// </summary>
         private int m_CurrentSerialID = c_InvalidSerialID;
 
@@ -177,15 +178,15 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 视图关闭：自动停止当前播放中的声音。
+        /// 视图关闭：停止并释放当前声音请求，包含暂停、自然结束或尚在加载中的请求。
         /// </summary>
         /// <param name="isShutdown">是否因管理器关闭触发。</param>
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
-            if (m_CurrentSerialID != c_InvalidSerialID && Nova.Sound != null)
+            if (m_CurrentSerialID != c_InvalidSerialID)
             {
-                Nova.Sound.StopSound(m_CurrentSerialID);
+                StopAndReleaseOwnedSound(m_CurrentSerialID);
                 m_CurrentSerialID = c_InvalidSerialID;
             }
 
@@ -193,7 +194,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// Play 按钮点击：调用 PlaySound，记录 SerialID 到 m_CurrentSerialID。
+        /// 发起声音请求并接管 SerialID；替换时停止并释放此前由本视图持有的声音。
         /// </summary>
         private void OnPlayButtonClick()
         {
@@ -219,13 +220,13 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            m_CurrentSerialID = serialID;
+            ReplaceCurrentSound(serialID);
             RefreshSerialIDText();
-            AppendFeedback($"Nova.Sound.PlaySound(\"{group}\", \"{location}\") -> SerialID={serialID}", FeedbackLevel.Success);
+            AppendFeedback($"Nova.Sound.PlaySound(\"{group}\", \"{location}\") -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
         }
 
         /// <summary>
-        /// PlayByName 按钮点击：调用 PlaySound(name) 按固定 name 查表播放。
+        /// 按固定 name 发起声音请求；接受新 SerialID 时停止并释放此前持有的声音。
         /// </summary>
         private void OnPlayByNameButtonClick()
         {
@@ -242,13 +243,13 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            m_CurrentSerialID = serialID;
+            ReplaceCurrentSound(serialID);
             RefreshSerialIDText();
-            AppendFeedback($"Nova.Sound.PlaySound(\"{c_DemoSoundName}\") -> SerialID={serialID}", FeedbackLevel.Success);
+            AppendFeedback($"Nova.Sound.PlaySound(\"{c_DemoSoundName}\") -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
         }
 
         /// <summary>
-        /// PlayByNameWithParams 按钮点击：调用 PlaySound(name, PlaySoundParams) 带参数按名称播放。
+        /// 按名带参数请求播放并停止、释放此前声音；PlaySoundParams 所有权交给 Manager，不自行重复归还。
         /// </summary>
         private void OnPlayByNameWithParamsButtonClick()
         {
@@ -267,13 +268,13 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            m_CurrentSerialID = serialID;
+            ReplaceCurrentSound(serialID);
             RefreshSerialIDText();
-            AppendFeedback($"Nova.Sound.PlaySound(\"{c_DemoSoundNameSfx}\", params{{volumeInGroup=0.8}}) -> SerialID={serialID}", FeedbackLevel.Success);
+            AppendFeedback($"Nova.Sound.PlaySound(\"{c_DemoSoundNameSfx}\", params{{volumeInGroup=0.8}}) -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
         }
 
         /// <summary>
-        /// Stop 按钮点击：停止当前 SerialID 的声音。
+        /// Stop 按钮点击：停止并释放当前 SerialID 的声音，请求自然结束后仍执行资源释放。
         /// </summary>
         private void OnStopButtonClick()
         {
@@ -289,10 +290,11 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            bool stopped = Nova.Sound.StopSound(m_CurrentSerialID);
-            AppendFeedback($"Nova.Sound.StopSound({m_CurrentSerialID}) -> stopped={stopped}", stopped ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            int serialID = m_CurrentSerialID;
+            bool stopped = StopAndReleaseOwnedSound(serialID);
             m_CurrentSerialID = c_InvalidSerialID;
             RefreshSerialIDText();
+            AppendFeedback($"Nova.Sound.StopSound({serialID}, 0f) -> stopped={stopped}；已调用 ReleaseAssetBySerialID({serialID}) 释放本视图资源", stopped ? FeedbackLevel.Success : FeedbackLevel.Warn);
         }
 
         /// <summary>
@@ -335,6 +337,39 @@ namespace NovaFramework.Samples.Runtime
 
             bool resumed = Nova.Sound.ResumeSound(m_CurrentSerialID);
             AppendFeedback($"Nova.Sound.ResumeSound({m_CurrentSerialID}) -> resumed={resumed}", resumed ? FeedbackLevel.Success : FeedbackLevel.Warn);
+        }
+
+        /// <summary>
+        /// 接管新播放标识并立即停止、释放旧声音，避免连续播放丢失本视图的资源释放责任。
+        /// </summary>
+        /// <param name="serialID">本次 PlaySound 返回的有效请求标识；正值不表示声音已成功播放。</param>
+        private void ReplaceCurrentSound(int serialID)
+        {
+            int previous = m_CurrentSerialID;
+            m_CurrentSerialID = serialID;
+            if (previous != c_InvalidSerialID && previous != serialID)
+            {
+                StopAndReleaseOwnedSound(previous);
+            }
+        }
+
+        /// <summary>
+        /// 结束本视图持有的单个声音请求：先立即停止，再通过公开门面释放资源，不影响其他声音。
+        /// StopSound 不负责释放已加载资源；加载中的请求先登记停止，后续结果由 Manager 释放而不播放。
+        /// 本方法仅供结束、替换和关闭使用，Pause/Resume 保留请求与资源以便继续播放。
+        /// </summary>
+        /// <param name="serialID">本视图持有的有效声音请求标识；正值不保证资源已经加载或成功播放。</param>
+        /// <returns>停止请求是否被声音系统接受；资源释放门面无返回值，不以此结果证明句柄已释放。</returns>
+        private bool StopAndReleaseOwnedSound(int serialID)
+        {
+            if (serialID == c_InvalidSerialID || Nova.Sound == null)
+            {
+                return false;
+            }
+
+            bool stopped = Nova.Sound.StopSound(serialID, 0f);
+            Nova.Sound.ReleaseAssetBySerialID(serialID);
+            return stopped;
         }
 
         /// <summary>

@@ -295,6 +295,14 @@
       "UIGroupName": "DemoSub",
       "PauseCoveredUIView": false,
       "InObjectPools": false
+    },
+    {
+      "Name": "DemoIntegrationTableUiView",
+      "Desc": "Integration 4.5 Table + UI 物品详情",
+      "AssetLocation": "DemoIntegrationTableUiView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
     }
   ]
 }

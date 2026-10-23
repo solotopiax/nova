@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-### Added
+## [0.1.14] - 2026-10-23
 
 ### Changed
 
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 GameSaveDemo APK 流水线的旧输出参数，改用 OutputFolderPath。
+
+- 纠正文档中云存档与本地持久化职责及类型名称说明。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.13] - 2026-10-10
 

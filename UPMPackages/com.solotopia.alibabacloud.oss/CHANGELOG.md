@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-10-23
+
+### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
+
 ## [0.0.3] - 2026-08-14
 
 ### Fixed

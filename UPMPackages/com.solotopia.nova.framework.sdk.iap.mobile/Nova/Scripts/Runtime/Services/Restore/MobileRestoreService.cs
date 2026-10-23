@@ -115,6 +115,26 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_Hub.ExtendedService.FetchPurchases();
         }
 
+        // [UnityIAP-FocusRefetch-Workaround] Unity IAP 5.3.0~5.4.4 Google 回到前台重拉会覆盖 FetchPurchases 回调，官方修复后删除。
+        /// <summary>
+        /// 前后台切换：Unity IAP 在 Google 平台回到前台时会自行 FetchPurchases，覆盖本模块的成功/失败回调；
+        /// 若回到前台时已有购买仍在拉取，延迟后重新发起一次，确保本模块回调最后登记。
+        /// </summary>
+        /// <param name="isForeground">true 表示回到前台（恢复或获得焦点），false 表示进入后台或失去焦点。</param>
+        internal void OnAppForegroundChanged(bool isForeground)
+        {
+#if UNITY_ANDROID
+            if (!isForeground || !m_IsExistingPurchasesFetchInProgress || m_IsForegroundRefetchScheduled)
+            {
+                return;
+            }
+
+            m_IsForegroundRefetchScheduled = true;
+            LogDebug($"已有购买拉取期间回到前台，{c_ForegroundRefetchDelayMs}ms 后重新拉取，原因=Unity IAP 前台重拉会覆盖回调。");
+            m_Hub.RunBackgroundTask(RefetchExistingPurchasesAfterForegroundAsync, "回到前台后重新拉取平台已有购买");
+#endif
+        }
+
         /// <summary>
         /// 平台已有购买拉取结束后尝试补跑延后的权益刷新。
         /// </summary>
@@ -400,8 +420,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void OnExistingPurchasesFetched(Orders existingOrders)
         {
             m_IsExistingPurchasesFetchInProgress = false;
+            int confirmedOrderCount = 0;
             foreach (ConfirmedOrder order in existingOrders.ConfirmedOrders)
             {
+                confirmedOrderCount++;
                 foreach (var cartItem in order.CartOrdered.Items())
                 {
                     // 缓存已确认订单票据，后续恢复和验单可复用平台回传凭据。
@@ -409,8 +431,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
             }
 
+            int pendingOrderCount = 0;
             foreach (PendingOrder order in existingOrders.PendingOrders)
             {
+                pendingOrderCount++;
                 Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
                 if (product == null)
                 {
@@ -422,6 +446,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 // 待确认订单必须走购买服务，先解析票据并完成服务端验单，再确认平台订单。
                 m_Hub.PurchaseService.OnPurchasePending(order);
             }
+
+            LogDebug($"平台已有购买拉取完成，已确认订单数量={confirmedOrderCount}，待确认订单数量={pendingOrderCount}。");
 
             if (!string.IsNullOrEmpty(m_Hub.Store?.GameUID) &&
                 !TryRunPendingEntitlementRefreshAfterPurchasesFetched())

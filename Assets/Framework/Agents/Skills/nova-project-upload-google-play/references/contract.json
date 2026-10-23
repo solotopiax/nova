@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.38",
-    "unity": ">=6000.4",
+    "unity": ">=6000.6.7f1",
     "precondition": "实际安装包注册 googleplay.upload_aab；自动执行还须 live describe 返回 nova.project.pipify.run-batch；版本范围本身不证明 Step 可用。"
   },
   "requires": [],

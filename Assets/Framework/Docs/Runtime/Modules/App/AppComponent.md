@@ -83,11 +83,11 @@ C × R × (K + 1)
 ## 风险点 / 易错点
 
 - `Start()` 只注入配置，不会自动做检查。
-- `DownloadAsync()` 虽然有门面，但当前底层实现仍是占位骨架，不是可用下载链。
+- `DownloadAsync()` 薄转发到内置 Android Player 文件下载器；返回路径不表示已安装，其他平台明确拒绝。
 - 大版本检查不是“主一次、备一次”的固定两步：它按完整轮数和重试次数执行去重后的候选，每次重试都会重新执行全部轮次。传输/客户端数据处理失败、`404`、`408`、`429`、`5xx`、空正文或无效 JSON/版本规则会推进；其他正式 HTTP 状态（包括 `401`）停止整链并返回 `NoDownload`。合法 JSON（包括不触发更新的 `NoDownload`）立即终止。
 - 调用方取消时，内置 UWR 物理请求会被中止，且不会推进到下一个候选；每次物理请求独享配置的超时值。
 - `EnableUWRTracks` 只控制 App 版本检查这条逻辑链的统一 UWR 埋点；底层物理入口不会另建链，避免同一次发送重复上报。
-- `PrimaryDownloadUrl` / `FallbackDownloadUrl` 的 APK 下载语义完全未改；`DownloadAsync()` 仍是既有占位骨架。
+- APK 下载在调用时冻结 HTTPS 主备地址并各尝试一次；版本规则 GET 的轮次、重试、偏好与埋点字段不控制 APK 文件传输。
 - 地址选路依据是当前节点上的 `DevelopMode` 场景快照，而不是尚未加载的 `ConfigRuntimeSO`。
 - URL 占位符大小写敏感；未知或拼写错误的占位符会保持原样，通常最终表现为请求失败并降级。
 
@@ -106,3 +106,5 @@ C × R × (K + 1)
 - [Definitions/AppVersionResult.md](Definitions/AppVersionResult.md)
 - [../Procedure/ProcedureCheckVersion.md](../Procedure/ProcedureCheckVersion.md)
 - [../Procedure/Procedures/ProcedureAppDownload.md](../Procedure/Procedures/ProcedureAppDownload.md)
+
+组件 getter 读取序列化字段/当前 Manager 状态，不证明当前 Scene 有效值、初始化或检查成功。源码默认总门及两规则关闭、timeout=5、轮数=1、额外重试=1、偏好/埋点=true、Store 路由；字符串未初始化为 null，Min Attribute 不构成运行时 clamp。AppDownloadCheckUrl getter 当次可重新解析，Manager 仍消费 Start 的 DTO；只有 DevelopMode.Debug 选 Debug，其余走 Release，平台/渠道/包名为启动快照。WebGL 编译时 EnableAppUpdate 恒 false。MatchedRule/targets 无 Manager null 兜底；RecordRecommendedDownloadDismissed 只在管理器实现可选 recorder 时调用，否则 Warning，不扩展旧 IAppManager 必选成员。

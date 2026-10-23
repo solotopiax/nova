@@ -14,18 +14,18 @@ namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
     /// ObjectPool 模块演示用占位子弹对象，继承 ObjectBase，由池管理生命周期。
-    /// Target 为 null（纯 C# 占位，无 GameObject 实体）。
+    /// 纯 C# 占位，无 GameObject 实体；以自身作为唯一 Target，满足池按 Target 归还的身份契约。
     /// </summary>
     public sealed class DemoBullet : ObjectBase
     {
         /// <summary>
-        /// 创建并初始化 DemoBullet 实例，向对象池注册可用。
+        /// 从引用池创建占位对象，以自身提供非空唯一 Target，随后交给对象池注册和回收。
         /// </summary>
         /// <returns>已初始化的 DemoBullet。</returns>
         public static DemoBullet Create()
         {
             DemoBullet bullet = ReferencePool.Get<DemoBullet>();
-            bullet.Initialize("DemoBullet", null);
+            bullet.Initialize("DemoBullet", bullet);
             return bullet;
         }
 

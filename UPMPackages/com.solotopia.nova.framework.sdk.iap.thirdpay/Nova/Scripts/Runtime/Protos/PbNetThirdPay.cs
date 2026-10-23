@@ -28,7 +28,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             "aGlyZFBheS5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnByb3RvImIKGlBiTmV0",
             "VGhpcmRQYXltZW50Q29uZmlnUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
             "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDwoHY291bnRyeRgCIAEo",
-            "CSKwAwobUGJOZXRUaGlyZFBheW1lbnRDb25maWdSZXNwEjQKBGhlYWQYASAB",
+            "CSLHAwobUGJOZXRUaGlyZFBheW1lbnRDb25maWdSZXNwEjQKBGhlYWQYASAB",
             "KAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXNwSGVhZGVyElMK",
             "DGF2YWlsYWJpbGl0eRgCIAEoCzI9Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJk",
             "UGF5LlJ1bnRpbWUuUGJOZXRUaGlyZFBheUF2YWlsYWJpbGl0eRJTCg5wcm9k",
@@ -37,54 +37,54 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             "b25maWcYBCABKAsyOy5Ob3ZhRnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50",
             "aW1lLlBiTmV0VGhpcmRDaGFubmVsQ29uZmlnElwKE3BheW1lbnRfcGFnZV9j",
             "b25maWcYBSABKAsyPy5Ob3ZhRnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50",
-            "aW1lLlBiTmV0VGhpcmRQYXltZW50UGFnZUNvbmZpZyJFChlQYk5ldFRoaXJk",
-            "UGF5QXZhaWxhYmlsaXR5Eg8KB2VuYWJsZWQYASABKAgSFwoPZGlzYWJsZWRf",
-            "cmVhc29uGAIgASgFImoKF1BiTmV0VGhpcmRQcm9kdWN0Q29uZmlnEk8KDHBy",
-            "b2R1Y3RfbGlzdBgBIAMoCzI5Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5",
-            "LlJ1bnRpbWUuUGJOZXRUaGlyZFByb2R1Y3RJbmZvIjcKF1BiTmV0VGhpcmRD",
-            "aGFubmVsQ29uZmlnEhwKFHBheW1lbnRfY3VzdG9tZXJfaWRzGAEgASgJIjcK",
-            "G1BiTmV0VGhpcmRQYXltZW50UGFnZUNvbmZpZxIYChBwYXltZW50X3BhZ2Vf",
-            "dXJsGAEgASgJImQKFVBiTmV0VGhpcmRQcm9kdWN0SW5mbxIKCgJpZBgBIAEo",
-            "BRIWCg5sb2NhbF9jdXJyZW5jeRgCIAEoCRITCgtsb2NhbF9wcmljZRgDIAEo",
-            "CRISCgpwcm9kdWN0X2lkGAQgASgJIlUKHlBiTmV0VGhpcmRRdWVyeVBlbmRp",
-            "bmdPcmRlclJlcRIzCgRoZWFkGAEgASgLMiUuTm92YUZyYW1ld29yay5SdW50",
-            "aW1lLlBiTmV0UmVxSGVhZGVyIrABCh9QYk5ldFRoaXJkUXVlcnlQZW5kaW5n",
-            "T3JkZXJSZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRp",
-            "bWUuUGJOZXRSZXNwSGVhZGVyElcKCm9yZGVyX2xpc3QYAiADKAsyQy5Ob3Zh",
-            "RnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50aW1lLlBiTmV0VGhpcmRRdWVy",
-            "eVBlbmRpbmdPcmRlckluZm8iTAofUGJOZXRUaGlyZFF1ZXJ5UGVuZGluZ09y",
-            "ZGVySW5mbxIXCg9jbGllbnRfb3JkZXJfaWQYASABKAkSEAoIdGFibGVfaWQY",
-            "AiABKAMiZwoWUGJOZXRUaGlyZFZlcmlmeUlhcFJlcRIzCgRoZWFkGAEgASgL",
-            "MiUuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVxSGVhZGVyEhgKEGNs",
-            "aWVudF9vcmRlcl9pZHMYAiADKAkipAEKF1BiTmV0VGhpcmRWZXJpZnlJYXBS",
-            "ZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJO",
-            "ZXRSZXNwSGVhZGVyElMKCm9yZGVyX2xpc3QYAiADKAsyPy5Ob3ZhRnJhbWV3",
-            "b3JrLklBUC5UaGlyZFBheS5SdW50aW1lLlBiTmV0VGhpcmRWZXJpZnlPcmRl",
-            "clJlc3VsdCLJAQobUGJOZXRUaGlyZFZlcmlmeU9yZGVyUmVzdWx0EhcKD3Nl",
-            "cnZlcl9vcmRlcl9pZBgBIAEoCRJPCgZzdGF0dXMYAiABKA4yPy5Ob3ZhRnJh",
-            "bWV3b3JrLklBUC5UaGlyZFBheS5SdW50aW1lLlBiTmV0VGhpcmRWZXJpZnlP",
-            "cmRlclN0YXR1cxIVCg1yZWNlaXB0X3BhcmFtGAMgASgJEhAKCHRhYmxlX2lk",
-            "GAQgASgDEhcKD2NsaWVudF9vcmRlcl9pZBgFIAEoCSr5AgobUGJOZXRUaGly",
-            "ZFZlcmlmeU9yZGVyU3RhdHVzEjAKLFBCX05FVF9USElSRF9WRVJJRllfT1JE",
-            "RVJfU1RBVFVTX1VOU1BFQ0lGSUVEEAASNAowUEJfTkVUX1RISVJEX1ZFUklG",
-            "WV9PUkRFUl9TVEFUVVNfUEVORElOR19QQVlNRU5UEAESLworUEJfTkVUX1RI",
-            "SVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfUFJPQ0VTU0lORxACEikKJVBCX05F",
-            "VF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX1BBSUQQAxI2CjJQQl9ORVRf",
-            "VEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19GQUlMRURfT1JfRVhQSVJFRBAE",
-            "Ei4KKlBCX05FVF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX0RFTElWRVJF",
-            "RBAFEi4KKlBCX05FVF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX05PVF9G",
-            "T1VORBAGQimqAiZOb3ZhRnJhbWV3b3JrLlNESy5JQVAuVGhpcmRQYXkuUnVu",
-            "dGltZWIGcHJvdG8z"));
+            "aW1lLlBiTmV0VGhpcmRQYXltZW50UGFnZUNvbmZpZxIVCg1jbGllbnRfY29u",
+            "ZmlnGAYgASgJIkUKGVBiTmV0VGhpcmRQYXlBdmFpbGFiaWxpdHkSDwoHZW5h",
+            "YmxlZBgBIAEoCBIXCg9kaXNhYmxlZF9yZWFzb24YAiABKAUiagoXUGJOZXRU",
+            "aGlyZFByb2R1Y3RDb25maWcSTwoMcHJvZHVjdF9saXN0GAEgAygLMjkuTm92",
+            "YUZyYW1ld29yay5JQVAuVGhpcmRQYXkuUnVudGltZS5QYk5ldFRoaXJkUHJv",
+            "ZHVjdEluZm8iNwoXUGJOZXRUaGlyZENoYW5uZWxDb25maWcSHAoUcGF5bWVu",
+            "dF9jdXN0b21lcl9pZHMYASABKAkiNwobUGJOZXRUaGlyZFBheW1lbnRQYWdl",
+            "Q29uZmlnEhgKEHBheW1lbnRfcGFnZV91cmwYASABKAkiWAoVUGJOZXRUaGly",
+            "ZFByb2R1Y3RJbmZvEhYKDmxvY2FsX2N1cnJlbmN5GAEgASgJEhMKC2xvY2Fs",
+            "X3ByaWNlGAIgASgJEhIKCnByb2R1Y3RfaWQYAyABKAkiVQoeUGJOZXRUaGly",
+            "ZFF1ZXJ5UGVuZGluZ09yZGVyUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
+            "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXIisAEKH1BiTmV0VGhpcmRR",
+            "dWVyeVBlbmRpbmdPcmRlclJlc3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFt",
+            "ZXdvcmsuUnVudGltZS5QYk5ldFJlc3BIZWFkZXISVwoKb3JkZXJfbGlzdBgC",
+            "IAMoCzJDLk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJO",
+            "ZXRUaGlyZFF1ZXJ5UGVuZGluZ09yZGVySW5mbyJMCh9QYk5ldFRoaXJkUXVl",
+            "cnlQZW5kaW5nT3JkZXJJbmZvEhcKD2NsaWVudF9vcmRlcl9pZBgBIAEoCRIQ",
+            "Cgh0YWJsZV9pZBgCIAEoAyJnChZQYk5ldFRoaXJkVmVyaWZ5SWFwUmVxEjMK",
+            "BGhlYWQYASABKAsyJS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFI",
+            "ZWFkZXISGAoQY2xpZW50X29yZGVyX2lkcxgCIAMoCSKkAQoXUGJOZXRUaGly",
+            "ZFZlcmlmeUlhcFJlc3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsu",
+            "UnVudGltZS5QYk5ldFJlc3BIZWFkZXISUwoKb3JkZXJfbGlzdBgCIAMoCzI/",
+            "Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRUaGly",
+            "ZFZlcmlmeU9yZGVyUmVzdWx0IskBChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJS",
+            "ZXN1bHQSFwoPc2VydmVyX29yZGVyX2lkGAEgASgJEk8KBnN0YXR1cxgCIAEo",
+            "DjI/Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRU",
+            "aGlyZFZlcmlmeU9yZGVyU3RhdHVzEhUKDXJlY2VpcHRfcGFyYW0YAyABKAkS",
+            "EAoIdGFibGVfaWQYBCABKAMSFwoPY2xpZW50X29yZGVyX2lkGAUgASgJKvkC",
+            "ChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJTdGF0dXMSMAosUEJfTkVUX1RISVJE",
+            "X1ZFUklGWV9PUkRFUl9TVEFUVVNfVU5TUEVDSUZJRUQQABI0CjBQQl9ORVRf",
+            "VEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19QRU5ESU5HX1BBWU1FTlQQARIv",
+            "CitQQl9ORVRfVEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19QUk9DRVNTSU5H",
+            "EAISKQolUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfUEFJRBAD",
+            "EjYKMlBCX05FVF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX0ZBSUxFRF9P",
+            "Ul9FWFBJUkVEEAQSLgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFU",
+            "VVNfREVMSVZFUkVEEAUSLgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9T",
+            "VEFUVVNfTk9UX0ZPVU5EEAZCKaoCJk5vdmFGcmFtZXdvcmsuU0RLLklBUC5U",
+            "aGlyZFBheS5SdW50aW1lYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigReq.Parser, new[]{ "Head", "Country" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp.Parser, new[]{ "Head", "Availability", "ProductConfig", "ChannelConfig", "PaymentPageConfig" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp.Parser, new[]{ "Head", "Availability", "ProductConfig", "ChannelConfig", "PaymentPageConfig", "ClientConfig" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability.Parser, new[]{ "Enabled", "DisabledReason" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig.Parser, new[]{ "ProductList" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig.Parser, new[]{ "PaymentCustomerIds" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig.Parser, new[]{ "PaymentPageUrl" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo.Parser, new[]{ "Id", "LocalCurrency", "LocalPrice", "ProductId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo.Parser, new[]{ "LocalCurrency", "LocalPrice", "ProductId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderReq.Parser, new[]{ "Head" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderResp.Parser, new[]{ "Head", "OrderList" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderInfo), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderInfo.Parser, new[]{ "ClientOrderId", "TableId" }, null, null, null, null),
@@ -430,6 +430,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       productConfig_ = other.productConfig_ != null ? other.productConfig_.Clone() : null;
       channelConfig_ = other.channelConfig_ != null ? other.channelConfig_.Clone() : null;
       paymentPageConfig_ = other.paymentPageConfig_ != null ? other.paymentPageConfig_.Clone() : null;
+      clientConfig_ = other.clientConfig_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -514,6 +515,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       }
     }
 
+    /// <summary>Field number for the "client_config" field.</summary>
+    public const int ClientConfigFieldNumber = 6;
+    private string clientConfig_ = "";
+    /// <summary>
+    /// 后台按 app_id + platform + channel 配置的 JSON 对象字符串；未配置时为 "{}"
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string ClientConfig {
+      get { return clientConfig_; }
+      set {
+        clientConfig_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -534,6 +550,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       if (!object.Equals(ProductConfig, other.ProductConfig)) return false;
       if (!object.Equals(ChannelConfig, other.ChannelConfig)) return false;
       if (!object.Equals(PaymentPageConfig, other.PaymentPageConfig)) return false;
+      if (ClientConfig != other.ClientConfig) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -546,6 +563,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       if (productConfig_ != null) hash ^= ProductConfig.GetHashCode();
       if (channelConfig_ != null) hash ^= ChannelConfig.GetHashCode();
       if (paymentPageConfig_ != null) hash ^= PaymentPageConfig.GetHashCode();
+      if (ClientConfig.Length != 0) hash ^= ClientConfig.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -584,6 +602,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(42);
         output.WriteMessage(PaymentPageConfig);
       }
+      if (ClientConfig.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(ClientConfig);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -614,6 +636,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(42);
         output.WriteMessage(PaymentPageConfig);
       }
+      if (ClientConfig.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(ClientConfig);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -638,6 +664,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       }
       if (paymentPageConfig_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(PaymentPageConfig);
+      }
+      if (ClientConfig.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ClientConfig);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -680,6 +709,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
           PaymentPageConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig();
         }
         PaymentPageConfig.MergeFrom(other.PaymentPageConfig);
+      }
+      if (other.ClientConfig.Length != 0) {
+        ClientConfig = other.ClientConfig;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -735,6 +767,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             input.ReadMessage(PaymentPageConfig);
             break;
           }
+          case 50: {
+            ClientConfig = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -787,6 +823,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
               PaymentPageConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig();
             }
             input.ReadMessage(PaymentPageConfig);
+            break;
+          }
+          case 50: {
+            ClientConfig = input.ReadString();
             break;
           }
         }
@@ -1673,7 +1713,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public PbNetThirdProductInfo(PbNetThirdProductInfo other) : this() {
-      id_ = other.id_;
       localCurrency_ = other.localCurrency_;
       localPrice_ = other.localPrice_;
       productId_ = other.productId_;
@@ -1686,23 +1725,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       return new PbNetThirdProductInfo(this);
     }
 
-    /// <summary>Field number for the "id" field.</summary>
-    public const int IdFieldNumber = 1;
-    private int id_;
-    /// <summary>
-    /// 商品自增 ID
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Id {
-      get { return id_; }
-      set {
-        id_ = value;
-      }
-    }
-
     /// <summary>Field number for the "local_currency" field.</summary>
-    public const int LocalCurrencyFieldNumber = 2;
+    public const int LocalCurrencyFieldNumber = 1;
     private string localCurrency_ = "";
     /// <summary>
     /// 本地币种
@@ -1717,7 +1741,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     }
 
     /// <summary>Field number for the "local_price" field.</summary>
-    public const int LocalPriceFieldNumber = 3;
+    public const int LocalPriceFieldNumber = 2;
     private string localPrice_ = "";
     /// <summary>
     /// 本地价格
@@ -1732,7 +1756,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     }
 
     /// <summary>Field number for the "product_id" field.</summary>
-    public const int ProductIdFieldNumber = 4;
+    public const int ProductIdFieldNumber = 3;
     private string productId_ = "";
     /// <summary>
     /// 商品唯一 ID
@@ -1761,7 +1785,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Id != other.Id) return false;
       if (LocalCurrency != other.LocalCurrency) return false;
       if (LocalPrice != other.LocalPrice) return false;
       if (ProductId != other.ProductId) return false;
@@ -1772,7 +1795,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (Id != 0) hash ^= Id.GetHashCode();
       if (LocalCurrency.Length != 0) hash ^= LocalCurrency.GetHashCode();
       if (LocalPrice.Length != 0) hash ^= LocalPrice.GetHashCode();
       if (ProductId.Length != 0) hash ^= ProductId.GetHashCode();
@@ -1794,20 +1816,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (Id != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(Id);
-      }
       if (LocalCurrency.Length != 0) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(10);
         output.WriteString(LocalCurrency);
       }
       if (LocalPrice.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(18);
         output.WriteString(LocalPrice);
       }
       if (ProductId.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(26);
         output.WriteString(ProductId);
       }
       if (_unknownFields != null) {
@@ -1820,20 +1838,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Id != 0) {
-        output.WriteRawTag(8);
-        output.WriteInt32(Id);
-      }
       if (LocalCurrency.Length != 0) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(10);
         output.WriteString(LocalCurrency);
       }
       if (LocalPrice.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(18);
         output.WriteString(LocalPrice);
       }
       if (ProductId.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(26);
         output.WriteString(ProductId);
       }
       if (_unknownFields != null) {
@@ -1846,9 +1860,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (Id != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
-      }
       if (LocalCurrency.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(LocalCurrency);
       }
@@ -1869,9 +1880,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public void MergeFrom(PbNetThirdProductInfo other) {
       if (other == null) {
         return;
-      }
-      if (other.Id != 0) {
-        Id = other.Id;
       }
       if (other.LocalCurrency.Length != 0) {
         LocalCurrency = other.LocalCurrency;
@@ -1901,19 +1909,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            Id = input.ReadInt32();
-            break;
-          }
-          case 18: {
+          case 10: {
             LocalCurrency = input.ReadString();
             break;
           }
-          case 26: {
+          case 18: {
             LocalPrice = input.ReadString();
             break;
           }
-          case 34: {
+          case 26: {
             ProductId = input.ReadString();
             break;
           }
@@ -1936,19 +1940,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 8: {
-            Id = input.ReadInt32();
-            break;
-          }
-          case 18: {
+          case 10: {
             LocalCurrency = input.ReadString();
             break;
           }
-          case 26: {
+          case 18: {
             LocalPrice = input.ReadString();
             break;
           }
-          case 34: {
+          case 26: {
             ProductId = input.ReadString();
             break;
           }

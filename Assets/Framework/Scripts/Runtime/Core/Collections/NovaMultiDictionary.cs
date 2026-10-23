@@ -53,7 +53,7 @@ namespace NovaFramework.Runtime
         /// 获取多值字典中指定主键的范围。
         /// </summary>
         /// <param name="key">指定的主键。</param>
-        /// <returns>指定主键的范围。若主键不存在则返回 default（IsValid 为 false）。</returns>
+        /// <returns>指定主键的范围；主键不存在时返回 null，不可直接读取 IsValid。</returns>
         public NovaLinkedListRange<TValue> this[TKey key]
         {
             get

@@ -72,3 +72,9 @@ m_ConfigHandle = null;
 
 - [IAssetManager.md](IAssetManager.md)
 - [YooAssetHandleAdapter.md](../Definitions/YooAssetHandleAdapter.md)
+
+## 内置适配器的租约
+
+Asset、AllAssets、SubAssets 和 Scene 适配器由 ReferencePool 复用。IsDone 只表示结束，IsValid 只表示底层仍有效，均不等价资源加载成功；接口不提供 Succeeded。普通资源 Release、场景 UnloadAsync 后必须丢弃引用，不能再读取属性或重复释放：实例可能已经绑定另一笔操作，旧引用可能操作新租约。
+
+普通/批量 Release 不设幂等标记，先底层 Release 再归池；底层异常会阻止归池。IReference.Clear 只清字段，不执行 Release/Unload，不能手动归池代替领域释放。Bind 不会释放原句柄，只供刚取得的适配器绑定新所有权。Raw 的当前租约释放标记是特例，详见对应文档。

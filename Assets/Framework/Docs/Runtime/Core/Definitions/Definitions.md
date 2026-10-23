@@ -5,9 +5,9 @@
 | 文件 | 枚举/类 | 说明 |
 |------|---------|------|
 | `ChannelType.cs` | `ChannelType` | 游戏运营渠道类型（None / Official / Google / Apple / WeChat / TikTok / Alipay）；None 仅作内部未指定哨兵，不可用于 Config 坐标 |
-| `DevelopMode.cs` | `DevelopMode` | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
+| `DevelopMode.cs` | `DevelopMode` | 开发/发布模式枚举（Debug / Release），Config 第三维度 |
 | `Language.cs` | `Language`, `LanguageInfo`, `LanguageMetadata` | 游戏语言枚举及描述 / Flag 元数据 |
-| `LanguageSelectionWay.cs` | `LanguageSelectionWay` | 已移除，保留历史兼容说明页 |
+| [LanguageSelectionWay.md](LanguageSelectionWay.md) | `LanguageSelectionWay` | 已移除的类型说明；当前无对应源码 |
 | `PlatformType.cs` | `PlatformType` | 目标平台类型（Android / iOS / WebGL），Config 第一维度 |
 
 `Language`、`LanguageInfo` 与 `LanguageMetadata` 一起定义在 `Runtime/Core/Definitions/`，因为根组件 `Nova.Visitors.cs` 直接持有 `Language` 类型字段（避免根组件依赖子模块产生逆向依赖）。

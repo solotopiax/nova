@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -19,9 +19,9 @@
       "when": "用户已确认目标 Prefab 与 Unity 写入范围时"
     },
     {
-      "kind": "unity-menu",
-      "entry": "confirmed project UI export entry",
-      "when": "当前项目已有且已确认本次需要的 UI 导出入口时"
+      "kind": "agent-action",
+      "entry": "nova.project.ui.export",
+      "when": "UI注册源和已保存UISettings已冻结；全量scope=all/code/data，单文件sourcePath仅code/data；使用Plan/Execute/编译后Verify"
     }
   ],
   "inputs": [
@@ -60,20 +60,23 @@
       "confirmed business UIView source",
       "confirmed target Prefab",
       "confirmed UI registration source",
-      "generated UI output for this registration"
+      "generated UI output for this registration",
+      "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
       "handwritten Prefab or Scene YAML",
-      "unrelated generated output"
+      "unrelated generated output",
+      "manual edits to generated UI output"
     ]
   },
   "locks": [
     "unity-editor",
     "asset-database",
     "active-scene",
-    "ui-registration"
+    "ui-registration",
+    "ui-export"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -82,7 +85,7 @@
       "replace non-generated asset",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定 viewName、写入集和副作用；输入或范围改变后旧确认失效。"
+    "rule": "确认绑定 viewName、写入集和副作用；输入或范围改变后旧确认失效。 UI导出确认绑定Action PlanId及展示的共享配置、UITables和删除范围。"
   },
   "minimumEvidence": "compile",
   "resultStates": [

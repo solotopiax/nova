@@ -63,3 +63,9 @@ var managerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof
 - [EditorUtil.md](../EditorUtil.md)
 - [BaseComponentInspector.md](../../Inspectors/BaseComponentInspector.md)
 - [Editor.md](../../Editor.md)
+
+## 缓存身份与失效
+
+缓存键只有基类/接口的 `Type.FullName`，没有程序集身份；不同程序集同名类型可能碰撞。返回值是缓存数组本身，调用方改动数组会影响后续读取；不应把它作为可写工作列表。typeBase 不可为 null，工具也不提供后台线程同步。
+
+Reset 仅清空并把缓存标成有效，不预热。加载回调将有效标记置 false 并订阅 compilationFinished；完成回调忽略上下文和编译错误状态，任何完成通知均清空缓存，不能据此证明新类型已成功编译、加载。类型名单的实际发现与排序由 `Util.Assembly.GetTypeNames` 决定。

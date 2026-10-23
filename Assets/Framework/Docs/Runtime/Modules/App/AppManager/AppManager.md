@@ -16,7 +16,7 @@
 
 - 校验 `config != null`
 - 从 `FrameworkManagersGroup` 获取 `IHttpManager`
-- 缓存 `m_Config`
+- 取消未提交的旧 APK 下载，缓存 `m_Config` 并清空旧规则命中状态
 - 清理旧 Manager 生命周期留下的 App 版本检查最近成功域名偏好
 
 ### 2. CheckAsync：总开关关闭或无 URL 时直接跳过
@@ -92,11 +92,15 @@ C × R × (K + 1)
 - `DownloadRoute == Apk`：只检查 `PrimaryDownloadUrl`
 - `FallbackDownloadUrl`：当前启动期版本检查不校验，也不会作为 `TargetDownloadUrl` 的回退值
 
-### 4. `DownloadAsync()` 仍是骨架
+### 4. `DownloadAsync()` 下载并提交本地 APK 文件
 
-当前 `DownloadAsync(ct)` 仍直接抛出 `NotImplementedException`。
+公开签名保持 `UniTask<string> DownloadAsync(CancellationToken)`。内置实现只在 Android Player 执行，要求已初始化、`EnableAppUpdate=true`、`DownloadRoute=Apk`，且当前命中强更或推荐更新。Editor、iOS、WebGL 会抛 `PlatformNotSupportedException`，不写文件。
 
-本次版本检查重试机制不改变 `PrimaryDownloadUrl`、`FallbackDownloadUrl` 或 APK 下载路径；APK 下载仍不因这些轮次、偏好或埋点开关而获得新回退行为。
+每次调用冻结 `TargetDownloadUrl` 与可选 `FallbackDownloadUrl`，按规范完整 URL 去重、主地址在前。只允许无内嵌凭据和片段的绝对 HTTPS，保留 Unity 默认 TLS 证书校验，最多跟随五次 HTTPS 重定向。每个候选最多尝试一次，网络、响应或归档结构失败才推进备用；本地文件 IO 故障停止，取消不推进备用。
+
+响应通过 `DownloadHandlerFile` 直接写入 `Path.Hotfix.ApkDownloadedFullPath` 同目录的唯一 `.part` 文件，不把 APK 全量放入内存。每个候选含重定向最多 30 分钟，连续 60 秒无新字节会中止，单文件上限 1 GiB；仅接受 HTTP 200 与 identity 内容编码，存在 `Content-Length` 时必须与实际文件长度一致。这些限制是下载器内部固定值，不使用版本规则 GET 的轮次、重试、偏好、埋点或 `TimeoutSeconds`。
+
+完成后检查文件非空、大小上限，以及 ZIP 中唯一非空的 `AndroidManifest.xml`；不提取归档，结构检查不代表签名有效、目标版本正确或可以安装。合格文件通过同目录 `File.Move` / `File.Replace` 提交为 `${Application.persistentDataPath}/update.apk`，返回该绝对路径。失败或取消保留此前正式文件并删除本次临时件；同一 Manager 拒绝并发下载，重新初始化与 `Shutdown()` 会取消未提交操作，提交前再次检查令牌。安装是独立 Native 能力或业务动作，不由下载入口隐式触发。
 
 ### 5. `OpenStoreAsync()` 只负责打开商店 URL
 
@@ -106,7 +110,7 @@ C × R × (K + 1)
 2. 校验 URL 非空
 3. `await Util.AppStore.OpenAsync(url)`
 
-失败时返回 `false`，不会向上抛异常。
+正常日志处理条件下，空白地址或打开异常返回 `false`。当前 ct 未传给 AppStore，也不要求此前命中规则；true 仅表示已发起跳转，不代表商店可用。
 
 ## 高价值状态
 
@@ -116,11 +120,29 @@ C × R × (K + 1)
 
 ## 风险点 / 易错点
 
-- `MatchedRule / TargetStoreUrl / TargetDownloadUrl` 只在命中规则时更新；在 `NoDownload` 或异常降级路径里会被清空，避免残留旧值。
-- `DownloadRoute == Apk` 不代表一定可下载；当前下载实现还没打通。
+- CheckAsync 开始先清 MatchedRule/targets；合法 JSON 解析后也先清再匹配。并发检查共享这些字段，无独立代际或锁；不要用返回结果推导另一条在途检查的状态。
+- `DownloadRoute == Apk` 仍需 Android Player、有效 HTTPS 地址及已命中的更新规则；下载路径只表示文件提交完成。
 - 默认 `VersionCheckFallbackRoundCount=1`、`RetryRequestCount=1`。主备均配置且一直可重试失败时，默认最多会发送 4 次，不是 2 次。
 - 远端 JSON 版本号和 `Application.version` 都需要满足 `System.Version` 格式；非法格式会记 warning，并按“不命中更新”处理。
 - 推荐提示间隔缺失、为 `0` 或负数时保持原行为，每次命中推荐规则都提示；本地时间回拨时也会重新提示，避免形成无限期抑制。
+
+## 参数和失败后的状态
+
+Initialize 非空配置成功后保存 DTO 原引用，不深复制或热读 Inspector；获取 HTTP 失败时不会提交新配置，但 HTTP 依赖字段可能已被写空。重新初始化/Shutdown 取消 APK 下载而不拥有版本检查的独立 CTS；在途检查仍须由调用方令牌和时序管理。Priority=11 仅控制 Update/Shutdown，Update 不自动发检查。
+
+版本规则要求两个阈值都能被 System.Version 解析，即使相应规则开关关闭也一样；这不是 SemVer，既不验证两个阈值先后也不验证规则与下载目标匹配。CompareVersions 两者都非法返回 0、单方非法返回 -1，不能把 -1 一律解释为远端更旧。命中目标为空或未知路由只记录日志，不撤销规则命中。IsValidUrl 仅非空白；Store iOS 取 AppStoreUrl，其余平台取 AndroidStoreUrl，不能由名称推导完整 URL 校验。
+
+推荐放弃状态固定键为 `Nova.App.RecommendedDownloadDismissedAtUnixSeconds`，Invariant 解析并按 UTC 秒比较；只有 `now-dismissedAt < interval` 才抑制，等于间隔允许提示，无效旧时间或回拨不抑制。保存失败仅 Warning。
+
+版本检查 R 最少 1、K 最少 0，端点偏好按规范域名而非完整 URL 对比；合法 NoDownload 也可标成功。每条链独立 cursor，HTTP 响应在 finally 回池，不得跨回调保留；旧 IHttpManager 仅发送前检查令牌，不提供中途物理取消。404/408/429/所有 >=500、无正式响应或 DataProcessingError 可推进，其他正式失败停止。取消与异常外层均降级 NoDownload，不是服务端“无需更新”的证明。
+
+UWR 埋点只在支持物理接口且开关开启时发，operation=`app_version_check`、scene=`app`。链 ID 为每次新建；attemptsStarted 计真正准备发送的次数，request/total 耗时为毫秒，TimeoutSeconds 为秒；telemetry send index 为 0-based 且饱和到 int，日志显示的轮次/发送序号加 1，重试周期仍原值。primary/fallback/other 只作标签，空正文与无效规则叶子码分别 empty_response/invalid_version_rule；上报不改变路由，也不证明远端接收，tracker/日志异常仍可中断处理。
+
+APK 内部下载器还要求 1..2 个候选、单实例独占；内部构造器的传输委托替身不改变真实路径、校验与提交。目标规范为绝对文件路径并拒绝现存祖先/目标的链接，父目录创建可先发生。每候选以 CreateNew 创建唯一 part，只有 InvalidDataException 推进备用，取消/本地 IO 和其他异常停止；finally 删除 part 的失败可能覆盖原异常。没有回滚已提交正式文件的 Cancel。
+
+Content-Length 缺失为未知 -1，非法值失败而非忽略；下载关闭后按 ZIP 结构验证不超过 100000 条目且唯一非空 AndroidManifest.xml。ZipArchive 先解析目录，条目数检查不是硬内存上限；结构通过不校验包名/versionCode、签名或目标检查版本。
+
+接口与 Base 的抽象声明没有这些实现体；外部自定义管理器及物理取消、文件下载支持需单独确认。
 
 ## 继续阅读
 
@@ -129,6 +151,7 @@ C × R × (K + 1)
 - [AppManager.cs](../../../../../Scripts/Runtime/Modules/App/Managers/AppManager/Implements/AppManager.cs)
 - [AppManager.Methods.cs](../../../../../Scripts/Runtime/Modules/App/Managers/AppManager/Implements/AppManager.Methods.cs)
 - [AppManager.Download.cs](../../../../../Scripts/Runtime/Modules/App/Managers/AppManager/Implements/AppManager.Download.cs)
+- [AppApkDownloader.cs](../../../../../Scripts/Runtime/Modules/App/Managers/AppManager/Implements/AppApkDownloader.cs)
 
 相关文档：
 

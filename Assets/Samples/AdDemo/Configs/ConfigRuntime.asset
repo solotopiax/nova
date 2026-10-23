@@ -28,12 +28,12 @@ MonoBehaviour:
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2095149308307832973
-  - rid: 2095149308307832974
-  - rid: 2095149308307832975
-  - rid: 2095149308307832976
+  - rid: 6078457943708663971
+  - rid: 6078457943708663972
+  - rid: 6078457943708663973
+  - rid: 6078457943708663974
   EnabledKitConfigs:
-  - rid: 2095149308307832977
+  - rid: 6078457943708663975
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -66,7 +66,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2095149308307832973
+    - rid: 6078457943708663971
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
         m_DevKey: YOUR_APPSFLYER_DEV_KEY
@@ -76,7 +76,7 @@ MonoBehaviour:
         m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
         m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
         m_ReportCmdName: AppsFlyerReport
-    - rid: 2095149308307832974
+    - rid: 6078457943708663972
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -87,19 +87,23 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 2095149308307832975
+    - rid: 6078457943708663973
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2095149308307832978
+          - rid: 6078457943708663976
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 2095149308307832976
+    - rid: 6078457943708663974
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
@@ -107,12 +111,12 @@ MonoBehaviour:
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
         m_AutoRequestNotificationPermission: 1
-    - rid: 2095149308307832977
+    - rid: 6078457943708663975
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 2095149308307832978
+    - rid: 6078457943708663976
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -120,13 +124,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1

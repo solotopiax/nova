@@ -69,7 +69,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 设置视图分组深度。
         /// 计算 sortingOrder = m_DepthFactor * depth 并应用到 Canvas。
-        /// 包含 Canvas 懒初始化（防止 Awake 之前被调用）和 sortingOrder 溢出校验。
+        /// 包含 Canvas 懒初始化和乘法结果的 short 范围检查；int 乘法本身没有 long 溢出保护。
         /// 越界时记录 Error 并 Clamp 到 short 范围，避免 Unity 静默截断导致层级紊乱。
         /// </summary>
         /// <param name="depth">视图分组深度。</param>

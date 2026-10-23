@@ -8,7 +8,9 @@
  * descrip:   IAPProductList 自定义 PropertyDrawer，对齐 IAPConfigWindow 布局规则与交互逻辑
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using NovaFramework.SDK.IAP.Runtime;
@@ -20,7 +22,7 @@ namespace NovaFramework.SDK.IAP.Editor
     /// <summary>
     /// IAPProductList 的自定义 PropertyDrawer。
     /// 绘制搜索栏 + 列头行（含全选 Toggle） + 水平/垂直双向可滚动商品列表（行内 Toggle 选中 + 行内删除按钮）
-    /// + 底部添加/批量删除工具栏，列宽与交互逻辑完整对齐 IAPConfigWindow。
+    /// + 底部编辑工具栏和支付表上传按钮，列宽与交互逻辑完整对齐 IAPConfigWindow。
     /// </summary>
     [CustomPropertyDrawer(typeof(IAPProductList))]
     public sealed class IAPProductListDrawer : PropertyDrawer
@@ -146,8 +148,13 @@ namespace NovaFramework.SDK.IAP.Editor
         private bool m_IsImportDialogPending;
 
         /// <summary>
+        /// 标记商品目录是否正在上传，防止多个配置面板重复提交。
+        /// </summary>
+        private static bool s_IsUploading;
+
+        /// <summary>
         /// 计算 IAPProductList 属性的总绘制高度：
-        /// 搜索栏 + 列头行 + 滚动区 + 底部工具栏及各行间距之和。
+        /// 搜索栏 + 列头行 + 滚动区 + 底部工具栏 + 上传按钮及各行间距之和。
         /// </summary>
         /// <param name="property">对应 IAPProductList 的 SerializedProperty。</param>
         /// <param name="label">显示标签（保留供基类接口使用）。</param>
@@ -157,12 +164,13 @@ namespace NovaFramework.SDK.IAP.Editor
             return c_ToolbarHeight + EditorGUIUtility.standardVerticalSpacing
                 + c_RowHeight + EditorGUIUtility.standardVerticalSpacing
                 + c_ProductsAreaHeight + EditorGUIUtility.standardVerticalSpacing
+                + c_FooterHeight + EditorGUIUtility.standardVerticalSpacing
                 + c_FooterHeight;
         }
 
         /// <summary>
         /// 绘制 IAPProductList 属性：
-        /// 整体 helpBox 背景 → 搜索栏 → 列头行（含全选 Toggle）→ 水平/垂直双向可滚动商品列表 → 底部工具栏。
+        /// 整体 helpBox 背景 → 搜索栏 → 列头行（含全选 Toggle）→ 水平/垂直双向可滚动商品列表 → 底部工具栏 → 上传按钮。
         /// filteredIndices 在 OnGUI 层一次性计算，传给 Header、List、Footer 各子方法，避免重复遍历。
         /// </summary>
         /// <param name="position">Inspector 分配的绘制 Rect。</param>
@@ -215,6 +223,10 @@ namespace NovaFramework.SDK.IAP.Editor
 
             // ── 底部工具栏 ──
             DrawFooter(new Rect(x, y, w, c_FooterHeight), itemsProp, filteredIndices.Count);
+            y += c_FooterHeight + EditorGUIUtility.standardVerticalSpacing;
+
+            // ── 支付表上传按钮 ──
+            DrawUploadButton(new Rect(x, y, w, c_FooterHeight));
         }
 
         /// <summary>
@@ -608,6 +620,52 @@ namespace NovaFramework.SDK.IAP.Editor
             if (infoW >= 120f)
             {
                 EdUtil.Draw.Label(new Rect(x, btnY, infoW, btnH), countInfo, false);
+            }
+        }
+
+        /// <summary>
+        /// 在 SKU Excel 导入工具栏下方绘制支付表上传按钮。
+        /// </summary>
+        /// <param name="rect">上传按钮的绘制区域。</param>
+        private static void DrawUploadButton(Rect rect)
+        {
+            EditorGUI.BeginDisabledGroup(s_IsUploading);
+            try
+            {
+                string buttonLabel = s_IsUploading ? "上传中..." : "上传支付表到服务器";
+                if (EdUtil.Draw.Button(rect, buttonLabel))
+                {
+                    EditorApplication.delayCall += () => UploadCurrentProductCatalogAsync().Forget();
+                }
+            }
+            finally
+            {
+                EditorGUI.EndDisabledGroup();
+            }
+        }
+
+        /// <summary>
+        /// 从当前导出的 ConfigRuntime 构造商品目录并上传到 Debug/Release 模式对应的固定地址。
+        /// </summary>
+        private static async UniTask UploadCurrentProductCatalogAsync()
+        {
+            if (s_IsUploading) return;
+
+            s_IsUploading = true;
+            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+            try
+            {
+                await IAPProductCatalogUploader.UploadCurrentAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                EditorUtility.DisplayDialog("上传失败", exception.Message, "知道了");
+            }
+            finally
+            {
+                s_IsUploading = false;
+                UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
             }
         }
 

@@ -97,6 +97,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             lock (m_FullscreenImpressionLock)
             {
+                if (IsDisposed) return null;
                 bool existed = TryGetFullscreenImpression(format, placementId, out FullscreenImpressionContext context);
                 if (!existed)
                 {

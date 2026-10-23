@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -166,6 +167,41 @@ namespace NovaFramework.Editor
                 "bundle-build",
                 "player-build",
             };
+
+            /// <summary>任务 Profile 允许的附加证据；artifact 仅用于任务验收，不扩展 Catalog 最低等级。</summary>
+            private static readonly HashSet<string> s_TaskProfileEvidenceKinds = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "static", "compile", "play", "bundle-build", "player-build", "device", "external", "artifact",
+            };
+
+            /// <summary>Profile 只能复用原契约中的确定性执行入口。</summary>
+            private static readonly HashSet<string> s_TaskProfileAdapterKinds = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "agent-action", "pipify", "cli",
+            };
+
+            /// <summary>Profile 不得覆盖权限、写入范围、锁、确认或幂等性；只接受这八个权威字段。</summary>
+            private static readonly HashSet<string> s_TaskProfileFields = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "id", "description", "taskIds", "requiredInputs", "actionAdapters",
+                "minimumEvidence", "additionalEvidence", "effects",
+            };
+
+            /// <summary>Workflow 分支另须显式选择原 Operation 依赖子集，不能改变原依赖图。</summary>
+            private static readonly HashSet<string> s_WorkflowTaskProfileFields = new HashSet<string>(s_TaskProfileFields, StringComparer.Ordinal)
+            {
+                "requires",
+            };
+
+            /// <summary>Profile Adapter 只引用既有 kind/entry，不复制 when 或增加执行安全契约。</summary>
+            private static readonly HashSet<string> s_TaskProfileAdapterFields = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "kind", "entry",
+            };
+
+            /// <summary>同一 Skill 的任务 ID 使用精确小写点或连字符分段名称。</summary>
+            private static readonly Regex s_TaskProfileTaskIdPattern = new Regex(
+                "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*\\z", RegexOptions.Compiled);
 
             /// <summary>
             /// contract 可声明的固定 Action Adapter 类型集合。
@@ -951,6 +987,7 @@ namespace NovaFramework.Editor
                 var ids = new HashSet<string>(StringComparer.Ordinal);
                 var requirements = new Dictionary<string, List<string>>(StringComparer.Ordinal);
                 var entriesById = new Dictionary<string, JObject>(StringComparer.Ordinal);
+                var contractsById = new Dictionary<string, JObject>(StringComparer.Ordinal);
                 var replacements = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (JToken token in skills)
                 {
@@ -988,6 +1025,7 @@ namespace NovaFramework.Editor
                     }
 
                     requirements[skillId] = ValidateSkillSourceContract(skillId, entry, sourceDirectory);
+                    contractsById[skillId] = ReadJsonObject(Path.Combine(sourceDirectory, "references", "contract.json"));
                     if (string.Equals((string)entry["status"], "deprecated", StringComparison.Ordinal))
                     {
                         replacements[skillId] = (string)entry["replacedBy"];
@@ -1035,6 +1073,11 @@ namespace NovaFramework.Editor
                                 $"{requirement.Key} 的 contract.json requires 只能指向 operation：{requiredSkillId}。");
                         }
                     }
+                }
+
+                foreach (KeyValuePair<string, JObject> contract in contractsById)
+                {
+                    ValidateWorkflowTaskProfiles(contract.Key, contract.Value, requirements[contract.Key], contractsById);
                 }
 
                 foreach (KeyValuePair<string, string> replacement in replacements)
@@ -1286,6 +1329,11 @@ namespace NovaFramework.Editor
                     }
                 }
 
+                if (contract.Property("externalCompletionPolicy") != null && !AllowsIncidentalBuildTelemetryCompletion(contract))
+                {
+                    throw new InvalidOperationException($"{skillId} 的 externalCompletionPolicy 仅允许无依赖本地生成 Operation 声明 incidental-build-telemetry，并保留 external-write；不用于业务外部交付。");
+                }
+
                 ValidateActionAdapters(skillId, contract["actionAdapters"]);
                 ValidateContractInputs(skillId, contract["inputs"]);
                 ValidateContractWriteScope(skillId, contract["writeScope"]);
@@ -1325,7 +1373,193 @@ namespace NovaFramework.Editor
                 }
 
                 ReadStringArray(contract["evidence"], $"{skillId} 的 contract.json evidence", true, true, false);
+                ValidateTaskProfiles(skillId, contract, requires, contractEffects);
                 return requires;
+            }
+
+            /// <summary>校验权威任务 Profile，完整继承安全边界；仅显式本地策略区分附带遥测与外部结果证据。</summary>
+            /// <param name="skillId">已经核对 Catalog 的 Skill 身份。</param>
+            /// <param name="contract">已完成原有安全字段校验的完整机器契约。</param>
+            /// <param name="requires">原契约依赖；Operation 无依赖，Workflow 分支显式选择原子集。</param>
+            /// <param name="contractEffects">原契约副作用；Profile 只能取子集并保留外部、凭据与构建门。</param>
+            private static void ValidateTaskProfiles(
+                string skillId, JObject contract, IReadOnlyList<string> requires, IReadOnlyList<string> contractEffects)
+            {
+                JProperty property = contract.Property("taskProfiles");
+                if (property == null) return;
+                string label = $"{skillId} 的 contract.json taskProfiles";
+                JArray profiles = property.Value as JArray;
+                if (profiles == null || profiles.Count == 0)
+                    throw new InvalidOperationException($"{label} 必须是非空数组。");
+                bool workflow = (string)contract["kind"] == "workflow";
+                if (!workflow && ((string)contract["kind"] != "operation" || requires.Count != 0))
+                    throw new InvalidOperationException($"{label} 仅允许无依赖 operation 或显式选择子依赖的 workflow。");
+
+                var inputNames = new HashSet<string>(StringComparer.Ordinal);
+                foreach (JObject input in (JArray)contract["inputs"]) inputNames.Add((string)input["name"]);
+                var adapterPairs = new HashSet<string>(StringComparer.Ordinal);
+                foreach (JObject adapter in (JArray)contract["actionAdapters"])
+                    adapterPairs.Add((string)adapter["kind"] + "\0" + (string)adapter["entry"]);
+                var originalEffects = new HashSet<string>(contractEffects, StringComparer.Ordinal);
+                var profileIds = new HashSet<string>(StringComparer.Ordinal);
+                var taskIds = new HashSet<string>(StringComparer.Ordinal);
+                foreach (JToken token in profiles)
+                {
+                    JObject profile = token as JObject;
+                    if (profile == null) throw new InvalidOperationException($"{label} 只能包含对象。");
+                    HashSet<string> fields = workflow ? s_WorkflowTaskProfileFields : s_TaskProfileFields;
+                    ValidateObjectFields(profile, fields, fields, label);
+                    string id = ReadTaskProfileText(profile["id"], label + ".id");
+                    Match idMatch = s_SkillIdPattern.Match(id);
+                    if (!idMatch.Success || idMatch.Length != id.Length || !profileIds.Add(id))
+                        throw new InvalidOperationException($"{label} 的 id 非法或重复。");
+                    string profileLabel = label + "." + id;
+                    if (workflow)
+                    {
+                        foreach (string required in ReadStringArray(profile["requires"], profileLabel + ".requires", false, true, true))
+                            if (!IsManagedProjectSkillId(required) || !requires.Contains(required))
+                                throw new InvalidOperationException($"{profileLabel}.requires 必须显式选择原 workflow 的 operation 子集。");
+                    }
+                    ReadTaskProfileText(profile["description"], profileLabel + ".description");
+                    foreach (string taskId in ReadStringArray(profile["taskIds"], profileLabel + ".taskIds", true, true, true))
+                        if (!s_TaskProfileTaskIdPattern.IsMatch(taskId) || !taskIds.Add(taskId))
+                            throw new InvalidOperationException($"{profileLabel}.taskIds 包含非法或跨分支重复任务 ID。");
+                    foreach (string input in ReadStringArray(profile["requiredInputs"], profileLabel + ".requiredInputs", true, true, true))
+                        if (string.IsNullOrWhiteSpace(input) || !inputNames.Contains(input))
+                            throw new InvalidOperationException($"{profileLabel}.requiredInputs 只能引用原契约输入。");
+
+                    JArray adapters = profile["actionAdapters"] as JArray;
+                    if (adapters == null || adapters.Count == 0)
+                        throw new InvalidOperationException($"{profileLabel}.actionAdapters 必须是非空数组。");
+                    var seenAdapters = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (JToken adapterToken in adapters)
+                    {
+                        JObject adapter = adapterToken as JObject;
+                        if (adapter == null) throw new InvalidOperationException($"{profileLabel}.actionAdapters 只能包含对象。");
+                        ValidateObjectFields(adapter, s_TaskProfileAdapterFields, s_TaskProfileAdapterFields, profileLabel + ".actionAdapters");
+                        string kind = ReadTaskProfileText(adapter["kind"], profileLabel + ".actionAdapters.kind");
+                        string entry = ReadTaskProfileText(adapter["entry"], profileLabel + ".actionAdapters.entry");
+                        string pair = kind + "\0" + entry;
+                        if (!s_TaskProfileAdapterKinds.Contains(kind) || !adapterPairs.Contains(pair) || !seenAdapters.Add(pair))
+                            throw new InvalidOperationException($"{profileLabel}.actionAdapters 必须唯一引用原契约的确定性入口。");
+                    }
+
+                    string minimumEvidence = ReadTaskProfileText(profile["minimumEvidence"], profileLabel + ".minimumEvidence");
+                    bool apkSetProfile = IsAabDeviceTaskProfile(skillId, contract, profile);
+                    if (!s_MinimumEvidenceLevels.Contains(minimumEvidence) && !apkSetProfile)
+                        throw new InvalidOperationException($"{profileLabel}.minimumEvidence 不受支持。");
+                    List<string> additionalEvidence = ReadStringArray(
+                        profile["additionalEvidence"], profileLabel + ".additionalEvidence", false, true, true);
+                    foreach (string evidence in additionalEvidence)
+                        if (!s_TaskProfileEvidenceKinds.Contains(evidence) && !(evidence == "apk-set-build" && apkSetProfile))
+                            throw new InvalidOperationException($"{profileLabel}.additionalEvidence 不受支持。");
+                    List<string> effects = ReadStringArray(profile["effects"], profileLabel + ".effects", true, true, true);
+                    foreach (string effect in effects)
+                        if (!(workflow ? s_SkillEffects : originalEffects).Contains(effect))
+                            throw new InvalidOperationException($"{profileLabel}.effects 只能引用原契约副作用。");
+                    foreach (string effect in new[] { "external-write", "credential", "build" })
+                        if (originalEffects.Contains(effect) && !effects.Contains(effect))
+                            throw new InvalidOperationException($"{profileLabel}.effects 不得移除 {effect}。");
+                    bool buildEvidence = minimumEvidence == "bundle-build" || minimumEvidence == "player-build" || apkSetProfile;
+                    if (effects.Contains("build") != buildEvidence)
+                        throw new InvalidOperationException($"{profileLabel} 的 build effect 与 minimumEvidence 构建证据必须成对声明。");
+                    if (effects.Contains("external-write") && !additionalEvidence.Contains("external")
+                        && !AllowsIncidentalBuildTelemetryCompletion(contract))
+                        throw new InvalidOperationException($"{profileLabel} 的 external-write 必须保留 external 附加证据。");
+                }
+            }
+
+            /// <summary>只识别既有 AAB 转换安装画像；不扩展普通 Skill 的最低证据或削弱父安全合同。</summary>
+            /// <param name="skillId">已核对 Catalog 的父 Skill 身份。</param>
+            /// <param name="contract">完整父契约，保留原 Player 构建及全部副作用。</param>
+            /// <param name="profile">已核对任务、输入和确定性入口形状的任务画像。</param>
+            /// <returns>仅精确 AAB 设备安装目标、CLI、输入、副作用和独立设备证据同时满足时返回 true。</returns>
+            private static bool IsAabDeviceTaskProfile(string skillId, JObject contract, JObject profile)
+            {
+                const string cli = "java -jar <resolvedBundletool> build-apks --bundle=<frozenAab> --output=<newApks> "
+                    + "--connected-device --device-id=<frozenSerial> --adb=<resolvedAdb>; "
+                    + "java -jar <resolvedBundletool> install-apks --apks=<frozenApks> "
+                    + "--device-id=<frozenSerial> --adb=<resolvedAdb>";
+                return skillId == "nova-project-build-player" && (string)contract["id"] == skillId
+                    && (string)contract["kind"] == "operation" && contract["requires"] is JArray requires && requires.Count == 0
+                    && (string)contract["minimumEvidence"] == "player-build"
+                    && (string)profile["id"] == "android-aab-device-install"
+                    && JToken.DeepEquals(profile["taskIds"], new JArray("device.install.aab"))
+                    && (string)profile["minimumEvidence"] == "apk-set-build"
+                    && JToken.DeepEquals(profile["actionAdapters"], new JArray(new JObject { ["kind"] = "cli", ["entry"] = cli }))
+                    && profile["effects"] is JArray effects && effects.All(x => x.Type == JTokenType.String)
+                    && contract["effects"] is JArray originalEffects && originalEffects.All(x => x.Type == JTokenType.String)
+                    && new HashSet<string>(effects.Values<string>(), StringComparer.Ordinal).SetEquals(originalEffects.Values<string>())
+                    && new[] { "build", "credential", "external-write", "workspace-write", "generated-output" }.All(effects.Values<string>().Contains)
+                    && profile["requiredInputs"] is JArray inputs && inputs.All(x => x.Type == JTokenType.String)
+                    && new[] { "projectRoot", "targetPlatform", "executionEntry", "deviceInstallScope" }.All(inputs.Values<string>().Contains)
+                    && profile["additionalEvidence"] is JArray additional && additional.Any(x => x.Type == JTokenType.String && (string)x == "device");
+            }
+
+            /// <summary>仅识别独立本地生成操作显式声明的附带构建遥测策略；不改变外发、凭据、确认或锁。</summary>
+            /// <param name="contract">完整 Skill 契约；缺省、未知策略或非本地生成目标均不豁免外部结果证据。</param>
+            /// <returns>合法策略为 true；显式附加 external 和其他节点的要求仍由原验证链保留。</returns>
+            private static bool AllowsIncidentalBuildTelemetryCompletion(JObject contract)
+            {
+                string minimum = contract["minimumEvidence"]?.Type == JTokenType.String ? (string)contract["minimumEvidence"] : null;
+                return contract["externalCompletionPolicy"]?.Type == JTokenType.String
+                    && (string)contract["externalCompletionPolicy"] == "incidental-build-telemetry"
+                    && contract["kind"]?.Type == JTokenType.String && (string)contract["kind"] == "operation"
+                    && contract["requires"] is JArray requires && requires.Count == 0
+                    && (minimum == "compile" || minimum == "bundle-build" || minimum == "player-build")
+                    && contract["effects"] is JArray effects
+                    && effects.Any(effect => effect.Type == JTokenType.String && (string)effect == "external-write");
+            }
+
+            /// <summary>完整原 DAG 校验后，核对分支选中子节点的风险及未选入口别名，写投影前失败。</summary>
+            /// <param name="skillId">父 Workflow 身份。</param>
+            /// <param name="contract">已严格校验的父契约，原 requires 与安全字段保持不变。</param>
+            /// <param name="requires">完整原 Operation 依赖；已确认存在、无环且无嵌套依赖。</param>
+            /// <param name="contracts">本次全部真源契约，未选节点仍参加原 DAG 校验。</param>
+            private static void ValidateWorkflowTaskProfiles(
+                string skillId, JObject contract, IReadOnlyList<string> requires, IReadOnlyDictionary<string, JObject> contracts)
+            {
+                if ((string)contract["kind"] != "workflow" || contract.Property("taskProfiles") == null) return;
+                foreach (JObject profile in (JArray)contract["taskProfiles"])
+                {
+                    string label = $"{skillId} 的 contract.json taskProfiles.{(string)profile["id"]}";
+                    var selected = new HashSet<string>(ReadStringArray(profile["requires"], label + ".requires", false, true, true), StringComparer.Ordinal);
+                    var allowedEffects = new HashSet<string>(((JArray)contract["effects"]).Values<string>(), StringComparer.Ordinal);
+                    var adapters = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (JObject adapter in (JArray)profile["actionAdapters"])
+                        adapters.Add((string)adapter["kind"] + "\0" + (string)adapter["entry"]);
+                    foreach (string required in requires)
+                    {
+                        JObject child = contracts[required];
+                        if (selected.Contains(required))
+                        {
+                            allowedEffects.UnionWith(((JArray)child["effects"]).Values<string>());
+                            continue;
+                        }
+
+                        foreach (JObject adapter in (JArray)child["actionAdapters"])
+                            if (adapters.Contains((string)adapter["kind"] + "\0" + (string)adapter["entry"]))
+                                throw new InvalidOperationException($"{label} 复用子 operation 入口时必须显式选中该节点：{required}。");
+                    }
+
+                    var effects = new HashSet<string>(((JArray)profile["effects"]).Values<string>(), StringComparer.Ordinal);
+                    if (!effects.IsSubsetOf(allowedEffects))
+                        throw new InvalidOperationException($"{label}.effects 只能选父与已选子依赖的原副作用。");
+                    foreach (string risk in new[] { "external-write", "credential", "build" })
+                        if (allowedEffects.Contains(risk) && !effects.Contains(risk))
+                            throw new InvalidOperationException($"{label}.effects 不得移除父与已选子依赖的 {risk}。");
+                }
+            }
+
+            /// <summary>读取 Profile 的严格非空白字符串，拒绝数字转文本或空白名称。</summary>
+            /// <param name="token">当前 Profile 字段的实际 JSON token。</param>
+            /// <param name="label">包含 Skill、Profile 与字段的错误定位。</param>
+            /// <returns>保留原文的有效字符串，不进行 trim 或自动纠正。</returns>
+            private static string ReadTaskProfileText(JToken token, string label)
+            {
+                if (token == null || token.Type != JTokenType.String || string.IsNullOrWhiteSpace((string)token))
+                    throw new InvalidOperationException($"{label} 必须是非空白字符串。");
+                return (string)token;
             }
 
             /// <summary>

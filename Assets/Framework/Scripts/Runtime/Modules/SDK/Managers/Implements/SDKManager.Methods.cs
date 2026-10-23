@@ -177,7 +177,7 @@ namespace NovaFramework.Runtime
             catch (Exception e) { Log.Warning(LogTag.SDK, "SDK 插件 '{0}' 失败清理异常：{1}", plugin.Name, e); }
         }
 
-        /// <summary>只完成一次插件状态；成功时补交当前账号并释放单插件等待者。</summary>
+        /// <summary>写入插件终态并尝试完成等待信号；Ready 时先补交当前账号，不在此校验状态迁移。</summary>
         private void CompletePlugin(ISDKPlugin plugin, SDKPluginInitializationState state)
         {
             m_PluginStates[plugin] = state;

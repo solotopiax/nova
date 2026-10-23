@@ -27,3 +27,7 @@ bool ok = EditorUtil.Network.NetCmdExporter.ExportNetCmdAll(networkSettings.NetC
 - [NetworkExporter.md](../../DataPipeline/Implements/Networks/NetworkExporter.md)
 - [NetworkExcelPreFilter.md](../../DataPipeline/Implements/Networks/NetworkExcelPreFilter.md)
 - [NetworkSettings.md](../../../Runtime/Modules/Network/Definitions/NetworkSettings.md)
+
+## 公共门面边界
+
+All/Code/Data 原样转内部 NetworkExporter，bool 与异常不做统一转换；HostKey 读取当前导出 Runtime 的 DevelopMode，NetCmd 不具有这一前置。Inspector、Pipify 和 Action 的配置取得与失败处理各有职责；普通门面没有 Action 的确认、冻结和路径授权门，false 不能当作“没有任何工作配置写入”的证明。

@@ -8,6 +8,7 @@
  * descrip:   MaxAdPlugin 私有字段
  ***************************************************************/
 
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using NovaFramework.Runtime;
@@ -30,17 +31,17 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 #if NOVA_APPLOVIN_MAX
 
         /// <summary>
-        /// 激励视频广告位 ID 列表，InitChannelSDKAsync 从 MaxAdChannelConfig 缓存。
+        /// 激励视频广告位 ID 列表，初始化后从已注册分组计划缓存，仅包含真实 ID。
         /// </summary>
         private IReadOnlyList<string> m_RVPlacementIds;
 
         /// <summary>
-        /// 插屏广告位 ID 列表，InitChannelSDKAsync 从 MaxAdChannelConfig 缓存。
+        /// 插屏广告位 ID 列表，初始化后从已注册分组计划缓存，仅包含真实 ID。
         /// </summary>
         private IReadOnlyList<string> m_InterPlacementIds;
 
         /// <summary>
-        /// Banner 广告位 ID 列表，InitChannelSDKAsync 从 MaxAdChannelConfig 缓存。
+        /// Banner 广告位 ID 列表，初始化后从已注册分组计划缓存，仅包含真实 ID。
         /// </summary>
         private IReadOnlyList<string> m_BannerPlacementIds;
         /// <summary>
@@ -54,9 +55,15 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private int m_BannerAutoRefreshIntervalSeconds = 10;
 
         /// <summary>
-        /// AppOpen 广告位 ID 列表，InitChannelSDKAsync 从 MaxAdChannelConfig 缓存。
+        /// AppOpen 广告位 ID 列表，初始化后从已注册分组计划缓存，仅包含真实 ID。
         /// </summary>
         private IReadOnlyList<string> m_AppOpenPlacementIds;
+
+        /// <summary>
+        /// 当前全屏展示的真实广告位 ID，用于匹配原厂回调；终态或释放时清空。
+        /// 全屏互斥由广告聚合层与渠道基类保证。
+        /// </summary>
+        private string m_ActiveFullscreenPlacementId;
 
         /// <summary>
         /// 激励视频展示挂起句柄；OnRVHidden / OnRVDisplayFailed 时 TrySetResult。
@@ -145,9 +152,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             new Dictionary<AdFormat, FullscreenImpressionContext>();
 
         /// <summary>
-        /// MAX 全局静态回调是否已经完成注册，防止重复初始化时叠加订阅。
+        /// SDK 真实初始化成功门，启动中、失败、取消与释放均关闭加载与 Ready 查询。
         /// </summary>
-        private bool m_CallbacksRegistered;
+        private bool m_IsSdkInitialized;
+
 #endif
 
     }

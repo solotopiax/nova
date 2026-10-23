@@ -140,7 +140,7 @@ Recheck()
   → RunCheck()（与 Check 路径一致）
 ```
 
-域重载后 SessionState 自动清空，`Recheck()` 通常无需手动调用。
+SessionState 在域重载后保留；安装或环境变化后应显式 Recheck，编辑器会话结束才清空。
 
 ---
 
@@ -148,7 +148,7 @@ Recheck()
 
 | 误区 | 说明 |
 |---|---|
-| 认为 `Check()` 每次都重新检测 | 同一编辑器会话（域重载前）第二次调用直接返回缓存，不重新执行 |
+| 认为 `Check()` 每次都重新检测 | 同一编辑器会话第二次调用直接返回缓存，不重新执行 |
 | 策略 C / D 在 macOS 有效 | `PyLauncher`（`py` 命令）和 `Where` 命令均**仅限 Windows**；macOS/Linux 直接跳过 |
 | `Version` 为空字符串表示不可用 | `IsAvailable=false` 时 `Version` / `DetectedPath` / `DetectedVia` 均为 `null`，不是空字符串（SessionState 存储时用空字符串，读取时恢复为 null） |
 | 检测超时会抛异常 | `TryRunAndParse` 内部捕获超时，超过 3000ms 静默返回 `false` |
@@ -183,9 +183,9 @@ private void OnClickRecheck()
 
 ## §12 注意事项
 
-- `Check()` 依赖 `ProcessRunner.RunSync`；Editor 主线程调用时若候选路径较多，首次检测可能阻塞约 1–3 秒（取决于超时策略）
+- `Check()` 依赖 `ProcessRunner.RunSync`；Editor 主线程调用时若候选路径较多，首次检测会逐候选同步探测，总等待可能远超过 3 秒
 - `c_ProbeTimeoutMs = 3000`：每条候选路径最多等待 3 秒，策略 A 中存在的路径会跳过探测直接尝试执行，不存在的路径（`File.Exists` 返回 false）直接跳过
-- 工程域重载（脚本重新编译）后 SessionState 自动清空，下次打开 ConfigWindow 会重新检测
+- 工程域重载（脚本重新编译）不清 SessionState；下次打开窗口可能继续使用缓存
 
 ---
 

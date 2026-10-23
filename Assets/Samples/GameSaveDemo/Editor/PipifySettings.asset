@@ -113,7 +113,8 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"DevelopmentBuild":false,"OutputPath":"Build/Nova.apk"}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"DevelopmentBuild\": false,\n  \"OutputFolderPath\":
+        \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "Localization\u5BFC\u51FA\u6D4B\u8BD5"

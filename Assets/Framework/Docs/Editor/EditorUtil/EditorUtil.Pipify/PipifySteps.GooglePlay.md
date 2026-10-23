@@ -141,3 +141,9 @@ fastlane 使用独立临时工作目录和元数据目录；只上传 AAB 及本
 - [Google 轨道与发布状态](https://developers.google.com/android-publisher/api-ref/rest/v3/edits.tracks?hl=en)
 - [Google commit 审核行为](https://developers.google.com/android-publisher/api-ref/rest/v3/edits/commit?hl=en)
 - [fastlane supply 参数与配置](https://docs.fastlane.tools/actions/upload_to_play_store/)
+
+## 本地校验与远端结果范围
+
+显式 AAB 包名只校输入格式，未解析 AAB manifest 的真实 applicationId/versionCode 或签名；ZIP 必需项、非 Development 同 Batch 产物与凭据文件存在/.json 不证明服务账号授权。fastlane 直接进程执行不走 shell，清 SUPPLY_ 环境并只传 JSON_KEY 路径、不复制凭据；支持 timeout 1..86400，retries=0。
+
+取消、超时、重载与退出按本次 PID 尝试停止子树/根，枚举与等待仍可失败，停止/Dispose/临时目录删除异常可能遮原上传结果。已提交 edit 不回滚，不自动重试；ValidateOnly 不提交 edit 仍真实访问服务。日志按固定规则脱敏并保尾部，不能承诺所有厂商输出秘密均被识别，exit0也不证明审核或用户下载分发完成。

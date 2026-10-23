@@ -27,6 +27,7 @@ message PbNetThirdPaymentConfigResp {
     PbNetThirdProductConfig product_config = 3;                  // 当前国家可购买的商品配置
     PbNetThirdChannelConfig channel_config = 4;                  // 支付页需要透传的渠道参数
     PbNetThirdPaymentPageConfig payment_page_config = 5;         // 支付页入口配置
+	string client_config = 6; // 后台按 app_id + platform + channel 配置的 JSON 对象字符串；未配置时为 "{}"
 }
 
 // 当前用户的第三方支付可用性
@@ -52,10 +53,9 @@ message PbNetThirdPaymentPageConfig {
 
 // 商品信息
 message PbNetThirdProductInfo {
-    int32 id = 1;                 // 商品自增 ID
-    string local_currency = 2;    // 本地币种
-    string local_price = 3;       // 本地价格
-    string product_id = 4;        // 商品唯一 ID
+    string local_currency = 1;    // 本地币种
+    string local_price = 2;       // 本地价格
+    string product_id = 3;        // 商品唯一 ID
 }
 
 // =====================================================================

@@ -6,6 +6,22 @@ Samples~.dev.meta
 Minds/
 Minds.meta
 
+# 历史审计和验收报告永久不入包。
+Docs/Onboarding/Reviews/
+Docs/Onboarding/Reviews.meta
+
+# 退休人工知识永久不入包。
+Agents/Knowledge/
+Agents/Knowledge.meta
+
+# AST 大索引退出分发；便携定位仅在脱敏独立副本重新生成并验证后解除排除。
+Agents/function-index.jsonl
+Agents/function-index.jsonl.meta
+Agents/source-index.json
+Agents/source-index.json.meta
+Agents/api-index.jsonl
+Agents/api-index.jsonl.meta
+
 # 发版描述符仅开发期使用，不入 UPM tarball：外部工程 Unity 会因其落到只读
 # Packages/<pkg>/ 而对 .meta 不认（immutable folder 警告），并触发 SamplePathRewriter 重跑
 nova-samples.json

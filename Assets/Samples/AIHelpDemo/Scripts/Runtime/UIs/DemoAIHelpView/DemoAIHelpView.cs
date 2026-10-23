@@ -14,7 +14,7 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
 {
     /// <summary>
     /// DemoAIHelpView 演示 View，派生自 BaseDemoView，遵循三段式骨架（TitleBar / InteractionArea / FeedbackArea）。
-    /// 交互区把 AIHelpPlugin 常用接口拆成独立按钮：查看版本与可用状态 / 拉起客服 / 同步登录用户 / 查询未读消息数（含事件回显）/ 关闭页面。
+    /// 交互区把 AIHelpPlugin 常用接口拆成独立按钮：查看版本与可用状态 / 拉起客服 / 同步登录用户 / 退出账号并重置客服资料 / 查询未读消息数（含事件回显）/ 关闭客服页面。
     /// </summary>
     public sealed partial class DemoAIHelpView : BaseDemoView
     {
@@ -36,6 +36,7 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
             BindButton(m_LoginButton, OnLoginClick, "Login(uid, name, serverId, userTags, customDataJsonString)");
             BindButton(m_FetchUnreadButton, OnFetchUnreadClick, "FetchUnreadMessageCount() / FetchUnreadTaskCount()");
             BindButton(m_CloseAIHelpButton, OnCloseAIHelpClick, "Close()");
+            CreateLogoutButton();
         }
 
         /// <summary>

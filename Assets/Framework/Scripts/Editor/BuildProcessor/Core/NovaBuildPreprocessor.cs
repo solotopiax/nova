@@ -43,6 +43,7 @@ namespace NovaFramework.Editor
             switch (NovaBuildShared.Context.Target)
             {
                 case BuildTarget.Android:
+                    NovaBuildParentObservers.ObserveConstructed(report, NovaBuildShared.Context, NovaBuildShared.Processors);
                     PreprocessAndroid(report);
                     break;
                 case BuildTarget.iOS:
@@ -71,7 +72,9 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            Util.SysIO.File.Copy(templateFullPath, manifestFullPath, overwrite: true);
+            // Manifest 是独立生成输出，只复制 XML 内容，避免继承模板资产的 GUID。
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(manifestFullPath));
+            System.IO.File.Copy(templateFullPath, manifestFullPath, overwrite: true);
             ctx.AndroidManifest = new CustomAndroidManifest(manifestFullPath);
             ctx.SetDefaultActivityName(ctx.AndroidManifest.SelectUnityLauncherActivity(PlayerSettings.Android.applicationEntry));
 
@@ -79,7 +82,9 @@ namespace NovaFramework.Editor
             foreach (var processor in NovaBuildShared.Processors)
             {
                 Log.Debug(LogTag.Editor, $"[NovaBuildPreprocessor] Android 预处理：{processor.GetType().Name}");
+                NovaBuildParentObservers.BeforeSdkPre(report, ctx, NovaBuildShared.Processors, processor);
                 processor.OnPreprocessBuildOnAndroid(report, ctx);
+                NovaBuildParentObservers.AfterSdkPre(report, ctx, NovaBuildShared.Processors, processor);
             }
 
             NovaManifestBootstrapper.Inject(ctx.AndroidManifest, ctx.ActivityName);
@@ -91,6 +96,7 @@ namespace NovaFramework.Editor
 
             string proguardFullPath = Util.SysIO.Path.GetFullPath(NovaBuildShared.c_ProguardOutputPath);
             NovaProguardBootstrapper.Rebuild(proguardFullPath, ctx.ProguardRules);
+            NovaBuildParentObservers.ObservePre(report, ctx, NovaBuildShared.Processors);
 
             foreach (var processor in NovaBuildShared.Processors)
             {

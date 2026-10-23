@@ -4,14 +4,29 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.17",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> inspect --source <relativeSource> [--sheet <name> --row-key <field> --key-json <JSON> --column <field> --row-key-type <type> --type <type>] [--layout table-fields --schema <relative.xml> --table <exactName>]",
+      "when": "明确请求修改既有源数据时，先只读识别xlsx/UTF8 csv结构、唯一键、字段和sourceHash；敏感字段拒绝读写；追加字段明确使用table-fields，同时读取SchemaHash/唯一readSchemaFromFile映射、普通原列与全行键"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> plan --request - --plan Library/Nova/AgentActions/TableSource/<task>-plan.json; python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> execute --plan <planRelative> --confirmation-token <planId> --receipt Library/Nova/AgentActions/TableSource/<task>-receipt.json; python3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> verify --receipt <receiptRelative>",
+      "when": "已有非敏感标量单元格、完整源/生成根边界、beforeValue及整文件hash已确认时，1至256项按单次Plan编辑源再只读验证；默认导出不调用；普通字段追加复用table-fields的Schema/结构/保留proof和明确default或全键values，后续正式导出代码及数据"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_table_source.py\" --project-root <projectRoot> inspect|plan|execute|verify <same documented arguments>",
+      "when": "Windows复用相同随包表源CLI和source-edit参考；不新增第二实现"
+    },
+    {
       "kind": "agent-action",
       "entry": "nova.project.table.export",
-      "when": "导出当前有效 TableSettings 的全部或指定代码、数据描述"
+      "when": "导出当前有效 TableSettings 的全部或指定代码、数据描述；复用 live Plan 的独立 conf/直接读根与模板快照及完整 writeSet，Execute 前后核来源；新 receiptVersion=2 严核 inputs+outputs，旧收据仅原摘要兼容并带边界警告；新Receipt绑定当前scene/component/settingsHash并重建限定settings/jobs，显式新字段null/0/缺损不得降为旧摘要"
     }
   ],
   "inputs": [
@@ -30,6 +45,16 @@
     {
       "name": "descriptionIds",
       "required": false
+    },
+    {
+      "name": "sourceCellEdits",
+      "required": false,
+      "constraint": "用户同时要求源数据调整时：实际source/sourceHash/sourceRoots/generatedRoots和1至256个已有非敏感单元格，唯一rowKey/key/column、type、beforeValue/value；不插删行、不改Schema或公式、宏、复杂类型；或layout=table-fields的已有自描述xlsx，schema/schemaHash/table/sheet/rowKey/rowKeyType及addFields普通name/type/comment/default或全键values，最多256字段/8192格，拒复杂Schema/空值/重复或未知键"
+    },
+    {
+      "name": "tableExportResolvedConfigurationInputsAndWriteSet",
+      "required": false,
+      "description": "每次导出由 Agent 从当前 live Plan 自动取得：已保存活动场景、唯一 Nova/TableComponent、有效 TableSettings、scope/Project/Description、各 Project.ConfigPath 及自身 Luban Target/命名空间、完整直接读根/模板的文件存在性/成员/SHA 和正式输出/writeSet；不要求 ConfigMaster 或 ConfigRuntime，不转嫁为用户手填。包含 protobuf3 + cs-newtonsoft-json 代码时核隐含 table-protobuf 模板。直接读根与输出重叠时 blocked；二次外部 Schema include 未展开须明确核验边界。 当前 Plan 还冻结实际 Luban 工具目录全部非meta成员；code含protobuf3时冻结实际protoc文件与include目录，工具缺失blocked。系统dotnet Host未冻结，不能宣称完整执行环境闭包。"
     }
   ],
   "effects": [
@@ -39,27 +64,33 @@
   ],
   "writeScope": {
     "allow": [
-      "Table Action Plan 明确列出的代码与数据输出目录"
+      "explicitly requested existing project-owned .xlsx/.csv non-sensitive scalar cells or strict table-fields append-only ordinary fields in self-described xlsx through nova_table_source.py, with unique row key and frozen source/schema/structure proofs",
+      "Table Action Plan 明确列出的代码与数据输出目录",
+      "current Table Action Plan exact output /** including internal .meta and explicitly listed newly created Assets output/ancestor directory .meta; source conf/schema/data/templates stay read-only",
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
     ],
     "deny": [
-      "Table Schema、Excel 数据源和 TableSettings",
+      "Table Schema、行插删、公式、宏工作簿、复杂类型、敏感/身份字段和 TableSettings；未明确请求的源数据",
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
-      "计划外的生成目录与业务源码"
+      "计划外的生成目录与业务源码",
+      "macro/formula modification, row insertion/deletion, duplicate key cells, arbitrary source/generated boundaries or secret/identity field edits through the generic source CLI"
     ]
   },
   "locks": [
     "unity-editor",
     "asset-database",
-    "table-export"
+    "table-export",
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
       "执行 Plan 中列出的生成物覆盖",
-      "目标 Project、Description 或输出范围不明确"
+      "目标 Project、Description 或输出范围不明确",
+      "explicit existing scalar source edits or strict table-fields ordinary field additions and exact source CLI Plan before the separately planned official export"
     ],
-    "rule": "只确认当前 Plan 的精确输出范围；范围变化后必须重新 Plan。"
+    "rule": "纯导出只确认当前Plan的精确输出范围；明确源修改时另绑定sourceHash、唯一行键、字段类型/beforeValue/value与source/generated roots；table-fields追加普通字段另冻结schemaHash、唯一自描述映射、原字段/行键与name/type/comment/default或全键values。source CLI一次消费且token不替代已有授权，源Verify后对已确认描述正式导出；追加字段用scope=all生成代码和数据。范围、源或Schema变化后重新Plan。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -71,6 +102,13 @@
   "evidence": [
     "Action Plan 中冻结的 Project、Description 与代码/数据输出目录",
     "Verify 返回的输出文件数量与 SHA-256 摘要",
-    "包含代码导出时 Unity 无编译错误"
+    "包含代码导出时 Unity 无编译错误",
+    "optional source CLI inspect identity/hash, unique row key and strict scalar type, single-use Plan/Receipt and readonly whole-file/cell Verify, followed by official export and requested compile/Play evidence",
+    "table-fields分支额外Verify新字段元数据/全行值、旧字段/行键、SchemaHash、原Sheet XML和非目标ZIP原压缩记录；正式code+data导出及编译/请求Play证据独立",
+    "新 receiptVersion=2 的 sourceSettings/sourceInputs 与 live Plan 一致：配置、完整直接读根和模板存在性/成员/SHA在Execute前后及Verify无漂移；保守范围不宣称覆盖读根外二次Schema include",
+    "旧Receipt原checksum验证success与Warnings仅作历史产物摘要证据，不提升为新来源快照或当前完整导出验收；Verify不重放Exporter",
+    "包含代码时本次Unity编译与预期生成类型/既有消费者身份一致；Table命名空间从自身conf核，不套MasterNamespace；真实Play仅用户要求时另验",
+    "新Table Receipt绑定当前scenePath/componentId/settingsHash，从当前TableSettings重建限定描述的sourceSettings/jobs及读根；显式receiptVersion/sourceSettings/sourceInputs/settingsHash字段存在而null/0/损坏不得降旧",
+    "新Receipt每个重建Job的code/data槽位必须恰好对应一个directory产物，kind和解析后的物理路径须匹配该Job正式输出；不能接受另一目录同SHA或file摘要。旧Receipt原checksum语义不变。实际Luban/protoc/include快照按live Plan，系统dotnetHost与二次外部Schema include仍不属完整冻结。"
   ]
 }

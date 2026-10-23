@@ -34,23 +34,39 @@ namespace NovaFramework.Editor
         /// <param name="activityName">主 Activity 完整类名，由 NovaBuildContext.ActivityName 提供。</param>
         public static void Inject(CustomAndroidManifest manifest, string activityName)
         {
-            manifest.ManifestElement.SetAttribute("package", PlayerSettings.applicationIdentifier);
-            manifest.ManifestElement.Attributes.Append(manifest.CreateAndroidAttribute("versionCode", PlayerSettings.Android.bundleVersionCode.ToString()));
-            manifest.ManifestElement.Attributes.Append(manifest.CreateAndroidAttribute("versionName", PlayerSettings.bundleVersion));
+            InjectCore(manifest, activityName, () => PlayerSettings.applicationIdentifier,
+                () => PlayerSettings.Android.bundleVersionCode.ToString(), () => PlayerSettings.bundleVersion,
+                () => PlayerSettings.defaultInterfaceOrientation, true);
+        }
 
+        /// <summary>使用已经冻结的纯值执行原Manifest注入算法；仅改传入XML树，不取Unity设置或保存文件。</summary>
+        /// <param name="manifest">自有预测XML树。</param><param name="activityName">已按原Context先到先得规则冻结的最终Activity。</param>
+        /// <param name="bundleId">原PlayerSettings包名。</param><param name="versionCode">按原文化格式冻结的版本号。</param><param name="versionName">原版本名。</param><param name="orientation">原屏幕方向。</param>
+        internal static void InjectFrozen(CustomAndroidManifest manifest, string activityName, string bundleId, string versionCode, string versionName, UIOrientation orientation)
+        {
+            InjectCore(manifest, activityName, () => bundleId, () => versionCode, () => versionName, () => orientation, false);
+        }
+
+        /// <summary>原注入顺序唯一实现；正常入口逐次求值保持原getter及缺Activity早退顺序，预测入口不输出Unity日志。</summary>
+        /// <param name="manifest">原领域XML对象。</param><param name="activityName">最终Context名称。</param><param name="bundleId">仅由本类两个入口提供的包名值源。</param><param name="versionCode">仅由本类两个入口提供的版本号值源。</param>
+        /// <param name="versionName">仅由本类两个入口提供的版本名值源。</param><param name="orientation">仅在存在launcher且写原属性后才调用的方向值源。</param><param name="logMissing">正常入口保持原缺launcher警告。</param>
+        private static void InjectCore(CustomAndroidManifest manifest, string activityName, System.Func<string> bundleId,
+            System.Func<string> versionCode, System.Func<string> versionName, System.Func<UIOrientation> orientation, bool logMissing)
+        {
+            manifest.ManifestElement.SetAttribute("package", bundleId());
+            manifest.ManifestElement.Attributes.Append(manifest.CreateAndroidAttribute("versionCode", versionCode()));
+            manifest.ManifestElement.Attributes.Append(manifest.CreateAndroidAttribute("versionName", versionName()));
             var activity = manifest.GetActivityWithLaunchIntent() as XmlElement;
             if (activity == null)
             {
-                Log.Warning(LogTag.Editor, "[NovaManifestBootstrapper] 未找到含 MAIN/LAUNCHER intent-filter 的主 Activity 节点，跳过 Activity 属性注入。");
+                if (logMissing) Log.Warning(LogTag.Editor, "[NovaManifestBootstrapper] 未找到含 MAIN/LAUNCHER intent-filter 的主 Activity 节点，跳过 Activity 属性注入。");
                 return;
             }
-
             var nameAttr = activity.Attributes["android:name"];
-            if (nameAttr != null)
-                nameAttr.Value = activityName;
+            if (nameAttr != null) nameAttr.Value = activityName;
             activity.Attributes.Append(manifest.CreateAndroidAttribute("exported", "true"));
             activity.Attributes.Append(manifest.CreateAndroidAttribute("configChanges", c_ConfigChanges));
-            activity.Attributes.Append(manifest.CreateAndroidAttribute("screenOrientation", ToAndroidOrientation(PlayerSettings.defaultInterfaceOrientation)));
+            activity.Attributes.Append(manifest.CreateAndroidAttribute("screenOrientation", ToAndroidOrientation(orientation())));
         }
 
         /// <summary>

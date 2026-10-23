@@ -19,7 +19,7 @@
 | `ReferenceStrictCheckType.cs` | 枚举：严格检查模式（参见 Nova 配置） |
 | `Interfaces/IReferenceHelper.cs` | 引用助手接口（可替换底层实现） |
 | `Implements/ReferenceHelper.cs` | 默认实现，持有 `Dictionary<Type, ReferenceCollection>` |
-| `Implements/ReferenceHelper.ReferenceCollection.cs` | 单类型集合（`Queue<IReference>` 存储空闲对象，StrictCheck 模式下辅以 `HashSet` O(1) 去重） |
+| `Implements/ReferenceHelper.ReferenceCollection.cs` | 单类型集合（`Queue<IReference>` 存储空闲对象，始终用身份 `HashSet` 查重） |
 
 ---
 
@@ -47,7 +47,7 @@ public interface IReference
 T obj = ReferencePool.Get<T>() where T : class, IReference, new()
 
 // 归还对象（内部调用 obj.Clear() 后入池）
-ReferencePool.Put<T>(T obj) where T : class, IReference
+ReferencePool.Put(IReference obj)
 
 // 预热：预先创建指定数量的对象
 ReferencePool.Add<T>(int count) where T : class, IReference, new()
@@ -59,7 +59,7 @@ ReferencePool.Remove<T>(int count) where T : class, IReference
 ReferencePool.ClearAll()
 
 // 获取所有类型的池信息快照（调试用）
-ReferencePoolInfo[] infos = ReferencePool.GetAllReferencePoolInfos()
+IReadOnlyList<ReferencePoolInfo> infos = ReferencePool.GetAllReferencePoolInfos()
 ```
 
 ---
@@ -86,12 +86,12 @@ public struct ReferencePoolInfo
 
 | 值 | 行为 | 推荐场景 |
 |----|------|---------|
-| `AlwaysEnable` | 始终检查（Put 时验证对象是否来自此池） | 开发全阶段 |
+| `AlwaysEnable` | 始终执行严格类型检查；不证明对象来源，身份查重始终开启 | 开发全阶段 |
 | `OnlyEnableWhenDevelopment` | 仅 Debug Build 启用 | CI/测试包 |
 | `OnlyEnableInEditor` | 仅编辑器启用 | 本地开发 |
-| `AlwaysDisable` | 关闭检查（性能最优） | Release 包 |
+| `AlwaysDisable` | 关闭可选类型检查，仍保留重复归还检查 | Release 包 |
 
-通过 `Nova.m_ReferenceStrictCheckType`（Inspector）配置，`Awake` 时传入 `ReferencePool.SetHelper(helper.Initialize(strictCheck))`。
+通过 `Nova.m_ReferenceStrictCheckType`（Inspector）配置，`Awake` 先初始化 Helper，再调用 `ReferencePool.SetHelper(helper)`。SetHelper 本身允许 null，只替换引用，不初始化新 Helper 或清理旧池；后续调用在未设置 Helper 时抛异常。具体负参数、构造失败、Clear 失败和统计边界见 [ReferenceHelper](Implements/ReferenceHelper.md#内部类referencecollection)。
 
 ---
 

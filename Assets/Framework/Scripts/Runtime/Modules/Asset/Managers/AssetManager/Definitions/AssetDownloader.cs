@@ -146,10 +146,11 @@ namespace NovaFramework.Runtime
         /// 启动下载并等待完成，返回是否成功。
         /// </summary>
         /// <remarks>
-        /// ct 取消时会同步调用 CancelDownload() 停止底层下载，再重新抛出 OperationCanceledException。
+        /// 等待期间 ct 取消会清理并通知 CancelDownload()，再重新抛出 OperationCanceledException。
+        /// 空下载不等待令牌；StartDownload 在 try 外，启动异常不经过等待阶段的 finally。
         /// </remarks>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>true 表示下载成功，false 表示失败或被取消。</returns>
+        /// <returns>空下载或成功终态返回 true，失败终态返回 false；等待取消抛出异常。</returns>
         public async UniTask<bool> RunAsync(CancellationToken ct = default)
         {
             if (IsEmpty)

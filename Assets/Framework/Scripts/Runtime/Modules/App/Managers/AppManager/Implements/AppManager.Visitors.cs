@@ -29,9 +29,14 @@ namespace NovaFramework.Runtime
         private const string c_VersionCheckFallbackScopeKey = "app.version_check";
 
         /// <summary>
-        /// HTTP 管理器，提供版本检查接口调用与 APK 文件下载能力。
+        /// HTTP 管理器，只供版本规则请求；APK 文件由独立流下载器处理，不占用内存二进制响应。
         /// </summary>
         private IHttpManager m_HttpManager;
+
+        /// <summary>
+        /// 本 Manager 的 APK 文件下载器；同一时刻只有一个操作，初始化切换或关闭会取消未提交下载。
+        /// </summary>
+        private readonly AppApkDownloader m_ApkDownloader = new AppApkDownloader();
 
         /// <summary>
         /// App 版本检查最近成功域名的进程内存储。

@@ -79,11 +79,15 @@ BuildExportContext(sourceDirPath, settings, profile)
   ├── ConfigSyncer.GetConfigDirPath(sourceDirPath) → configDir
   ├── Path.Combine(configDir, c_LubanConfFileName)   → confPath
   ├── Path.Combine(configDir, c_TablesXmlFileName)   → tablesXmlPath
-  ├── RuntimeProvider.GetNamespace()                   → topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Namespace）
+  ├── RuntimeProvider.GetNamespace()                   → topModule（Globals 锚定的激活 ConfigMasterSO 顶层 Namespace）
   ├── profile.TargetName / ManagerName               → 固定 Luban 身份
   ├── GetLubanCustomTemplateDirs(profile.TemplateKey) → customTemplateDirs
   └── new LubanExportContext { … }
 ```
+
+`RuntimeProvider.GetNamespace()` 当前调用 `WorkspaceActive.Get()`，按 `ProjectSettings/Nova/Globals.json` 的 `configMasterGuid` 加载激活 `ConfigMasterSO`，返回 `master.Namespace ?? string.Empty`；无可加载 Master 时同样返回空字符串。它不读取配对 `ConfigRuntimeSO.Namespace`，不应用 `NamespaceMask` / `NamespaceOverrides` 或 `DimensionalResolver.ResolveNamespace`，也不按场景或候选排序选择 Master。`ConfigSyncer.SyncFromInspector()` 会再次读取这一来源并写入 `luban.conf.targets[0].topModule`，因此仅冻结表设置不足以证明生成命名空间不漂移。
+
+受控代码导出的 Action 必须在 Plan 冻结激活 Master 的 GUID、路径和顶层 Namespace，在 Execute 写入前复核，并核对生成类型全名与冻结预期及既有消费者。只读身份核验可复用 `WorkspaceActive.TryGetPersistedConfigMaster(...)`；它检查 Globals 的 GUID / pathHint / 实际资产一致性，不修复或写入。未绑定 Master 应阻断；已绑定且明确空 Namespace 的项目可生成 global namespace，不能把空字符串一概视为缺失配置。当前 Action 是否提供这些防护须以 live 契约和已发布实现为准，本节不构成运行验收证据。
 
 ### BuildRelevantFileNames 文件名生成规则
 
@@ -123,9 +127,16 @@ HashSet<string> fileNames = EditorUtil.Luban.ExportHelper.BuildRelevantFileNames
 - [EditorUtil.Luban.Pipeline.md](EditorUtil.Luban.Pipeline.md)
 - [EditorUtil.Luban.ConfigSyncer.md](EditorUtil.Luban.ConfigSyncer.md)
 - [EditorUtil.Config.RuntimeProvider.md](../EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md)
+- [EditorUtil.Config.WorkspaceActive.md](../EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md)
 - [EditorUtil.Draw.SourceFileTree.md](../EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md)
 - [EditorUtil.Luban.DataTypeNameHelper.md](EditorUtil.Luban.DataTypeNameHelper.md)
 - [EditorUtil.Luban.SchemaManifest.md](EditorUtil.Luban.SchemaManifest.md)
 - [EditorUtil.Luban.ExportProfile.md](EditorUtil.Luban.ExportProfile.md)
 - [IDataTableSettings.md](../../../Runtime/Core/Table/IDataTableSettings.md)
 - [IDataTableUnitSetting.md](../../../Runtime/Core/Table/IDataTableUnitSetting.md)
+
+## 模板输入与生成身份
+
+模板的 bean/table/tables 分别承担行类型、表包装及聚合管理/绑定；JSON 与 Binary 读取链不同，存在模板不证明正式类型已生成或编译。领域行接口依模板键固定为 ILocalizationTextRow、ILocalizationFontRow、ILocalizationSupportedLanguageRow、INetworkCmdRow、INetworkHostKeyRow、ISoundRow、IUIViewRow、IVibrateEmphasisRow、IVibrateCustomRow；通用 table、table-protobuf/default 不据目录名附加这些领域接口。Binary 模板经 ByteBuf，绑定使用 ILubanTables/ITable 及适用的 ILubanTableBinding；Protobuf adapter 有独立模板。
+
+框架逻辑模板路径可解析实际包 resolvedPath，自定义目录原文保留；不解析导航、链接或核全目录结构。Profile 的 target/manager/templateKey 是内部名称，不等于 UPM 包、程序集或 Agent Action；All 返回底层数组，不能当不可变列表。DataTypeNameHelper 只按 Sheet 名和行数阈值筛选，不证明表头与数据语义。完整模板与工具冻结由受控 Action 承担。

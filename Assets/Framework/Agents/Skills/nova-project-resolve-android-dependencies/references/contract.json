@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -30,25 +30,79 @@
     {
       "name": "managedWriteSet",
       "required": true
+    },
+    {
+      "name": "edm4uResolutionSettingsAndTemplateInputs",
+      "required": true
+    },
+    {
+      "name": "orderedLocalMavenAarSrcaarPomAndImporterInputs",
+      "required": true
+    },
+    {
+      "name": "exactGpsrDeletionSet",
+      "required": true
+    },
+    {
+      "name": "javaGradleSdkAndExternalTargets",
+      "required": true
+    },
+    {
+      "name": "completeExpectedPomBytesSha256",
+      "required": true
+    },
+    {
+      "name": "loadedAssetRefreshCallbacksAndDeferredQueues",
+      "required": true
+    },
+    {
+      "name": "nonTargetAssetAndDirtyObjectProtection",
+      "required": true
+    },
+    {
+      "name": "edmAnalyticsActualConsentInstanceAndSettingsDigest",
+      "required": true
+    },
+    {
+      "name": "searchEmptyLogicalCacheAndExactTransactionSnapshot",
+      "required": true
+    },
+    {
+      "name": "editorNaturalPendingConsumersAndExactDerivedEffects",
+      "required": true
+    },
+    {
+      "name": "currentCodeEditorAndNonWritingTailState",
+      "required": true
     }
   ],
   "effects": [
     "workspace-write",
     "unity-write",
-    "generated-output"
+    "generated-output",
+    "external-write"
   ],
   "writeScope": {
     "allow": [
       "ProjectSettings/AndroidResolverDependencies.xml produced by the confirmed EDM4U Force Resolve",
       "Assets/GeneratedLocalRepo/** produced and managed by EDM4U",
-      "Assets/Plugins/Android/** files and templates explicitly tracked by EDM4U resolution state"
+      "Assets/Plugins/Android/** files and templates explicitly tracked by EDM4U resolution state",
+      "exact frozen gpsr-labelled asset deletion/replacement set and generated meta files",
+      "exact frozen local Maven AAR/SRCAAR copy, associated POM and PluginImporter targets on the template resolution branch",
+      "Java/Gradle execution, Maven downloads, host caches and Android SDK package installation only when their exact targets are frozen and confirmed",
+      "exact frozen Library import registration, two empty Search property DB/.st pairs, bounded GUID merge temporary files and observed four-array transaction append; later idempotent maintenance of only these derived caches",
+      "native SpeedTree9Importer_MaterialSettings dependency prefix maintenance only with no matching current static methods, st9/spm inputs or non-target artifact dependencies",
+      "exact audited editor memory/UI effects and at most nine already existing color EditorPrefs keys whose normal serialized values are identical; complete pending consumer snapshot required",
+      "same-byte GvhProjectSettings.xml persistence and the exact frozen GooglePlayServices.UseJetifier=True system preference materialization on the normal true branch",
+      "standard Unity assetPostProcessorsUsage v2 under its existing enabled state: importActionId, methodName, duration_sec and invocationCount; no delivery claim",
+      "only four exact UI Toolkit engine-owned rendering roles on frozen existing panels may rebuild after execution; field ownership, audited module identity, input resources and original dirty flags stay validated; all original object rows remain in evidence"
     ],
     "deny": [
       "Packages/manifest.json, Packages/packages-lock.json, registry or resolved package contents",
       "manual deletion or editing outside the exact EDM4U-managed file set",
       "private Maven repository URL, userinfo, query token, credential or raw secret in Plan, Receipt, log or report",
       "business Gradle/Manifest customization not tracked by EDM4U, Config, Scene, Prefab or business source",
-      "HybridCLR generation, Bundle or Player build, device installation, vendor dashboard, external write, Git commit or push"
+      "HybridCLR generation, Bundle or Player build, device installation, vendor dashboard, external writes outside the exact resolution plan, Git commit or push"
     ]
   },
   "locks": [
@@ -61,6 +115,7 @@
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
+      "current resolution settings and templates, ordered local Maven sources, exact gpsr deletion set, Java/Gradle/SDK identity and external download/cache/install targets",
       "the exact frozen EDM4U dependency graph digest and complete managed write set",
       "Force Resolve deletion or replacement of existing EDM4U-managed files and GeneratedLocalRepo output",
       "any changed activeBuildTarget, dependency graph, managed path or execution entry",
@@ -76,11 +131,26 @@
     "not_applicable"
   ],
   "evidence": [
+    "当前真实回调派发、源码/DLL 指纹、自然调度、模板输入与非目标保护完整满足时 Plan 可 ready；未知分支具体 blocked，不修改设置或主动消费队列造绿；缺完整刷新证据的旧回执或域重载最高 partial",
     "冻结及执行前复核的 activeBuildTarget=Android、非空 EDM4U 依赖图和 SHA-256",
     "不含私有仓库原值的 repository SHA-256 摘要与精确受管写入集",
     "ResolveSync 明确成功标记；异常、失败或 domain reload 后未自动重放",
     "AndroidResolverDependencies.xml 的 package/files/settings 与冻结图一致",
     "全部 EDM4U 受管文件、GeneratedLocalRepo 与 Artifact SHA-256 的 Verify 证据",
-    "未执行 UPM、Gradle/Player 构建、设备、厂商后台、凭据、外部发布或 Git 的边界说明"
+    "未执行 UPM、Gradle/Player 构建、设备、厂商后台、凭据、外部发布或 Git 的边界说明",
+    "正规场景回调 ResolveSync(false, true) 与 Force Resolve 分开：完整包、gpsr 路径、15 项当前解析设置与状态一致后仍须另验产物 SHA-256；不修改自动解析或私有场景计数",
+    "Plan 未完整冻结正规输入、副作用或外部目标时准确 blocked；不因 Descriptor 或静态检查通过声称可执行",
+    "模板支路 POM 完整预期字节 SHA-256 与实际结果一致；未删除既有目标保留全部非 packaging 内容；只检查 packaging 不构成验收",
+    "场景和 Force Resolve 复用同一无弹窗工具链冻结：JDK 二进制及 release 摘要、版本、工作目录与额外 Java 参数检查；不改配置或环境造绿",
+    "严格已审 EDM4U 1.2.188 Report 无 HTTP 或持久上报队列；自然全局关闭或系统同意已请求且无进行中窗口，实例/字段/偏好/持久配置摘要前后相同；未初始化或域重载身份不能继承。",
+    "当前可执行支路仅已有模板和本地 SRCAAR/POM；只读 Java 版本检查；未执行 Gradle、下载或 SDK 安装，不将正常内部能力缺口归为用户环境原因",
+    "正规 Resolve 只调用一次，自有观察器只记录实际四数组并等待自然 Editor update；写后失败、取消或超时保留完整 partial 且不重放",
+    "Search 联合只读锁下空缓存逻辑物化、稳定 DB/.st 摘要与真实有序事务增量；允许精确派生缓存后续幂等维护，不证明所有 discarded Task 退出",
+    "Plan 时完整 pending 队列、固定九键同值物化和精确 UI/IDE 派生效果与原值/预期；其余文件/原有对象脏状态/场景/选择不变",
+    "UseJetifier 正规 true setter 的精确系统键预期与项目持久文件同字节结果；其他解析设置不变",
+    "源码编译包的精确身份维护须匹配当前唯一加载类型、磁盘 DLL/MVID、实际编译映射及回调分支；完整路径拒绝无点 shadergraph/shadersubgraph 后缀及其 meta/父目录，动态状态仍逐次检查",
+    "旧配置迁移回调仅接纳无 asset 完整域、精确编译归属、真实正常 update 见证及 queued=false；原 Plan State/观察器同域回调/调度摘要一致才继承原见证，Verify 反序列化回执另核真实 update 栈；仍拒绝迁移/初始化重入，不调用、清除或推进迁移，历史迁移结果仅纳非目标基线",
+    "仅该下游模块的已审完整 DLL/MVID 由 android-refresh-compiled-identity.json 非代码 reference 提供；严格双字段/512B边界，不自动采纳实际 DLL，当前身份必须进入原冻结摘要并在写前/写后重核",
+    "UIR动态Atlas页的复制材质须经页m_Blitter.m_BlitMaterial精确字段链、Shader与原dirty验证，不按名称泛化放行；UIR前后角色图绑定各自Snapshot/Receipt摘要；写前精确相等，写后仅精确owner角色重建，面板根/输入/dirty保持；旧null字段保留旧摘要与原严格对象比较，不补造历史owner-map或升级partial。"
   ]
 }

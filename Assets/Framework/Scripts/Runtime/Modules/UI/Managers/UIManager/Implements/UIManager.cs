@@ -138,7 +138,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 异步加载并解析 UI 视图注册表。
         /// Phase 1：遍历 m_UnitSettings，对每个有效 unit 并行加载 JSON 数据到局部 dataCache。
-        /// Phase 2：通过 ITable<IUIViewRow> 协变直接访问 DataList 填充 m_UIViewRegistry。
+        /// Phase 2：通过 <see cref="ITable{IUIViewRow}"/> 协变直接访问 DataList 填充 m_UIViewRegistry。
         /// </summary>
         /// <returns>是否全部加载成功。</returns>
         public override async UniTask<bool> LoadAsync()
@@ -182,7 +182,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 同步加载并解析 UI 视图注册表。
         /// Phase 1：遍历 m_UnitSettings，对每个有效 unit 同步加载 JSON 数据到局部 dataCache。
-        /// Phase 2：通过 ITable<IUIViewRow> 协变直接访问 DataList 填充 m_UIViewRegistry。
+        /// Phase 2：通过 <see cref="ITable{IUIViewRow}"/> 协变直接访问 DataList 填充 m_UIViewRegistry。
         /// </summary>
         public override void LoadSync()
         {
@@ -411,6 +411,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="uiView">要关闭的视图。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <remarks>先从组和索引移除，再 OnClose、刷新和入回收队列；回调异常不回滚已完成步骤，也可能阻止入队。真正 OnRecycle 与归池/释放由后续 Update 执行。</remarks>
         public override void CloseUIView(IUIView uiView, object userData)
         {
             if (uiView == null)

@@ -47,3 +47,7 @@
 - [EditorUtil.Luban.ExportProfile.md](EditorUtil.Luban.ExportProfile.md)
 - [EditorUtil.FileSystem.OutputApplier.md](../EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md)
 - [DataPipeline.md](../../DataPipeline/DataPipeline.md)
+
+## 所有权标记的限度
+
+标记是正文完整性元数据，不是签名；行尾会规范为 LF，artifact 字段虽解析但不参与旧文件归属判定。安全过期清理只看正式目录顶层 .cs；同名正式文件替换本身没有“手改保护”。单目标必须 deleteStale=false，误开会把同源其他 Unit 当过期。畸形旧标记不剥除，可形成嵌套；登记失败前已做的暂存 Stamp/queue 应随整份暂存事务丢弃。辅助 output manifest 不作为删除授权。

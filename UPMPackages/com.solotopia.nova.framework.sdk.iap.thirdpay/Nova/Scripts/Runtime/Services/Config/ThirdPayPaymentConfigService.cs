@@ -10,12 +10,62 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
+using NovaFramework.SDK.IAP.Runtime;
+using Newtonsoft.Json;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
+    /// <summary>
+    /// 服务端下发给客户端的第三方支付扩展配置。
+    /// </summary>
+    internal sealed class ThirdPayClientConfig
+    {
+        /// <summary>
+        /// 获取服务端客户端配置包含的全部字段。
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Values { get; }
+
+        /// <summary>
+        /// 获取当前测试配置值。
+        /// </summary>
+        public string Test { get; }
+
+        /// <summary>
+        /// 将服务端客户端 JSON 配置转换为强类型字段与只读动态字典。
+        /// </summary>
+        /// <param name="json">服务端下发的客户端配置 JSON。</param>
+        public ThirdPayClientConfig(string json)
+        {
+            Dictionary<string, object> values = string.IsNullOrWhiteSpace(json) ? null : Util.Json.Deserialize<Dictionary<string, object>>(json);
+            Values = new ReadOnlyDictionary<string, object>(values == null ? new Dictionary<string, object>(StringComparer.Ordinal) : new Dictionary<string, object>(values, StringComparer.Ordinal));
+            Test = Values.TryGetValue("test", out object test) ? test?.ToString() ?? string.Empty : string.Empty;
+        }
+
+        /// <summary>
+        /// 按字段名读取服务端下发的客户端配置值。
+        /// </summary>
+        /// <param name="key">客户端配置字段名。</param>
+        /// <param name="value">读取成功时返回对应字段值。</param>
+        /// <returns>存在指定字段时返回 true。</returns>
+        public bool TryGetValue(string key, out object value)
+        {
+            return Values.TryGetValue(key, out value);
+        }
+
+        /// <summary>
+        /// 将全部客户端配置字段序列化为紧凑 JSON。
+        /// </summary>
+        /// <returns>包含全部客户端配置字段的 JSON。</returns>
+        public override string ToString()
+        {
+            return Util.Json.Serialize(Values, Formatting.None);
+        }
+    }
+
     /// <summary>
     /// 标识一次第三方支付配置请求所属的账号、国家和路由上下文。
     /// </summary>
@@ -113,7 +163,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public int DisabledReason { get; }
 
         /// <summary>
-        /// 获取当前快照中的只读商品列表。
+        /// 获取当前快照的商品列表视图；元素仍是可变的协议对象引用。
         /// </summary>
         public IReadOnlyList<PbNetThirdProductInfo> Products => m_Products;
 
@@ -133,7 +183,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public string CountryCode { get; }
 
         /// <summary>
-        /// 将协议响应转换为不可变的运行时快照，并建立商品索引。
+        /// 获取服务端客户端 JSON 配置转换后的强类型数据。
+        /// </summary>
+        public ThirdPayClientConfig ClientConfig { get; }
+
+        /// <summary>
+        /// 复制已校验响应的标量和商品列表容器，并建立商品索引；不深复制协议商品对象。
         /// </summary>
         /// <param name="response">已通过基础校验的统一支付配置响应。</param>
         /// <param name="fallbackCountryCode">请求统一配置时使用的国家码。</param>
@@ -144,6 +199,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             PaymentCustomerIds = response.ChannelConfig?.PaymentCustomerIds ?? string.Empty;
             PaymentPageUrl = response.PaymentPageConfig?.PaymentPageUrl ?? string.Empty;
             CountryCode = fallbackCountryCode ?? string.Empty;
+            ClientConfig = new ThirdPayClientConfig(response.ClientConfig);
 
             m_Products = response.ProductConfig == null ? new List<PbNetThirdProductInfo>() : new List<PbNetThirdProductInfo>(response.ProductConfig.ProductList);
             m_ProductLookup = new Dictionary<string, PbNetThirdProductInfo>(StringComparer.Ordinal);
@@ -154,6 +210,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     m_ProductLookup[product.ProductId] = product;
                 }
             }
+
+            IAPLog.Debug(LogTag.IAPThirdPay, $"ThirdPayClientConfig={ClientConfig}");
         }
 
         /// <summary>
@@ -213,7 +271,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private string m_LastFailureReason = string.Empty;
 
         /// <summary>
-        /// 获取最近一次成功且仍有效的支付配置快照。
+        /// 获取最近一次成功保存的配置快照；读取本身不核对当前上下文或触发刷新。
         /// </summary>
         public ThirdPayPaymentConfigSnapshot Snapshot => m_Snapshot;
 
@@ -282,7 +340,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 按第三方商品 ID 查询当前有效快照中的商品。
+        /// 按第三方商品 ID 查询已保存快照中的商品，不检查调用方当前配置上下文。
         /// </summary>
         /// <param name="productId">第三方商品 ID。</param>
         /// <returns>匹配的商品；快照不存在或未命中时返回 null。</returns>

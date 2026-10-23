@@ -89,3 +89,7 @@ handle.Release();
 
 - [IAllAssetsHandle.md](../Interfaces/IAllAssetsHandle.md)
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 数组与释放边界
+
+Assets 在 inner 完成后首次按 T 过滤全部对象，并缓存一个 T[]；不检查 Status，不匹配的对象跳过，底层集合为 null 时仍可抛出。返回的是可变缓存数组，调用方修改会影响后续读取，不影响整批共同所有权。Release 先释放 inner 再归池，无幂等或 finally；异常会阻止归池。归池后丢弃引用，Clear 只清字段，Bind 不释放旧 inner。

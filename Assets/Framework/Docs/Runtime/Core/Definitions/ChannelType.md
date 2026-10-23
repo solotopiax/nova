@@ -55,4 +55,4 @@ if (master.TryGetEntry(PlatformType.Android, ChannelType.Google, out var entry))
 - [Definitions.md](Definitions.md) — 框架级枚举概览
 - [PlatformType.md](PlatformType.md) — 平台类型枚举
 - [DevelopMode.md](DevelopMode.md) — 开发模式枚举
-- [../../Modules/Config/ConfigMasterSO.md](../../Modules/Config/ConfigMasterSO.md) — 使用渠道矩阵的主 SO
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md) — 使用渠道矩阵的 Editor 主 SO

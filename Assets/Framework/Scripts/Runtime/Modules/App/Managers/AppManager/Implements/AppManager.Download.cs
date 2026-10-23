@@ -21,15 +21,24 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 触发 App 下载（DownloadRoute=Apk 时）。
-        /// 内部根据 AppManagerConfig 选择主备地址，
-        /// 调用 IHttpManager 完成下载，写入 persistentDataPath。
-        /// 待业务侧打通后补全写盘与进度回调。
+        /// 仅 Android Player 在已命中更新后按冻结的 HTTPS 主备地址流式下载。
+        /// 完整文件经大小与 APK 归档结构检查后原子提交；取消或失败保留此前正式文件。
+        /// 返回路径不表示签名、目标版本或安装成功，安装仍由独立能力或业务层决定。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>下载完成的 apk 文件本地绝对路径；失败时 throw。</returns>
         public override UniTask<string> DownloadAsync(CancellationToken ct)
         {
-            throw new NotImplementedException("DownloadAsync 待业务侧打通后补全。");
+            ct.ThrowIfCancellationRequested();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (m_Config == null || !m_Config.EnableAppUpdate || m_Config.DownloadRoute != AppDownloadRoute.Apk ||
+                (m_MatchedRule != AppDownloadRule.Forced && m_MatchedRule != AppDownloadRule.Recommended))
+                throw new InvalidOperationException("APK 下载需要已初始化、启用更新且已命中的 Apk 路由。");
+            string[] candidates = AppApkDownloader.BuildCandidates(m_TargetDownloadUrl, m_Config.FallbackDownloadUrl);
+            return m_ApkDownloader.DownloadAsync(candidates, Path.Hotfix.ApkDownloadedFullPath, ct);
+#else
+            throw new PlatformNotSupportedException("内置 APK 文件下载仅支持 Android Player；不会在 Editor、iOS 或 WebGL 执行。");
+#endif
         }
 
         /// <summary>

@@ -600,7 +600,7 @@ namespace NovaFramework.Runtime
 
             try
             {
-                m_Connection = new SqlCipher4Unity3D.SQLiteConnection(
+                m_Connection = Util.SQLite.CreateRegisteredConnection(
                     Path.Persist.SQLite.FileFullPath,
                     string.IsNullOrEmpty(m_CipherPassword) ? null : m_CipherPassword
                 );

@@ -25,24 +25,18 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             if (string.IsNullOrEmpty(placementId))
             {
-                Log.Debug(LogTag.Max, "MAX Banner 请求被跳过：广告位为空。");
                 return;
             }
 
             if (m_CreatedBannerPlacementIds.Add(placementId))
             {
-                Log.Debug(LogTag.Max, $"MAX Banner 创建请求：placement={placementId}，position={m_BannerPosition}。");
                 MaxSdk.CreateBanner(placementId, new MaxSdkBase.AdViewConfiguration(m_BannerPosition));
                 MaxSdk.SetBannerBackgroundColor(placementId, Color.white);
             }
             else if (m_BannerDesiredVisible)
             {
-                Log.Debug(LogTag.Max, $"MAX Banner 已创建，按业务期望恢复显示：placement={placementId}。");
+                Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={placementId}。");
                 MaxSdk.ShowBanner(placementId);
-            }
-            else
-            {
-                Log.Debug(LogTag.Max, $"MAX Banner 已创建，跳过重复创建：placement={placementId}，当前不要求显示。");
             }
         }
 
@@ -51,9 +45,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         public override void ShowBanner()
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 显示请求：placement={BannerPlacementId}。");
             m_BannerDesiredVisible = true;
             StartBannerAutoRefresh();
+            Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={BannerPlacementId}。");
             MaxSdk.ShowBanner(BannerPlacementId);
         }
 
@@ -62,7 +56,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         public override void HideBanner()
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 隐藏请求：placement={BannerPlacementId}。");
             m_BannerDesiredVisible = false;
             StopBannerAutoRefresh();
             MaxSdk.HideBanner(BannerPlacementId);
@@ -73,7 +66,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         public override void DestroyBanner()
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 销毁请求：placement={BannerPlacementId}。");
             m_BannerDesiredVisible = false;
             MaxSdk.DestroyBanner(BannerPlacementId);
             m_CreatedBannerPlacementIds.Remove(BannerPlacementId);
@@ -113,7 +105,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// 停止 Banner 自动刷新。
         /// </summary>
         public override void StopBannerAutoRefresh()
-            => MaxSdk.StopBannerAutoRefresh(BannerPlacementId);
+        {
+            MaxSdk.StopBannerAutoRefresh(BannerPlacementId);
+        }
 
         /// <summary>
         /// 设置 Banner 宽度。
@@ -154,92 +148,103 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         };
 
         /// <summary>
-        /// Banner 加载成功回调，触发 RaiseAdLoaded。
+        /// 复制 Banner 加载响应后于主线程推进状态并按既有业务期望恢复可见性。
         /// </summary>
-        /// <param name="adUnitId">广告位 ID。</param>
-        /// <param name="info">广告信息。</param>
+        /// <param name="adUnitId">已注册的 Banner 真实 ID。</param>
+        /// <param name="info">厂商加载响应，回调返回前复制。</param>
         private void OnBannerLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 加载成功：placement={adUnitId}，network={info.NetworkName}，期望显示={m_BannerDesiredVisible}。");
-            RaiseAdLoaded(new AdLoadResult
+            Log.Debug(LogTag.Max, $"Banner 加载成功回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerLoaded))) return;
+            var snapshot = new MaxAdInfoSnapshot(info);
+            var result = new AdLoadResult
             {
                 Success = true,
                 Format = AdFormat.Banner,
                 PlacementId = adUnitId,
-                Network = info.NetworkName,
-                Revenue = info.Revenue,
+                Network = snapshot.NetworkName,
+                Revenue = snapshot.Revenue,
                 Currency = "USD",
-                CustomProps = BuildMaxLoadProps(info),
-            });
-
-            if (m_BannerDesiredVisible)
+                CustomProps = BuildMaxLoadProps(snapshot),
+            };
+            PostAdCallbackToMainThread(() =>
             {
-                Log.Debug(LogTag.Max, $"MAX Banner 加载成功后恢复显示：placement={adUnitId}。");
-                PostAdCallbackToMainThread(() => MaxSdk.ShowBanner(adUnitId));
-            }
+                RaiseAdLoaded(result);
+                if (m_BannerDesiredVisible)
+                {
+                    Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={adUnitId}。");
+                    MaxSdk.ShowBanner(adUnitId);
+                }
+            });
         }
 
         /// <summary>
-        /// Banner 加载失败回调，触发 RaiseAdLoadFailed。
+        /// 复制 Banner 加载错误后于主线程推进既有刷新状态。
         /// </summary>
-        /// <param name="adUnitId">广告位 ID。</param>
-        /// <param name="err">错误信息。</param>
+        /// <param name="adUnitId">失败 Banner 真实 ID。</param>
+        /// <param name="err">原厂错误，保留错误码和消息。</param>
         private void OnBannerLoadFailed(string adUnitId, MaxSdkBase.ErrorInfo err)
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 加载失败：placement={adUnitId}，code={(int)err.Code}，message={err.Message}。");
-            RaiseAdLoadFailed(new AdLoadResult
+            Log.Debug(LogTag.Max, $"Banner 加载失败回调：format={AdFormat.Banner}，placement={adUnitId}，code={(err == null ? -1 : (int)err.Code)}，message={err?.Message}。");
+            if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerLoadFailed))) return;
+            var result = new AdLoadResult
             {
                 Success = false,
                 Format = AdFormat.Banner,
                 PlacementId = adUnitId,
-                ErrorCode = (int)err.Code,
-                ErrorMessage = err.Message,
-            });
+                ErrorCode = err == null ? -1 : (int)err.Code,
+                ErrorMessage = err?.Message ?? "MAX 未提供 Banner 加载错误。",
+            };
+            PostAdCallbackToMainThread(() => RaiseAdLoadFailed(result));
         }
 
         /// <summary>
-        /// Banner 点击回调，上报点击打点。
+        /// 已注册 Banner 点击回调排入主线程上报。
         /// </summary>
-        /// <param name="adUnitId">广告位 ID。</param>
-        /// <param name="info">广告信息。</param>
+        /// <param name="adUnitId">点击的 Banner 真实 ID。</param>
+        /// <param name="info">厂商响应，此处不保留。</param>
         private void OnBannerClicked(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 点击回调：placement={adUnitId}，network={info.NetworkName}。");
-            TrackAdClick(AdFormat.Banner, adUnitId);
+            Log.Debug(LogTag.Max, $"Banner 点击回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}。");
+            if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerClicked))) return;
+            PostAdCallbackToMainThread(() => TrackAdClick(AdFormat.Banner, adUnitId));
         }
 
         /// <summary>
-        /// Banner 收益回调，触发 RaiseRevenue。
+        /// 每次 Banner impression 立即上报；当前渠道内全部 Banner 累计 ILRD，保留主线程文件片段持久化。
         /// </summary>
-        /// <param name="adUnitId">广告位 ID。</param>
-        /// <param name="info">广告信息。</param>
+        /// <param name="adUnitId">收益 Banner 真实 ID。</param>
+        /// <param name="info">厂商收益响应，立即复制后使用。</param>
         private void OnBannerRevenuePaid(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 收益回调：placement={adUnitId}，network={info.NetworkName}，revenue={FormatRevenue((decimal)info.Revenue)}，precision={info.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Banner 收益回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerRevenuePaid))) return;
+            var snapshot = new MaxAdInfoSnapshot(info);
             RaiseRevenueImmediately(new AdEvent
             {
                 Format = AdFormat.Banner,
                 PlacementId = adUnitId,
-                Network = info.NetworkName,
-                Revenue = info.Revenue,
+                Network = snapshot.NetworkName,
+                Revenue = snapshot.Revenue,
                 Currency = "USD",
-                Precision = info.RevenuePrecision,
+                Precision = snapshot.RevenuePrecision,
             }, () =>
             {
-                TrackMaxAdImpression(AdFormat.Banner, adUnitId, info);
-                TrackMaxBannerIlrdAggregated(adUnitId, info);
+                TrackMaxAdImpression(AdFormat.Banner, adUnitId, snapshot);
+                TrackMaxBannerIlrdAggregated(adUnitId, snapshot);
             });
         }
 
         /// <summary>
-        /// Banner 折叠/隐藏回调，通知状态机。
+        /// Banner 折叠只影响已注册视图，于主线程通知本地状态，不触发全屏续杯。
         /// </summary>
-        /// <param name="adUnitId">广告位 ID。</param>
-        /// <param name="info">广告信息。</param>
+        /// <param name="adUnitId">折叠的 Banner 真实 ID。</param>
+        /// <param name="info">厂商响应，此处不保留。</param>
         private void OnBannerCollapsed(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"MAX Banner 折叠/隐藏回调：placement={adUnitId}，network={info.NetworkName}。");
-            MarkBannerHidden(adUnitId);
+            Log.Debug(LogTag.Max, $"Banner 折叠/隐藏回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}。");
+            if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerCollapsed))) return;
+            PostAdCallbackToMainThread(() => MarkBannerHidden(adUnitId));
         }
 #endif
     }

@@ -1,7 +1,7 @@
 # Nova Framework - Kit - Network - GameBind
 
 > 包名：`com.solotopia.nova.framework.kit.network.gamebind`
-> 当前版本：`0.1.7`
+> 当前版本：`0.1.8`
 
 账号绑定业务网络模块，封装绑定状态查询、绑定、冲突查询与裁决协议及类型。
 
@@ -17,7 +17,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.kit.network.gamebind": "0.1.7"
+  "com.solotopia.nova.framework.kit.network.gamebind": "0.1.8"
 }
 ```
 
@@ -30,5 +30,7 @@
 > 注意：该依赖仅存在于**示例工程**层面（演示登录前提）；`gamebind` 运行时包本身**不依赖** `gamelogin`——绑定只做账号归属裁决，登录态由宿主的登录体系提供，二者职责分离。
 
 ## 维护
+
+公开 API、配置与跨包流程入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。

@@ -17,7 +17,7 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 
 ## 依赖
 
-- `com.solotopia.nova.framework`: `0.6.15`
+- `com.solotopia.nova.framework`: `0.7.0`
 - `com.solotopia.nova.framework.sdk.iap`: `0.1.12`
 - `com.solotopia.unitask`: `10.0.6`
 - `com.unity.purchasing`: `5.3.1`

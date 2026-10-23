@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 using NovaFramework.SDK.IAP.ThirdPay.Runtime;
+using UnityEngine;
 using UnityEngine.Scripting;
 
 using FeedbackLevel = NovaFramework.Sdk.IAP.Samples.Runtime.BaseDemoView.FeedbackLevel;
@@ -58,7 +59,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 throw new InvalidOperationException("ThirdPay 模块未取得 DemoIAPThirdPayPanelView。");
             }
 
-            m_Panel.Configure(BuildProductTitle, tableId => PayAsync(tableId).Forget(), HandleDebugCountryChanged, HandleSkipPaymentInformationChanged);
+            m_Panel.Configure(BuildProductTitle, tableId => PayAsync(tableId, false).Forget(), tableId => PayAsync(tableId, true).Forget(), HandleDebugCountryChanged, HandleSkipPaymentInformationChanged);
         }
 
         /// <summary>
@@ -206,19 +207,24 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 创建 ThirdPay 请求并进入框架第三方支付 URL 流程。
+        /// 创建 ThirdPay 请求并进入框架第三方支付 URL 流程；保留开始时的 Bridge 与令牌，关闭后不写页面。
         /// </summary>
         /// <param name="tableId">商品表行 ID。</param>
+        /// <param name="includeRewards">是否携带首充与额外赠送测试奖励。</param>
         /// <returns>异步任务。</returns>
-        private async UniTask PayAsync(long tableId)
+        private async UniTask PayAsync(long tableId, bool includeRewards)
         {
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge)) return;
             if (!TryGetThirdPayCapability(out IIAPThirdPayConfigCapable _))
             {
                 m_Bridge?.AppendFeedback("ThirdPay 能力不可用。", FeedbackLevel.Warn);
                 return;
             }
 
-            m_Bridge.SetPayInteractable(false);
+            var cancellationToken = bridge.CancellationToken;
+            IAPPlugin iap = bridge.IAP;
+            bridge.SetPayInteractable(false);
             try
             {
                 var request = new IAPThirdPayRequest
@@ -227,22 +233,39 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                     CustomData = DemoIAPBridge.BuildCustomData(tableId),
                     ReceiptParam = tableId.ToString(),
                 };
-                IAPResult result = await m_Bridge.IAP.PayAsync<IAPResult>(request, m_Bridge.CancellationToken);
-                m_Bridge.AppendFeedback("第三方支付 URL 流程结束：" + DemoIAPBridge.FormatResult(result),
-                    result != null && result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Info);
+                if (includeRewards)
+                {
+                    request.FirstRechargeReward = new IAPThirdPayRewardItem(DemoIAPProductCatalog.ThirdPayFirstRechargeRewardItemId, DemoIAPProductCatalog.ThirdPayFirstRechargeRewardQuantity);
+                    request.ExtraBonusReward = new IAPThirdPayRewardItem(DemoIAPProductCatalog.ThirdPayExtraBonusRewardItemId, DemoIAPProductCatalog.ThirdPayExtraBonusRewardQuantity);
+                }
+                IAPResult result = await iap.PayAsync<IAPResult>(request, cancellationToken);
+                if (IsCurrentBridge(bridge))
+                    bridge.AppendFeedback("第三方支付 URL 流程结束：" + DemoIAPBridge.FormatResult(result),
+                        result != null && result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Info);
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("第三方支付已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("第三方支付已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("第三方支付失败：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("第三方支付失败：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
             }
             finally
             {
-                m_Bridge.SetPayInteractable(!m_Bridge.IsDisposed);
+                if (IsCurrentBridge(bridge)) bridge.SetPayInteractable(true);
             }
+        }
+
+        /// <summary>
+        /// 判断支付结果是否仍属于当前模块会话，禁止关闭后的任务恢复新页面按钮。
+        /// </summary>
+        /// <param name="bridge">支付开始时保存的 Bridge。</param>
+        /// <returns>模块仍持有同一未释放 Bridge 时返回 true。</returns>
+        private bool IsCurrentBridge(DemoIAPBridge bridge)
+        {
+            return bridge != null && !bridge.IsDisposed && ReferenceEquals(m_Bridge, bridge);
         }
 
         /// <summary>
@@ -269,9 +292,9 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private void RefreshProductPrices(IIAPThirdPayProductCapable capability)
         {
             var refreshedPrices = new Dictionary<long, string>();
-            for (int i = 0; i < DemoIAPProductCatalog.AllProductIds.Length; i++)
+            for (int i = 0; i < DemoIAPProductCatalog.ThirdPayProductIds.Length; i++)
             {
-                long tableId = DemoIAPProductCatalog.AllProductIds[i];
+                long tableId = DemoIAPProductCatalog.ThirdPayProductIds[i];
                 PbNetThirdProductInfo product = capability.GetProductInfo(tableId);
                 if (product == null || string.IsNullOrEmpty(product.LocalPrice)
                     || string.IsNullOrEmpty(product.LocalCurrency))

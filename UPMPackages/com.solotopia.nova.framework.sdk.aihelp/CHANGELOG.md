@@ -5,13 +5,25 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-23
+
 ### Added
+
+- AIHelpDemo 新增独立“退出账号并重置客服资料”入口，先结束统一 SDK 登录会话，再对已就绪 AIHelp 显式重置；关闭客服页面和 UIView 不触发全局登出。
 
 ### Changed
 
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 AIHelpDemo APK 流水线的旧输出参数，改用 OutputFolderPath。
+
+- 纠正文档中的初始化失败、Ready 判断、登录接收、登出清理和事件退订说明。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.0.17] - 2026-10-10
 

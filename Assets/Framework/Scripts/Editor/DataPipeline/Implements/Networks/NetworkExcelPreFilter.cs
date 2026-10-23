@@ -196,6 +196,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 校验单个 HostKey Sheet 的主备域名格式，并在错误中保留 Sheet 与 Excel 行号。
+        /// Value 列必须存在；旧表缺少可选 FallbackValue 列时仍校验主域名。
         /// </summary>
         /// <param name="filePath">工作簿路径。</param>
         /// <param name="sheetName">Sheet 名称。</param>
@@ -205,11 +206,12 @@ namespace NovaFramework.Editor
             string sheetName,
             IReadOnlyList<IReadOnlyList<string>> rows)
         {
-            if (!TryFindColumn(rows, "Value", out int primaryColumn) ||
-                !TryFindColumn(rows, "FallbackValue", out int fallbackColumn))
+            if (!TryFindColumn(rows, "Value", out int primaryColumn))
             {
-                return;
+                throw SheetError(filePath, sheetName, 1, "缺少必需的 Value 主域名列。");
             }
+            // 兼容没有备用列的旧表，GetCell 会将未找到的列视为空值。
+            TryFindColumn(rows, "FallbackValue", out int fallbackColumn);
             TryFindColumn(rows, "Name", out int nameColumn);
 
             for (int rowIndex = 4; rowIndex < rows.Count; rowIndex++)

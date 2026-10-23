@@ -8,8 +8,10 @@
  * descrip:   AdChannelPluginBase 字段与属性
  ***************************************************************/
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.AdPlugin.Runtime
@@ -27,13 +29,18 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private IFileFragmentManager m_BannerIlrdPersistManager;
 
         /// <summary>
+        /// 共享渠道释放结果；重复调用等待缓存、事件和原厂订阅全部清理完成。
+        /// </summary>
+        private UniTaskCompletionSource m_ChannelDisposeCompletion;
+
+        /// <summary>
         /// 各广告格式对应的 AdUnit 槽位列表；派生类在 InitChannelSDKAsync 内通过 RegisterAdUnits 注入。
         /// 键为 AdFormat，值为该格式下所有槽位。
         /// </summary>
         private Dictionary<AdFormat, List<AdUnit>> m_AdUnits = new();
 
         /// <summary>
-        /// 当前活跃的请求批次列表；每次 RequestAsync 调用追加一个批次，首个成功结果触发 TrySetResult 后移除。
+        /// 当前需要观察轮次的请求批次；任一观察轮成功或全部轮失败时，先移除再完成。
         /// 多个并发 RequestAsync 互不干扰，各批次独立等待。
         /// </summary>
         private List<RequestBatch> m_PendingBatches = new();
@@ -54,14 +61,54 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         protected internal bool MuteAd { get; private set; }
 
         /// <summary>
-        /// 广告加载失败时的最大重试次数；AdPlugin 初始化时通过 ApplyGlobalConfig 写入。
+        /// 全部广告组共用的有效重试间隔序列；应用配置时复制，各组独立推进等待下标。
         /// </summary>
-        internal int RetryLoadAdMaxNum { get; private set; } = 3;
+        internal IReadOnlyList<float> GroupRetryIntervalsSeconds { get; private set; } = AdChannelConfigList.CreateDefaultGroupRetryIntervalsSeconds();
 
         /// <summary>
-        /// 广告加载重试 N 次失败后再次发起加载之间的间隔时间（秒）；AdPlugin 初始化时通过 ApplyGlobalConfig 写入。
+        /// 初始化后的独立格式广告组，注册顺序用于同收益候选排序。
         /// </summary>
-        internal float RetryLoadAdInterv { get; private set; } = 30f;
+        private readonly Dictionary<AdFormat, List<AdGroup>> m_AdGroups = new();
+
+        /// <summary>
+        /// 格式配置错误；拒绝该格式请求，不影响其他有效格式。
+        /// </summary>
+        private readonly Dictionary<AdFormat, string> m_AdConfigFailures = new();
+
+        /// <summary>
+        /// 渠道托管生命周期；业务取消不取消已经发出的原厂加载或展示。
+        /// </summary>
+        private readonly CancellationTokenSource m_ChannelLifetimeCts = new();
+
+        /// <summary>
+        /// 缓存渠道令牌值，释放CTS后查询释放门仍能返回已取消令牌。
+        /// </summary>
+        private readonly CancellationToken m_ChannelLifetimeToken;
+
+        /// <summary>
+        /// 释放门同时供原厂后台回调安全读取。
+        /// </summary>
+        private volatile bool m_IsDisposed;
+
+        /// <summary>
+        /// 回调队列版本，仅用于过滤本实例已排队托管动作。
+        /// </summary>
+        private int m_AdCallbackGeneration;
+
+        /// <summary>
+        /// 渠道全屏展示的唯一占用。
+        /// </summary>
+        private ActiveAdShow m_ActiveAdShow;
+
+        /// <summary>
+        /// 派生渠道可用的释放门。
+        /// </summary>
+        protected bool IsDisposed => m_IsDisposed;
+
+        /// <summary>
+        /// 派生渠道可用的托管生命周期令牌，不是原厂取消API。
+        /// </summary>
+        protected CancellationToken ChannelLifetimeToken => m_ChannelLifetimeToken;
 
         /// <summary>
         /// SDK 回调转 Unity 主线程的 FIFO 队列。

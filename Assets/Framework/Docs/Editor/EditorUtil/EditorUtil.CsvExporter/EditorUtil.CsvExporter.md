@@ -1,54 +1,19 @@
 # EditorUtil.CsvExporter
 
-**类签名**：`public static class EditorUtil.CsvExporter`
-**命名空间**：`NovaFramework.Editor`
-
-将结构化数据（二维数组 / DataTable）导出为 CSV 文件，供调试或外部工具分析使用。
-
----
-
-## 文件
-
-| 文件 | 说明 |
-|------|------|
-| `EditorUtil.CsvExporter.cs` | 导出方法实现 |
-
----
-
-## 完整 API 签名
+`NovaFramework.Editor.EditorUtil.CsvExporter` 是交互式 CSV 诊断导出工具，当前只有两个入口：
 
 ```csharp
-// 将二维数组（行×列）导出为 CSV 文件
-// data：string[,] 行列数据
-// outputPath：输出文件路径（绝对路径，如 "C:/output/hero.csv"）
-void EditorUtil.CsvExporter.Export(string[,] data, string outputPath)
-
-// 将 DataTable 导出为 CSV 文件（含表头行）
-void EditorUtil.CsvExporter.Export(DataTable table, string outputPath)
+string Export(string title, string header, IEnumerable<string> rows);
+string EscapeField(string field);
 ```
 
----
+Export 打开固定“导出 CSV 数据”保存面板，默认文件名由 title 与本地时间组成。取消返回 null；选择路径后以 UTF-8 BOM 覆盖写入完整 header，再惰性枚举已经格式化的 rows。它不接收二维数组或 DataTable，也不提供显式 outputPath 的无界面重载。
 
-## 使用示例
+写入或枚举异常在本函数记录日志，可能留下部分文件，仍返回用户选定的 path；因此非 null 路径不等于导出成功，调用方应检查实际文件。目录、凭据或完整事务不由本函数冻结。
 
-```csharp
-// 导出运行时对象池状态快照为 CSV（调试用）
-var infos = Nova.ObjectPool.GetAllObjectPoolInfos();
-var rows = new string[infos.Length + 1, 4];
-rows[0, 0] = "Name"; rows[0, 1] = "Count"; rows[0, 2] = "Capacity"; rows[0, 3] = "ExpireTime";
-for (int i = 0; i < infos.Length; i++)
-{
-    rows[i + 1, 0] = infos[i].Name;
-    rows[i + 1, 1] = infos[i].Count.ToString();
-    rows[i + 1, 2] = infos[i].Capacity.ToString();
-    rows[i + 1, 3] = infos[i].ExpireTime.ToString();
-}
-EditorUtil.CsvExporter.Export(rows, "C:/debug/object_pools.csv");
-```
-
----
+EscapeField 对 null/空返回空，对含逗号、引号或换行的单个字段加双引号并倍写内部引号，其余原样。Export 不自动逐字段调用它，调用方必须先正确拼出表头/行；它不处理 Excel 公式起始符等业务策略。对象池和运行列表等诊断导出须另外确认快照范围与特殊名称转义。
 
 ## 关联文档
 
-- [EditorUtil.md](../EditorUtil.md)
-- [EditorUtil.FileSystem.md](../EditorUtil.FileSystem/EditorUtil.FileSystem.md)
+- [EditorUtil](../EditorUtil.md)
+- [FileSystem](../EditorUtil.FileSystem/EditorUtil.FileSystem.md)

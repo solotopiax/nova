@@ -3,7 +3,7 @@
 **类签名**：`public static class KitConfigScanner`（嵌套于 `EditorUtil.Config`）
 **命名空间**：`NovaFramework.Editor`
 
-反射扫描全部已加载程序集中符合条件的 `IKitConfig` 实现类型，并提供对 `ConfigMasterSO.KitConfigs` 全局列表的实例补全与移除操作。
+反射扫描已加载的非测试程序集中符合条件的 `IKitConfig` 实现类型，并管理 `PlatformChannelEntry` 指定 `DevelopMode` 格的 Kit 配置实例。
 
 ---
 
@@ -39,13 +39,13 @@ EditorUtil (public static partial class)
 // 无匹配时返回空列表
 public static List<KitConfigEntry> ScanAll();
 
-// 若全局 KitConfigs 列表中缺少指定类型实例，反射补空实例并追加；已存在返回 false
-// configs 或 configType 为 null 时返回 false
-public static bool EnsureInstance(List<IKitConfig> configs, Type configType);
+// 若指定格缺少同类型实例，反射构造并追加；已存在返回 false
+// entry 或 configType 为 null 时返回 false
+public static bool EnsureInstance(PlatformChannelEntry entry, DevelopMode mode, Type configType);
 
-// 从全局 KitConfigs 列表移除所有指定类型的实例
-// configs 或 configType 为 null 时提前返回
-public static void RemoveInstance(List<IKitConfig> configs, Type configType);
+// 从指定格移除所有同类型的非 null 实例
+// entry 或 configType 为 null 时提前返回
+public static void RemoveInstance(PlatformChannelEntry entry, DevelopMode mode, Type configType);
 ```
 
 ### KitConfigEntry（嵌套结构体）
@@ -79,7 +79,7 @@ ScanAll():
 
 `SafeGetTypes` 在程序集包含加载失败类型时捕获 `ReflectionTypeLoadException` 并返回 `e.Types` 非 null 部分，避免中断整个扫描。
 
-与 `SDKPluginScanner.ScanAll` 的区别：返回 `List<KitConfigEntry>`（含 DisplayName），而非 `List<Type>`。
+`ScanAll` 排除引用 `nunit.framework` 的程序集。与 `SDKPluginScanner.ScanAll` 一样，结果包含 `ConfigType` 与 `DisplayName`；SDK 返回的包装类型是 `PluginConfigEntry`。构造失败的候选仍以类型名加入扫描结果，因此出现在列表中不代表能够成功实例化。
 
 ---
 
@@ -94,20 +94,27 @@ ScanAll():
 
 ```csharp
 // ConfigWindow.OnEnable 中缓存扫描结果
-List<KitConfigEntry> kitEntries = EditorUtil.Config.KitConfigScanner.ScanAll();
+var kitEntries = EditorUtil.Config.KitConfigScanner.ScanAll();
 
-// Kit 左树勾选时向全局 KitConfigs 补实例
-EditorUtil.Config.KitConfigScanner.EnsureInstance(masterSO.KitConfigs, kitEntry.ConfigType);
+if (kitEntries.Count > 0 &&
+    master.TryGetEntry(PlatformType.Android, ChannelType.Google, out PlatformChannelEntry entry))
+{
+    Type kitType = kitEntries[0].ConfigType;
+    EditorUtil.Config.KitConfigScanner.EnsureInstance(entry, DevelopMode.Debug, kitType);
 
-// Kit 左树取消勾选时移除实例
-EditorUtil.Config.KitConfigScanner.RemoveInstance(masterSO.KitConfigs, kitEntry.ConfigType);
+    // 如需显式删除该格实例，可调用下列方法；ConfigWindow 取消勾选不会调用它。
+    // EditorUtil.Config.KitConfigScanner.RemoveInstance(entry, DevelopMode.Debug, kitType);
+}
 ```
+
+ConfigWindow 勾选 Kit 时遍历已有矩阵行与全部开发模式补实例；取消勾选只移除 `EnabledKits` 的类型名，保留已填配置。Scanner 本身不修改启用列表，也不负责标脏或保存资产。
 
 ---
 
 ## §12 注意事项
 
-- `EnsureInstance` 按类型判等（`c.GetType() == configType`），同类型最多一个实例。
+- `EnsureInstance` 按类型判等（`c.GetType() == configType`）；已有同类型实例时不再追加，但不会清理旧重复项。
+- `EnsureInstance` 不捕获构造或类型转换异常，也不单独验证类型和模式；`RemoveInstance` 通过 `GetKitConfigs(mode)` 取列表，缺模式时仍可能先追加空条目。
 - 禁止 typeof 硬引用任何 Kit 子包具体类型（如 LoginKitConfig），框架 Editor 层不编译期依赖 Kit 包。
 
 ---

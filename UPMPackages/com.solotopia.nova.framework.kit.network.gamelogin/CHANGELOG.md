@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-### Added
+## [0.1.17] - 2026-10-23
 
 ### Changed
 
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 纠正 LoginKitConfig 文档中的绑定冲突字段及入口归属，明确 GameBind 职责和真实指令默认值。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.16] - 2026-10-10
 

@@ -64,9 +64,9 @@
 
 也就是说，表格数据是否真正就绪，取决于业务启动流程是否显式触发加载。
 
-### LoadAsync / LoadSync：把“所有表可查询”这件事做完
+### LoadAsync / LoadSync：报告批量加载结果
 
-`LoadAsync()` 和 `LoadSync()` 的目标不是加载某一张表，而是把整个表系统切到“可查询”状态。
+`LoadAsync()` 和 `LoadSync()` 调用 Manager 的批量加载入口。当前 Manager 返回 `true` 的条件是查询字典非空；它不保证每个加载描述都提供了表，具体注册和失败边界见 [TableManager.md](TableManager.md)。
 
 `LoadAsync()` 的组件层语义：
 
@@ -90,7 +90,7 @@
 
 用途：
 
-- 判断整个表系统是否已经进入可查询状态
+- 获取批量加载结果；必需表是否存在仍需按具体类型检查
 
 ### 2. 存在性判断
 
@@ -126,15 +126,17 @@
 - `m_Setting`：Editor Luban Project 与 Player 加载描述 的配置入口。
 - `m_TableManager`：真正执行表加载与表查询的核心实现。
 - `m_LoadTcs`：只服务于异步加载去重。
-- `IsLoadOver`：表示“整套表系统是否加载成功”，不是单表状态。
+- `IsLoadOver`：保存组件的成功状态；加载返回 `true` 或直接注册成功会置为 `true`。它不是整套表完整性检查，直接注册失败也不会清除已有的 `true`。
 - `Count`：透传自 `ITableManager.Count`，表示当前已缓存的表类型数。
 
 ## 风险点 / 易错点
 
 - `Start()` 不会自动加载表；如果启动流程没显式调 `LoadAsync / LoadSync`，`GetTable<T>()` 的前提就不成立。
-- `IsLoadOver` 只在最近一次成功加载后为 `true`；失败时仍可重试。
-- `LoadAsync()` 的异常已经在组件层吞并并转成 `false`，如果要追真正原因，要继续看 `TableManager` 日志和实现。
+- `IsLoadOver == true` 时，`LoadAsync()` / `LoadSync()` 直接返回 `true`，不会重新加载；直接注册至少一张表也会进入这个状态。
+- `LoadAsync()` / `LoadSync()` 捕获 Manager 异常并转成 `false`；失败时可重试，但查询字典可能保留旧表，也可能只含部分新表，组件不会回滚。追查原因需看日志和 `TableManager` 实现。
 - `TableComponent` 只负责门面。如果问题在 Binding、原始单表资源、生成 Tables 构造或解码，直接看 `TableManager` 和生成 Binding。
+
+LoadSync 不与在途异步加载合流；直接 RegisterTables 的异常也不在组件中捕获。Count 缺 Manager 时为 0，其余查询通常直接转发而无就绪门；getter 本身不加载。OnDestroy 只置空 TCS/Manager 并清 IsLoadOver，不执行 Manager.Shutdown 或取消任务，不能据组件引用已清证明加载已结束。
 
 ## 继续阅读
 

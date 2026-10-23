@@ -34,54 +34,62 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         protected override Type ConfigType => typeof(AdPluginConfig);
 
         /// <summary>
-        /// 初始化实现：按配置创建渠道实例、桥接事件、注册到列表。
-        /// 跳过 Enabled=false 的渠道；实例化失败时记录警告并继续。
+        /// 按配置创建并持有渠道，先桥接事件与登记业务列表，再启动可选生命周期初始化。
+        /// 聚合就绪不等待全部原厂初始化；单渠道失败保留所有权，释放时统一收回。
         /// </summary>
         /// <param name="config">由 SDKManager 注入的 AdPluginConfig。</param>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>初始化完成的异步任务。</returns>
+        /// <param name="ct">调用方初始化令牌。</param>
+        /// <returns>渠道创建与启动观察完成的任务，不代表全部原厂初始化成功。</returns>
         protected override UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
+            if (m_ChannelsDisposed) throw new ObjectDisposedException(Name);
             m_RuntimeConfig = config as AdPluginConfig;
             var adConfig = m_RuntimeConfig;
-            m_ChannelPlugins = new List<IAdInternalPlugin>();
             if (adConfig == null) throw new InvalidOperationException("AdPlugin 配置缺失。");
+            m_ChannelPlugins = new List<IAdInternalPlugin>();
             var configs = adConfig.ChannelConfigs.Items;
             for (int i = 0; i < configs.Count; i++)
             {
-                var channel = CreateChannel(configs[i], adConfig, ct);
+                if (m_ChannelsDisposed || ct.IsCancellationRequested) break;
+                var channelConfig = configs[i];
+                var channel = CreateChannel(channelConfig);
                 if (channel == null) continue;
-                WireChannelEvents(channel);
-                RegisterChannel(channel);
+                var registration = new ChannelRegistration();
+                // 先保存所有权和完成信号，再进入可能同步回调或抛错的准备流程。
+                m_ChannelRegistrations.Add(channel, registration);
+                PrepareAndInitializeChannelAsync(channel, channelConfig, adConfig, registration, ct).Forget();
             }
             return UniTask.CompletedTask;
         }
 
         /// <summary>
-        /// 释放实现：调用所有 ObservableEvent 缓冲的 Clear() 释放内存。
+        /// 共享聚合清理任务；先发布完成源，再关闭入口并等待渠道准备、初始化退出。
+        /// 清理不受调用方取消中断，重复调用等待同一实际释放终点。
         /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>释放完成的异步任务。</returns>
+        /// <param name="ct">调用方释放令牌；不用于中断本聚合的必需清理。</param>
+        /// <returns>当前聚合的共享释放任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
-            Events.InitResult.Clear();
-            Events.AdLoaded.Clear();
-            Events.AdLoadFailed.Clear();
-            Events.ShowCompleted.Clear();
-            Events.ShowFailed.Clear();
-            Events.RevenuePaid.Clear();
-            Events.AdClosed.Clear();
-            m_RuntimeConfig = null;
-            return UniTask.CompletedTask;
+            if (m_ChannelDisposalCompletion != null) return m_ChannelDisposalCompletion.Task;
+            var completion = new UniTaskCompletionSource();
+            m_ChannelDisposalCompletion = completion;
+            DisposeChannelsAsync(completion).Forget();
+            return completion.Task;
         }
 
         /// <summary>
         /// 查询指定广告格式是否有任意渠道正在播放中。
-        /// 当前渠道基类无通用播放状态接口，业务层协调防重入；默认返回 false。
+        /// 原生展示发出后保持占用，业务等待取消不改变播放状态。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <returns>至少一个渠道正在播放返回 true，否则 false。</returns>
-        public bool IsAdPlaying(AdFormat format) => false;
+        public bool IsAdPlaying(AdFormat format)
+        {
+            for (int i = 0; i < m_ChannelPlugins.Count; i++)
+                if (m_ChannelPlugins[i] is AdChannelPluginBase channel && channel.IsAdPlaying(format)) return true;
+            return false;
+        }
 
         /// <summary>
         /// 查询是否有广告渠道已取得用户明确的广告隐私授权决定。
@@ -163,9 +171,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 向所有支持指定格式的渠道并行发起预加载请求。
-        /// 返回统一的 AdLoadResult；Success=true 表示加载成功，Success=false 时携带错误码和错误描述。
-        /// Banner 格式会在首个成功结果返回后更新 m_ActiveBannerChannel。
+        /// 向所有渠道并行预加载并记录请求入口，返回成功或错误详情；首个成功后按既有规则更新活跃 Banner 渠道。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <param name="customProps">自定义属性字典，透传到渠道层打点；可为 null。</param>
@@ -173,10 +179,25 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <returns>首个完成的加载结果；全部失败时返回最后一次失败结果。</returns>
         public async UniTask<AdLoadResult> RequestAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default)
         {
-            var result = await BroadcastRequestAsync(format, customProps, ct);
-            if (format == AdFormat.Banner && result != null && result.Success)
-                m_ActiveBannerChannel = SelectBestChannel(format);
-            return result;
+            Log.Debug(LogTag.AD, $"业务准备请求广告：format={format}，渠道数={m_ChannelPlugins.Count}。");
+            try
+            {
+                var result = await BroadcastRequestAsync(format, customProps, ct);
+                if (format == AdFormat.Banner && result != null && result.Success)
+                {
+                    m_ActiveBannerChannel = SelectBestChannel(format);
+                }
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.AD, $"业务广告请求异常结束：format={format}，异常={ex.GetType().Name}，原因={ex.Message}。");
+                throw;
+            }
         }
 
         /// <summary>
@@ -192,27 +213,53 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 展示指定格式广告，选 Revenue 最高的就绪渠道执行。
-        /// AdFormat.Banner 不适用此方法，Banner 展示请使用 ShowBanner()。
+        /// 展示指定格式广告，按比价开关选择就绪渠道并记录展示入口；全屏占用时发布 Busy，Banner 请使用 ShowBanner()。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <param name="customProps">自定义属性字典，透传到渠道层 show/show_result 成功与失败分支/hidden 打点；可为 null。</param>
         /// <param name="ct">取消令牌。</param>
         public async UniTask ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default)
         {
-            var best = SelectBestChannel(format);
-            if (best == null)
+            Log.Debug(LogTag.AD, $"业务准备展示广告：format={format}。");
+            IAdInternalPlugin best = null;
+            try
             {
-                Log.Warning(LogTag.AD, $"无就绪的 {format} 广告渠道，ShowAsync 已跳过。");
-                return;
+                ct.ThrowIfCancellationRequested();
+                if (m_ChannelsDisposed) throw new ObjectDisposedException(Name);
+                // 各渠道保留原生展示占用；取消业务等待后仍需等真实终态才能发出下一次全屏展示。
+                if ((format == AdFormat.Rewarded || format == AdFormat.Interstitial || format == AdFormat.AppOpen)
+                    && (IsAdPlaying(AdFormat.Rewarded) || IsAdPlaying(AdFormat.Interstitial) || IsAdPlaying(AdFormat.AppOpen)))
+                {
+                    Events.ShowFailed.Invoke(new AdResult { Format = format, ErrorMessage = "Busy(-12)：广告正在展示，请等待当前广告关闭。" });
+                    return;
+                }
+                best = SelectBestChannel(format);
+                if (best == null)
+                {
+                    Log.Warning(LogTag.AD, $"业务广告展示已跳过：format={format}，原因=无就绪广告渠道。");
+                    return;
+                }
+                await best.ShowAsync(format, customProps, ct);
             }
-            await best.ShowAsync(format, customProps, ct);
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.AD, $"业务广告展示异常结束：format={format}，channel={best?.Channel.ToString() ?? "未选择"}，异常={ex.GetType().Name}，原因={ex.Message}。");
+                throw;
+            }
         }
 
         /// <summary>
         /// 显示 Banner 广告，委托给活跃 Banner 渠道。
         /// </summary>
-        public void ShowBanner() => m_ActiveBannerChannel?.ShowBanner();
+        public void ShowBanner()
+        {
+            Log.Debug(LogTag.AD, $"业务准备显示 Banner：format={AdFormat.Banner}，channel={m_ActiveBannerChannel?.Channel.ToString() ?? "未选择"}。");
+            m_ActiveBannerChannel?.ShowBanner();
+        }
 
         /// <summary>
         /// 隐藏 Banner 广告，委托给活跃 Banner 渠道。

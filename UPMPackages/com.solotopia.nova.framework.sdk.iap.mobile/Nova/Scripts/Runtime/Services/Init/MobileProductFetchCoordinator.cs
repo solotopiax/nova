@@ -152,6 +152,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (State == MobileProductFetchState.Succeeded)
             {
+                LogDebug($"商品拉取成功回调已忽略，原因=AlreadySucceeded，数量={fetchedCount}。");
                 CancelRetry();
                 return;
             }

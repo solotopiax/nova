@@ -5,7 +5,7 @@
 
 AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManagerConfig{...}` 构造后传入 Manager。
 
-> 纯 DTO，不标注 `[Serializable]`。Inspector 字段散在 `AssetComponent` 上，`Start()` 现场构造透传。
+> 纯 DTO，不标注 `[Serializable]`。Inspector 字段散在 `AssetComponent` 上，`Start()` 现场构造透传；Manager 保存对象引用，Packages/LaunchHotfixTags 也没有深拷贝。表内默认值是源码初始值，不是有效场景配置。
 
 ---
 
@@ -24,7 +24,7 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `EditorPlayMode` | `AssetPlayMode` | `EditorSimulateMode` | 编辑器下资源加载策略（`Application.isEditor == true` 时生效）；允许 EditorSimulateMode / OfflinePlayMode / HostPlayMode |
-| `RuntimePlayMode` | `AssetPlayMode` | `HostPlayMode` | 终端（Player）下资源加载策略；仅限 OfflinePlayMode / HostPlayMode；与 EnableHotfix 双向联动，WebGL 文件系统由平台自动选择 |
+| `RuntimePlayMode` | `AssetPlayMode` | `HostPlayMode` | 终端（Player）下资源加载策略；仅限 OfflinePlayMode / HostPlayMode；运行时不会因 EnableHotfix 二次改写，WebGL 文件系统由平台自动选择 |
 | `WebGLAssetStrategy` | `WebGLAssetStrategy` | `TagsOnLaunch` | 仅浏览器 WebGL 生效的启动资源策略；`TagsOnLaunch` / `OnDemand` / `AllOnLaunch` 与 PlayMode 独立 |
 | `Packages` | `List<string>` | `null` | 需要 CreatePackage 的包名列表，至少包含一个默认包（由 AssetComponent.m_Packages 传入） |
 | `DefaultPackageName` | `string` | `null` | 默认包名；为空时取 Packages[0] |

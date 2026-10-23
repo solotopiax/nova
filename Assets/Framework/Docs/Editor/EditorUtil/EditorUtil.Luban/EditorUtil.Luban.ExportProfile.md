@@ -24,6 +24,7 @@ Luban 导出 Profile 是 Nova Editor 导出链中固定身份的单一真相源�
 | `TargetName` | `luban.conf` target 名称和 CLI `-t` 参数 |
 | `ManagerName` | Luban 生成的 Tables 管理类名称 |
 | `TemplateKey` | `Templates/Luban/<key>` 模块模板目录键 |
+| `MinHeaderRowCount` | Sheet 总行数阈值；构造默认 5，必须大于 0，不验证表头结构 |
 
 ---
 
@@ -31,15 +32,17 @@ Luban 导出 Profile 是 Nova Editor 导出链中固定身份的单一真相源�
 
 | Profile | target | manager | template key |
 |---|---|---|---|
-| `Table` | `table` | `TableTables` | `table` |
 | `Sound` | `sound` | `SoundTables` | `sound` |
 | `UI` | `ui` | `UITables` | `ui` |
 | `NetworkCmd` | `network-cmd` | `NetworkTables` | `network-cmd` |
 | `NetworkHostKey` | `network-hostkey` | `HostKeyTables` | `network-hostkey` |
 | `LocalizationText` | `localization-text` | `LocalizationTextTables` | `localization-text` |
 | `LocalizationFont` | `localization-font` | `LocalizationFontTables` | `localization-font` |
+| `LocalizationSupportedLanguages` | `localization-supported-languages` | `LocalizationSupportedLanguagesTables` | `localization-supported-languages` |
 | `VibrateEmphasis` | `vibrate-emphasis` | `VibrateEmphasisTables` | `vibrate-emphasis` |
 | `VibrateCustom` | `vibrate-custom` | `VibrateCustomTables` | `vibrate-custom` |
+
+当前九个内置 Profile 均使用默认阈值 5。Table 使用正式 Luban Project 导出链，不在此目录中。
 
 ---
 

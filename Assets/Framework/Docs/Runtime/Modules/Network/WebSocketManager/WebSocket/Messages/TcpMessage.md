@@ -48,6 +48,8 @@ override void Reset()
 byte[] GetBodyBytes()
 ```
 
+Initialize 先通过虚 Reset 清 CommandID/SequenceID、Messages 和字节缓存，再从通道取本协议序列号；过滤 null/空字符串后预编码。若把对象自己的 Messages 列表作为输入，Reset 会先清掉该输入；null 列表、通道或编码异常也可能留下部分新状态。初始化后再改 Messages 不会更新缓存，接收解析只填 Messages，GetBodyLength/GetBodyBytes 因此不能当接收正文的再次序列化入口。GetBodyBytes 返回数组副本；Reset/Clear 只清数据，不归还对象池。直接构造对象也不等于从 ReferencePool 借取。
+
 ## 关联文档
 
 - [NetMessageTcpBase](NetMessageTcpBase.md)

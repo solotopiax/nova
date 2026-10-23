@@ -4,13 +4,21 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
-### Added
+## [0.1.16] - 2026-10-23
 
 ### Changed
 
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 FacebookDemo APK 流水线的旧输出参数，改用 OutputFolderPath。
+
+- 更新文档中的统一登录接收接口说明。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.15] - 2026-10-10
 

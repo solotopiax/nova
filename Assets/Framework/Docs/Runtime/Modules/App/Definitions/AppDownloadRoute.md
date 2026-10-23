@@ -12,11 +12,11 @@
 - `Store`：后续流程会走 `OpenStoreAsync()`
 - `Apk`：后续流程会走 `DownloadAsync()`
 
-但要注意，当前实现上只有商店跳转链是完成的；`Apk` 对应的 `DownloadAsync()` 仍是占位骨架。
+内置 `Apk` 路由只在 Android Player 下载文件并返回本地绝对路径；它不隐式安装，路径不代表签名或目标版本已经验证。
 
 ## 风险点 / 易错点
 
-- 把 `DownloadRoute` 设成 `Apk`，不代表当前项目已经具备可用下载链。
+- `Apk` 还要求启用更新、命中规则及有效 HTTPS 主备地址；Editor、iOS、WebGL 明确拒绝文件下载。
 - 这个枚举只负责分流，不负责解析目标 URL。
 
 ## 继续阅读

@@ -49,5 +49,9 @@
 
 ## 关联文档
 
+运行列表 Drawer 构造时按 `EventTypeID` 建立名称映射，重复 ID 后项覆盖，保存的是简单类型名；它是本域构造时快照，不是动态类型身份认证。展开仅查询已注册 ID 与处理器，不主动注册、派发或清空队列；事件集合在绘制中改变仍可能导致枚举失败。
+
+Play gate 由 Inspector 的调用层承担，Drawer 的 `Draw` 自身没有统一运行态检查。`OnDisable` 逐项 Dispose，没有单项异常隔离；一个释放失败可能阻止其余项及列表置空。Drawer 只清主 Foldout key，不能从这里推断所有子 key 都已经删除。事件池负数/互斥标志等有效性也不在 Inspector 中统一校验，默认值与真正分发语义仍以 Runtime 为准。
+
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [EventManager.md](../../../Runtime/Modules/Event/EventManager.md)

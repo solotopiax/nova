@@ -19,7 +19,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     /// <summary>
     /// 广告渠道内部插件接口，由各具体渠道实现（MaxAdPlugin / AdMobAdPlugin 等）。
     /// 仅供 AdPlugin 聚合调度层内部使用，不对业务层公开。
-    /// AdPlugin 通过 Nova.SDK.GetAll<IAdInternalPlugin>() 发现所有渠道。
+    /// AdPlugin 按 AdPluginConfig 的内嵌渠道配置创建实例，不把渠道注册为顶层 SDK 插件。
     /// 每个渠道实例内部持有广告位 ID 等 SDK 配置；调度层不感知具体 ID。
     /// Banner 格式的展示控制通过 IBannerControl 提供的方法执行。
     /// </summary>
@@ -135,5 +135,30 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <param name="ct">取消令牌。</param>
         /// <returns>广告展示结果。</returns>
         UniTask<AdResult> ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
+    }
+
+    /// <summary>
+    /// 手动创建广告渠道的可选生命周期契约；不改变既有 IAdInternalPlugin 的必实现成员。
+    /// AdPlugin 负责取消初始化并等待其结束，再调用释放；实现必须响应初始化取消并成对清理 SDK 订阅及资源。
+    /// 未实现此接口的旧渠道不自动初始化；释放时仅可通过 IDisposable 兜底，否则由渠道自行管理资源。
+    /// </summary>
+    public interface IAdChannelLifecycle
+    {
+        /// <summary>
+        /// 初始化渠道；取消后必须退出方法，释放会等待其 finally 和订阅清理完成。
+        /// 初始化内部不得反向等待所属聚合插件的释放任务，避免双方相互等待。
+        /// </summary>
+        /// <param name="config">当前渠道配置。</param>
+        /// <param name="ct">聚合生命周期与初始化调用方共同控制的取消令牌。</param>
+        /// <returns>真实初始化任务；不由完成任务替代原生初始化结果。</returns>
+        UniTask InitializeAsync(IAdChannelConfig config, CancellationToken ct);
+
+        /// <summary>
+        /// 释放渠道订阅和资源；聚合层使用不可取消令牌保证清理继续执行。
+        /// 同时实现 IDisposable 时，聚合层仅调用此异步释放入口。
+        /// </summary>
+        /// <param name="ct">释放令牌。</param>
+        /// <returns>渠道清理完成任务。</returns>
+        UniTask DisposeAsync(CancellationToken ct);
     }
 }

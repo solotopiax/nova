@@ -59,8 +59,8 @@ C × R × (K + 1)
   - 其他平台使用 `AndroidStoreUrl`
   - 不检查 APK 下载地址
 - `DownloadRoute == Apk`
-  - 只检查并使用 `PrimaryDownloadUrl`
-  - `FallbackDownloadUrl` 仍为 APK 下载链路的备用地址
+  - 版本检查只验证 `PrimaryDownloadUrl` 并暴露为 `TargetDownloadUrl`
+  - Android Player 的 `DownloadAsync()` 冻结主地址及可选 `FallbackDownloadUrl`；仅允许 HTTPS，主备去重后各尝试一次
   - 不检查商店地址
 
 ### 4. 规则开关
@@ -76,7 +76,7 @@ C × R × (K + 1)
 
 - 这份配置只决定大版本检查与下载提示，不负责资源补丁检查。
 - `AppDownloadCheckUrl` / `AppDownloadCheckUrlFallback` 已经是 `AppComponent.Start()` 选好的“当前模式生效值”，不是四组原始 Inspector 字段本身。
-- 这些轮次、重试、偏好和埋点字段只作用于 App 版本规则 GET；`PrimaryDownloadUrl` / `FallbackDownloadUrl` 的 APK 下载行为保持不变。
+- 这些轮次、重试、偏好、埋点及 `TimeoutSeconds` 只作用于 App 版本规则 GET。APK 文件下载内部固定连续 60 秒无进度超时、每候选 30 分钟总时限及 1 GiB 文件上限，不自动重复主备轮次。
 
 ## 继续阅读
 

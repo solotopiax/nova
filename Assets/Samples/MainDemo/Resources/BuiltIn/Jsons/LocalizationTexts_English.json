@@ -16,6 +16,9 @@
     { "Name": "TitlePreloadFailed", "Value": "Preload Failed" },
     { "Name": "ContentPreloadFailed", "Value": "Preload Failed, Try Again?" },
     { "Name": "ConfirmPreloadFailed", "Value": "Retry" },
-    { "Name": "CancelPreloadFailed", "Value": "Exit" }
+    { "Name": "CancelPreloadFailed", "Value": "Exit" },
+    {"Name": "TitleAppDownloaded", "Value": "Update file saved"},
+    {"Name": "ContentAppDownloaded", "Value": "The update file is saved. Confirm to continue a recommended update or exit a required update."},
+    {"Name": "ConfirmAppDownloaded", "Value": "Confirm"}
   ]
 }

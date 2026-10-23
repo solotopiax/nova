@@ -173,6 +173,8 @@ namespace NovaFramework.Runtime
                     while (true)
                     {
                         WebSocketReceiveResult result = await client.ReceiveAsync(segment, CancellationToken.None);
+                        // Close 是控制帧，没有 Nova 协议头；不获取池对象或继续解包。
+                        if (result.MessageType == WebSocketMessageType.Close) return null;
                         m_ReceiveStream.Write(segment.Array, 0, result.Count);
                         if (result.EndOfMessage)
                         {
@@ -191,6 +193,11 @@ namespace NovaFramework.Runtime
                 catch (WebSocketException)
                 {
                     // 正常断开，静默处理。
+                    return null;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // 主动关闭释放正在等待 ReceiveAsync 的 Socket。
                     return null;
                 }
                 catch (Exception e)

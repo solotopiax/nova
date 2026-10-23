@@ -4,7 +4,7 @@ title: Editor 配置详情页标题与缩进规则
 type: pattern
 status: active
 date: 2026-06-05
-summary: Editor详情页统一标题内容边界区域留白与紧凑操作层级
+summary: Editor详情页统一分区标题横线及操作状态与说明层级
 category: inspector
 aliases:
   - PAT-20-editor-panel-title-indent
@@ -14,6 +14,8 @@ keywords:
   - PAT-20-editor-panel-title-indent
   - 文字左边缘等距
   - Foldout 层级缩进
+  - 功能区域分隔线
+  - 检查按钮与状态
 tags:
   - pattern
   - editor
@@ -49,6 +51,8 @@ related:
 - 复用同类页面的标题字号与样式，保证标题完整显示；不要用超大标题重复强调窗口名称。
 - 页面内容保持统一左右边界，字段使用固定标签列；嵌套卡片扣除自身 padding 后仍须对齐同一值列，不靠取消留白把文字贴到边框。
 - 功能区域用一致的留白和公共分隔线划分，避免层层套框。文字与边框、相邻行与按钮之间都应保留协调间距。
+- 同一页面的每个独立功能区域必须有明确标题；前一区域结束、后一区域开始之间必须有横线，不能只在某个区域上方加线却让其与下一区域混在一起。
+- 检查、刷新类按钮放在所属 HelpBox 上方，按钮右侧同一行显示当前状态；状态不重复塞进 HelpBox，HelpBox 只简要说明用途、影响和必要操作。
 - 列表级操作放在标题行右侧，例如“现有密钥”右侧的“新增密钥”“显示密钥”；次要操作使用紧凑按钮，同一行按钮高度一致。
 - 新增条目临时高亮，使待完成编辑与已有项可区分；保存后恢复普通状态。按钮使用用户理解的操作词，例如“手动输入”。
 - 字段修改进入窗口统一脏状态与顶部保存，不重复增加面板专属保存、重读和提醒链。
@@ -70,6 +74,8 @@ related:
 - 为了“看起来丰富”滥用多层嵌套
 - 用很大的次要按钮挤占正文，或让每行按钮高度、字段值列各不相同
 - 对齐边框却忽略框内文字与 padding，造成内容贴边
+- 独立区域没有标题或缺少与下一区域之间的分隔线
+- 把检查结果只写进 HelpBox，并将检查按钮放在说明下方
 
 ## 验证依据
 
@@ -77,6 +83,7 @@ related:
 - 容器位移排障与真实 Rect 判据：[[PAT-149-imgui-foldout-margin-propagation-layout-shift|PAT-149]]。
 - 2026-08-13 Persist Inspector 的 PlayerPrefs、FileFragment、SQLite 三种存储实现在 Editor 与 Runtime 绘制路径中，按一级、分类、条目三级文字左缘统一间距。
 - Config 平铺范式：`Assets/Framework/Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.ResourceEncryption.cs`；当前尺寸与全局保存边界见 `Assets/Framework/Docs/Editor/Windows/ConfigWindow.md` 的资源加解密配置章节。
+- 2026-10-21 用户通过隐私页截图明确要求：独立功能区补标题和底部分隔线，插件重新检查按钮置于 HelpBox 上方、当前状态放在按钮右侧；对应布局位于 `ConfigWindow.RightPanel.Privacy.cs` 与 `ConfigWindow.RightPanel.cs`。
 
 ## 关联
 

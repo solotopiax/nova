@@ -43,6 +43,8 @@ public static string GetFieldTooltip(Type targetType, string fieldName);
 
 字段查找使用 `BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance`，即只匹配实例字段（含 `m_` 私有字段），不匹配静态字段。
 
+该查找不逐层遍历基类的 private 字段，也不解析带点的 `SerializedProperty.propertyPath`。缓存键只有 `Type.FullName + "." + fieldName`，不带程序集身份：不同程序集具有相同完整类型名时可能碰撞，不能把它用于区分此类类型。无 Tooltip 的 null 结果同样缓存，域重载才重建缓存；反射异常直接传播，不统一转换成 null。
+
 ---
 
 ## §11 使用示例

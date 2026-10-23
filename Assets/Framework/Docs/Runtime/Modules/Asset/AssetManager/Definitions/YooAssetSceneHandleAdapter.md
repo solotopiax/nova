@@ -86,3 +86,7 @@ sceneHandle = null;
 
 - [ISceneHandle.md](../Interfaces/ISceneHandle.md)
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 卸载失败与复用
+
+UnloadAsync 不接受 ct，只等待底层卸载 operation 的 IsDone，没有检查 Succeeded；底层调用或等待抛出时没有 finally 归池。它不设重复或并发卸载保护；完成后立即丢弃引用，池复用后旧引用可能指向另一场景。IsDone/IsValid 不保证场景加载成功，Clear 仅清字段，不能代替卸载。

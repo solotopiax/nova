@@ -7,7 +7,7 @@
  * created:   2026/05/23
  * descrip:   Modules 2.12 — Persist 模块演示视图（交互触发型）。
  *            演示 PlayerPrefsManager 键值对读写操作。
- *            API：Nova.Persist.PlayerPrefs.SetInt/GetInt/HasItem/RemoveItem
+ *            API：Nova.Persist.PlayerPrefs.SetInt/GetInt/HasItem/RemoveItem/Save
  ***************************************************************/
 
 using System.Collections.Generic;
@@ -19,8 +19,8 @@ using UnityEngine.UI;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// Persist 模块演示视图，演示 PlayerPrefsManager 键值读写、存在性查询与删除。
-    /// 继承 BaseDemoView 三段式骨架，提供 key/value 输入框与四个操作按钮。
+    /// Persist 模块演示视图，演示 PlayerPrefsManager 键值读写、存在性查询、删除与显式保存。
+    /// 继承 BaseDemoView 三段式骨架，提供 key/value 输入框与五个操作按钮。
     /// </summary>
     public sealed class DemoPersistView : BaseDemoView
     {
@@ -61,6 +61,12 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private Button m_DeleteButton;
 
         /// <summary>
+        /// Save 按钮，显式保存 Demo 分类；默认 Unity 后端会提交整个进程的偏好缓存。
+        /// </summary>
+
+        [SerializeField] private Button m_SaveButton;
+
+        /// <summary>
         /// 键值列表显示容器。
         /// </summary>
 
@@ -83,7 +89,7 @@ namespace NovaFramework.Samples.Runtime
         private readonly List<TextMeshProUGUI> m_KvItems = new List<TextMeshProUGUI>();
 
         /// <summary>
-        /// 视图初始化：注册按钮事件，设置标题与 API 副标题。
+        /// 视图首次初始化时一次注册五个按钮事件，设置标题与就近 API 提示。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         protected override void OnInit(object userData)
@@ -119,6 +125,12 @@ namespace NovaFramework.Samples.Runtime
             {
                 m_DeleteButton.onClick.AddListener(OnDeleteButtonClick);
                 SetButtonApiHint(m_DeleteButton, "Nova.Persist.PlayerPrefs.RemoveItem(classify, key)");
+            }
+
+            if (m_SaveButton != null)
+            {
+                m_SaveButton.onClick.AddListener(OnSaveButtonClick);
+                SetButtonApiHint(m_SaveButton, "Nova.Persist.PlayerPrefs.Save(classify)\n默认后端保存整个进程的偏好缓存");
             }
         }
 
@@ -233,6 +245,34 @@ namespace NovaFramework.Samples.Runtime
             Nova.Persist.PlayerPrefs.RemoveItem(c_DemoClassify, key);
             AppendFeedback($"Nova.Persist.PlayerPrefs.RemoveItem(\"{c_DemoClassify}\", \"{key}\") -> removed={existed}", existed ? FeedbackLevel.Success : FeedbackLevel.Warn);
             RefreshKvList();
+        }
+
+        /// <summary>
+        /// 仅由保存按钮触发 Demo 分类保存；默认 Unity 后端仍提交全进程偏好缓存。
+        /// 返回值仅报告底层调用完成情况，不证明跨启动耐久性；异常只反馈固定提示，不输出数据或异常正文、不自动重试。
+        /// </summary>
+        private void OnSaveButtonClick()
+        {
+            if (Nova.Persist?.PlayerPrefs == null)
+            {
+                AppendFeedback("Nova.Persist.PlayerPrefs 不可用", FeedbackLevel.Error);
+                return;
+            }
+
+            AppendFeedback("Nova.Persist.PlayerPrefs.Save(\"Demo\")：默认 Unity 后端会保存整个进程的偏好缓存，包含其它尚未保存的偏好修改。", FeedbackLevel.Info);
+            bool saved;
+            try
+            {
+                saved = Nova.Persist.PlayerPrefs.Save(c_DemoClassify);
+            }
+            catch (System.Exception)
+            {
+                AppendFeedback("Nova.Persist.PlayerPrefs.Save(\"Demo\") -> 保存发生异常；持久化状态未确认，请核对后再决定是否重试。", FeedbackLevel.Error);
+                return;
+            }
+
+            AppendFeedback($"Nova.Persist.PlayerPrefs.Save(\"{c_DemoClassify}\") -> 返回 {saved}；仅为底层保存报告，重启后读取需另行验证。",
+                saved ? FeedbackLevel.Info : FeedbackLevel.Warn);
         }
 
         /// <summary>

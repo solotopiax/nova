@@ -46,6 +46,7 @@
 - 它不是 `IDataTableSettings` 本体；文档如果写成“直接实现”就是错的。
 - 把 Emphasis / Custom 配成同一组数据，不符合当前运行时分流设计。
 - 适配器只用于传参，不参与序列化；不要把它当持久对象来理解。
+- 每次 GetEmphasisAsSettings/GetCustomAsSettings 新建适配器，但 Units 是原 List 的只读接口活视图，null 仍为 null，不复制 Unit；Editor 源目录 null 变空串，不检查目录存在性。适配器不自动把总配置的 DataFormat 变成 IDataTableSettings 的另一份字段，也不执行加载/导出。
 
 ## 继续阅读
 

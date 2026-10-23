@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-### Added
+## [0.1.20] - 2026-10-23
 
 ### Changed
 
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 TGADemo APK 流水线的旧输出参数，改用 OutputFolderPath。
+
+- 移除 TGADemo 在 GameLogin 成功后重复触发的 SDK 登录通知。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.19] - 2026-10-10
 

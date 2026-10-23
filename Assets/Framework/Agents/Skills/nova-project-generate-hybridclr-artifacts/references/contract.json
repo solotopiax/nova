@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -12,12 +12,18 @@
       "kind": "agent-action",
       "entry": "nova.project.hotfix.generate-artifacts",
       "when": "已冻结 HybridCLR 生成输入并需要生成及核验预构建产物时"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.run-batch",
+      "when": "用户已要求运行同范围已审且已保存的HybridCLR组合，实际场景、Master、坐标、Development、写集与外部副作用已独立冻结并获授权时；保存配置不代表运行授权，任务失败/重载不重放，不提升专用Action的blocked。"
     }
   ],
   "inputs": [
     {
       "name": "projectRoot",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
     },
     {
       "name": "activeBuildTarget",
@@ -29,7 +35,8 @@
     },
     {
       "name": "activeConfigMaster",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
     },
     {
       "name": "platformChannelDevelopMode",
@@ -41,26 +48,43 @@
     },
     {
       "name": "resolvedGeneratedOutputs",
-      "required": true
+      "required": true,
+      "constraint": "分别冻结 HybridCLR outputLinkFile 的生成引用保留表与激活 Master 当前坐标 LinkXmlTargetPath 的 AOT metadata 保留表；两者均为合法项目内路径，可同可异。同路径唯一八项产物，不同路径唯一九项；分别保存两种 XML 的语义与 SHA-256 证据。"
     },
     {
       "name": "executionEntry",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
+    },
+    {
+      "name": "generatedCodeReadiness",
+      "required": true,
+      "constraint": "核对实际参与本次程序集的Table/UI/HostKey/NetCmd/Proto/资源密钥源码在首次热更编译/GenerateAll之前完成正式导出、导入及必要编译；缺口由组合任务复用已有Operation，当前Generate不扩写。"
+    },
+    {
+      "name": "playerBuildCallbackContract",
+      "required": true,
+      "constraint": "冻结PlayerSettings、实际场景资产、临时构建选项与已发现Player/SDK回调编译身份；未知写集、脏资产或旧YooAsset marker必须阻断，不能扩为Assets全集或任意代码执行。 当前真实WebGL复用Player准确typed输入/执行后验/真实报告；准确输出拥有域投影不扩大Android。完整深层链接拒绝；AOTReference源/所属派生编译身份与父目录meta边界按既有HybridCLR文档。 WebGL输出consumer只接受HybridCLRGenerate/AOTGenericReferences.cs与HybridCLRGenerate/link.xml已审默认角色；自定义路径明确blocked。"
     }
   ],
   "effects": [
     "workspace-write",
     "unity-write",
-    "generated-output"
+    "generated-output",
+    "external-write"
   ],
   "writeScope": {
     "allow": [
       "current activeBuildTarget HybridCLR hot-update compile output and AssembliesPostIl2CppStrip output",
       "HybridCLR GeneratedCpp outputs including MethodBridge.cpp, UnityVersion.h and AssemblyManifest.cpp",
-      "configured AOT generic reference output and the single normalized link.xml target shared by HybridCLR outputLinkFile and active ConfigMaster current coordinate",
+      "configured AOT generic reference output, HybridCLR outputLinkFile generated reference link.xml, and active ConfigMaster current coordinate LinkXmlTargetPath AOT-preserve link.xml; both valid normalized project paths are frozen, and identical paths are declared once",
       "HybridCLRData/StrippedAOTDllsTempProj/<activeBuildTarget> and Unity temporary build workspace required by GenerateAll script-only stripping build",
       "Library/Il2cppBuildCache invalidation performed by the current GenerateAll implementation",
-      "本次 generated-output、compile、坐标与恢复证据"
+      "本次 generated-output、compile、坐标与恢复证据",
+      "frozen Library/Bee and Library/PlayerDataCache shared workspace plus AndroidManifest.xml and proguard-user.txt only when every callback has a verified write contract",
+      "已核原构建回调按冻结的既有设置发送 Unity Editor Analytics 或 vendor telemetry；精确发送条件和字段随Plan展示，未审下游仍阻断",
+      "Library/Nova/AgentActions/HybridCLRGenerate/<本次 N-GUID>/before.json、final.json 与独立 report-backup；完整 typed 原文每文件8MiB，小Receipt只保存长度/SHA，正式文件保留供Live Verify读取",
+      "WebGL或Android Generate在各自完整准入与输入复核后取得一个公开EditorApplication域重载锁；State在Dispatcher持久化尝试后主线程配对一次释放，30分钟仅协作取消不由timer解锁；Android未闭合回调仍按原Plan阻断，不由租约支持推断可执行"
     ],
     "deny": [
       "final Player, platform project, installer or store artifact",
@@ -78,18 +102,22 @@
     "active-config-master",
     "hybridclr-generated-output",
     "hybridclr-strip-output",
-    "link-xml-target"
+    "link-xml-target",
+    "unity-build-cache",
+    "Library/Bee",
+    "Library/PlayerDataCache",
+    "android-build-inputs"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
       "重建冻结 activeBuildTarget 与 DevelopmentBuild 的完整 HybridCLR GenerateAll 输出",
-      "覆盖 AOT generic、GeneratedCpp、当前 Target 热更编译/AOT 裁剪输出与最终 link.xml",
+      "覆盖 AOT generic、GeneratedCpp、当前 Target 热更编译/AOT 裁剪输出、HybridCLR 引用保留 link.xml 与 Master AOT 保留 link.xml（同路径去重）",
       "删除并重建冻结 Target 的 StrippedAOTDllsTempProj 临时目录及使 Il2cppBuildCache 失效",
-      "临时改变 EditorUserBuildSettings.development 并在 finally 恢复",
+      "临时改变 script-only、Android 导出选项和构建位置，并在 finally 恢复",
       "改变 Target、DevelopmentBuild、Master、坐标、场景闭包、输出集合、link.xml 路径或 executionEntry"
     ],
-    "rule": "确认绑定 activeBuildTarget、DevelopmentBuild、activeConfigMaster、当前 Platform/Channel/DevelopMode、启用场景闭包、规范化后的唯一 link.xml、完整生成输出集合、临时裁剪目录、缓存失效范围与 executionEntry；任一值或范围变化后旧确认失效。"
+    "rule": "确认绑定 activeBuildTarget、DevelopmentBuild、activeConfigMaster、当前 Platform/Channel/DevelopMode、启用场景闭包、分别规范化后的 HybridCLR 引用表和 Master AOT 保留表两种 link.xml 路径（同路径去重）、完整生成输出集合、临时裁剪目录、缓存失效范围与 executionEntry；任一值或范围变化后旧确认失效。 最终Player与热更DLL/桥接必须使用相同Target和DevelopmentBuild；独立Action不切换档位。读取已保存参数与工具事实，不让新手重复填写。跨平台串行重新Plan，不复用Receipt。 确认包含PlayerSettings、回调身份、共享缓存及平台输入；未知回调先补具体契约再执行。 确认同时包含已核原回调的统计/telemetry外发条件与字段，不关闭正常设置造测试通过；构建产物不证明外部收件。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -101,10 +129,22 @@
   "evidence": [
     "冻结及执行后复核的 activeBuildTarget、DevelopmentBuild、activeConfigMaster、Platform/Channel/DevelopMode、启用场景闭包与 executionEntry",
     "当前 Target 热更 DLL 编译输出、AssembliesPostIl2CppStrip AOT DLL 与 StrippedAOTDllsTempProj 生成记录",
-    "MethodBridge.cpp、UnityVersion.h、AssemblyManifest.cpp、AOT generic reference 与最终 link.xml 路径及存在性",
+    "MethodBridge.cpp、UnityVersion.h、AssemblyManifest.cpp、AOT generic reference、HybridCLR 生成引用 link.xml 与 Master AOT 保留 link.xml 路径及存在性；两种 XML 均为 linker 根节点",
     "MethodBridge.cpp 规范 DEVELOPMENT 标记与冻结 DevelopmentBuild 一致",
     "最终 link.xml 包含当前坐标每个 AOT metadata assembly 的无 .dll 后缀 assembly fullname 记录，且新补记录带 preserve=all",
     "生成引发的 Unity 编译结束且无编译错误，以及所有临时构建设置和 DevelopmentBuild 恢复结果",
-    "未执行最终 Player、Bundle、CDN、CopyAotDlls/CopyGameDlls、运行时、设备、Git 与发布的边界说明"
-  ]
+    "未执行最终 Player、Bundle、CDN、CopyAotDlls/CopyGameDlls、运行时、设备、Git 与发布的边界说明",
+    "本次参与程序集的生成代码就绪与正式导入/必要编译记录，export.excel.all不包含Config或Proto",
+    "最终Player预期DevelopmentBuild与热更DLL/MethodBridge ABI一致；Pipify临时对齐不代表独立Action会切档位",
+    "正式生成输出保留与本轮测试对象/脚本/marker/设置清场恢复结果",
+    "本次finalized Receipt精确唯一八项（两种 link.xml 同路径）或九项（不同路径）产物及冻结Master/settings/callback/PlayerSettings/scenes/临时构建状态一致；旧或未完成Receipt为partial，Verify不补造或重放",
+    "复用GeneratedExportCompilationState，Receipt单次令牌+完整载荷Hash对应真实程序集编译、零错误和脚本重载；后续生成替换、Editor重启失效或未完成均partial",
+    "callbacks.knownEffects列明已核内存统计和原外部统计条件/字段；下游未审仍blocked，产物成功不升级外部送达证据",
+    "WebGL本次新GUID/准确官方temp输出与显式options的真实StripAOT报告、全链零错误、七组typed前后态与五组真实报告；完成报告自然复制和收尾后才生成preCompilationCertificate并由原完整编译载荷绑定",
+    "重载后先核已绑定历史证书，再核当前源码/持久配置/输出；仅逐字段允许明确域重建。TMP外部缓存/委托与native源保持，ProBuilder默认已初始化双仓库三方字典及准确Save字节早退，未知状态partial/blocked；旧早重载Operation不重放",
+    "准确 GUID 域须写前不存在；完整 before/final 严格JSON、固定路径、SHA/长度、小Operation192KiB预算；文件摘要与同一编译前证书进入原compilePayloadHash；缺失/超限/链接/漂移仅partial，不重建旧材料或重放",
+    "Plan完整webglGeneratePlan以nova-hybridclr-generate-plan-gzip-v1无损审阅表示运输：保留null/default，raw<=8MiB、gzip<=1MiB、DataJson<=1536KiB，规范Base64+原文length/SHA、严格单member/CRC/ISIZE与JSON。解码只供审阅，不授予Execute/恢复权限；Plan零文件写入，transport2MiB/Store256KiB不变。",
+    "公开reload lease适用于本次通过各自完整准入的WebGL/Android分支；Android未闭合回调仍阻断。正常Refresh/编译/官方报告等待不改，无新增idle/reload等待；完整收尾与持久化尝试后才Unlock。final首次保存后不可变，外层失败partial不二次写或升级finalized；旧早重载Operation不重放。"
+  ],
+  "externalCompletionPolicy": "incidental-build-telemetry"
 }

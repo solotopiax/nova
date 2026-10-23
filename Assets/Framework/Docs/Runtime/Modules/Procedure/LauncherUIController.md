@@ -75,14 +75,14 @@
 
 Prefab 自己的 Canvas 配置会被覆盖，最终显示层级不由美术侧自由决定。
 
-### 4. 缺面板时会安全降级
+### 4. 缺面板时的回调
 
 当前实现里：
 
 - `ShowProgress()` 加载失败会输出 error 并直接返回
 - `ShowDialog()` 加载失败会输出 error，并直接执行 `onConfirm?.Invoke()`
 
-后者很关键，因为它意味着“弹窗资源缺失”不会把启动链卡死。
+缺面板时直接走确认回调，实际续行仍受业务回调与互斥状态控制。
 
 ### 5. Destroy 系列是幂等的
 
@@ -105,6 +105,12 @@ Prefab 自己的 Canvas 配置会被覆盖，最终显示层级不由美术侧�
 - 旧 Prefab 上即使残留空 Key `TextLocalizing`，实例化后也会由 Launcher 文本渲染入口禁用并接管，不要求消费项目执行资源迁移。
 - `ShowDialog()` 在面板缺失时会直接执行确认回调，这是一条有意的降级路径。
 - 启动期 UI 默认 `DontDestroyOnLoad`，如果业务入口不回收，会出现跨场景残留。
+
+## 参数与生命周期边界
+
+Initialize 允许保存 null settings，但之后 Show/Ensure 会解引用而失败；重设 settings 不重载已幂等初始化的 Launcher 字典。LoadPanel 使用 Resources 无扩展路径，实例根必须有 T，所有子 Canvas（含 inactive）覆盖排序；缺 T 会 Destroy 实例返回 null，Instantiate/Canvas 异常没有整体回滚。Destroy 只销毁实例并立即清静态引用，不 Unload 原 Prefab，也不清 settings/字典；Editor ResetStatics 只清引用，不销毁对象，Player 不编译此 reset。
+
+ShowProgress 的 stage 当前未使用，重复 Show 重置展示进度为 0；UpdateProgress 不自动创建面板，Hide 仅禁用。缺 Dialog 立即执行确认回调，回调异常不捕获；这不保证一定能继续启动，例如同步重试仍被在途互斥拒绝时可继续等待，亦不能把显示缺失理解为“用户已确认”。
 
 ## 继续阅读
 

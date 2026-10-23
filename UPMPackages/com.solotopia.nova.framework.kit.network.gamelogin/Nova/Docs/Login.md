@@ -69,6 +69,7 @@ login.Clear();
 
 - **身份写回**：只使用 `PbNetLoginResp.Uid/Openid` 原子更新；不回退请求 OpenID。失败或响应非法返回时保留旧缓存。
 - **仅进程内缓存**：UID、OpenID 都不由 GameLogin 写入 PlayerPrefs、FileFragment 或 SQLite；进程重启后必须重新登录。
+- **登出的责任范围**：`Clear()` 只调用 `NetService.ClearIdentity()`；它不会请求游戏服、删除本机存档、退出第三方原厂账号或代替业务调用 SDK 的账号会话结束入口。业务应按自己的登出流程分别处理这些步骤。
 - **强制新账号**：`forceNewAccount=true` 时 Body UID/OpenID 都清空，但 Header 仍保留当前确认身份；响应通过相同合法性校验后提交服务端返回身份。
 - **最新设备与顶号**：每次成功登录都把 UID 的最新 `device_id` 更新为当前设备；旧设备后续访问受保护接口收到 `10400`。
 - **候选身份组合**：Body 支持 UID-only、OpenID-only、UID+OpenID 和两者皆空；服务端负责校验候选归属，Header 不参与表达本次候选身份。
@@ -83,12 +84,21 @@ login.Clear();
 - **`Head` 自动填充**：`NetBuilder.BuildHeader()` 在 `SendAsync` 内部调用，业务侧无需手动构建 Header。
 - **依赖主框架公共网络编排层**：`NetService.SendAsync` / `NetBuilder.BuildHeader` / `NetResponse<T>` 均来自主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共层。
 - **失败分支码值归类**：`SendAsync` 失败时调 `LogLoginError`，按 `LoginErrorCode` 常量归类码值打可读日志；不改变返回值，业务侧仍按 `resp.ErrorCode` 自行分支。
+- **参数和统计采用**：候选 UID/OpenID 只把 null 归为空串，不自动 Trim；`IsLoggedIn` 只判断 UID 非空，空白值也会为 true，不是后台认证探针。登录统计优先分类 `force_new`，其次按候选 OpenID 是否为空区分 `uid/third_party`；写用户属性时使用成功响应确认的 OpenID，不把失败候选标识上报为已登录身份。耗时限制在 `0..int.MaxValue`；逐插件隔离异常，但同一插件的属性设置异常可能跳过本次事件。SDK 通知或下层网络异常仍可继续向业务传播。
 - **登录不做绑定副作用**：`Async` 传入 `openid` 时服务端只“读”绑定关系（查 `open_id` 已绑的 UID 并登入），未绑返回 `ErrAccountNotFound`(10404)；为当前账号绑定三方号是 `GameBind` 模块的独立职责。
 
 ---
 
-## 5. 关联
+## GameLoginDemo 的操作范围
+
+示例的登录按钮会发出真实 Kit 请求；启动用 `ProcedureLogin` 的一秒演示等待不能证明玩家已登录。显式 UID 非空时，示例参数整理会关闭强制新账号选项；空输入的实际账号选择仍由登录协议决定。
+
+“清除”只清进程内登录身份，“删除”会请求远端账号删除，不能互相替代。页面没有额外账号确认或随关闭取消请求的机制；自动化删除前必须明确实际账号目标，关闭 UIView 也不撤销已经发出的登录或删号请求。
 
 - 同包：[LoginErrorCode.md](./LoginErrorCode.md) — 登录业务段错误码
+## 5. 关联
+
 - 同包：[LoginKitConfig.md](./LoginKitConfig.md) — 登录 Kit 配置
 - 跨包：`com.solotopia.nova.framework.kit.network.gamebind` — 账号绑定业务 Kit（`Bind`）
+
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

@@ -20,6 +20,9 @@ namespace NovaFramework.Editor
         /// </summary>
         private SerializedProperty m_CurNativeManagerTypeName;
 
+        /// <summary>默认关闭的显式 Android 自身安装总门，与构建来源权限声明使用同一配置。</summary>
+        private SerializedProperty m_EnableAndroidAppInstall;
+
         /// <summary>
         /// 所有可选 INativeManager 实现类型名称。
         /// </summary>

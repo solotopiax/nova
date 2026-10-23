@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -14,9 +14,9 @@
       "when": "更新已确认的资源资产、Collector 成员或序列化引用"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Config.YooAssetInjector.LoadBundleCollector",
-      "when": "按已确认 ConfigMaster 定位当前项目已有的 Collector"
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-bundle-collector",
+      "when": "目标等于已冻结 ConfigMaster 当前坐标时，只读定位有效 Collector 路径与资产；不替代 Collector 成员或地址验证"
     },
     {
       "kind": "csharp-api",
@@ -25,8 +25,58 @@
     },
     {
       "kind": "csharp-api",
+      "entry": "Nova.Asset.LoadManifestAsync / RefreshManifestAsync / ClearUnusedCacheAsync",
+      "when": "运行时冗余Bundle清理分支：经授权项目业务入口编译消费真实package/ct；确认既有Bootstrap与已激活清单，明确更新目标时沿原链Refresh并核实实际版本，再只清未被当前清单引用的磁盘Bundle。当前内置实现预取消不调度，实际Manifest无效或底层终态非Succeeded抛InvalidOperationException；开始后取消仅停止等待。不是MCP Action，不绕过业务入口与句柄生命周期；正常返回表示操作报告成功，仍核验实际文件，手机目标须设备证据。"
+    },
+    {
+      "kind": "csharp-api",
       "entry": "Nova.Prefab.Instantiate* / Nova.Prefab.Destroy",
       "when": "资源是需要统一实例回收链的 Prefab"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-panel",
+      "when": "ResourceEncryption分支读取真实私有Master/坐标、可编辑相对字段、独立编号维度与脱敏值；不输出秘密或保存。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.patch-panels",
+      "when": "已授权私有Master的ResourceEncryption字段/编号维度新增或轮换，经严格Inspect字段、clone预演、全状态与物理写集、草稿/漂移门保存并Verify；保留旧包/旧编号/原字节，不生成源码。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.generate-resource-keys",
+      "when": "指定任意已保存私有Master与明确坐标，Plan只读冻结配置/meta、精确生成迁移写集与真实Player程序集；Execute单次Generate并仅保存生成路径，实际编译重载后Verify；不激活Master、不导出Runtime、不传密钥正文。"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "ConfigWindow ResourceEncryption panel save and top export",
+      "when": "项目已有可操作ConfigWindow时复用其WorkingCopy/统一保存与顶部导出；配置也可用实际ResourceEncryption面板Action，禁止YAML/任意C#旁路。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.run-batch",
+      "when": "已保存并审查的Batch含export.config时，从已配置私有Master导出密钥源码/Runtime；任务授权覆盖精确本地生成集，按当前计划执行；密钥编辑独立经ResourceEncryption面板Action。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "ResourceKeyCodeGenerator.Generate / GenerateForCI / ValidateGenerated",
+      "when": "底层密钥生成/客户端程序集及构建一致性实现；精确参数见resource-encryption.md，仅实际已有Unity宿主能执行，不视作MCP Action。"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "authorized business ObjectBase/IReference/Asset consumer source editing",
+      "when": "接入或修复已确认消费方的完整句柄、ObjectPool或ReferencePool持有/归还闭包，或在明确授权范围为运行时unused-cache补既有业务Owner的公开API调用；只改业务源码，不修改Runtime核心或生成物，不用临时任意代码或反射。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.ObjectPool / IObjectPool<T> / ObjectBase / ReferencePool / IReference",
+      "when": "业务编译消费既有精确API，按Type+池名、对象名、非空Target与框架接管时点配对；不是MCP执行入口。"
+    },
+    {
+      "kind": "unity-menu",
+      "entry": "Nova/Clean Hotfix Caches",
+      "when": "已退出Play且用户授权精确Editor沙盒与框架第一层version删除；先发现菜单与实际路径，执行后读回状态；不清DeviceID/首包/Bundle/浏览器/远端缓存。"
     }
   ],
   "inputs": [
@@ -36,15 +86,18 @@
     },
     {
       "name": "resourceAssetAndOwnership",
-      "required": true
+      "required": false,
+      "constraint": "资源接入分支必需；池或缓存分支不要求虚构资源身份。"
     },
     {
       "name": "targetPackageAndAddress",
-      "required": true
+      "required": false,
+      "constraint": "资源接入分支必需；运行时缓存分支须从当前项目确认真实Package及默认包解析，验收资源地址仅按本次更新目标读取；纯数据池或Editor缓存分支不要求虚构Package/资源地址。"
     },
     {
       "name": "consumerAndLifetime",
-      "required": true
+      "required": false,
+      "constraint": "资源、池或运行时缓存分支冻结实际业务Owner/入口、句柄与异步任务生命周期；Editor缓存分支改冻结真实删除范围与DeviceID基线。缺现成调用点但授权业务源码接入时可补最小胶水，不把底层API当Action。"
     },
     {
       "name": "targetPlatformChannelAndMode",
@@ -53,18 +106,34 @@
     {
       "name": "localBuildIntent",
       "required": false
+    },
+    {
+      "name": "resourceEncryptionScope",
+      "required": false,
+      "constraint": "资源加密分支冻结已保存私有Master/坐标、Package/keyId与hasValue、Bundle/Manifest方案、ClientCodeOutputDirectory及旧首包/缓存/回退；不输出KeyBase64或源码正文。"
+    },
+    {
+      "name": "poolOrCacheLifecycleScope",
+      "required": false,
+      "constraint": "冻结ObjectBase类型/poolName/name/唯一Target/Single或MultiGet/消费方持有期与归还；Editor缓存冻结实际沙盒、Asset第一层version列表、非Play和DeviceID基线；运行时缓存冻结Package/运行模式/激活清单及目标版本/业务入口Owner/并发任务与句柄/仅未被当前清单引用的Bundle范围。手机分支另冻结设备、产物与时间窗，读取可得事实，不猜路径。"
     }
   ],
   "effects": [
     "workspace-write",
     "unity-write",
-    "generated-output"
+    "generated-output",
+    "credential"
   ],
   "writeScope": {
     "allow": [
       "confirmed business resource asset",
       "confirmed BundleCollectorSetting membership and address",
-      "confirmed business consumer source and lifecycle ownership"
+      "confirmed business consumer source and lifecycle ownership",
+      "authorized project-private ConfigMaster ResourceEncryption through actual inspect-panel/patch-panels or ConfigWindow save contract",
+      "tool-owned ResourceKeys.Generated.cs and link.xml plus tracked generated path state through typed generate-resource-keys or existing export chain",
+      "authorized business ObjectBase/IReference pool consumer source",
+      "explicitly authorized Editor YooAsset sandbox and first-level persistent Asset .version files via existing menu",
+      "explicitly authorized unreferenced disk Bundle cache of the confirmed runtime Package through public ClearUnusedCacheAsync in the project business consumer"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -73,14 +142,21 @@
       "unconfirmed Collector or ConfigMaster",
       "third-party plugin resources",
       "direct BundleBuilder invocation or Package build output; route these to nova-project-build-bundles",
-      "unrelated Package output, cache cleanup, CDN deployment or Player build"
+      "unrelated Package output, cache cleanup, CDN deployment or Player build",
+      "resource keys or generated key-provider source in public Framework/package/release copies",
+      "arbitrary C# or manual serialized JSON/YAML for ResourceEncryption edits",
+      "changing secret bytes under an existing keyId or deleting old keys still needed by retained builtins/cache/fallback",
+      "arbitrary runtime cache deletion, deleting current-manifest referenced Bundles or user saves, application clear-data/uninstall, direct YooAsset or adb rm cache bypass"
     ]
   },
   "locks": [
     "unity-editor",
     "asset-database",
     "bundle-collector",
-    "business-resource-consumer"
+    "business-resource-consumer",
+    "config-master",
+    "resource-key-code-output",
+    "runtime-resource-package"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -90,9 +166,9 @@
       "build target or output scope change",
       "delete, cache cleanup, external write, credential use, Git commit or push"
     ],
-    "rule": "确认资源所有权、唯一地址、消费方、生命周期和最小写入集；输入或范围改变后旧确认失效。"
+    "rule": "确认资源所有权、唯一地址、消费方、生命周期和最小写入集；输入或范围改变后旧确认失效。 资源密钥编辑/生成授权绑定私有Master、Package/keyId、方案和源码目录；现有精确授权持续有效。不可读目标或真实凭据/外部范围缺失才补充，不将内部API存在当执行许可。"
   },
-  "minimumEvidence": "play",
+  "minimumEvidence": "static",
   "resultStates": [
     "success",
     "partial",
@@ -103,6 +179,16 @@
     "资源所有权、Collector、Package 和地址证据",
     "Handle 的持有与 Release 或场景 UnloadAsync 责任",
     "如需构建，由 nova-project-build-bundles 独立返回的 BuildResult",
-    "当前 PlayMode 下的最小加载与释放证据"
+    "当前 PlayMode 下的最小加载与释放证据",
+    "resource-encryption.md: confirmed private ResourceEncryption fields/dimensions through live inspect-panel and patch-panels Execute/Verify; retained old key bytes; full secret inputs absent from public output",
+    "unique generated provider/link.xml identity, actual Player assembly ownership and compile/ValidateGenerated boundary",
+    "formal encrypted Bundle/Manifest paired scheme plus requested Player/browser/device loads and retained old keyId compatibility",
+    "temporary tests/logs/credential inputs cleaned; formal private source and delivery artifacts retained",
+    "resource-lifecycle.md: exact overloaded API/name/Target identity and full ownership; cancellation/close/reopen and Put/Release paths",
+    "Editor cache: real menu discovery, target paths, non-Play before/after state and DeviceID preservation; menu transport success alone is insufficient",
+    "runtime unused-cache: actual Package/activated manifest/target version and business Owner/handles, authorized public-API source integration plus compile and real Play; current built-in implementation rejects pre-cancelled calls before scheduling, invalid actual manifests and non-Succeeded terminal operations; started cancellation only stops waiting; normal return reports operation success, while real file/byte results and preserved current-manifest Bundles and loadable resources remain independent evidence",
+    "phone cache/update target: frozen device/artifact/time window, actual manifest version and readable device cache result plus target-resource load; Editor menu, Play, CDN deploy/purge or API return alone is not device proof; unavailable readback stays partial",
+    "branch gate: resource/pool integration requires compile plus actual play; Editor cache requires non-Play real before/after checks; runtime cache uses its actual business entry and requested Player/device evidence; static alone is partial",
+    "generate-resource-keys: saved private Master exact coordinate, readonly Plan, exact file/meta/migration snapshot, one Generate, post-execution compile/reload and readonly Receipt verification; legacy asmdef migration branch fails closed before writes"
   ]
 }

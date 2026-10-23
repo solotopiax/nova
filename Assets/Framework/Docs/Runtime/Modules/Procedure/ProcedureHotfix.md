@@ -107,7 +107,7 @@ WarmupGroup 的进度是“已完成 Bundle 项数 / 总项数”，不代表字
 
 - 常规下载成功：调用 `CommitBootableVersion()` 推进本地可启动版本，并可选执行 `ClearUnusedCacheAsync(ct)`。
 - WebGL Warmup 成功：由策略的 Group 收口完成后调用 `CommitBootableVersion()`。
-- 缓存清理失败只记 warning，不阻断流程
+- 内置 `ClearUnusedCacheAsync` 报告底层失败、清单未就绪或等待取消时进入既有异常分支，只记 warning，不打印“冗余缓存清理完成”，仍不阻断进游戏；取消等待不代表底层删除已经停止。
 - `m_Success = true`
 - `m_Complete = true`
 
@@ -153,6 +153,14 @@ WebGL 固定按 `false` 处理，不执行应用强退；Android/iOS 继续使�
 - 热更完成后是否清磁盘缓存，不影响是否继续进入后续流程；`TagsOnLaunch` 的 Release 与 DLL 加载后 Cleanup 是固定的内存收口，不由 `AutoClearUnusedCacheOnHotfix` 控制。
 - `AllOnLaunch` 是明确的内存常驻策略，必须结合实际浏览器内存峰值选择。
 - `ProcedureHotfix` 自己会清掉版本检查黑板键，不要期待这些数据还能被更后面的流程继续读取。
+
+## 参数与生命周期边界
+
+TryDownloadAsync 以 attempt/complete/token 互斥，StartDownloadAttempt 只 Forget，不独立 guard。重试计数只是用户点击次数，不重查 App 版本或重新创建整个 Procedure。常规 downloader 回调 lambda 本流程未显式解绑/释放 downloader；其资源责任以实际 Asset 下载器实现为准，不能将过程完成当作已断全部回调。
+
+失败弹窗缺面板时 Controller 同步调用重试，若 attempt 仍 true 则被 guard 忽略，不能保证此降级总能续行。用户选择跳过设置 success=false/complete=true，仍进入 LoadDll，不证明资源完整；WebGL 强制按跳过处理。离开先 base.Cancel 再取消/释放 linked CTS，普通切换保留面板，Shutdown 才兜底销毁。
+
+Warmup 的完成项数不等字节，total<=0 比率为 1，UI clamp 而日志百分比不 clamp。正常完成先解绑 OnWarmupProgress，再把 group 所有权移交 CompleteLaunchWarmupAsync（本地变量先置空）；此后异常由接手方负责资源。取消只释放仍本地持有 group，finally 释放 linked CTS；清理异常和缓存清理失败不自动变成成功的资源证明。
 
 ## 继续阅读
 

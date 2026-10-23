@@ -1,7 +1,7 @@
 # Nova Framework - SDK - TGA
 
 > 包名：`com.solotopia.nova.framework.sdk.tga`
-> 当前版本：`0.1.19`
+> 当前版本：`0.1.20`
 
 TGA 数据埋点插件，提供事件追踪服务
 
@@ -20,7 +20,7 @@ TGA 数据埋点插件，提供事件追踪服务
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.tga": "0.1.19"
+  "com.solotopia.nova.framework.sdk.tga": "0.1.20"
 }
 ```
 

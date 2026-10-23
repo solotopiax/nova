@@ -93,7 +93,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 启动一次 YooAsset 原生文件构建，仅处理配置为 PackRawFile 的资源。
+            /// 启动一次 YooAsset 原生文件构建，收集目标 Package 后要求每个 Bundle 只有一个资源；不自动过滤 PackRawFile。
             /// 使用 RawFileBuildParameters、RawFileBuildPipeline 与 RawBundle，不改变标准 AssetBundle 构建入口。
             /// </summary>
             /// <param name="args">RawFile 构建参数。</param>

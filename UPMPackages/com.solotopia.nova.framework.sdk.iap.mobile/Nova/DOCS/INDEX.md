@@ -36,6 +36,13 @@
 - `OnProductsFetchFailed` 先物化为内部失败快照，再只把 `StoreController` 当前仍查不到的 SKU 写入 `m_UnavailableSkus`；成功态下迟到失败不会回退状态、不会重试、不会重复触发商品成功后置流程。
 - 14 个商品成功、1 个 SKU 找不到时，只保留该缺失 SKU 的查询/购买拦截，不会污染其他已成功商品。
 
+## 回调诊断口径
+
+- `MobileExtendedService.RegisterProductCallbacks` 会分别记录 Controller 尚未挂载、已经注册和注册完成，便于确认商品级回调是否已经接入 Unity IAP。
+- `MobileProductFetchCoordinator` 记录商品定义数量、首次成功、失败与重试；成功态下再次收到成功回调时记录 `AlreadySucceeded` 和商品数量，不重复触发已有购买拉取。
+- `MobileRestoreService.OnExistingPurchasesFetched` 即使收到空订单集合，也会记录 ConfirmedOrder 与 PendingOrder 数量；因此可以区分“已有购买回调未到达”和“回调到达但没有历史订单”。
+- `MobileStoreService` 继续只负责回调路由，不额外打印 `OnProductsFetched` 到达日志。
+
 ## 当前契约重点
 
 - `QueryPendingOrder` 响应里的 `table_id` 是 `long`，客户端优先用它确定商品行，再结合 `parameter` 解码出的 `ReceiptParam` 合并到 `OrderRecordsByKey`；`parameter` 解码不到 `ReceiptParam` 时按空透传兼容旧协议。

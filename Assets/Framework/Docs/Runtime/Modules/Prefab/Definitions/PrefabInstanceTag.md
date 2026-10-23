@@ -48,8 +48,7 @@ private void OnDestroy()
 ## 单路径回收铁律
 
 无论通过何种方式销毁 Prefab 实例（`PrefabComponent.Destroy` / 业务 `Object.Destroy` / 父节点销毁链 / 场景切换），
-最终都经由 `PrefabInstanceTag.OnDestroy → PrefabManager.OnInstanceDestroyed` 这唯一路径完成 handle 释放，
-彻底杜绝引用计数残留。
+正常回收汇聚到 `PrefabInstanceTag.OnDestroy → PrefabManager.OnInstanceDestroyed`，避免调用方重复释放。Tag 先清字段再调用捕获的回调；回调异常向外传播，并不自动重试或证明全部记录已清理，具体失败边界见 [PrefabManager](../PrefabManager/PrefabManager.md#参数失败与退出边界)。
 
 ---
 

@@ -82,6 +82,11 @@ MonoBehaviour:
       ByPlatform: 0
       ByChannel: 0
       ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.GoogleSignIn.GoogleSignInPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
   KitMasks:
   - TypeName: NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig
     Mask:
@@ -143,7 +148,7 @@ MonoBehaviour:
     ClientCodeOutputDirectory:
     GeneratedCodeAssetPath:
     Packages: []
-  ResourceKeysMigrated: 0
+  ResourceKeysMigrated: 1
   CDNEditorConfigsOverrides: []
   HybridEditorConfigs:
     AotMetadataDlls:
@@ -194,6 +199,56 @@ MonoBehaviour:
     LinkXmlTargetPath: Assets/Samples/FacebookDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
   HybridEditorConfigsOverrides:
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.Facebook.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.SDK.Facebook.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.SDK.Facebook.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.Android.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.Android.dll.bytes
+      m_AssetLocation: Facebook.Unity.Android.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Facebook.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/GameDlls/NovaFramework.Sdk.Facebook.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Sdk.Facebook.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/FacebookDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 1
+    Channel: 0
+    DevelopMode: 0
   - AotMetadataDlls:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/mscorlib.dll.bytes
@@ -294,56 +349,6 @@ MonoBehaviour:
     Platform: 3
     Channel: 0
     DevelopMode: 0
-  - AotMetadataDlls:
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/mscorlib.dll.bytes
-      m_AssetLocation: mscorlib.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/System.dll.bytes
-      m_AssetLocation: System.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/System.Core.dll.bytes
-      m_AssetLocation: System.Core.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/UniTask.dll.bytes
-      m_AssetLocation: UniTask.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
-      m_AssetLocation: Newtonsoft.Json.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
-      m_AssetLocation: UnityEngine.CoreModule.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
-      m_AssetLocation: Unity.TextMeshPro.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.Facebook.Runtime.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.SDK.Facebook.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.SDK.Facebook.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.Android.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.Android.dll.bytes
-      m_AssetLocation: Facebook.Unity.Android.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
-    StartupGameDlls:
-    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Facebook.Samples.Runtime.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/GameDlls/NovaFramework.Sdk.Facebook.Samples.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.Sdk.Facebook.Samples.Runtime.dll
-    RunningGameDlls: []
-    LinkXmlTargetPath: Assets/Samples/FacebookDemo/Editor/link.xml
-    GameEntranceProcedureName: ProcedurePreload
-    Platform: 1
-    Channel: 0
-    DevelopMode: 0
   YooAssetEditorConfigs:
     YooAssetSettingsPath: Assets/Samples/FacebookDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/FacebookDemo/Editor/BundleCollectorSetting.asset
@@ -356,14 +361,14 @@ MonoBehaviour:
     PackageFilePrefix: 
     Platform: 0
     Channel: 0
-    DevelopMode: 1
+    DevelopMode: 0
   - YooAssetSettingsPath: Assets/Samples/FacebookDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/FacebookDemo/Editor/BundleCollectorSetting.asset
     YooFolderName: yoo
     PackageFilePrefix: 
     Platform: 0
     Channel: 0
-    DevelopMode: 0
+    DevelopMode: 1
   CurrentDevelopMode: 0
   CurrentChannel: 2
   ExportTarget: {fileID: 11400000, guid: 25473361b79b49448c99b6cbefd67bbe, type: 2}
@@ -390,12 +395,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -406,6 +413,8 @@ MonoBehaviour:
       - rid: 2533177004360728671
       - rid: 2533177004360729497
       - rid: 2238162004210614272
+      - rid: 1000
+      - rid: 1001
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -413,6 +422,8 @@ MonoBehaviour:
       - rid: 2533177004360728673
       - rid: 2533177004360729498
       - rid: 2238162004210614273
+      - rid: 1002
+      - rid: 1003
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -446,12 +457,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -471,6 +484,8 @@ MonoBehaviour:
       - rid: 2533177004360728675
       - rid: 2533177004360729500
       - rid: 2238162004210614274
+      - rid: 1004
+      - rid: 1005
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -504,12 +519,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -520,6 +537,8 @@ MonoBehaviour:
       - rid: 2533177004360728677
       - rid: 2533177004360729501
       - rid: 2238162004210614275
+      - rid: 1006
+      - rid: 1007
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -527,6 +546,8 @@ MonoBehaviour:
       - rid: 2533177004360728679
       - rid: 2533177004360729502
       - rid: 2238162004210614276
+      - rid: 1008
+      - rid: 1009
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -560,12 +581,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -576,6 +599,8 @@ MonoBehaviour:
       - rid: 2533177004360728681
       - rid: 2533177004360729503
       - rid: 2238162004210614277
+      - rid: 1010
+      - rid: 1011
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -583,6 +608,8 @@ MonoBehaviour:
       - rid: 2533177004360728683
       - rid: 2533177004360729504
       - rid: 2238162004210614278
+      - rid: 1012
+      - rid: 1013
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -616,12 +643,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -632,6 +661,8 @@ MonoBehaviour:
       - rid: 2533177004360728685
       - rid: 2533177004360729505
       - rid: 2238162004210614279
+      - rid: 1014
+      - rid: 1015
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -639,6 +670,8 @@ MonoBehaviour:
       - rid: 2533177004360728687
       - rid: 2533177004360729506
       - rid: 2238162004210614280
+      - rid: 1016
+      - rid: 1017
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -672,12 +705,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -688,6 +723,8 @@ MonoBehaviour:
       - rid: 2533177004360728689
       - rid: 2533177004360729507
       - rid: 2238162004210614281
+      - rid: 1018
+      - rid: 1019
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -695,6 +732,8 @@ MonoBehaviour:
       - rid: 2533177004360728691
       - rid: 2533177004360729508
       - rid: 2238162004210614282
+      - rid: 1020
+      - rid: 1021
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -728,12 +767,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -744,6 +785,8 @@ MonoBehaviour:
       - rid: 2533177004360728693
       - rid: 2533177004360729509
       - rid: 2238162004210614283
+      - rid: 1022
+      - rid: 1023
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -751,6 +794,8 @@ MonoBehaviour:
       - rid: 2533177004360728695
       - rid: 2533177004360729510
       - rid: 2238162004210614284
+      - rid: 1024
+      - rid: 1025
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -784,12 +829,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -800,6 +847,8 @@ MonoBehaviour:
       - rid: 2533177004360728697
       - rid: 2533177004360729511
       - rid: 2238162004210614285
+      - rid: 1026
+      - rid: 1027
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -807,6 +856,8 @@ MonoBehaviour:
       - rid: 2533177004360728699
       - rid: 2533177004360729512
       - rid: 2238162004210614286
+      - rid: 1028
+      - rid: 1029
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -840,12 +891,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -856,6 +909,8 @@ MonoBehaviour:
       - rid: 2533177004360728701
       - rid: 2533177004360729513
       - rid: 2238162004210614287
+      - rid: 1030
+      - rid: 1031
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -863,6 +918,8 @@ MonoBehaviour:
       - rid: 2533177004360728703
       - rid: 2533177004360729514
       - rid: 2238162004210614288
+      - rid: 1032
+      - rid: 1033
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -896,12 +953,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -912,6 +971,8 @@ MonoBehaviour:
       - rid: 2533177004360728705
       - rid: 2533177004360729515
       - rid: 2238162004210614289
+      - rid: 1034
+      - rid: 1035
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -919,6 +980,8 @@ MonoBehaviour:
       - rid: 2533177004360728707
       - rid: 2533177004360729516
       - rid: 2238162004210614290
+      - rid: 1036
+      - rid: 1037
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -952,12 +1015,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -968,6 +1033,8 @@ MonoBehaviour:
       - rid: 2533177004360728709
       - rid: 2533177004360729517
       - rid: 2238162004210614291
+      - rid: 1038
+      - rid: 1039
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -975,6 +1042,8 @@ MonoBehaviour:
       - rid: 2533177004360728711
       - rid: 2533177004360729518
       - rid: 2238162004210614292
+      - rid: 1040
+      - rid: 1041
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1008,12 +1077,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1024,6 +1095,8 @@ MonoBehaviour:
       - rid: 2533177004360728713
       - rid: 2533177004360729519
       - rid: 2238162004210614293
+      - rid: 1042
+      - rid: 1043
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1031,6 +1104,8 @@ MonoBehaviour:
       - rid: 2533177004360728715
       - rid: 2533177004360729520
       - rid: 2238162004210614294
+      - rid: 1044
+      - rid: 1045
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1064,12 +1139,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1080,6 +1157,8 @@ MonoBehaviour:
       - rid: 2533177004360728717
       - rid: 2533177004360729521
       - rid: 2238162004210614295
+      - rid: 1046
+      - rid: 1047
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1087,6 +1166,8 @@ MonoBehaviour:
       - rid: 2533177004360728719
       - rid: 2533177004360729522
       - rid: 2238162004210614296
+      - rid: 1048
+      - rid: 1049
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1120,12 +1201,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1136,6 +1219,8 @@ MonoBehaviour:
       - rid: 2533177004360728721
       - rid: 2533177004360729523
       - rid: 2238162004210614297
+      - rid: 1050
+      - rid: 1051
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1143,6 +1228,8 @@ MonoBehaviour:
       - rid: 2533177004360728723
       - rid: 2533177004360729524
       - rid: 2238162004210614298
+      - rid: 1052
+      - rid: 1053
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1176,12 +1263,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1192,6 +1281,8 @@ MonoBehaviour:
       - rid: 2533177004360728725
       - rid: 2533177004360729525
       - rid: 2238162004210614299
+      - rid: 1054
+      - rid: 1055
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1199,6 +1290,8 @@ MonoBehaviour:
       - rid: 2533177004360728727
       - rid: 2533177004360729526
       - rid: 2238162004210614300
+      - rid: 1056
+      - rid: 1057
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1232,12 +1325,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1248,6 +1343,8 @@ MonoBehaviour:
       - rid: 2533177004360728729
       - rid: 2533177004360729527
       - rid: 2238162004210614301
+      - rid: 1058
+      - rid: 1059
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1255,6 +1352,8 @@ MonoBehaviour:
       - rid: 2533177004360728731
       - rid: 2533177004360729528
       - rid: 2238162004210614302
+      - rid: 1060
+      - rid: 1061
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1288,12 +1387,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1304,6 +1405,8 @@ MonoBehaviour:
       - rid: 2533177004360728733
       - rid: 2533177004360729529
       - rid: 2238162004210614303
+      - rid: 1062
+      - rid: 1063
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1311,6 +1414,8 @@ MonoBehaviour:
       - rid: 2533177004360728735
       - rid: 2533177004360729530
       - rid: 2238162004210614304
+      - rid: 1064
+      - rid: 1065
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1344,12 +1449,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1360,6 +1467,8 @@ MonoBehaviour:
       - rid: 2533177004360728737
       - rid: 2533177004360729531
       - rid: 2238162004210614305
+      - rid: 1066
+      - rid: 1067
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1367,6 +1476,8 @@ MonoBehaviour:
       - rid: 2533177004360728739
       - rid: 2533177004360729532
       - rid: 2238162004210614306
+      - rid: 1068
+      - rid: 1069
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1378,10 +1489,1130 @@ MonoBehaviour:
       - rid: 3589943518543478928
       - rid: 2238162003408453835
       - rid: 791343946899652643
-  m_PrivacyInfoDefaultApplied: 0
+  m_PrivacyInfoDefaultApplied: 1
   references:
     version: 2
     RefIds:
+    - rid: 1000
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1001
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1070
+        m_Products:
+          m_Items: []
+    - rid: 1002
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1003
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1071
+        m_Products:
+          m_Items: []
+    - rid: 1004
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1005
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1072
+        m_Products:
+          m_Items: []
+    - rid: 1006
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1007
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1073
+        m_Products:
+          m_Items: []
+    - rid: 1008
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1009
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1074
+        m_Products:
+          m_Items: []
+    - rid: 1010
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1011
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1075
+        m_Products:
+          m_Items: []
+    - rid: 1012
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1013
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1076
+        m_Products:
+          m_Items: []
+    - rid: 1014
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1015
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1077
+        m_Products:
+          m_Items: []
+    - rid: 1016
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1017
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1078
+        m_Products:
+          m_Items: []
+    - rid: 1018
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1019
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1079
+        m_Products:
+          m_Items: []
+    - rid: 1020
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1021
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1080
+        m_Products:
+          m_Items: []
+    - rid: 1022
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1023
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1081
+        m_Products:
+          m_Items: []
+    - rid: 1024
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1025
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1082
+        m_Products:
+          m_Items: []
+    - rid: 1026
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1027
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1083
+        m_Products:
+          m_Items: []
+    - rid: 1028
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1029
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1084
+        m_Products:
+          m_Items: []
+    - rid: 1030
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1031
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1085
+        m_Products:
+          m_Items: []
+    - rid: 1032
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1033
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1086
+        m_Products:
+          m_Items: []
+    - rid: 1034
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1035
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1087
+        m_Products:
+          m_Items: []
+    - rid: 1036
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1037
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1088
+        m_Products:
+          m_Items: []
+    - rid: 1038
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1039
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1089
+        m_Products:
+          m_Items: []
+    - rid: 1040
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1041
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1090
+        m_Products:
+          m_Items: []
+    - rid: 1042
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1043
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1091
+        m_Products:
+          m_Items: []
+    - rid: 1044
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1045
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1092
+        m_Products:
+          m_Items: []
+    - rid: 1046
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1047
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1093
+        m_Products:
+          m_Items: []
+    - rid: 1048
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1049
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1094
+        m_Products:
+          m_Items: []
+    - rid: 1050
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1051
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1095
+        m_Products:
+          m_Items: []
+    - rid: 1052
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1053
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1096
+        m_Products:
+          m_Items: []
+    - rid: 1054
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1055
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1097
+        m_Products:
+          m_Items: []
+    - rid: 1056
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1057
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1098
+        m_Products:
+          m_Items: []
+    - rid: 1058
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1059
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1099
+        m_Products:
+          m_Items: []
+    - rid: 1060
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1061
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1100
+        m_Products:
+          m_Items: []
+    - rid: 1062
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1063
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1101
+        m_Products:
+          m_Items: []
+    - rid: 1064
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1065
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1102
+        m_Products:
+          m_Items: []
+    - rid: 1066
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1067
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1103
+        m_Products:
+          m_Items: []
+    - rid: 1068
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1069
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1104
+        m_Products:
+          m_Items: []
+    - rid: 1070
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1071
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1072
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1073
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1074
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1075
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1076
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1077
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1078
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1079
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1080
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1081
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1082
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1083
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1084
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1085
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1086
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1087
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1088
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1089
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1090
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1091
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1092
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1093
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1094
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1095
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1096
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1097
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1098
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1099
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1100
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1101
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1102
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1103
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1104
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 209362707701039362
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1391,8 +2622,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039396
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -1402,13 +2637,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2132,8 +3367,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728672
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2143,13 +3382,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2162,8 +3401,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728674
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2173,13 +3416,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2192,8 +3435,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728676
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2203,13 +3450,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2222,8 +3469,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728678
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2233,13 +3484,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2252,8 +3503,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728680
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2263,13 +3518,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2282,8 +3537,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728682
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2293,13 +3552,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2312,8 +3571,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728684
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2323,13 +3586,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2342,8 +3605,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728686
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2353,13 +3620,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2372,8 +3639,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728688
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2383,13 +3654,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2402,8 +3673,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728690
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2413,13 +3688,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2432,8 +3707,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728692
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2443,13 +3722,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2462,8 +3741,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728694
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2473,13 +3756,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2492,8 +3775,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728696
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2503,13 +3790,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2522,8 +3809,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728698
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2533,13 +3824,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2552,8 +3843,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728700
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2563,13 +3858,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2582,8 +3877,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728702
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2593,13 +3892,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2612,8 +3911,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728704
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2623,13 +3926,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2642,8 +3945,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728706
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2653,13 +3960,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2672,8 +3979,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728708
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2683,13 +3994,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2702,8 +4013,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728710
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2713,13 +4028,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2732,8 +4047,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728712
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2743,13 +4062,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2762,8 +4081,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728714
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2773,13 +4096,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2792,8 +4115,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728716
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2803,13 +4130,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2822,8 +4149,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728718
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2833,13 +4164,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2852,8 +4183,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728720
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2863,13 +4198,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2882,8 +4217,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728722
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2893,13 +4232,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2912,8 +4251,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728724
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2923,13 +4266,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2942,8 +4285,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728726
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2953,13 +4300,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -2972,8 +4319,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728728
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -2983,13 +4334,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -3002,8 +4353,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728730
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -3013,13 +4368,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -3032,8 +4387,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728732
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -3043,13 +4402,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -3062,8 +4421,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728734
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -3073,13 +4436,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -3092,8 +4455,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728736
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -3103,13 +4470,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -3122,8 +4489,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728738
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -3133,13 +4504,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
@@ -3152,8 +4523,12 @@ MonoBehaviour:
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728740
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
@@ -3163,13 +4538,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1

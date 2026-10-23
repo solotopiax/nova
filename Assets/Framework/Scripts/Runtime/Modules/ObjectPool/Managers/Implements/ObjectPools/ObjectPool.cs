@@ -29,17 +29,17 @@ GetCanReleaseObjects 过滤条件（进入候选的门槛）：
     通过以上三关 -> 进入候选列表
 
 DefaultReleaseObjectsFilter（从候选里选谁被释放）：
-    第一轮：先淘汰已过期的（LastUseTime <= expireTime）
-    第二轮：按优先级(大) 和 LastUseTime(新) 排序，优先淘汰"低优先级且最久未用"
+    第一轮：先选全部已过期候选（LastUseTime <= expireTime），数量可超过目标数量
+    第二轮：目标数量尚未满足时，按对象 Priority 升序、同值按 LastUseTime 从旧到新补足
 
-Release() 的三种调用路径：
+Release() 的调用路径：
     定时自动：Update() -> AutoReleaseTimeCounter 到期 -> Release()
-    容量溢出：Put() 后 Count > Capacity -> Release()
-    容量变更：Capacity.set -> Release()
-    ExpireTime 变更：ExpireTime.set -> Release()
+    容量溢出：Register() 超容量，或 Put() 后超容量且本次 RefCount <= 0 -> Release()
+    容量变更：Capacity.set 接受不同新值 -> Release()
+    ExpireTime 变更：ExpireTime.set 接受不同新值 -> Release()
     手动：业务代码直接调用 Release()/Release(count)/Release(filter)
 
-最终全部汇聚到 Release(int toReleaseCount, ReleaseObjectsFilter<T> filter) 这一入口，参数化控制释放数量和策略，代码路径统一，不会出现多处实现不一致的问题。
+以上筛选路径汇聚到 Release(int toReleaseCount, ReleaseObjectsFilter<T> releaseObjectsFilter)；ReleaseAllUnused 跳过数量与过期筛选但仍保护在用、Locked 和 Custom 禁止对象；Shutdown 独立逐项调用 Release(true)，不检查这些保护。
 
 为什么 IObjectPool<T> 不提供实现？
 接口（interface）在 C# 里原则上不持有状态（没有字段），而 Name 的值来自 ObjectPoolBase 的私有字段 m_Name
@@ -120,6 +120,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="name">对象名称。</param>
         /// <returns>要检查的对象是否存在。</returns>
+        /// <remarks>只检查当前是否有候选，不增加使用计数或保留对象；后续 Get 会重新查找。锁定与自定义释放标记不限制获取。</remarks>
         public bool CanGet(string name)
         {
             if (name == null)

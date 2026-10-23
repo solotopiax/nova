@@ -18,7 +18,7 @@ namespace NovaFramework.Runtime
     internal sealed partial class SoundManager : SoundManagerBase
     {
         /// <summary>
-        /// 构造声音数据加载所需的资源加载委托（异步路径）。
+        /// 构造异步表资源委托；取 TextAsset 后立即释放句柄再返回，接收器后续释放委托为空。
         /// </summary>
         /// <param name="loadFunc">输出的资源异步加载委托。</param>
         /// <param name="releaseFunc">输出的资源释放委托。</param>
@@ -36,7 +36,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造声音数据加载所需的资源加载委托（同步路径）。
+        /// 构造同步表资源委托；取 TextAsset 后立即释放句柄再返回，未复制资产字节。
         /// </summary>
         /// <param name="releaseFunc">输出的资源释放委托。</param>
         /// <param name="syncLoadFunc">输出的资源同步加载委托。</param>
@@ -146,7 +146,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步加载声音资源并在加载完成后播放。
+        /// 异步加载并交代理播放，常规终态归还上下文及参数；放弃标记不等于取消物理加载，关闭没有代次隔离。
         /// </summary>
         /// <param name="playSoundInfo">播放声音信息。</param>
         /// <param name="assetLocation">Asset 地址。</param>

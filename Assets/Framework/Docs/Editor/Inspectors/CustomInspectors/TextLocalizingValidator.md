@@ -110,6 +110,8 @@ FixMissingInPrefabs()
 
 ## 关联文档
 
+批量修复逐 Prefab 加载可写内容，包含 inactive TMP，补缺组件和空的 Main 字体标记，保存后在 finally 卸载。节点计数在保存前累加，Prefab 计数在保存调用后累加但未检查其返回对象；逐 Prefab 的 catch 会继续处理后续项。因此对话中的修复计数不是严格成功 Receipt，保存失败仍可能留下已累计节点数。Unload 或外层异常还可能跳过末尾进度条清理。自动挂载事件只响应本次新增的 `TextMeshProUGUI`，不等于已扫描全部既有 TMP；组件添加支持 Undo，字体标记写入使用 ApplyWithoutUndo，二者不可合并为完整原子撤销。
+
 - [TextLocalizing.md](../../../Runtime/Modules/Localization/TextLocalizing.md)
 - [TextLocalizingAutoMount.md](TextLocalizingAutoMount.md)
 - [TextLocalizingInspector.md](TextLocalizingInspector.md)

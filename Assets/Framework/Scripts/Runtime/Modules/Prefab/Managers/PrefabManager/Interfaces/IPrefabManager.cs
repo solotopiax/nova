@@ -75,7 +75,7 @@ namespace NovaFramework.Runtime
         int RecordedInstanceCount { get; }
 
         /// <summary>
-        /// 当前所有被记录实例的只读快照，供 Inspector 诊断面板展示，禁止修改。
+        /// 当前所有被记录实例的只读视图，供 Inspector 诊断面板展示；默认实现不是独立快照。
         /// </summary>
         IReadOnlyList<PrefabRecordedInstance> RecordedInstances { get; }
     }

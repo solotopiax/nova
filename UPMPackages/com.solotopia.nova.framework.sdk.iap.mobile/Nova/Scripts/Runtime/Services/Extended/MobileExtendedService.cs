@@ -22,7 +22,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 初始化流程：SetController → RegisterStoreCallbacks → Connect → （OnStoreConnected 后）RegisterProductCallbacks。
     /// 其他 Service 通过 m_Hub.ExtendedService 访问，禁止直接持有或访问 Controller。
     /// </summary>
-    internal sealed partial class MobileExtendedService
+    internal sealed partial class MobileExtendedService : MobileLogOwner
     {
         /// <summary>
         /// 构造 MobileExtendedService。
@@ -92,8 +92,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void RegisterProductCallbacks()
         {
             var ctrl = m_Controller;
-            if (ctrl == null || m_ProductCallbacksRegistered)
+            if (ctrl == null)
             {
+                LogWarning("商品级回调注册已跳过，原因=StoreControllerNotAttached。");
+                return;
+            }
+            if (m_ProductCallbacksRegistered)
+            {
+                LogDebug("商品级回调注册已跳过，原因=AlreadyRegistered。");
                 return;
             }
 
@@ -106,6 +112,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             // 平台已有购买拉取失败：记录失败原因，等待后续补单或手动 Restore。
             ctrl.OnPurchasesFetchFailed += m_Hub.StoreService.OnExistingPurchasesFetchFailed;
             m_ProductCallbacksRegistered = true;
+            LogDebug("商品级回调注册完成。");
         }
 
         /// <summary>

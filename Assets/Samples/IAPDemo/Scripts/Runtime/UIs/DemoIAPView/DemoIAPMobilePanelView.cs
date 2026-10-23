@@ -403,7 +403,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 创建自定义 ReceiptParam 输入框内部文本节点。
+        /// 创建自定义 ReceiptParam 输入框内部文本节点，保持单行且不自动换行。
         /// </summary>
         /// <param name="parent">输入框根节点。</param>
         /// <param name="name">文本节点名称。</param>
@@ -437,7 +437,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             tmpText.text = text;
             tmpText.color = color;
             tmpText.alignment = TextAlignmentOptions.MidlineLeft;
-            tmpText.enableWordWrapping = false;
+            tmpText.textWrappingMode = TextWrappingModes.NoWrap;
             tmpText.raycastTarget = false;
             return tmpText;
         }

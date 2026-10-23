@@ -47,7 +47,8 @@ namespace MoreMountains.FeedbacksForThirdParty
 
             // 写回
             string newDefines = string.Join(";", definesList);
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
+            if (!string.Equals(definesString, newDefines, StringComparison.Ordinal))
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
         }
     }
 #endif

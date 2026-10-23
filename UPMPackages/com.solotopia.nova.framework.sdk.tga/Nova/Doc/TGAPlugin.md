@@ -68,16 +68,16 @@ WebGL 下由 ThinkingAnalytics PC/WebGL 实现生成随机 GUID，并通过 Play
 
 ## 3. 初始化与配置
 
-- `Priority => 10`，作为当前 SDK 初始化链的首个分桶，先于依赖 TGA 标识数据的插件初始化
+- `Priority => 10` 只决定稳定通知和逆序释放顺序；初始化按已声明的能力依赖调度。需要 TGA 标识的插件通过 `ITrackPlugin` 依赖与数据槽等待接入，不能从 Priority 数字推导初始化先后。
 
 - `OnInitializeAsync(...)` 会读取 `TGAPluginConfig`
 - `Mode` 与 `TimeZone` 使用包内枚举保存，初始化时转换为 `TDMode` / `TDTimeZone` 后写入 `TDConfig`
-- `AppID` 为空或 `ServerCmdName` 无法解析为上报地址时，插件会跳过初始化
+- `AppID`、`ServerCmdName` 为空或上报地址解析失败时抛出初始化异常，由 SDKManager 隔离该插件失败；整体初始化结束不代表 TGA Ready。
 - 初始化成功后会：
   - 按配置将 `DeviceId` 同步到 `DistinctId`
   - 注册框架公共属性
   - 创建 `TGADynamicSuperPropertyListener`
-  - 监听 `SDKEventData.UserLogin`
+  - 通过 `ISDKLoginReceiver` 接收 Manager 交付的当前账号
   - 通过 `TGAReportNetService` 上报 TGA 标识
   - 异步监听 `IAuthPlugin` 发布的 `SDKDataKeys.OpenId` / `SDKDataKeys.ThirdLoginProvider`，并通过 `UserSet` 写入 `nova_openid` / `nova_third_login_provider`
 
@@ -90,7 +90,17 @@ WebGL 下由 ThinkingAnalytics PC/WebGL 实现生成随机 GUID，并通过 Play
 5. 按配置同步 `DeviceId` 到 `DistinctId`，再写入框架默认属性。
 6. 创建动态公共属性监听器并启用自动采集。
 7. 发布 `TGADevicesId` / `TGADistinctId` 数据槽位，并启动 AppsFlyer ID 与第三方登录标识的异步桥接。
-8. 订阅登录事件，登录后发布 `TGAAccountId` 并向业务服务器上报 TGA 标识。
+8. Manager 在目标插件 Ready 后通过 `OnSDKLogin` 交付当前账号，随后发布 `TGAAccountId` 并向业务服务器上报 TGA 标识；插件不自行订阅旧登录事件。
+
+初始化会调用原厂 SDK、设置全局属性并创建动态属性监听对象；中途异常没有整体回滚。首次取得 `nova_first_version` 时若存档尚无该项，会写入并保存 FileFragment 分类，因此初始化中的默认属性构造不是纯查询。普通公共属性、框架公共属性、动态属性分别维护，调用原厂静态公共属性入口不会自动改写框架自己的属性字典。
+
+### 3.2 属性与生命周期边界
+
+动态属性的业务字典在锁内浅复制后与框架字典合并，同名业务值优先，值对象仍共享；批量 Set 是逐项覆盖，失败不回滚前面项目。清空或移除业务动态属性后，框架同名属性仍可能出现。静态公共属性、UserSet、UserSetOnce 与动态属性各自独立；`UserSet`/`UserSetOnce` 可在业务字典为空时上传框架属性，不能把空参数理解成无操作。UserAdd 只接受 int/long/float/double，仍不排除 NaN/Infinity；UserUnset 列表逐项发送，首个异常后停止。多数厂商透传入口没有 Ready 门禁或上传确认，JSON 字符串重载也不在本地解析。
+
+首次版本保存会忽略 Save 的布尔返回值，已有空值不修复，因此读到版本不证明已耐久落盘。当前 `OnDisposeAsync` 没有清属性、销毁/解绑动态监听器或关闭原厂 SDK；监听对象依赖 Unity 父节点生命周期，外部保留的监听器仍可能回调旧插件。第三方登录桥接分别等待 OpenId 与 provider，没有默认超时，多个账号可覆盖同名框架属性。
+
+结束业务会话只更新 session 标记，不执行原厂 Logout、取消标识等待或撤回已发 HTTP；上报仅在派发前核对一次 session。标识、OpenID 和原始属性可能进入现有日志，诊断资料应脱敏。`CalibrateTime` 单位为 Unix 毫秒；WebGL NTP 入口只告警跳过。`EnableTracking(false)` 映射 Pause，不等于删除缓存或停止原厂 SDK。
 
 ## 4. 使用示例
 

@@ -5,7 +5,9 @@
 
 `NativeManagerConfig` 是 `NativeComponent` 序列化并传入 `INativeManager.Initialize(...)` 的初始化配置容器。
 
-当前类没有配置字段，保留为后续原生能力的显式扩展位。默认 `NativeManager` 不需要通过 Inspector 填写通知权限、Push Token、AppID 或 Secret。
+`EnableAndroidAppInstall` 默认 `false`。开启后允许业务显式调用自身 APK 安装，并在实际启用的 Build Scene 中存在已开启的 NativeComponent 时声明 `REQUEST_INSTALL_PACKAGES`；默认不声明该权限，不打开系统来源设置或安装界面。该字段不配置通知、Push Token、AppID 或 Secret。
+
+安装仅支持 Android API 28 及以上。运行时总门与 Inspector、构建读取同一字段；旧 Prefab 未保存该字段时保持关闭，不自动修改项目现有配置。业务仍需系统来源许可与用户安装确认，不能通过开关获得静默安装。
 
 ## 当前边界
 

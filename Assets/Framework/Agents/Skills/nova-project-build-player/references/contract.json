@@ -4,25 +4,56 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
       "kind": "agent-action",
       "entry": "nova.project.player.build",
-      "when": "已冻结 Player 构建输入并需要生成本地 Player 或平台工程时"
+      "when": "活动目标为 Standalone 桌面平台或 WebGL，且已冻结精确输出路径与 Player 构建输入时；Android/iOS 不进入此 Action；当前Tool支持时，慢计划在同一operation=plan内用plan_mode=start/status/forget及Agent保留的request_id登记/读取/释放传输记录，不绕过原Core Plan/Execute/Verify。 服务端Tool缓存旧Schema时，只有Unity custom-tools已核实新字段且Provider提供现有execute_custom_tool，才以tool_name=nova_project_action/parameters=同一请求转交原Tool；单独客户端新会话不保证刷新，不改server配置或擅自重启。"
     },
     {
       "kind": "agent-action",
       "entry": "nova.project.pipify.run-batch",
-      "when": "用户明确选择项目中已有的 Pipify Batch 执行完整构建流水线时"
+      "when": "用户指定已保存Batch，或构建授权覆盖发现/审查的同范围本地组合时；缺适用Batch先复用nova-project-configure-pipeline在当前Settings内创建或修正，保存及Verify后重新Plan本次run-batch。不存在Batch本身不永久blocked，不扩大平台/场景/输出或执行未授权远端Step。"
+    },
+    {
+      "kind": "cli",
+      "entry": "nova-project-build-player/scripts/serve_webgl.py",
+      "when": "用户要求本次WebGL本机HTTP/浏览器验收时，先inspect显式buildRoot并冻结contentHash，再serve绑定同摘要；仅loopback，不构建、不修改导出、不部署、不接管端口。"
+    },
+    {
+      "kind": "cli",
+      "entry": "adb -s <frozenSerial> install -r <frozenApk>; adb -s <frozenSerial> shell dumpsys package <bundleId>; adb -s <frozenSerial> shell am start -W -n <resolvedComponent>",
+      "when": "仅明确设备运行授权的Android APK安装分支；冻结本次artifact/hash/包/版本/签名与单设备、ABI/API、实际入口、同包替换影响；串行安装并读回，不默认降级/卸载/清数据。"
+    },
+    {
+      "kind": "cli",
+      "entry": "java -jar <resolvedBundletool> build-apks --bundle=<frozenAab> --output=<newApks> --connected-device --device-id=<frozenSerial> --adb=<resolvedAdb>; java -jar <resolvedBundletool> install-apks --apks=<frozenApks> --device-id=<frozenSerial> --adb=<resolvedAdb>",
+      "when": "仅明确设备运行授权的Android AAB分支；按platform-cli.md显式绑定签名与受保护password file，生成新APKS并检查提取APK签名，再指定同设备安装/读回；AAB签名不代表最终APK签名。"
+    },
+    {
+      "kind": "cli",
+      "entry": "DEVELOPER_DIR=<frozenXcode> xcodebuild -list -json / -showdestinations; xcodebuild -workspace <frozenWorkspace> | -project <frozenProject> -scheme <frozenScheme> -configuration <frozenConfiguration> -sdk <frozenSdk> -destination <frozenDestination> -derivedDataPath <newDerivedData> -resultBundlePath <newResultBundle> build",
+      "when": "仅请求iOS原生编译或运行层时；按platform-cli.md从实际Xcode/SDK/工程/锁文件冻结唯一workspace或project、scheme、destination及签名策略。无签名iphoneos仅证明原生编译/链接，不证明可装设备；不用allowProvisioningUpdates/DeviceRegistration变更Apple外部状态。"
+    },
+    {
+      "kind": "cli",
+      "entry": "DEVELOPER_DIR=<frozenXcode> xcrun devicectl list devices; xcrun devicectl device install app --device <frozenDeviceId> <frozenSignedApp>; xcrun devicectl device process launch --device <frozenDeviceId> <frozenBundleId>",
+      "when": "仅明确iOS真机运行授权分支；本次已签名app/hash/Bundle ID、设备与替换影响冻结，按当前Xcode help指定设备安装/启动并读回。发现设备不算安装成功，不额外终止进程/注册设备/改Apple账号；业务与SDK设备证据分开。"
+    },
+    {
+      "kind": "cli",
+      "entry": "DEVELOPER_DIR=<frozenXcode> xcrun simctl list devices; xcrun simctl install <frozenSimulatorUdid> <frozenSimulatorApp>; xcrun simctl launch <frozenSimulatorUdid> <frozenBundleId>",
+      "when": "仅明确模拟器运行授权分支；实际iphonesimulator SDK产物/UDID/Bundle ID与当前help冻结，不能用iphoneos app安装模拟器。安装/启动需本次产物与真实业务观察，不等于真机或SDK效果。"
     }
   ],
   "inputs": [
     {
       "name": "projectRoot",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
     },
     {
       "name": "targetPlatform",
@@ -30,7 +61,8 @@
     },
     {
       "name": "enabledBuildScenes",
-      "required": true
+      "required": true,
+      "constraint": "直接Player Action按其Plan冻结；Pipify入口由Agent在Batch外记录顺序、内容/脏态基线并前后复核，不视为BatchSnapshot已冻结。"
     },
     {
       "name": "outputPathOrFolder",
@@ -50,38 +82,66 @@
     },
     {
       "name": "platformOutputAndSigningOptions",
-      "required": true
+      "required": true,
+      "constraint": "从当前PlayerSettings与已保存Batch读取有效平台选项；输出/签名有多个合理候选或缺实际权限时补充最少决策，不猜凭据。"
     },
     {
       "name": "executionEntry",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
+    },
+    {
+      "name": "requestedValidationLayers",
+      "required": false,
+      "constraint": "完整三平台或运行/存档验收时按references/platform-validation.md发现可执行层级，逐平台串行报告；普通单次Player构建不自动扩展。"
+    },
+    {
+      "name": "platformRuntimeValidation",
+      "required": false,
+      "constraint": "仅用户要求运行层时，按platform-cli.md冻结当前宿主工具路径、APK/AAB/APKS或签名app身份、设备、实际入口、签名策略及时间窗；WebGL冻结buildRoot/contentHash/port与真实线程隔离要求。"
+    },
+    {
+      "name": "deviceInstallScope",
+      "required": false,
+      "constraint": "仅设备安装/启动分支必需：绝对artifact路径及SHA-256、包标识/版本/证书摘要、精确serial/UDID、ABI/API、工具路径、实际入口、时间窗、已有同包版本/签名与保留数据的替换影响。普通Player构建不要求设备；artifact/设备/签名/影响漂移后重新绑定计划。"
     }
   ],
   "effects": [
     "workspace-write",
     "unity-write",
     "generated-output",
-    "build"
+    "build",
+    "external-write",
+    "credential"
   ],
   "writeScope": {
     "allow": [
       "confirmed local Player output path or platform project directory",
       "documented build-processor staging, markers and generated platform files",
-      "temporary Build Settings, Android output and signing values restored by existing adapters"
+      "temporary Build Settings, Android output and signing values restored by existing adapters",
+      "authorized same-scope local Batch preparation in current PipifySettingsSO through nova-project-configure-pipeline before a new run plan",
+      "only requested device-install branch: frozen device and application install/update/launch while preserving existing user data",
+      "only requested AAB-install branch: new local APKS and authorized protected signing input files, cleaned after acceptance",
+      "three exact audited official postbuild scalar resets: freeze actual Generated/HasWarned/scenesProcessed before execution; accept observed zero after the normal callback chain only, never pre-set or restore vendor counters",
+      "TMP exact approved asset Load/official clear native-memory effects and Facebook official binding to the unique existing Resources asset only; source files preserved and typed before/after required",
+      "exact audited normal Core usage, SRP empty-list pool, Adaptive empty metadata initialization/comparison and WebGL BuildEvents cache effects; unchanged Analytics settings, typed actual before/after/report, no provider prewarm, payload clearing, replay or delivery claim"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/** and Library/PackageCache/**",
       "manual permanent Resources/YooAssetSettings.asset",
       "unrelated source, Scene, Prefab or generated output",
       "CDN, store upload and any remote release write",
-      "Git commit or push and UPM publish"
+      "Git commit or push and UPM publish",
+      "unrequested device installation, arbitrary device selection, implicit downgrade/uninstall/clear-data/grant-all-permissions",
+      "reusing or deleting pre-existing APKS without exact overwrite authorization, or exposing signing passwords in command/log output"
     ]
   },
   "locks": [
     "unity-editor",
     "asset-database",
     "build-settings",
-    "player-output-directory"
+    "player-output-directory",
+    "device-install branch only: frozen device serial/UDID plus application; no device lock in build-only branch"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -90,9 +150,10 @@
       "CleanBuild 或 ForceSkipDataBuild",
       "Android DevelopmentBuild 与 AAB 组合",
       "读取或临时应用签名凭据",
-      "delete, external write, Git commit or push"
+      "delete, external write, Git commit or push",
+      "device-install branch: exact artifact/device/signing or replacement-impact change; existing explicit runtime authorization covers frozen install/launch"
     ],
-    "rule": "确认绑定 Target、Scene 闭包、输出路径、BuildMode、DevelopmentBuild、DevelopMode 和平台专属选项；任一输入改变后旧确认失效。"
+    "rule": "确认绑定 Target、Scene 闭包、输出路径、BuildMode、DevelopmentBuild、DevelopMode 和平台专属选项；任一输入改变后旧确认失效。 已有完整构建授权可覆盖审查后的必要本地组合；可读取参数由Agent发现并展示，缺业务选择或真实外部权限才补充输入。Batch外Scene、Master、Runtime、PlayerSettings与动态参数基线独立记录，不能称当前Batch Plan完整冻结。 明确运行授权覆盖精确设备安装/启动与本机HTTP验收；降级、卸载、清数据、设备注册、Apple账号变更和外部发布不随构建默认授权。"
   },
   "minimumEvidence": "player-build",
   "resultStates": [
@@ -106,6 +167,51 @@
     "BuildReport.summary.result 和 outputPath",
     "本次本地 Player 或平台工程产物",
     "临时 Build Settings、YooAsset staging 与签名值的恢复结果",
-    "未执行真机、商店、CDN、Git 与 UPM 发布的边界说明"
+    "未执行真机、商店、CDN、Git 与 UPM 发布的边界说明",
+    "现存Batch发现与有序依赖审查；本次适用生成代码在热更DLL前完成的证据",
+    "Batch外Scene/Master/Runtime/PlayerSettings基线、多平台/Batch组合时每平台切换稳定、前后漂移与显式preflight结果；Job成功不代替产物",
+    "按请求分层的Android运行、iOS工程/Pods/原生编译/签名设备、WebGL HTTP/首包/浏览器及独立生命周期存档；未做层级保留partial",
+    "本轮临时文件、测试key与设置恢复/清场结果，及要求保留的正式产物",
+    "随包WebGL inspect冻结摘要、真实HTTP压缩/MIME响应及浏览器消费；Android签名/包身份与精确设备readback、AAB→APKS工具/签名证据、iOS原生/签名/设备逐层证据；工具help不是运行验证。",
+    "device-install branch only: artifact SHA-256 and signing/package compatibility, explicit device/entry, install completion plus package/version/certificate readback and real business probes; Inspector process-start boolean and tool help do not prove installation. Build-only branch retains player-build evidence without device requirement.",
+    "慢计划使用传输子模式时：同request_id登记与完整原响应取回，原ready/blocked状态、过期/域重载边界与精确forget清场；收件completed或plan_candidate不等于Player构建证据。",
+    "Player schema4 Receipt binds actual typed normal-reset before/after, callback-chain return and current zero postcondition with exact field/module identities; old or incomplete receipts remain partial. Exact Firebase Xcode logger and paired SRP DLL/MVID identities retain all other input gates.",
+    "TMP exact before/after/error, natural existing-asset Load lifecycle and narrow official clear, persistent font/source/atlas identity and complete file/meta/pixel/cache/event invariants; 26 pure tests and an Inconclusive integration probe do not prove a Player build.",
+    "Facebook official null-to-unique-existing-Resources binding with exact singleton/asset ownership, full config hashes, original dirty state, candidate closure and callback identities; no getter prewarm, creation, login, business SDK or network invocation.",
+    "Core usage / WebGL BuildEvents / SRP-null-global / Adaptive-empty-metadata typed actual before/after/report; source identity, unchanged original objects/settings and all declared native usage effects. Independent Player requires the own StripAOT guard lease to be naturally inactive."
+  ],
+  "externalCompletionPolicy": "incidental-build-telemetry",
+  "taskProfiles": [
+    {
+      "id": "android-aab-device-install",
+      "description": "仅把已核验既有AAB转为明确Android设备的新APK集并安装，不执行Unity Player重构建；APK集与设备证据分别必需。",
+      "taskIds": [
+        "device.install.aab"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "targetPlatform",
+        "executionEntry",
+        "deviceInstallScope"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "java -jar <resolvedBundletool> build-apks --bundle=<frozenAab> --output=<newApks> --connected-device --device-id=<frozenSerial> --adb=<resolvedAdb>; java -jar <resolvedBundletool> install-apks --apks=<frozenApks> --device-id=<frozenSerial> --adb=<resolvedAdb>"
+        }
+      ],
+      "minimumEvidence": "apk-set-build",
+      "additionalEvidence": [
+        "device"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output",
+        "build",
+        "external-write",
+        "credential"
+      ]
+    }
   ]
 }

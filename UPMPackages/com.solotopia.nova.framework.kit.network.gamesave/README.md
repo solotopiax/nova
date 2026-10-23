@@ -1,7 +1,7 @@
 # Nova Framework - Kit - Network - GameSave
 
 > 包名：`com.solotopia.nova.framework.kit.network.gamesave`
-> 当前版本：`0.1.13`
+> 当前版本：`0.1.14`
 
 游戏存档业务网络模块，封装云存档上传与拉取协议及类型
 
@@ -11,10 +11,12 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.kit.network.gamesave": "0.1.13"
+  "com.solotopia.nova.framework.kit.network.gamesave": "0.1.14"
 }
 ```
 
 ## 维护
+
+公开 API 与配置入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。

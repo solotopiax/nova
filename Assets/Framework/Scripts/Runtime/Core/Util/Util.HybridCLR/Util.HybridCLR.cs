@@ -21,8 +21,9 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// HybridCLR 生态唯一 Facade。
         /// 封装 AOT 元数据补充加载（LoadAotMetadataAsync）与业务 DLL 注入（LoadGameAssemblyAsync）。
-        /// 底层字节通过 AssetComponent.LoadAssetAsync TextAsset 获取，不走 File IO。
-        /// Editor 下所有方法均为 no-op，直接跳过并输出 Debug 日志。
+        /// 底层字节通过 IAssetManager.LoadAsync&lt;TextAsset&gt; 获取，不走 File IO。
+        /// Editor 下 AOT 方法只记录日志并返回；业务方法不加载字节，只按 Trim 并移除末尾 .dll 后的名称查询已有程序集。
+        /// 地址归一化不移除目录或其他后缀，也不根据命名空间、asmdef 或 DLL 内容核验程序集身份。
         /// </summary>
         public static class HybridCLR
         {
@@ -52,7 +53,7 @@ namespace NovaFramework.Runtime
             /// Editor 下为 no-op（直接返回，不执行任何加载）。
             /// 幂等：同一 location 第二次调用直接返回。
             /// </summary>
-            /// <param name="location">Asset 地址，对应 AssetComponent.LoadAssetAsync 的 location 参数（与 HybridCLR assemblyName 等价）。</param>
+            /// <param name="location">原始 Asset 地址，加载字节时直接传给 IAssetManager.LoadAsync&lt;TextAsset&gt;。Player 仅将 Trim 并移除末尾 .dll 后的地址用作缓存与并发键，不据此验证 DLL 程序集身份；Editor 分支不验证地址。</param>
             /// <param name="mode">同源镜像模式，默认 SuperSet（推荐值，兼容 AOT 泛型实例化超集）。</param>
             public static async UniTask LoadAotMetadataAsync(string location, global::HybridCLR.HomologousImageMode mode = global::HybridCLR.HomologousImageMode.SuperSet)
             {
@@ -114,11 +115,11 @@ namespace NovaFramework.Runtime
 
             /// <summary>
             /// 从 Asset 异步加载业务 DLL 字节，并通过 System.Reflection.Assembly.Load 注入 AppDomain。
-            /// Editor 下为 no-op，直接返回 AppDomain 中已有的源码编译产物。
+            /// Editor 下不加载 DLL 字节；空白地址返回 null，其他地址按 Trim 并移除末尾 .dll 后的名称查询已有编译程序集。
             /// 幂等：同一 location 第二次调用直接返回已加载的 Assembly，不会重复 Load。
             /// 加载成功后自动调用 Util.Assembly.RefreshAssemblies 刷新反射视图。
             /// </summary>
-            /// <param name="location">Asset 地址，对应 AssetComponent.LoadAssetAsync 的 location 参数（与程序集名等价）。</param>
+            /// <param name="location">原始 Asset 地址，Player 加载字节时直接传给 IAssetManager.LoadAsync&lt;TextAsset&gt;。Trim 并移除末尾 .dll 后的地址仅用于缓存、并发键与 Editor 程序集查询，不等于已验证的 DLL 程序集身份。</param>
             /// <returns>加载成功的 System.Reflection.Assembly 实例；Editor 下返回已存在的编译产物。</returns>
             public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(string location)
             {

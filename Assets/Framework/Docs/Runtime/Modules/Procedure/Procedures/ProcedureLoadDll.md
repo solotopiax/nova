@@ -164,7 +164,7 @@
 - DLL 是否真的被拷贝到可加载位置
 - 对应 asmdef 的 `includePlatforms`、`excludePlatforms` 与 `defineConstraints` 是否允许当前平台
 
-Editor 下 `LoadGameAssemblyAsync` 不会再次加载 DLL，而是复用源码编译产物。已配置条目却找不到程序集时，异常会同时给出当前平台，并明确提示检查 asmdef 平台限制；ProjectGuard 在进入 Play 前也会用 `NOVA-ASSEMBLY-001` 阻断这种确定的不兼容。
+Editor 下 `LoadGameAssemblyAsync` 不会再次加载 DLL，而是复用源码编译产物。已配置条目却找不到程序集时，异常会同时给出当前平台，并明确提示检查 asmdef 平台限制。排查时同时核对实际编译程序集与 asmdef 平台约束。
 
 ### 4. `GameEntranceProcedureName` 配错
 
@@ -210,3 +210,9 @@ Editor 下 `LoadGameAssemblyAsync` 不会再次加载 DLL，而是复用源码�
 - [IAssetManager.md](../../Asset/AssetManager/Interfaces/IAssetManager.md)
 - [Util.Assembly.md](../../../Utils/Util.Assembly.md)
 - [Util.HybridCLR.md](../../../Utils/Util.HybridCLR.md)
+
+## 参数与生命周期边界
+
+LoadComplete 只表异步已结束，异常时也为 true；OnUpdate 将缓存异常抛一次后保持原流程，不自动恢复。CancellationToken 在多个 await 前后重新读取，基类并不阻止重入后旧 continuation 观察到新 token；调用者须遵守单次启动时序，不据取消推导 DLL 加载被物理停止。Config.LoadAsync 与 HybridCLR 加载没有本流程 token 参数，当前在 await 后检查取消。
+
+Namespace 在此既用作程序集简单名又拼接入口全名，是这条实现的明确配置约束，不能仅凭目录名推导。businessAsm.GetTypes 不恢复 ReflectionTypeLoadException，开放泛型/无无参构造器的具体子类创建仍可失败；零个业务流程也会被 RegisterAdditionalProcedures 拒绝。入口 Type 查到不等 FSM 已注册或业务第一帧成功；真正 ChangeState 在完成后的 Update。

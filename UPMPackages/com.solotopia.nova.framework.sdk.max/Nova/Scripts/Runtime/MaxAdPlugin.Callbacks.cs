@@ -19,22 +19,15 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
     {
 #if NOVA_APPLOVIN_MAX
         /// <summary>
-        /// 注册各格式 MaxSdk 事件回调；由 OnSdkInitializedCallback 在初始化完成后调用。
+        /// 订阅各格式 MaxSdk 回调；计划注册完成后、SDK 初始化成功后调用，不创建组或槽位。
         /// 每种格式独立判断 placementId 是否有效，无效则跳过该格式的注册。
         /// </summary>
         private void RegisterCallbacks()
         {
-            if (m_CallbacksRegistered)
-            {
-                Log.Warning(LogTag.Max, "MAX SDK 回调已经注册，跳过重复注册。");
-                return;
-            }
-
             RegisterRVCallbacks();
             RegisterInterCallbacks();
             RegisterBannerCallbacks();
             RegisterAppOpenCallbacks();
-            m_CallbacksRegistered = true;
         }
 
         /// <summary>
@@ -46,10 +39,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             if (m_RVPlacementIds == null || m_RVPlacementIds.Count == 0) return;
 
-            // 为每个广告位 ID 注册独立 AdUnit 状态机槽位
-            foreach (var id in m_RVPlacementIds)
-                RegisterAdUnits(AdFormat.Rewarded, new[] { new AdUnitOptions(id) });
-
             // SDK 回调只注册一次，通过 adUnitId 参数路由到对应 AdUnit
             MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += OnRVLoaded;
             MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent += OnRVLoadFailed;
@@ -59,6 +48,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             MaxSdkCallbacks.Rewarded.OnAdHiddenEvent += OnRVHidden;
             MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent += OnRVReceivedReward;
             MaxSdkCallbacks.Rewarded.OnAdRevenuePaidEvent += OnRVRevenuePaid;
+            MaxSdkCallbacks.Rewarded.OnExpiredAdReloadedEvent += OnRVExpiredAdReloaded;
         }
 
         /// <summary>
@@ -70,9 +60,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             if (m_InterPlacementIds == null || m_InterPlacementIds.Count == 0) return;
 
-            foreach (var id in m_InterPlacementIds)
-                RegisterAdUnits(AdFormat.Interstitial, new[] { new AdUnitOptions(id) });
-
             MaxSdkCallbacks.Interstitial.OnAdLoadedEvent += OnInterLoaded;
             MaxSdkCallbacks.Interstitial.OnAdLoadFailedEvent += OnInterLoadFailed;
             MaxSdkCallbacks.Interstitial.OnAdDisplayedEvent += OnInterDisplayed;
@@ -80,6 +67,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             MaxSdkCallbacks.Interstitial.OnAdClickedEvent += OnInterClicked;
             MaxSdkCallbacks.Interstitial.OnAdHiddenEvent += OnInterHidden;
             MaxSdkCallbacks.Interstitial.OnAdRevenuePaidEvent += OnInterRevenuePaid;
+            MaxSdkCallbacks.Interstitial.OnExpiredAdReloadedEvent += OnInterExpiredAdReloaded;
         }
 
         /// <summary>
@@ -89,9 +77,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void RegisterBannerCallbacks()
         {
             if (m_BannerPlacementIds == null || m_BannerPlacementIds.Count == 0) return;
-
-            foreach (var id in m_BannerPlacementIds)
-                RegisterAdUnits(AdFormat.Banner, new[] { new AdUnitOptions(id) });
 
             MaxSdkCallbacks.Banner.OnAdLoadedEvent += OnBannerLoaded;
             MaxSdkCallbacks.Banner.OnAdLoadFailedEvent += OnBannerLoadFailed;
@@ -109,9 +94,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             if (m_AppOpenPlacementIds == null || m_AppOpenPlacementIds.Count == 0) return;
 
-            foreach (var id in m_AppOpenPlacementIds)
-                RegisterAdUnits(AdFormat.AppOpen, new[] { new AdUnitOptions(id) });
-
             MaxSdkCallbacks.AppOpen.OnAdLoadedEvent += OnAppOpenLoaded;
             MaxSdkCallbacks.AppOpen.OnAdLoadFailedEvent += OnAppOpenLoadFailed;
             MaxSdkCallbacks.AppOpen.OnAdDisplayedEvent += OnAppOpenDisplayed;
@@ -119,27 +101,52 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             MaxSdkCallbacks.AppOpen.OnAdClickedEvent += OnAppOpenClicked;
             MaxSdkCallbacks.AppOpen.OnAdHiddenEvent += OnAppOpenHidden;
             MaxSdkCallbacks.AppOpen.OnAdRevenuePaidEvent += OnAppOpenRevenuePaid;
+            MaxSdkCallbacks.AppOpen.OnExpiredAdReloadedEvent += OnAppOpenExpiredAdReloaded;
         }
 
         /// <summary>
         /// 反注册所有 MaxSdk 广告事件回调；由 DisposeChannelSDKAsync 调用，防止资源泄露。
-        /// 先结束收益派发会话并清空插件缓存，再按格式反注册。
+        /// 结束隐私与原生展示等待并销毁本渠道创建的 Banner；已取消 ct 不跳过清理。
+        /// 基类取消生命周期后，初始化方法通过自身 finally 解绑初始化事件。
+        /// 清除国家代码与授权缓存，使已释放实例的查询恢复默认值。
         /// </summary>
+        /// <param name="ct">调用方取消令牌；清理不因令牌已取消而跳过。</param>
+        /// <returns>全部同步清理步骤执行后的完成任务。</returns>
         protected override UniTask DisposeChannelSDKAsync(CancellationToken ct)
         {
+            m_IsSdkInitialized = false;
+            m_PrivacyFlowCompletionSource.TrySetResult();
+            // 先清空成员，再取消局部完成源，释放续体不会读取到旧展示句柄。
+            var rvCompletion = m_RVTcs;
+            var interCompletion = m_InterTcs;
+            var appOpenCompletion = m_AppOpenTcs;
+            m_RVTcs = null;
+            m_InterTcs = null;
+            m_AppOpenTcs = null;
+            m_ActiveFullscreenPlacementId = null;
+            m_RVRewarded = false;
+            rvCompletion?.TrySetCanceled();
+            interCompletion?.TrySetCanceled();
+            appOpenCompletion?.TrySetCanceled();
+            lock (m_FullscreenImpressionLock) m_FullscreenImpressions.Clear();
             ClearMaxRevenueTrackers();
-            if (!m_CallbacksRegistered)
-            {
-                return UniTask.CompletedTask;
-            }
-
             UnregisterRVCallbacks();
             UnregisterInterCallbacks();
             UnregisterBannerCallbacks();
             UnregisterAppOpenCallbacks();
-            m_CallbacksRegistered = false;
+            foreach (string placementId in m_CreatedBannerPlacementIds)
+            {
+                try { MaxSdk.DestroyBanner(placementId); }
+                catch (System.Exception ex) { Log.Warning(LogTag.Max, $"MAX Banner 释放失败：placement={placementId}，{ex.Message}"); }
+            }
+            m_CreatedBannerPlacementIds.Clear();
+            m_BannerDesiredVisible = false;
+            m_CountryCode = null;
+            m_IsUserConsentSet = false;
+            m_HasUserConsent = false;
             return UniTask.CompletedTask;
         }
+
 
         /// <summary>
         /// 反注册激励视频广告事件回调；m_RVPlacementIds 为空时跳过。
@@ -164,6 +171,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent -= OnRVReceivedReward;
             // 反注册激励视频收益回调
             MaxSdkCallbacks.Rewarded.OnAdRevenuePaidEvent -= OnRVRevenuePaid;
+            MaxSdkCallbacks.Rewarded.OnExpiredAdReloadedEvent -= OnRVExpiredAdReloaded;
         }
 
         /// <summary>
@@ -187,6 +195,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             MaxSdkCallbacks.Interstitial.OnAdHiddenEvent -= OnInterHidden;
             // 反注册插屏广告收益回调
             MaxSdkCallbacks.Interstitial.OnAdRevenuePaidEvent -= OnInterRevenuePaid;
+            MaxSdkCallbacks.Interstitial.OnExpiredAdReloadedEvent -= OnInterExpiredAdReloaded;
         }
 
         /// <summary>
@@ -229,6 +238,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             MaxSdkCallbacks.AppOpen.OnAdHiddenEvent -= OnAppOpenHidden;
             // 反注册开屏广告收益回调
             MaxSdkCallbacks.AppOpen.OnAdRevenuePaidEvent -= OnAppOpenRevenuePaid;
+            MaxSdkCallbacks.AppOpen.OnExpiredAdReloadedEvent -= OnAppOpenExpiredAdReloaded;
         }
 #endif
     }

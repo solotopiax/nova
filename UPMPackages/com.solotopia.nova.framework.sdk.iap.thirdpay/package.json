@@ -1,12 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.sdk.iap.thirdpay",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - IAP - ThirdPay",
   "description": "纯 C# 应用内第三方支付 Store，包含 Google External Billing Program 合规流程",
   "category": "Runtime",
-  "unity": "2021.3",
+  "unity": "6000.6",
+  "unityRelease": "7f1",
   "keywords": [
     "nova",
     "sdk",
@@ -20,8 +21,8 @@
   },
   "dependencies": {
     "com.onevcat.uniwebview": "5.11.1",
-    "com.solotopia.nova.framework": "0.6.0",
-    "com.solotopia.nova.framework.sdk.iap": "0.1.16",
+    "com.solotopia.nova.framework": "0.7.0",
+    "com.solotopia.nova.framework.sdk.iap": "0.2.0",
     "com.solotopia.unitask": "10.0.6",
     "com.unity.purchasing": "5.3.1"
   }

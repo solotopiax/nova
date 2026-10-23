@@ -481,7 +481,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制隐私配置面板；按当前三维坐标编辑 AES 凭据、iOS 隐私清单和权限用途说明。
+        /// 绘制隐私配置面板；按功能标题和横线分隔 AES 凭据、可选扩展、iOS 隐私清单和权限用途说明。
         /// </summary>
         private void DrawPrivacyConfigsPanel()
         {
@@ -516,6 +516,7 @@ namespace NovaFramework.Editor
                 SerializedProperty iv = config?.FindPropertyRelative("AESIV");
                 SerializedProperty privacyInfo = config?.FindPropertyRelative("PrivacyInfoConfig");
                 SerializedProperty usageDescriptions = config?.FindPropertyRelative("InfoPlistUsageDescriptions");
+                DrawPrivacySectionTitle("AES全局密钥配置");
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(16f);
@@ -541,11 +542,14 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.Space(16f);
                 });
 
+                PrivacyPanelExtensions.Draw(config, Repaint);
+                DrawPrivacySectionSeparator();
+
                 if (privacyInfo != null)
                 {
-                    EditorUtil.Draw.Space(12f);
                     using (new EditorGUI.DisabledScope(m_EditingPlatform != PlatformType.iOS))
                     {
+                        DrawPrivacySectionTitle("iOS 隐私清单配置");
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
                             EditorUtil.Draw.Space(16f);
@@ -573,9 +577,10 @@ namespace NovaFramework.Editor
                 }
                 if (usageDescriptions != null)
                 {
-                    EditorUtil.Draw.Space(12f);
+                    DrawPrivacySectionSeparator();
                     using (new EditorGUI.DisabledScope(m_EditingPlatform != PlatformType.iOS))
                     {
+                        DrawPrivacySectionTitle("Info.plist 用途说明配置");
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
                             EditorUtil.Draw.Space(16f);

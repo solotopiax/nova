@@ -4,7 +4,15 @@
 **命名空间**：`NovaFramework.Editor`
 **菜单路径**：`Nova/Open Config`（`[MenuItem("Nova/Open Config")]`）
 
+设计态保存复用 [共享保存服务](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md)。提交前失败提示未保存；真实资产写入开始后失败提示保存未完成并要求核对资产，不承诺资产没有修改，也不自动回滚或重放。
+
 Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集中管理 ConfigMasterSO 的 Platform×Channel 矩阵编辑、SDK Plugin 配置、AppConfigs 与 Custom 参数填写、HybridCLR DLL 配置、CDN 内容部署及 Luban/Python3 环境检查。Platform、Channel 与 DevelopMode 均可在窗口内切换；编辑平台是窗口本地状态，不写入 ConfigMasterSO。编辑平台与 Unity Active BuildTarget 一致时才允许导出 ConfigRuntimeSO 并使对应 YooAsset 配置生效。
+
+“通用配置 → 隐私配置”负责 AES 全局密钥、独立包扩展区、iOS 隐私清单和 Info.plist 用途说明，沿用三维掩码与 WorkingCopy 保存路径。主框架通过通用 `PrivacyPanelExtensions` 接受包内 Editor 注册，在 AES 区后绘制已安装扩展；扩展数据保存在 `PrivacyConfigs.ExtensionConfigsJson`，随原链保存、深拷贝和导出。未安装包时隐藏对应扩展面板并保留数据。两个 iOS 区域继续随平台整体灰显。
+
+安装可选包 `com.solotopia.nova.framework.memory.protection` 后，其 Editor 注册“内存数据防护”，提供检测、定期换钥和 ACTk 状态检查；开关及旧配置迁移、购买导入说明均归该包维护。详见 [PrivacyConfigs](../../Runtime/Modules/Config/PrivacyConfigs.md) 和 [MemoryProtection 包文档](../../../../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/MemoryProtection.md)。
+
+扩展接入点为 `NovaFramework.Editor.PrivacyPanelExtensions.Register(string extensionKey, int order, Action<SerializedProperty, Action> drawer)`；同键重复注册会替换旧回调，按 `order` 再按键排序。回调仅编辑当前坐标的 Privacy 工作副本，并可请求窗口重绘；真实资产保存与维度广播仍由 ConfigWindow 负责。`Unregister(string extensionKey)` 移除对应扩展。
 
 ---
 
@@ -15,6 +23,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与五个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、隐私、名字空间、SDK、Kit 面板 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；窗口本地编辑平台 `m_EditingPlatform`；延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.AgentEditing.cs` | `ConfigWindow` | 注册共享保存的草稿检测和保存后刷新；检查实际窗口的 dirty、未提交属性与待执行请求，不覆盖草稿，当前保存窗口保留是否重建副本的原调用参数。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatform` / `TryApplyChannel` / `TryApplyDevelopMode`（延迟切换坐标，见 PAT-22 升级）、`OnClickExport` / `TryExport`（先校验编辑平台与 Active BuildTarget 一致；Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后清除待导出状态并追加场景 `DevelopMode` 快照回写） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs` | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawAppConfigsPanel`、`DrawCustomConfigRows`、`DrawSDKPanel`、`DrawKitPanel`；应用配置面板同时编辑 `CustomConfigCmdName / CustomName` 与直接展开的本地 JSONPath key-value 行；标题+掩码内联行由 `DrawPanelTitleWithMask` 统一绘制 |
@@ -24,6 +33,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs` | `ConfigWindow` | CDN 面板包含“部署”“白名单部署”“Cloudflare 缓存清理”三个业务区；OSS 工具包缺失时显示安装引导并仅禁用前两项部署；白名单区直接编辑设备 ID 字符串数组、配置文件云端文件位置、三个 YooAsset 版本文件本地位置和版本文件云端目录，并通过独立按钮分别上传；所有字段沿用 `CDNEditorConfigsMask + CDNEditorConfigsOverrides` 维度快照、WorkingCopy 延迟保存与 `CreateCdnConfigSnapshot` 执行快照机制。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：字段和维度开关统一只修改 WorkingCopy；`ReInjectYooAsset` 从 WorkingCopy 解析当前坐标并刷新编辑期预览，点击保存后才整体写入 ConfigMaster 资产；导出时再把当前维度模板单向写入目标 YooAssetSettings.asset。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.ResourceEncryption.cs` | `ConfigWindow` | 资源加解密配置：统一三维头部、已有 PackageName 的密钥与当前编号、源码导出目录；编辑 WorkingCopy 并使用顶部全局保存，导出才生成客户端源码。 |
+| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Privacy.cs` | `ConfigWindow` | 绘制 AES 与 iOS 隐私字段，并通过通用 `PrivacyPanelExtensions` 绘制已安装独立包的扩展区；不直接依赖内存防护类型。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster`；绑定后重建 WorkingCopy，不直接将 SerializedObject 绑到真实资产 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`HandleCloseReminder`（关窗保存/导出单次提醒）、`ConfirmDiscardDirty`、维度切换确认、校验提示与缺失引用清理；清理 SDK / Kit 失效引用也只修改 WorkingCopy，等待统一保存。 |
 
@@ -112,7 +122,7 @@ UnityEditor.EditorWindow
 | `Python3Env` | Python3 环境检测面板（环境检测组下） |
 | `HybridCLREnv` | HybridCLR 环境检测面板（环境检测组下） |
 | `AppConfig` | 应用配置面板（通用配置组下） |
-| `PrivacyConfig` | 隐私配置面板：AES Key/IV 与其说明成组，随后依次是 `PrivacyInfoConfig` 与 `InfoPlistUsageDescriptions` JSON 多行输入及各自说明；非 iOS 时两组的标题、输入框、HelpBox 整体灰显；携带三维配置头部 |
+| `PrivacyConfig` | 隐私配置面板：AES 全局密钥、已安装包的通用扩展区、iOS 隐私清单、Info.plist 用途说明；区域有标题和分隔；非 iOS 时后两组标题、输入框、HelpBox 整体灰显；携带三维配置头部 |
 | `NamespaceConfig` | 名字空间配置面板（通用配置组下） |
 | `HybridCLRConfig` | HybridCLR 配置面板（通用配置组下）：业务入口 Procedure 相对名 + AOT 元数据 DLL 列表 + 业务 DLL 列表 |
 | `YooAssetConfig` | YooAsset 配置面板（通用配置组下）：两条资产路径，以及只存 ConfigMaster、导出时单向写入 `YooAssetSettings.asset` 的 `YooFolderName` / `PackageFilePrefix` 模板 |
@@ -155,16 +165,17 @@ public static void OpenKitConfigSection(ConfigMasterSO master, PlatformType plat
 OnEnable()
   ├─ EnsureEditingPlatform() → 首次优先 Active BuildTarget，未映射时回退 Android
   ├─ WorkspaceActive.ReconcileScene(activeScene.path) → 写入或恢复完整工作区
-  ├─ EditorUtil.Config.WorkspaceActive.Get() → m_Master（只读当前持久化绑定；找不到则 null）
+  ├─ EditorUtil.Config.WorkspaceActive.Get() → m_Master（读取绑定并可能修复 pathHint；找不到则 null）
   ├─ m_Master != null:
-  │    ├─ new SerializedObject(m_Master) → m_MasterSO
-  │    ├─ StructureGuard.SyncEnumGrid(m_Master)    补齐矩阵
+  │    ├─ Instantiate(m_Master) → m_WorkingCopy；new SerializedObject(m_WorkingCopy) → m_MasterSO
+  │    ├─ 在 WorkingCopy 上迁入旧资源密钥/隐私默认、SyncEnumGrid 并检查维度；发生变化则标脏，不直接保存 Master
   │    ├─ RefreshPluginCache()   扫 ISDKPluginConfig 实现类型
   │    ├─ m_LastKnownChannel = m_Master.CurrentChannel
   │    └─ YooAssetInjector.Inject(m_Master)    注入 YooAssetConfiguration
   ├─ EditorSceneManager.sceneOpened += OnSceneOpenedRefresh
   ├─ RunLubanCheck()    跑 Luban 环境检测
-  ├─ RunPython3Check()  跑 Python3 环境检测（读 SessionState 缓存，不阻塞）
+  ├─ RunPython3Check()  跑 Python3 环境检测（可命中 SessionState；首次同步探测会阻塞）
+  ├─ RunHybridCLRCheck() 读取 HybridCLR 环境检查结果
   └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位；确认后只清理 WorkingCopy 并标记待保存
 
 OnDisable()
@@ -262,7 +273,7 @@ CommitWorkingCopyToAsset()
 
 - `EditorUtil.Config.SceneDevelopModeWriter.WriteActiveScene(m_Master.CurrentDevelopMode, m_Master.CurrentChannel)`
 
-作用是把当前激活场景中的 `Nova + 所有 FrameworkComponent` 的 `m_DevelopMode` 序列化快照更新为这次导出选中的 `DevelopMode`，同时把 `CurrentChannel` 写入 `AssetComponent` 的启动期渠道快照。二者都在 `Config.LoadAsync()` 之前可读；Asset 渠道快照与同次导出的 `ConfigRuntimeSO.Channel` 同源。
+作用是把当前激活场景中的 `Nova + 所有 FrameworkComponent` 的 `m_DevelopMode` 序列化快照更新为这次导出选中的 `DevelopMode`，同时把 `CurrentChannel` 写入 `AssetComponent` 与 `AppComponent` 的启动期渠道快照，并将场景首个 AssetComponent 的默认资源包名同步给 App（默认包名为空时回退其包列表首项）。这些快照在 `Config.LoadAsync()` 之前可读，渠道与同次导出的 `ConfigRuntimeSO.Channel` 同源。Writer 只标记场景脏态，不保存场景；构建前仍须显式保存并检查本次启用场景。
 
 ### 右面板分发（DrawRightPanel）
 
@@ -403,7 +414,7 @@ OnClickExport()
 | 导出目标 SO 重启后丢失 | 导出目标改由 `ConfigMasterSO.ExportTarget`（`[SerializeField]`）持久化，SO 保存后跨会话自动恢复；无需 EditorPrefs |
 | `m_SelectedItem` 默认值 | 默认为 `LeftTreeItem.LubanEnv`，不是 `Environment` |
 | "保存"按钮灰色点不了 | `m_IsDirty == false` 时 DisabledScope 禁用按钮；在右侧面板编辑任意字段后 ChangeCheck 自动置 `true` |
-| 切换导出目标后保存按钮仍然灰色 | 正常现象。切换导出目标（ObjectField 回调 / `OnClickSelectExportAsset`）不清零 `m_IsDirty`，也不置位；导出目标切换不影响 ConfigMasterSO 的脏状态 |
+| 切换导出目标后需要保存 | ObjectField 回调和选择文件都写 WorkingCopy 并置 `m_IsDirty=true`，统一保存后才持久化到 Master；不能把未保存选择当作下一次导出的真实目标。 |
 | 编辑其他平台必须切换 Unity BuildTarget | 不需要。顶栏可直接切换编辑平台并保存；只有导出和 YooAsset 生效要求编辑平台与 Active BuildTarget 一致。 |
 | 改完字段直接关窗口 | 关闭时会一次性询问“取消 / 仅保存 / 保存并导出”；取消不保存、不导出，选择“仅保存”不会再追问导出 |
 | 手动保存后忘记导出 | 当前窗口会话记录“已保存但未导出”状态，关闭时询问是否导出；成功导出后不再提示 |
@@ -468,3 +479,15 @@ if (!envResult.IsReady)
 三维开关只区分各环境的当前加密编号，所有保留密钥共用。加维复制各旧逻辑组，减维按顶部当前轴合并剩余各组，不删除密钥；维度和编号经 DimensionProjector 入口修改。保存时自动清理失效 `ActiveKeyOverrides`，无需整理确认；全局时只保留共用的当前编号与全部密钥。编辑坐标取顶栏，构建取实际目标平台及激活 Config 已保存渠道、模式；Pipify export.config 参数不改写该坐标。官方清单接口不提供平台，按平台分维并启用 Nova 清单加密时须使用 Nova/Pipify，否则阻断。
 
 布局沿用 CDN 面板：内容两侧 16 像素，标签列 150 像素；大区域使用 12 像素留白及公共分隔线。卡片四周 8 像素，内部标签列 142 像素、行距 2 像素，按钮统一 singleLineHeight。“新增密钥”位于“现有密钥”标题行右侧，旁边是紧凑的“显示密钥”；新增条目暂时黄色高亮，输入方式使用“手动输入”措辞。HelpBox 只说明操作和使用约束，不暴露内部环境变量或重复当前坐标。方案在 YooAsset/Pipify 中选择，详见 [资源加解密](../../Runtime/Modules/Asset/ResourceEncryption.md)。
+
+## 草稿、帧末提交与跨窗口边界
+
+窗口的 SerializedObject 绑定独立 WorkingCopy。保存请求在右面板结束后先执行，再应用待切坐标；保存 false 不自动阻止坐标切换，平台只改窗口编辑态，渠道/模式以后保存才落 Master。关闭/重载/退出状态各有不同提醒链；保存失败返回时副本保留不等于整个切场景链保留，已切到新场景后仍可能销毁旧草稿，关窗依赖快照重开成功。创建资产发生在部分绑定确认之前，取消切换或 Globals 失败可留下已创建资产。
+
+共享保存先归一和资源校验，Copy 开始后的异常不能说“没有保存”，无真实资产回滚。窗口兼容选项全局 SaveAssets，可顺带保存其他 dirty 资产；Action 默认仅目标。保存通知只刷新干净匹配窗口，监听异常只告警；保存后展示重建失败也不撤销已保存事实。导出完成再写当前活动场景的模式/渠道/默认包并标脏，不自动保存场景，Writer 的异常在 Exporter catch 之外。
+
+导航 OpenConfigSection 在 RebindMaster 取消/失败后仍可能向旧窗口副本写导航坐标；普通路径选择主要是词法工程相对判断，不核符号链接或准确资产类型。SDK/Kit 开启会补所有格实例，关闭保留数据，不安装包；SDK 菜单快捷动作直接执行菜单，不能当自动获准的 Agent 入口。灰显只限交互，初始化、自动 Ensure、帧末提交仍会运行。
+
+CDN 按点击时当前草稿解析独立快照，三个 busy 各自独立，可同时抢全局进度条；没有取消、窗口存活保护、远端回滚或正式 Receipt。创建下载规则先写文件再提交草稿，后续失败不撤销文件。YooAsset 页面可在绘制中注入，Settings 缓存先更新再 Inject，失败后同状态可能不重试；新 Override 的默认字段边界见 DimensionProjector。HybridCLR link 的文字走当前 Override，目录选择当前却传顶层字段，选到的是目录仍须填文件名；面板不复制或编译 DLL。
+
+资源密钥页面只编辑草稿；显示/选择不应标脏，手动新密钥输入仍明文。部分延迟删除保留旧 package/key 引用，未冻结切 Master 身份；源码目录选择只核窗口/副本存在，排队后换 Master 可能作用新副本。新密钥字节临时清零不等于字符串擦除。环境 Recheck 同步，状态/安装命令复制不证明导表、HybridCLR 生成或系统安装成功。

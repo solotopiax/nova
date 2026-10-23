@@ -3,8 +3,8 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.39-blue.svg)
-![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.1-blue.svg)
+![unity](https://img.shields.io/badge/unity-6000.6.7f1-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
 **Nova 是 Solotopia 基于 Unity 深度定制的一套游戏客户端通用解决方案**，把资源、UI、网络、热更、配置、存档、多语言、SDK 接入等通用底座统一收敛、持续维护，让业务团队只需聚焦玩法本身。
@@ -13,7 +13,7 @@
 
 ## 系统需求
 
-- Unity `6000.4.2f1` 或更高版本。
+- Unity `6000.6.7f1` 或更高版本。
 - Built-in Render Pipeline、IL2CPP、.NET Standard 2.1、C# 9。
 - 可访问 Solotopia UPM Registry；EDM 与默认 Unity MCP Provider 通过 OpenUPM 解析。
 - Android / iOS 构建仍需安装相应平台模块、SDK 与签名环境。
@@ -25,15 +25,16 @@
 | com.unity.textmeshpro | 3.0.9 |
 | com.unity.nuget.newtonsoft-json | 3.2.2 |
 | com.unity.inputsystem | 1.19.0 |
+| com.unity.scriptablebuildpipeline | 3.0.3 |
 | com.solotopia.hybridclr | 10.1.0 |
 | com.solotopia.unitask | 10.0.6 |
 | com.solotopia.sqlcipher4unity3d | 10.0.5 |
 | com.solotopia.simplediskutils | 1.0.7 |
 | com.solotopia.excelio | 1.0.6 |
-| com.solotopia.nicevibrations | 10.0.5 |
+| com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.0 |
-| com.solotopia.nova.framework.mcp | 0.1.4 |
+| com.solotopia.nova.framework.mcp | 0.1.5 |
 
 Android AAB 可通过 Pipify 上传 Google Play，默认内部测试草稿；配置与上传边界见 [Google Play 上传说明](./Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)。
 
@@ -88,10 +89,23 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 ## 安装
 
 1. 下载火种脚本 [NovaSpark.cs](./NovaSpark.cs)，放入消费项目的 `Assets/Editor/`。
-2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会补齐 Framework、EDM、所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
-3. 等待包解析和编译完成；PlugPals 窗口成功打开后，火种脚本会自动删除自身。
+2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会显式安装 Nova Framework、MemoryProtection、Nova MCP 和 EDM，补齐所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
+3. 等待包解析和编译完成；PlugPals 窗口成功打开后，火种脚本会自动删除自身。手动打开入口为 `Nova/Open PlugPals`。
+
+默认直接安装的包：
+
+- Nova Framework：`com.solotopia.nova.framework@0.7.1`。
+- Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.1`。
+- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.5`。
+- EDM：`com.google.external-dependency-manager@1.2.188`。
+
+Nova Framework - MCP 提供 Nova 的 MCP 接入基础，`com.coplaydev.unity-mcp` 是其当前使用的 Unity MCP Provider，由包依赖经 OpenUPM 自动解析，不另写入工程的直接依赖。
+
+MemoryProtection 包默认安装，实际防篡改还需单独安装兼容的 **Anti-Cheat Toolkit**；NovaSpark 不自动安装这个付费插件。已获授权的内网项目可打开 **Nova → Open PlugPals → 内部云仓库**，安装 `com.codestage.anti.cheat.tookit`；未安装或不兼容时保留普通数值读写，不提供内存防篡改能力。
 
 NovaSpark 会修改项目配置。已有 Nova 项目重复导入时，它会先列出待矫正项并等待确认；本仓这类使用本地 `file:` Framework 的源码工程会自动跳过。
+
+确认矫正后，脚本按随脚本提供的目标值覆盖依赖版本和同名 Registry URL，并重写 PlugPals 固定配置，可能替换已有定制值；它不比较版本高低，也不提供跨文件事务回滚。`Client.Resolve()` 只是发起解析，脚本返回或自删除均不证明 UPM 已成功。仍须等待当前项目包解析和编译，失败时根据实际 manifest、配置及 Console 继续处理，不能把引导完成当作安装验收。
 
 ---
 

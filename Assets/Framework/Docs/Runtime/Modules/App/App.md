@@ -23,6 +23,7 @@ Runtime/Modules/App/
         ├── AppManager.Visitors.cs
         ├── AppManager.Methods.cs
         ├── AppManager.Download.cs
+        ├── AppApkDownloader.cs
         └── AppManagerBase.cs
 ```
 
@@ -36,7 +37,7 @@ Runtime/Modules/App/
 
 - `Nova.App.CheckAsync()`：执行大版本检查。
 - `Nova.App.RecordRecommendedDownloadDismissed()`：记录用户本次主动放弃推荐更新。
-- `Nova.App.DownloadAsync()`：触发 APK 下载。
+- `Nova.App.DownloadAsync()`：仅 Android Player 流式下载 APK、检查结构并返回本地文件绝对路径；安装独立发起。
 - `Nova.App.OpenStoreAsync()`：跳转商店。
 
 ## 子文档

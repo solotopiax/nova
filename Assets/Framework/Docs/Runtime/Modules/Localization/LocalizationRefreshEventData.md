@@ -67,3 +67,5 @@
 - [TextLocalizing.md](TextLocalizing.md)
 - [EventManager.md](../Event/EventManager.md)
 - [EventData.md](../Event/Definitions/EventData.md)
+
+Create 仅取池对象并原样写两个枚举，不验证是否相同、已支持或真正切换成功；上文“成功后”描述的是内置 Manager 的发送时序。Clear 只将两值设为 Unspecified，不释放字体等 Unity 资源。Apply 已更新状态后若持久化或同步广播抛出，不回滚已有状态，监听方不能以“未收到事件”推断语言未变。

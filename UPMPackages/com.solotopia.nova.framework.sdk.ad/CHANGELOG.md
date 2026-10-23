@@ -2,13 +2,35 @@
 
 ## [Unreleased]
 
-### Added
+## [1.2.0] - 2026-10-23
 
 ### Changed
 
+- 全屏广告组间并行、组内串行；仅整组失败按 GroupRetryIntervalsSeconds（默认 2/4/8/16/32 秒）循环等待后从首项重试，各组独立、任一成功归零，统一 RequestGroups 和组状态语义。
+
+- 补齐 AdChannelPluginBase 公开/派生接口、事件、生命周期、Banner 累计持久化、请求原因及组轮参数接入文档。
+
+- 移除全屏 Show 十秒未 displayed 的诊断任务、日志和取消源；常规日志仅保留业务准备、真实渠道请求及广告组新轮，删除比价、缓存、观察取消和展示收尾等重复 Debug，加载、重试、比价和展示语义保持。
+
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复同步回调、跨渠道单次任务汇聚、取消及释放时序，统一真实 Ready 收益选择和全屏占用；隔离构造、准备、订阅及埋点异常，失败实例仍在初始化退出后准确退订释放。
+
+- 修正聚合就绪、渠道通知、请求取消、国家码等待及配置/事件载荷说明，奖励示例不将历史回放用于本次发奖；明确释放后不可复用，新 SDKManager 周期需重建实例与订阅，旧自定义渠道取消边界保持。
+
+- 聚合和渠道共享释放完成结果，重复调用等待同次实际清理；支持可选 IAdChannelLifecycle/IDisposable，取消回调或厂商清理异常仍继续清空状态、缓存和事件，向重复调用返回同一失败。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
+
+- 删除 public 配置访问器 AdChannelConfigList.RetryLoadAdMaxNum/RetryLoadAdInterv，以及 protected 嵌套类型中的 AdUnit.RetryCount/RetryCts、RequestBatch.PendingPlacementIds；自定义渠道须改用广告组接口与 PendingRounds，重试配置改为 GroupRetryIntervalsSeconds。旧 m_RetryLoadAdMaxNum/m_RetryLoadAdInterv 序列化值不会自动迁移，升级后须重新确认广告组重试间隔。
+
+### Important
+
+新增广告组加载：多个组可以同时准备，同组内的广告位依次尝试；整组加载失败后，按配置的间隔自动重试。项目可自行调整重试节奏。升级时需重新检查重试配置，自定义广告渠道也需同步适配。
 
 ## [1.1.16] - 2026-10-10
 

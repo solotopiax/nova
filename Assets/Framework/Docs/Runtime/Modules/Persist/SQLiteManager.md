@@ -42,7 +42,7 @@
 3. `OpenConnection()`
 4. `Load()`
 
-其中 `Load()` 并不会把所有表读进内存，它只确认连接可用。
+其中 `Load()` 并不会把所有表读进内存，只返回连接是否非 null。`OpenConnection()` 打开或设置 WAL 失败时会记录 Error、清空连接，Initialize 仍返回完成任务，且不检查 Load 的 bool；初始化任务完成不能证明数据库可查询。后续 `GetOrCreateTable()` 遇到空连接会抛出。
 
 ### 2. classify 必须是合法表名
 
@@ -51,7 +51,7 @@
 - 不得为空
 - 仅允许字母、数字、下划线
 
-这不是文档建议，而是运行时硬校验。
+字符判断使用 `char.IsLetterOrDigit`，不限于 ASCII，也未禁止数字开头。`Save(classify)`、Has/Remove/Count 和条目枚举会调用这段校验；当前 GetXxx/SetXxx 经 `ReadRaw/WriteRaw` 只执行基础非空校验，尚未覆盖这段字符校验。业务应使用固定合法分类名，不能把任意用户输入当作分类；表名被拼入 SQL，只有条目名和值使用参数绑定。
 
 ### 3. 读写通过 GetOrCreateTable 进入缓存表对象
 
@@ -70,7 +70,17 @@
 
 `Save()` 再遍历脏表并 `FlushToDb(...)`。成功的表会从脏集合移除，失败的保留等待下次重试。
 
-### 5. WebGL 是明确不可用，而不是能力弱化
+每张表独立开启并提交事务，没有跨表原子性。无参 Save 逐表捕获异常并汇总 false；`Save(classify)` 对未缓存表返回 false，提交异常直接抛出。
+
+### 5. 删除和读取也有明确的缓存边界
+
+`GetOrCreateTable()` 会先把新 Table 加入缓存，再调用 EnsureLoaded；首次读取可能创建空表并执行 SELECT，SQL 或解密失败可留下尚未加载完成的缓存对象。`GetAllClassifyNames()` 查询数据库表名，其他条目枚举/Count 查询该表缓存。
+
+`RemoveItem()` 只改缓存与待删缓冲，等待 Save；`RemoveAll(classify)` 只有在该表已经缓存时才执行 DROP TABLE，未访问的磁盘表不会被这次调用删除。DROP 之前缓存及缓冲已清空，SQL 失败没有自动恢复原缓存。
+
+公开 `SetString(null)` 与 `SetBytes(null)` 都转为空串，不删除条目；SQLite 已存空串可原样读回。布尔非 `"1"` 为 false，数值失败与 JSON/Base64 解析规则见 [PersistManagerBase.md](PersistManagerBase.md#扩展类型默认实现)。
+
+### 6. WebGL 是明确不可用，而不是能力弱化
 
 源码里对 `UNITY_WEBGL` 的处理很明确：
 
@@ -91,6 +101,7 @@
 - `Save(classify)` 是按脏表提交，不等于全库事务边界外的复杂一致性保证。
 - WebGL 不可用这点必须在选型时提前考虑，不能靠上线后再兜底。
 - `CipherPassword` 是数据库级加密密码；同时还有 `UseAESEncrypt` 的值级加密，两者不是一回事。
+- `Shutdown()` 尝试 Save，随后关闭/释放连接并清空缓存及脏集合；失败不会保留可供下一轮业务重试的缓存。Close/Dispose 位于同一 try，Close 抛出可能跳过 Dispose，异常会记录后继续清引用。
 
 ## 继续阅读
 
@@ -106,3 +117,9 @@
 - [ISQLiteManager.md](ISQLiteManager.md)
 - [SQLiteManagerConfig.md](SQLiteManagerConfig.md)
 - [SQLiteManager.Table.md](SQLiteManager.Table.md)
+
+## Editor 值维护与连接边界
+
+运行时 `OpenConnection` 使用 `Util.SQLite.CreateRegisteredConnection`，Inspector 仍用现 `CreateConnection`；两者连接都在创建前登记到 `SQLiteMaintenanceLease`，任意 Close/Dispose 对称释放。已登记连接存在时拒绝维护，不自动 Save 或关闭；维护期间拒绝新登记连接。该门仅约束参与 Nova 协议的连接，raw SQL 写者仍由真实 SQLite 事务写锁约束，不声明操作系统绝对排他。普通 factory BeginTransaction 与 CloseConnection Commit/checkpoint 语义保持。
+
+同三个存档 Action 的 SQLite 值 AES 分支在原库 `BEGIN IMMEDIATE` 事务内逐行转换，不删除或替换正式库；先生成原厂一致逻辑备份，schema/原新值/单字段与恢复日志完整冻结。未知结构拒绝，CipherPassword 与 Config AES Key/IV 轮换不支持。Plan/Verify 的真实连接可能改变伴随文件，默认文件元数据检查仍严格不开库。详见 [存档维护](../../../Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md)。

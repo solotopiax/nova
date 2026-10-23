@@ -20,6 +20,8 @@ Coroutine StartCoroutine(IEnumerator coroutine);
 void StopCoroutine(Coroutine coroutine);
 ```
 
+接口本身不约定空值、宿主激活状态、线程或跨宿主句柄行为。当前 `FrameworkComponent` 显式实现直接转发 Unity `StartCoroutine`，`StopCoroutine(null)` 跳过；这不代表任意自定义 Runner 都执行相同保护，也不提供异步取消令牌或任务完成等待。
+
 ## 关联文档
 
 - [Interfaces](Interfaces.md)

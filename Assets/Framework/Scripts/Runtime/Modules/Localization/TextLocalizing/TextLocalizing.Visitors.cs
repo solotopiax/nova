@@ -55,9 +55,9 @@ namespace NovaFramework.Runtime
         private float m_OriginalFontSize = -1f;
 
         /// <summary>
-        /// 是否已订阅本地化刷新事件（用于安全取消订阅）。
+        /// 首次组件 Start 等待是否已经完成；为 false 时不能向尚待初始化的事件池订阅。
         /// </summary>
-        private bool m_IsSubscribed;
+        private bool m_IsStartupComplete;
 
         /// <summary>
         /// 字体异步刷新版本号，用于阻止旧语言请求覆盖新语言字体。

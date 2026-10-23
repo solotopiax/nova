@@ -68,7 +68,7 @@ FrameworkManager
 // --- 生命周期 ---
 void Initialize(WebSocketManagerConfig config)
 void Update()      // 每帧调用，驱动 MutexDataUpdate 分发跨线程消息
-void Shutdown()    // 停止所有协程，关闭所有通道
+void Shutdown()    // 发起异步终止；内部等待通道退出并排空消息回池队列，同步返回不等于收尾结束
 
 // --- 连接管理 ---
 void ConnectServer(NetChannelType channelType, string serverAddress, bool autoReconnect = true)
@@ -120,25 +120,28 @@ void QueueOnSubThread(Action<object> actionOnSubThread, object state, Action act
     │ ConnectServer()
     ▼
 [Connecting]
-  连接超时 ──────────────────────────────────────────► [ConnectFail]
-    │ OnConnectSuccess                                       │ EnableAutoReconnect
-    ▼                                                        │
-[Connected]                                                  ▼
-  ├─ 启动 AutoAuthenticate 协程                         [Reconnecting]
-  │   ├─ SpecialMessageCreator == null → 直接标记认证完成    │ 达到上限 → OnReconnectFailed
-  │   ├─ 发送认证消息 → WaitingAuthenticate = true           │
-  │   ├─ 认证超时 → CloseSocket(false) → [Disconnected]     │
-  │   └─ 收到认证响应 → IsAuthenticatedSuccess = true        │
+  连接超时 → 取消握手、释放Socket → [ConnectFail]
+    │ OnConnectSuccess
+    ▼
+[Connected]
+  │   ├─ NeedAuthenticateRightNow && !WaitingAuthenticate 时检查认证委托
+  │   ├─ 发送认证消息 → NeedAuthenticateRightNow=false、WaitingAuthenticate=true
+  │   ├─ 无认证消息创建委托或返回null → 跳过账号认证
+  │   ├─ 认证超时 → CloseSocket(false) → [Disconnected]
+  │   └─ 收到成功认证响应 → WaitingAuthenticate=false → IsAuthenticatedSuccess=true
   │       → InjectOfflineBufferIntoBuffer → OnAuthenticateSuccess
   ├─ 启动 AutoHeartBeat 协程（等认证完成后开始）
   │   ├─ 间隔 m_HeartBeatTimeInterval 发送心跳
   │   └─ 心跳超时 → CloseSocket(false) → [Disconnected]
   └─ 启动 AutoReconnect 协程（EnableAutoReconnect && autoReconnect）
         └─ 检测到断开 → 等 m_AutoReconnectTimeInterval → 重新连接
+            → 每次连接成功重新启动认证与心跳
 
 [Disconnected] ← DisconnectServer() 主动调用
-    IsDisconnectedSubjectively = true → 所有协程退出
+    IsDisconnectedSubjectively = true → 所有协程退出并取消当前握手
 ```
+
+首次连接失败时尚未启动自动重连协程，只报告 `OnConnectFail`；自动重连配置用于首次连接成功后的断线恢复。显式初连/重连推进内部连接轮次，旧连接/认证/重连续体与旧 Socket 的排队响应不得更改新连接状态。
 
 | 状态字段 | 值 / 含义 |
 |---|---|
@@ -153,7 +156,7 @@ void QueueOnSubThread(Action<object> actionOnSubThread, object state, Action act
 
 | 误区 | 正确理解 |
 |---|---|
-| 以为 OnConnectSuccess 后即可发消息 | 需等待 OnAuthenticateSuccess；若无认证委托则 OnConnectSuccess 后自动完成认证 |
+| 以为 OnConnectSuccess 后即可完成业务 | 连接、认证、消息入队和服务端确认分别验收；账号认证消息创建入口边界见 § 8 |
 | 以为 DisconnectServer 会触发 OnDisconnect | DisconnectServer 主动断开，IsDisconnectedSubjectively = true，不触发 AutoReconnect；OnDisconnect 由 DisconnectServerEvent 触发（通道层回调） |
 | 以为 SendMessage 不成功时消息会丢失 | 已连接但尚未认证且非主动断开时，消息写入离线缓冲，认证完成后自动注入 |
 
@@ -184,12 +187,16 @@ LazyToQueueOnMainThread(action)                │
 | `SendMessage` | 主线程 | 操作 m_NetChannels，需在主线程调用 |
 | `ConnectServer` | 主线程 | 启动协程，需在主线程调用 |
 
+LazyToQueueOnMainThread 只入队，依赖后续 Update/终止排空，不会在终止期改为后台直接执行。MutexDataUpdate 锁内转移队列、锁外调用；用户 Action 抛错会中断本轮，尚未出队的执行项留待下一次处理。QueueOnSubThread 使用 ThreadPool，后台 action 抛错时不会继续排主线程 callback；这些额外任务没有纳入通道 loop 完成信号。Shutdown 未冻结外部新增通道/任意未来入队，不能证明所有消费者后台任务都已经退出。
+
+NetChannels 返回原列表的 IReadOnlyList 视图，元素可变，并非深复制。ConnectServer 只按同类型/精确地址且 !IsConnected 复用，尚在握手/closing 的对象也可能命中；同目标已连接时可新增通道，后续 Find 只取首项。未知通道枚举走 TcpPb 分支。StopChannelCoroutines 只停管理协程，不停止通道长驻 loop 或清业务队列；Initialize 也不验证秒数有限/正值或重置已有通道。
+
 ---
 
 ## § 8 初始化时序
 
 ```
-NetworkComponent.Awake()
+NetworkComponent.Start()
   │
   └─ WebSocketManager.Initialize(WebSocketManagerConfig)
         ├─ m_CoroutineRunner      ← config.CoroutineRunner   (必须非 null，否则 Fatal)
@@ -206,8 +213,14 @@ NetworkComponent.Awake()
 
 依赖约束：
   m_CoroutineRunner 必须由外部注入（NetworkComponent 实现 ICoroutineRunner）
-  SpecialMessageCreator 为 null 时不发送认证/心跳消息，连接即视为认证完成
+  SpecialMessageCreator 为 null 时跳过账号认证，不创建心跳；通道完成免认证状态不代表游戏服校验了账号
 ```
+
+当前 `NetworkComponent.Start()` 未向此配置注入 `SpecialMessageCreator`，公开组件门面也没有动态设置入口。免认证服务可以使用现有门面；需要真实账号认证或心跳时必须先明确项目已有公开初始化契约实际负责该委托，不能通过反射、二次初始化或直接修改通道状态绕过这个缺口。
+
+`NetChannelBase.Init()` 的 `WaitingAuthenticate` 为 `false`，连接成功后设置 `NeedAuthenticateRightNow=true`。认证协程发送消息前将需要发送标记清为 `false`、等待响应置为 `true`；响应成功后清除等待，进入完成分支并补发离线缓冲。没有认证消息时两标记清为 `false`，完成免认证通道。自动重连成功会停止上一连接的认证/心跳协程并重新启动。非 WebGL 握手使用带超时的取消源，主动关闭取消当前握手；WebGL 打开/关闭等待受 `ConnectTimeout` 约束，并在失败、超时或协程释放时清理实例与本轮回调。
+
+当前 `OnAuthenticateFail` 未找到实际触发调用；业务不要仅依赖该事件完成失败收尾。`TcpPbChannel.AuthenticateResponseValidator` 未设置时会接受相应认证消息，也不能据此证明服务端已校验账号。本节描述源码契约；当前消费项目仍须按真实入口验证，Editor 本地服务测试不能替代真账号、生产协议或 WebGL 浏览器验证。
 
 ---
 
@@ -227,7 +240,8 @@ ConnectServer(channelType, serverAddress, autoReconnect)
   │       ├─ 绑定 DisconnectServerEvent → OnDisconnect(channelIndex, address)
   │       └─ m_NetChannels.Add(channel)
   │
-  └─ StartCoroutine(ConnectServerCoroutine(channelIndex))
+  ├─ StopChannelCoroutines(channel) + channel.PrepareConnect()
+  └─ StartCoroutine(ConnectServerCoroutine(channel))
         │
         ├─ InnerConnectServerCoroutine / InnerConnectServerCoroutineAsync
         │   ├─ OnBeginConnect.Invoke(idx, addr)
@@ -235,8 +249,9 @@ ConnectServer(channelType, serverAddress, autoReconnect)
         │   └─ IsConnected → OnConnectSuccess / OnConnectFail
         │
         └─ 连接成功后：
-            ├─ StartCoroutine(AutoAuthenticateCoroutine)
-            ├─ StartCoroutine(AutoHeartBeatCoroutine)
+            ├─ StartAuthenticationAndHeartBeat(channel)
+            │   ├─ 停止旧认证/心跳协程
+            │   └─ 启动本次认证/心跳协程
             └─ EnableAutoReconnect && autoReconnect → StartCoroutine(AutoReconnectServerCoroutine)
 ```
 
@@ -268,13 +283,13 @@ Nova.Network.OnWebSocketAuthenticateSuccess += (idx, addr) =>
 
 Nova.Network.OnWebSocketReceiveMessage += (channel, msg) =>
 {
-    // 处理消息...
-    Nova.Network.RecycleMessage(msg);    // 用完务必回收
+    // 同步处理借用消息；异步/业务事件先复制需要的数据。
+    // 通道会在回调返回后自动回收，不在这里再次 RecycleMessage。
 };
 
 // --- 2. 注入特殊消息创建委托（认证/心跳）---
-// 通常在游戏初始化阶段设置（WebSocketManagerConfig.SpecialMessageCreator）
-// 或通过游戏层包装后动态设置
+// 先确认项目已有的公开初始化契约实际负责此委托。
+// 当前 NetworkComponent.Start 未注入，组件门面没有动态 setter；见 § 8。
 
 // --- 3. 连接 ---
 Nova.Network.ConnectServer(
@@ -291,6 +306,8 @@ bool sent = Nova.Network.SendMessage(
     "ws://game.server.com:9000/ws",
     msg
 );
+// true 表示消息进入发送/离线缓冲，不是服务端业务成功。
+// true 后消息交给通道持有；false 且确认未入队时创建者负责回收。
 
 // --- 5. 主动断开 ---
 Nova.Network.DisconnectServer(
@@ -306,8 +323,10 @@ Nova.Network.DisconnectServer(
 | 场景 | 正确做法 |
 |---|---|
 | WebSocketManager.Update 未被调用 | 跨线程消息无法分发，事件回调不执行；当前正常路径由 `Nova.Update() -> FrameworkManagersGroup.Update()` 统一驱动 |
-| SpecialMessageCreator 返回 null | 视为不需要认证，连接建立后直接标记认证完成；心跳也不发送 |
-| RecycleMessage 忘记调用 | 消息对象不归还池，频繁 CreateMessage 会持续 new 对象，增加 GC 压力 |
+| SpecialMessageCreator 返回 null | 跳过账号认证并完成免认证通道；没有委托也不会创建心跳，不能当作服务端账号校验成功 |
+| 收发回调内再次 RecycleMessage | 通道在收发事件返回后自动回收，会造成重复回池；只在回调内同步读取，异步处理先拷贝数据 |
+| CreateMessage 后发送失败 | 若确认没有进入任何发送/离线缓冲，由创建者回收；已入队或归属不确定时不得提前或重复回收 |
+| 反复 ConnectServer 同一已连接目标 | 当前只复用未连接通道，可能新增同地址通道；复用一个明确连接拥有者，先查询并避免重复启动 |
 | TestDisconnectServerAbnormally 与 DisconnectServer 混用 | Test 版本不设置 IsDisconnectedSubjectively，重连协程会继续运行；正式断开请使用 DisconnectServer |
 
 ---

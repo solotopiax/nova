@@ -21,6 +21,6 @@ ConfigWindow 在 Editor 的三维矩阵中维护它，导出时按当前 `Platfo
 - `CustomConfigCmdName`：启动 Custom 配置拉取使用的 NetCmd 名称；为空时关闭自动拉取。
 - `CustomName`：发送到 `PbNetAppCustomConfigReq.key` 的 GM 配置项名称；为空时关闭自动拉取。
 
-Editor 进入 Play Mode 前，`ProjectGuard` 会检查当前 Demo 实际导出的 App 参数：`AppID` 必须是正整数，`AppAesKey` / `AppAesIV` 必须是 16 字节 UTF-8 字符串，且不能保留公开包的 `YOUR_` 占位符。异常时会阻止启动；弹窗仅显示字段异常与 ConfigWindow 入口，字段入口严格使用页面显示名 `App Aes Key / App Aes IV`，完整的 ConfigMaster 来源、ConfigRuntime 导出物和当前 `Platform × Channel × DevelopMode` 坐标见 Console / Editor.log。配置保存后需要重新导出。
+App 参数需按实际业务配置，公开包的 `YOUR_` 占位符不能用于业务请求。配置保存后需重新导出，并核对运行时实际使用的 `ConfigRuntimeSO`。Nova 不再通过 Project Guard 在进入 Play 前校验或拦截这些字段；参数约束与失败行为以当前调用方实现为准。
 
 关联文档：[ConfigRuntimeSO.md](ConfigRuntimeSO.md)、[ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)。

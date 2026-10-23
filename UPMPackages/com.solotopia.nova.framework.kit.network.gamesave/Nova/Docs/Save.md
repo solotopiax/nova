@@ -50,7 +50,8 @@
 
 | 签名 | 说明 |
 |---|---|
-| `public UniTask<NetResponse<PbNetGetGameDataResp>> GetFullAsync()` | 全量拉取；cmdName 取自 `SaveKitConfig.GetCmdName`；请求体仅写 `Full=true`，不携带 keys |
+| `public UniTask<NetResponse<PbNetGetGameDataResp>> GetFullAsync()` | 拉取当前登录用户的全部存档；cmdName 取自 `SaveKitConfig.GetCmdName`；请求体写 `Full=true`、`TargetUid` 为空，不携带 `Keys` |
+| `public UniTask<NetResponse<PbNetGetGameDataResp>> GetFullAsync(string targetUid)` | 按目标 UID 全量拉取；与无参重载共用 `GetCmdName`；`targetUid` 为 `null` 或空串时拉取 `Head.Uid` 自身存档，有值时原样透传到 `TargetUid`；跨用户查询权限由服务端校验 |
 
 #### 上传（非全量）
 
@@ -72,9 +73,9 @@
 | 类型 | 说明 |
 |---|---|
 | `PbNetGameDataNode { string Key; string Value }` | 通用键值节点；Key 为小表名称，Value 为业务 JSON 序列化后的字符串 |
-| `PbNetGetGameDataReq { PbNetReqHeader Head; bool Full; repeated string Keys }` | 拉取请求；`Full=true` 时服务端忽略 `Keys` 返回全部存档 |
-| `PbNetGetGameDataResp { PbNetRespHeader Head; string GameVersion; string AppVersion; string LastDeviceId; int64 LastTimestamp; repeated PbNetGameDataNode Datas }` | 拉取响应；附带服务端记录的最近一次存档元数据（游戏存档版本号 / 应用版本号 / 设备 ID / 时间戳，毫秒级 unix 时间戳） |
-| `PbNetSetGameDataReq { PbNetReqHeader Head; bool Full; string GameVersion; string AppVersion; string LastDeviceId; repeated PbNetGameDataNode Datas }` | 上传请求；`Full=true` 时服务端用 `Datas` 整体替换该用户存档；`GameVersion` 由业务侧通过 `SetGameVersion` 注入，`AppVersion` 自动取 `Application.version`，`LastDeviceId` 自动从 `IDeviceIdProvider` 取值 |
+| `PbNetGetGameDataReq { PbNetReqHeader Head; bool Full; repeated string Keys; string TargetUid }` | 拉取请求；`Full=true` 时服务端忽略 `Keys` 返回全部存档；`TargetUid`（协议 `target_uid = 4`）为空时读取 `Head.Uid` 自身存档，有值时查询指定 UID，权限由服务端校验 |
+| `PbNetGetGameDataResp { PbNetRespHeader Head; string GameVersion; string AppVersion; string LastDevid; int64 LastTimestamp; repeated PbNetGameDataNode Datas }` | 拉取响应；附带服务端记录的最近一次存档元数据（游戏存档版本号 / 应用版本号 / 设备 ID / 时间戳）；`last_timestamp` 在本包 Proto 中未声明秒或毫秒单位，按实际服务端契约解释；`LastDevid` 对应协议 `last_devid = 4` |
+| `PbNetSetGameDataReq { PbNetReqHeader Head; bool Full; string GameVersion; string AppVersion; string LastDevid; repeated PbNetGameDataNode Datas }` | 上传请求；`Full=true` 时服务端用 `Datas` 整体替换该用户存档；`GameVersion` 由业务侧通过 `SetGameVersion` 注入，`AppVersion` 自动取 `Application.version`，`LastDevid`（协议 `last_devid = 5`）自动从 `IDeviceIdProvider` 取值 |
 | `PbNetSetGameDataResp { PbNetRespHeader Head; int32 Effect }` | 上传响应；`Effect` 为服务端写入的影响条数 |
 
 ---
@@ -129,16 +130,27 @@ var setFullResp = await gameSave.SetFullAsync(fullPayload);
 - **固定传输加密**：所有云存档业务请求均由 `NetService` 使用 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 进行 AES-128-CBC 加密后发送，并以同一配置解密响应。
 - **`Head` 自动填充**：所有 `Async` 入口内部调用 `NetBuilder.BuildHeader()` 填充请求 Head，业务侧无需手动构建。
 - **`Set` 请求元数据自动填充**：`SetAsync` / `SetFullAsync` 自动写入 `GameVersion/AppVersion/LastDevid`；`LastDevid` 通过 `IDeviceIdProvider` 取值。Proto `last_device_id` 已硬切换为 `last_devid`，字段号不变，不提供旧 `LastDeviceId` 属性。
+- **版本与设备号的采用范围**：`SetGameVersion` 只替换当前 `Save` 实例的缓存，不保存配置、不上传请求；该缓存只写入后续 Set 请求，Get 请求不携带它。设备号来自 `IDeviceIdProvider`，不会回落到 `SystemInfo.deviceUniqueIdentifier`。
+- **配置错误优先暴露**：公开入口先解析 `SaveKitConfig`，再进入业务参数校验；因此缺配置时即使参数也无效，仍先抛 `KitConfigMissingException`。参数错误返回 `PARAM_ERROR`，传输或下层依赖异常则继续传播，调用方需要分别处理。
 - **`full` 由接口决定，禁靠 keys 空判**：是否全量完全由具体接口决定 —— 仅 `GetFullAsync` / `SetFullAsync` 写入 `full=true`；`GetFullAsync` 不携带 keys；`SetFullAsync` 将 `value` 作为整包载荷写入 `datas[0].Value`（`Key` 为空字符串）。其余接口一律 `full=false`。**已废弃旧版"keys 为空 = 全量"的隐式回退**。
 - **非全量入参强校验**：非全量 `GetAsync` / `SetAsync` 在 `cmdRow == null` 之前先校验业务参数 —— `key` / `keys` 不得为 `null`/`""`/长度 0；`values` 不得为 `null`、长度必须与 `keys` 一致、任一元素不得为 `null`（允许空字符串）。任一不通过直接返回 `NetErrorCode.PARAM_ERROR`，不发起网络请求。
 - **`cmdName` 由 `SaveKitConfig` 提供**：所有入口内部通过 `Nova.Config.GetKitConfig<SaveKitConfig>()` 取配置，取不到时抛 `KitConfigMissingException`；未注册的 cmdName 会落到 `null` `INetworkCmdRow`，由下层 `NetService.SendAsync` 统一处理。
 - **value 透传**：`Value` 字段是业务 JSON 序列化后的字符串；框架不解析具体业务 schema，业务侧自行 `Util.Json.Parse<T>(value)`。
+- **key 与数组边界**：key 是存档节点名而非物理路径，只拒绝 null/空串，不拒绝空白。批量请求在同步构造阶段按数组顺序逐项写入协议，调用方应在该阶段保持数组稳定，不把它当作独立的业务快照或事务校验。
 - **resp Head 元数据**：`resp.Data.Head.Uid` / `resp.Data.Head.AppId` 等响应公共头字段由业务侧按需自取，框架不做校验或写回。
 - **依赖主框架公共网络编排层**：`NetService.SendAsync` / `NetBuilder.BuildHeader` / `NetResponse<T>` / `INetworkCmdRow` 均来自主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共层。
 
 ---
 
-## 5. 关联
+## GameSaveDemo 的操作范围
+
+示例读取和上传使用当前 Kit 身份，界面没有额外登录门禁、通用 JSON 校验或统一异常捕获。批量按钮使用固定演示数据；`SetFullAsync` 会执行远端全量覆盖，不是本地预览。实际调用前应核对账号与完整载荷，指定 UID 的读取权限仍以服务端为准。
+
+当前请求不随 UIView 关闭取消，关闭后网络写入和反馈可能继续。读取反馈可能包含完整存档，生产诊断应脱敏；成功响应及 `Effect` 也不能代替服务端落盘或重新读取的独立确认。
 
 - 同包：[SaveErrorCode.md](./SaveErrorCode.md) — 游戏存档业务段错误码
+## 5. 关联
+
 - 同包：[SaveKitConfig.md](./SaveKitConfig.md) — 云存档 Kit 配置
+
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

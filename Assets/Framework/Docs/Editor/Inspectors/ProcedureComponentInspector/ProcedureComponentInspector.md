@@ -121,3 +121,9 @@ Inspector 面板自动出现在 `ProcedureComponent` 的 Inspector 中，无需�
 - [ProcedureBase.md](../../../Runtime/Modules/Procedure/ProcedureBase.md)
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [EditorUtil.Draw.md](../../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md)
+
+## 数据来源与失败边界
+
+OnEnable 和编译完成都会重扫候选并可能清除失效入口名称，同时 Apply 当前待编辑属性；暂未自然加载的业务/热更类型也可能不在候选里，因此打开或刷新不是保证无写操作。LauncherSettings 只在 UI 编辑，不在这里验证入口资源、路径、主包或时长。
+
+TryGet* 只对完整类型名为 ProcedureLoadDll 的当前流程读取已缓存属性，任何反射失败均回 null；LoadComplete 的 null 表示未知，LoadException=null 也不能单独证明加载成功。历史由 Runtime 持有，本面板不采集或持久化；时间显示的 hh 分量跨 24 小时会循环，异常/越界时长可导致绘制失败，布局收尾没有总 finally 保证。

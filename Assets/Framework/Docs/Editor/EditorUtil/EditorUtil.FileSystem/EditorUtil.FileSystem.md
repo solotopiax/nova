@@ -95,3 +95,11 @@ IDisposable EditorUtil.FileSystem.AcquireWorkspace(string rootPath)
 
 - [EditorUtil.md](../EditorUtil.md)
 - [EditorUtil.FileSystem.OutputApplier.md](EditorUtil.FileSystem.OutputApplier.md)
+
+## 路径、扫描与工作区边界
+
+GetProjectFullPath 的相对输入依当前进程工作目录解析，不强制拼 Unity 项目根；绝对输入仅统一斜杠。兼容 GetProjectRelativePath(string) 保留普通相对输入中的 `..` 和工程外绝对路径。SerializedProperty 重载取有效目录（文件则取父目录），原字段为空时可能写默认目录并 Apply，不是纯查询。严格 Try 方法从 Application.dataPath 父目录判工程内，拒绝异平台绝对路径；TryGetProjectAssetPath 还要求 Assets 的后代，不接受 Assets 根本身、Packages，不核存在或符号链接实际归属。返回 false 时必须忽略 out 值。
+
+IsSubPathOf 只是补尾斜杠后的字符串 StartsWith，不解析 `..`、大小写规则或符号链接，不能做删除授权。GetFiles 递归、不排序，匹配为空返回 null，前缀仅按文件名过滤；输出路径形态依输入，异常向上传播。ResolveTemplatePath 优先固定 Packages 再 Assets，两个都不存在仍返回 Packages 候选，后缀未限制路径段。首个 .sln 也不排序。
+
+AcquireWorkspace 是规范化路径的域内 OrdinalIgnoreCase 互斥，不跨进程、不解析符号链接；Dispose 只释放租约，不清文件或等待生成进程。DeleteUnityTempRoot 没有“临时根”白名单，先尝试 DeleteAsset，再原生递归删除和旁 .meta；调用者必须确认本轮归属。DeletePath 也无 Undo 或回滚，可能留下/删除 meta。OpenFile/OpenFolder 失败只日志；SQLiteStudio 仅 Windows 启动且不核 DB 存在或进程完成。RefreshDelayed 每次登记刷新，不合并、无完成收据。

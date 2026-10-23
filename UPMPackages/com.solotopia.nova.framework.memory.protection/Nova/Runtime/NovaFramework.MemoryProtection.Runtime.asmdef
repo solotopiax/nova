@@ -1,0 +1,16 @@
+{
+  "name": "NovaFramework.MemoryProtection.Runtime",
+  "rootNamespace": "NovaFramework.Runtime",
+  "references": [
+    "NovaFramework.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

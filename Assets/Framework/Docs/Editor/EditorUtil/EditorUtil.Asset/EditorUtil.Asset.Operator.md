@@ -62,3 +62,7 @@ settings = EditorUtil.Asset.Operator.LoadAt<PipifySettingsSO>("Assets/Nova/Pipif
 
 - [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md) — 本类的主要消费资产之一
 - [PipifySettingsSO.md](../EditorUtil.Pipify/PipifySettingsSO.md) — 本类的主要消费资产之一
+
+## 调用与失败边界
+
+Find<T> 取 FindAssets 返回的第一 GUID，不排序、不拒绝多候选；第一项无法加载为 T 就返回 null，不继续尝试下一项。LoadAt<T> 只加载指定路径。CreateAt<T> 可以创建目录、创建资产并调用全局 SaveAssets/Refresh，没有重复路径/扩展名/任务输出范围预检或事务；返回 Unity 对象不独立证明目标文件已经正确落盘。

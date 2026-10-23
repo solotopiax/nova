@@ -93,6 +93,16 @@ namespace NovaFramework.Runtime
             }
         }
 
+        /// <summary>
+        /// 不提供最大宽度约束，保留原布局的无上限行为。
+        /// </summary>
+        public float maxWidth => -1f;
+
+        /// <summary>
+        /// 不提供最大高度约束，保留原布局的无上限行为。
+        /// </summary>
+        public float maxHeight => -1f;
+
         public int layoutPriority
         {
             get { return 0; }

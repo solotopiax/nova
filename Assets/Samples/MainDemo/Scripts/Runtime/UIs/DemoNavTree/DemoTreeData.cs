@@ -87,6 +87,9 @@ namespace NovaFramework.Samples.Runtime
             AddChild(integration, MakeViewLeaf<DemoIntegrationUiAssetView>("4.2 UI + Asset 异步加载 prefab"));
             AddChild(integration, MakeViewLeaf<DemoIntegrationEventNetworkView>("4.3 Event + Network 事件桥接"));
             AddChild(integration, MakeViewLeaf<DemoIntegrationConfigHybridClrView>("4.4 Config + HybridCLR Namespace 注入"));
+            DemoNode itemDetails = MakeViewLeaf<DemoIntegrationTableUiView>("4.5 Table + UI 物品详情");
+            itemDetails.OpenCallback = OpenIntegrationTableUiView;
+            AddChild(integration, itemDetails);
 
             return root;
         }
@@ -129,6 +132,34 @@ namespace NovaFramework.Samples.Runtime
                 Children = null,
                 OpenCallback = () => Nova.UI.OpenUIViewAsync<T>()
             };
+        }
+
+        /// <summary>
+        /// 只为物品详情叶子合并重复打开；已加载时回焦，加载中的请求保持等待。
+        /// 其他演示叶子仍沿用 MakeViewLeaf 的原打开行为。
+        /// </summary>
+        private static void OpenIntegrationTableUiView()
+        {
+            if (Nova.UI == null)
+            {
+                return;
+            }
+
+            string assetLocation = nameof(DemoIntegrationTableUiView);
+            UIView loadedView = Nova.UI.GetUIView(assetLocation);
+            if (loadedView != null)
+            {
+                Nova.UI.RefocusUIView(loadedView);
+                return;
+            }
+
+            if (Nova.UI.IsLoadingUIView(assetLocation))
+            {
+                return;
+            }
+
+            // 返回值仅是打开请求编号；实际实例是否可用仍由 UI 加载结果决定。
+            Nova.UI.OpenUIViewAsync<DemoIntegrationTableUiView>();
         }
 
         /// <summary>

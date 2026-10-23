@@ -260,7 +260,7 @@ namespace NovaFramework.Runtime
         private const string c_UITablesClassName = "UITables";
 
         /// <summary>
-        /// 反射构造 UITables 实例，通过 ITable<IUIViewRow> 协变直接访问 DataList 填充 m_UIViewRegistry。
+        /// 反射构造 UITables 实例，通过 <see cref="ITable{IUIViewRow}"/> 协变直接访问 DataList 填充 m_UIViewRegistry。
         /// </summary>
         /// <param name="dataCache">Phase 1 写入的数据加载缓存，消费后由本方法清空。</param>
         /// <returns>是否构建成功。</returns>
@@ -295,7 +295,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从单个 ITable 中提取数据行，通过 ITable<IUIViewRow> 协变填充到 m_UIViewRegistry。
+        /// 从单个 ITable 中提取数据行，通过 <see cref="ITable{IUIViewRow}"/> 协变填充到 m_UIViewRegistry。
         /// </summary>
         /// <param name="table">Luban 表实例。</param>
         private void FillRegistryFromTable(ITable table)
@@ -374,7 +374,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造 UI 注册表加载所需的资源加载委托（异步路径）。
+        /// 构造异步注册表委托；取 TextAsset 后立即释放句柄再交解析器，后续 release 委托为空。
         /// </summary>
         /// <param name="loadFunc">输出的资源异步加载委托。</param>
         /// <param name="releaseFunc">输出的资源释放委托。</param>
@@ -392,7 +392,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造 UI 注册表加载所需的资源加载委托（同步路径）。
+        /// 构造同步注册表委托；取 TextAsset 后立即释放句柄再交解析器，未复制资产字节。
         /// </summary>
         /// <param name="syncLoadFunc">输出的资源同步加载委托。</param>
         /// <param name="releaseFunc">输出的资源释放委托。</param>

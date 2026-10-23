@@ -1,7 +1,7 @@
 # Nova Framework - SDK - AIHelp
 
 > 包名：`com.solotopia.nova.framework.sdk.aihelp`
-> 当前版本：`0.0.17`
+> 当前版本：`0.1.0`
 
 Nova Framework 的 AIHelp 智能客服 / 帮助中心对接层，封装 `AIHelpPlugin`（继承 `SDKPluginBase`，由 `SDKManager` 统一编排），提供智能客服会话、帮助中心 FAQ、未读消息 / 工单数、用户信息同步等能力。
 
@@ -32,6 +32,8 @@ if (Nova.SDK.TryGet(out AIHelpPlugin plugin))
 - `Core/`：AIHelp Unity SDK 6.0 原样落地（managed C# `Core/AIHelp/` + iOS 原生 `Core/Plugins/iOS/AIHelpSDK/`），只读，不做业务改动。
 
 ## 维护
+
+完整文档入口见 [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)。
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。
 

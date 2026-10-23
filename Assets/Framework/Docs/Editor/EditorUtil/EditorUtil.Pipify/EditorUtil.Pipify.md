@@ -116,7 +116,7 @@ Registry 还会在内部统一收集 Batch 中未注册的 StepId。Window 用�
    - `reporter.ReportStep(i, name, 0f)` 返回 true 时抛 `OperationCanceledException`（Window 取消按钮）
    - `info.Method.Invoke(null, args)` 反射调用，得 `UniTask` 后 `await`
    - `TargetInvocationException` 解包为 `InnerException`，经 `ExceptionDispatchInfo.Capture().Throw()` 保留原始栈后重新抛出
-   - 任何异常均先调 `reporter.EndStep(i, false, elapsed, ex)` 再 throw
+   - Step 调用保护块内异常先调 `reporter.EndStep(i, false, elapsed, ex)` 再 throw；前置参数解析和取消不在此保证内
 5. 全部成功后 `reporter.EndBatch(true, total)`；已开始执行后的异常在 `finally` 中以 `success=false` 调用
 
 ### ApplyOverridesForItem 覆盖规则
@@ -135,11 +135,17 @@ key 格式优先级（高 > 低）：
 
 1. 当前调用只创建任务记录并返回 `JobId`，状态为 `Waiting`。
 2. 下一次 `EditorApplication.update` 解除调度回调后，任务进入 `Running` 并复用原有 `RunBatchForCliAsync`。
-3. Runner 正常结束后状态为 `Succeeded`；任何异常都会保存为 `Failed` 与 `Error`，同时输出 Error 日志。
+3. Runner 正常结束后状态为 `Succeeded`；运行 `try` 内的异常（包括取消）记为 `Failed`，内存 `Error` 和 Console 保留详情，失败落盘只保留脱敏说明。
 4. 外部调用方使用 `GetBatchJob(jobId)` 查询最终结果。未知任务编号返回 null。
 5. 任务状态另保存在 `Library/Nova/Pipify/Jobs/`；Domain Reload 后可查询旧任务编号，未结束的任务会标为 `Interrupted`，不会自动重放。
 
-该入口只把耗时 Batch 移出 `/api/exec` 的当前调用栈，不改变 Runner 顺序、Step 行为、参数覆盖或 Reporter 语义。正式 batchmode CLI 使用 `Cli.Run()` 异步等待并根据结果退出进程，调用命令须省略 `-quit`。
+任务登记和执行的保存、释放有明确先后顺序：`StartBatchJob` 先登记 `Waiting` 并调用 `PersistJob`，再进入调度 `try`；`ExecuteBatchJobAsync` 先保存 `Running / StartedAtUtc`，再进入租约与 Runner 的 `try`。因此这两次初始保存失败会直接传播，不能保证已经调度、进入运行异常处理或清除了活动任务标记。调度失败分支也先保存 `Failed` 再清活动标记，保存再次失败会中断余下收尾。
+
+执行的 `finally` 依次进行租约 `Dispose`、写入 `CompletedAtUtc`、保存最终状态、清除匹配的活动任务标记。`Dispose` 抛错会阻止后三步；最终保存抛错会阻止活动标记清除。正常 Runner 返回、内存 `Succeeded` 和状态成功落盘是三件事，不能合并承诺为总能返回业务回执。取消不回滚已完成 Step、构建或远端写入。
+
+默认两参入口在下一次 Editor update 调度；内部注入 `scheduler` 的重载也允许同步调度，不能一概认为总是延迟执行。登记内核保留 `Batch / overrides` 引用，没有在这里深复制冻结；调用方如需固定执行输入，应使用对应受控 Action 的计划合同。`GetBatchJob` 可能把落盘的旧 `Waiting / Running` 改存为 `Interrupted`，因此查询并非所有分支都无写入。
+
+该入口不改变 Runner 顺序、Step 行为、参数覆盖或 Reporter 语义。正式 batchmode CLI 使用 `Cli.Run()` 异步等待并根据结果退出进程，调用命令须省略 `-quit`。
 
 Runner 为每个 Batch 创建独立的构建记录，不跨 Batch 复用。窗口已有成功产物并即将调用 `googleplay.upload_aab` 时，通过 `SessionState` 保存尚未执行的游标、工作区 GUID、配置与产物指纹、构建时身份，完成编译和重载后从同一 Runner 继续；不重复构建，不保存签名密码或参数正文。上传开始前消费检查点，已经开始的上传不会自动重试。CLI / Job 保留中断后不重放语义。上传配置见 [Google Play 上传](PipifySteps.GooglePlay.md)。
 

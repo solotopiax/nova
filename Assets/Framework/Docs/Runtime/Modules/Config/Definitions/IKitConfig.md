@@ -63,4 +63,4 @@ string cmd = cfg.CmdName;
 
 - [KitConfigMissingException.md](KitConfigMissingException.md)
 - [ConfigRuntimeSO.md](../ConfigRuntimeSO.md)
-- [ConfigMasterSO.md](../ConfigMasterSO.md)
+- [ConfigMasterSO.md](../../../../Editor/Config/ConfigMasterSO.md)

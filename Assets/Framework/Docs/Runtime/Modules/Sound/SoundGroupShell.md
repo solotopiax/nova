@@ -25,6 +25,8 @@
 - `Name`：运行时组名
 - `AgentCount`：决定组内并发播放容量
 
+源码初始 Name=null、AvoidBeingReplacedBySamePriority=false、Mute=false、Volume=1、AgentCount=1。Range(0,1) 只约束 Inspector 展示，不代替运行时数值校验；getter 不建组，也不反映创建后组的实际音量/代理状态。配置数组含 null 项会在 Start 遍历时失败，并非每种错误都仅记日志后继续。
+
 ## 与运行时对象的关系
 
 - `Shell` 只是序列化数据壳

@@ -151,6 +151,9 @@ namespace NovaFramework.Runtime
             }
         }
 
+        /// <summary>
+        /// 仅归零计数和两端游标，保留底层数组引用，不代表擦除已存元素。
+        /// </summary>
         public void Clear()
         {
             _count = 0;
@@ -160,6 +163,10 @@ namespace NovaFramework.Runtime
 
         #region IEnumerable<T> implementation
 
+        /// <summary>
+        /// 按两段原数组实时枚举，不复制或加锁；当前满状态 start 等于 end 时分段可能遗漏元素。
+        /// </summary>
+        /// <returns>原数组段的枚举器，不保证是 Count 项完整快照。</returns>
         public IEnumerator<T> GetEnumerator()
         {
             var segments = new ArraySegment<T>[2] {ArrayOne(), ArrayTwo()};

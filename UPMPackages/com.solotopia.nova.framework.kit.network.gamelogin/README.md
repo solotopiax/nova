@@ -1,7 +1,7 @@
 # Nova Framework - Kit - Network - GameLogin
 
 > 包名：`com.solotopia.nova.framework.kit.network.gamelogin`
-> 当前版本：`0.1.16`
+> 当前版本：`0.1.17`
 
 登录业务网络模块，封装登录协议及相关协议类型
 
@@ -13,7 +13,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.16"
+  "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.17"
 }
 ```
 
@@ -22,5 +22,7 @@
 导入 Samples 时选择 `GameLoginDemo`，示例路径：`Assets/Samples/GameLoginDemo/`，命名空间 `NovaFramework.Kit.Network.GameLogin.Samples`。
 
 ## 维护
+
+公开 API、配置与示例入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。

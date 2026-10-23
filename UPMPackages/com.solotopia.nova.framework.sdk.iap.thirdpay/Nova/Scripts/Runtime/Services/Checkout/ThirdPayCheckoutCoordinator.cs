@@ -63,6 +63,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             ThirdPayPaymentConfigSnapshot paymentConfig = null;
             string paymentUrl = string.Empty;
             string googleToken = string.Empty;
+            IAPThirdPayRewardItem firstRechargeReward = request.FirstRechargeReward;
+            IAPThirdPayRewardItem extraBonusReward = request.ExtraBonusReward;
             m_Hub.Store.AddWaitingRef();
             try
             {
@@ -135,7 +137,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 try
                 {
                     LogDebug($"第三方支付授权和 URL 构建开始：OrderId={order.ClientOrderId}");
-                    authorization = await AuthorizeAndBuildUrlAsync(order, paymentConfig, useExternalBrowser, ct);
+                    authorization = await AuthorizeAndBuildUrlAsync(order, paymentConfig, useExternalBrowser, firstRechargeReward, extraBonusReward, ct);
                     LogDebug($"第三方支付授权和 URL 构建结束：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}，GoogleTokenLength={authorization.GoogleToken.Length}");
                 }
                 catch (OperationCanceledException)
@@ -174,7 +176,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             if (useExternalBrowser)
             {
-                return await m_Hub.Store.OpenExternalBrowserPaymentAsync(request, order, paymentConfig, googleToken, paymentUrl, ct);
+                return await m_Hub.Store.OpenExternalBrowserPaymentAsync(request, order, paymentConfig, googleToken, paymentUrl, firstRechargeReward, extraBonusReward, ct);
             }
 
             ThirdPayPaymentPageResult pageResult;
@@ -236,8 +238,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="isExternalBrowser">是否使用外部浏览器打开。</param>
         /// <param name="showBackButton">是否要求支付页显示返回按钮。</param>
         /// <param name="isCustomTab">是否由 Auth Tab 或 Custom Tabs 承载。</param>
+        /// <param name="firstRechargeReward">仅供支付网页使用的首充奖励。</param>
+        /// <param name="extraBonusReward">仅供支付网页使用的额外赠送奖励。</param>
         /// <returns>包含加密支付参数的完整支付 URL。</returns>
-        internal string BuildPaymentUrl(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, string googleToken, bool isExternalBrowser, bool showBackButton = false, bool isCustomTab = false)
+        internal string BuildPaymentUrl(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, string googleToken, bool isExternalBrowser, bool showBackButton = false, bool isCustomTab = false, IAPThirdPayRewardItem firstRechargeReward = null, IAPThirdPayRewardItem extraBonusReward = null)
         {
             if (paymentConfig == null || !paymentConfig.Enabled || string.IsNullOrEmpty(paymentConfig.PaymentPageUrl))
             {
@@ -256,9 +260,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 throw new InvalidOperationException($"第三方商品列表中不存在 TableId={order.TableId} 对应的商品。");
             }
 
-            if (productInfo.Id <= 0 || string.IsNullOrEmpty(productInfo.LocalCurrency) || string.IsNullOrEmpty(productInfo.LocalPrice) || string.IsNullOrEmpty(productEntry.Name))
+            if (string.IsNullOrEmpty(productInfo.LocalCurrency) || string.IsNullOrEmpty(productInfo.LocalPrice) || string.IsNullOrEmpty(productEntry.Name))
             {
-                throw new InvalidOperationException($"TableId={order.TableId} 的第三方商品 ID、货币、价格或名称不完整。");
+                throw new InvalidOperationException($"TableId={order.TableId} 的第三方商品货币、价格或名称不完整。");
             }
 
             var builder = new ThirdPayUrlBuilder(ThirdPayDynamicAesEncryptor.EncodeToBase64);
@@ -270,7 +274,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             var payload = new ThirdPayUrlPayload
             {
-                ProductId = productInfo.Id,
                 UserId = order.UserId,
                 TableId = order.TableId,
                 Currency = productInfo.LocalCurrency,
@@ -278,12 +281,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 ProductName = productEntry.Name,
                 CountryCode = paymentConfig.CountryCode,
                 ClientOrderId = order.ClientOrderId,
-                Platform = header.Platform.ToString(),
-                Channel = header.Channel.ToString(),
+                Platform = (int)header.Platform,
+                Channel = (int)header.Channel,
                 AppId = header.Appid,
                 ChannelParams = paymentConfig.PaymentCustomerIds,
                 GoogleToken = googleToken,
                 ReceiptParam = order.ReceiptParam,
+                FirstRechargeReward = firstRechargeReward,
+                ExtraBonusReward = extraBonusReward,
                 IsExternalBrowser = isExternalBrowser,
                 IsCustomTab = isCustomTab,
                 ShowBackButton = showBackButton,
@@ -399,9 +404,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="order">当前本地订单。</param>
         /// <param name="paymentConfig">本次支付固定使用的配置快照。</param>
         /// <param name="isExternalBrowser">是否使用外部浏览器打开。</param>
+        /// <param name="firstRechargeReward">仅供支付网页使用的首充奖励。</param>
+        /// <param name="extraBonusReward">仅供支付网页使用的额外赠送奖励。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>Google 授权状态、令牌与支付 URL。</returns>
-        private async UniTask<ThirdPayGoogleAuthorization> AuthorizeAndBuildUrlAsync(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, bool isExternalBrowser, CancellationToken ct)
+        private async UniTask<ThirdPayGoogleAuthorization> AuthorizeAndBuildUrlAsync(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, bool isExternalBrowser, IAPThirdPayRewardItem firstRechargeReward, IAPThirdPayRewardItem extraBonusReward, CancellationToken ct)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             ThirdPayGooglePolicyService googlePolicy = m_Hub.GooglePolicy;
@@ -410,16 +417,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (googlePolicy == null)
             {
                 LogWarning($"第三方支付 Android Google 授权服务为空，使用无 Google token 支付 URL 兜底：OrderId={order.ClientOrderId}");
-                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, paymentConfig, string.Empty, isExternalBrowser, isCustomTab: isExternalBrowser));
+                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, paymentConfig, string.Empty, isExternalBrowser, isCustomTab: isExternalBrowser, firstRechargeReward: firstRechargeReward, extraBonusReward: extraBonusReward));
             }
 
-            ThirdPayGoogleAuthorization authorization = await googlePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, paymentConfig, token, isExternalBrowser, isCustomTab: isExternalBrowser), skipInformationScreen, ct);
+            ThirdPayGoogleAuthorization authorization = await googlePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, paymentConfig, token, isExternalBrowser, isCustomTab: isExternalBrowser, firstRechargeReward: firstRechargeReward, extraBonusReward: extraBonusReward), skipInformationScreen, ct);
             LogDebug($"第三方支付 Android Google 授权结果：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}");
             return authorization;
 #else
             LogDebug($"第三方支付非 Android 环境直接构建 URL：OrderId={order.ClientOrderId}，ExternalBrowser={isExternalBrowser}");
             await UniTask.CompletedTask;
-            return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, paymentConfig, string.Empty, isExternalBrowser, isCustomTab: false));
+            return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, paymentConfig, string.Empty, isExternalBrowser, isCustomTab: false, firstRechargeReward: firstRechargeReward, extraBonusReward: extraBonusReward));
 #endif
         }
 

@@ -40,7 +40,7 @@ EditorUtil (public static partial class)
 // 无激活 master 或定位失败时返回 null。
 public static ConfigRuntimeSO GetCurrent();
 
-// 获取当前运行时 Namespace。
+// 获取激活 ConfigMasterSO 的顶层 Namespace（供当前 Luban 生成使用）。
 // 直接读取激活 ConfigMasterSO 的 Namespace 源头真相（见 ADR-005 单一写入路径），
 // 经 WorkspaceActive.Get() 锚点定位激活 master（见 ADR-047）；找不到激活 master 时返回 string.Empty。
 public static string GetNamespace();
@@ -67,6 +67,12 @@ GetCurrent():
       ⑤ return runtime
 ```
 
+### GetNamespace — 激活 Master 的顶层源值
+
+`GetNamespace()` 调用 `WorkspaceActive.Get()`，按 `ProjectSettings/Nova/Globals.json` 的 `configMasterGuid` 定位激活 `ConfigMasterSO`；无可加载 Master 时返回 `string.Empty`，有 Master 时返回 `master.Namespace ?? string.Empty`。它不读取 `GetCurrent()` 返回的 `ConfigRuntimeSO.Namespace`，不调用 `DimensionalResolver.ResolveNamespace`，因此不应用 Namespace 的维度覆盖。后者属于 Config 导出到 Runtime 的另一条解析路径。
+
+空返回值可能是未绑定 Master，也可能是已绑定 Master 明确配置的空 Namespace，两者不能混同。需要冻结代码生成来源时，复用内部只读 `WorkspaceActive.TryGetPersistedConfigMaster(...)` 核对 Globals GUID / pathHint / 实际资产，再读取顶层 Namespace；此入口不修复或写入，`WorkspaceActive.Get()` 则可能修复 pathHint。读取本身不按场景选择 Master，场景工作区协调属于独立的 `WorkspaceActive.ReconcileScene(...)` 路径。
+
 ---
 
 ## §10 常见误区
@@ -86,11 +92,8 @@ GetCurrent():
 ```csharp
 // Editor 端读取当前 Namespace（供 Luban 导出流水线使用）
 string ns = EditorUtil.Config.RuntimeProvider.GetNamespace();
-if (string.IsNullOrEmpty(ns))
-{
-    Debug.LogWarning("ConfigRuntimeSO 未找到，Namespace 为空。");
-    return;
-}
+// 空字符串不能证明 ConfigRuntimeSO 或 Master 缺失：
+// 受控代码导出需另外核对已持久化 Master 身份；已绑定且明确空值可使用 global namespace。
 
 // 构建期获取激活 master 配对的 ConfigRuntimeSO（如 NovaSDKBuildProcessor）
 ConfigRuntimeSO runtimeSO = EditorUtil.Config.RuntimeProvider.GetCurrent();
@@ -107,7 +110,7 @@ if (runtimeSO == null)
 
 - 仅在 Editor 运行时可用（依赖 `UnityEditor.AssetDatabase`），不可在 Runtime 代码中引用
 - `public` 可见性：框架 Editor 层内外均可调用，但依赖 `UnityEditor` 故只能在 Editor 上下文使用
-- `GetCurrent()` 依赖 WorkspaceActive 锚点；若 Globals.json 未写入（首次安装或 Globals.json 被删），且当前无 Sample Scene 打开，则返回 null
+- `GetCurrent()` 依赖 Globals 中可加载的激活 Master 及其配对 Runtime；Globals 未绑定或配对 Runtime 不存在时返回 null。`Get()` / `GetCurrent()` 本次读取不会依据打开的 Sample Scene 自动补绑定；场景路由协调是另一条流程。
 
 ---
 

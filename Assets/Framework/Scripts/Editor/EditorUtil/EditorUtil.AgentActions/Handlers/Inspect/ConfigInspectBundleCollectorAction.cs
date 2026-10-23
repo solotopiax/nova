@@ -43,7 +43,10 @@ namespace NovaFramework.Editor
             public string masterAssetPath;
             public string configuredPath;
             public string resolvedPath;
+            /// <summary>顶层原始路径是否配置；保留既有字段含义，不用于判断 Override 生效状态。</summary>
             public bool pathConfigured;
+            /// <summary>当前坐标经维度解析后是否具有有效路径；不证明资产或 Collector 内容正确。</summary>
+            public bool effectivePathConfigured;
             public bool assetExists;
             public bool collectorLoaded;
             public string assetName;
@@ -166,8 +169,8 @@ namespace NovaFramework.Editor
             UnityEngine.Object rawAsset = string.IsNullOrEmpty(resolvedPath) ? null : AssetDatabase.LoadMainAssetAtPath(resolvedPath);
             BundleCollectorSetting collector = EditorUtil.Config.YooAssetInjector.LoadBundleCollector(master);
             string summary;
-            if (string.IsNullOrEmpty(configuredPath)) summary = "ConfigMaster 顶层未配置 BundleCollectorSettingPath。";
-            else if (rawAsset == null) summary = "已配置 BundleCollectorSettingPath，但解析后路径下不存在可加载资产。";
+            if (string.IsNullOrEmpty(resolvedPath)) summary = "ConfigMaster 当前坐标未配置有效的 BundleCollectorSettingPath。";
+            else if (rawAsset == null) summary = "当前坐标已配置 BundleCollectorSettingPath，但有效路径下不存在可加载资产。";
             else if (collector == null) summary = "路径下存在资产，但未能作为 BundleCollectorSetting 加载。";
             else summary = "已定位并加载 BundleCollectorSetting；尚未校验其内容正确性。";
 
@@ -178,6 +181,7 @@ namespace NovaFramework.Editor
                 configuredPath = configuredPath,
                 resolvedPath = resolvedPath,
                 pathConfigured = !string.IsNullOrEmpty(configuredPath),
+                effectivePathConfigured = !string.IsNullOrEmpty(resolvedPath),
                 assetExists = rawAsset != null,
                 collectorLoaded = collector != null,
                 assetName = rawAsset == null ? null : rawAsset.name,

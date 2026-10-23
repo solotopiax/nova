@@ -111,6 +111,8 @@ public static void ResolvePackages()
 
 ### Agent 单包 Adapter
 
+安装提交前，`InstallPackage` 会把显式包名、原版本和目标版本写入本地重要声明批次；已提交仍不等于实际成功。UPM 稳定后由 [ImportantUpdates](../EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 从实际包内 CHANGELOG 提取并强制展示。单包只显示当前包，批量 GUI 使用一个工具层批次合并；这不会替代原有依赖预检、Resolve 或 Agent Verify，也不会把普通更新的“跳过版本”当作重要声明已读。
+
 消费端 Skill 的稳定入口是 C# Project Action `nova.project.upm.manage-latest`，由 `EditorUtil.AgentActions` 提供统一 Registry、一次性计划、确认令牌、资源锁与结果协议；该 Handler 复用以下 PlugPals 领域实现，不复制 UPM 业务逻辑。
 
 ```csharp
@@ -265,3 +267,15 @@ else
 - [EditorUtil.CheckUpdate.md](../EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) — 版本检查工具（依赖本类 `FetchRemotePackagesAsync` / `ReadInstalledVersions`）
 - [PlugPalsWindow.md](../../Windows/PlugPalsWindow.md) — UPM 包管理窗口（依赖本类所有公有接口）
 - [Editor.md](../../Editor.md) — Editor 层级总览
+
+## 来源、解析状态与后验的实际范围
+
+显示链 ReadInstalledVersions 会核真实注册/error/metadata，但领域 ResolveInstalledVersion 对 registry 仍主要返回 lock.version，不能因名字就当真实安装版本。Agent Verify 的安装分支核 manifest、lock版本/来源 URL，尚未重新证明 registered/errors/resolvedPath；卸载分支若读取失败被底层投影 null，也可能与“双不存在”混同，必须先独立确认 manifest/lock 可读有效。领域 success 不应扩大成编译、包 API 或安装已就绪的保证。
+
+计划读取远端期间未反复冻结本地模型，Store 的 fingerprint 可能晚于模型读取；Execute 消费内存计划后重查 latest，但远端 await 后未再核本地 Hash，依赖/nova/scopes 也不只靠版本号保证相同。fingerprint 只含 manifest/lock，缺失与空等同，不含实际包、registry存档或 Editor状态。确认/锁/Play门由 Action 组合，底层方法不独立提供完整保护。
+
+依赖预检只按名字/声明 scope，未核依赖版本约束或完整递归图；manifest 已声明未 Resolve 也被当存在。自动 scope 取包名前两段，声明同 URL 可整条覆盖用户 scopes，卸载主 scope 清理和 legacy 顶层依赖删除不是可靠所有权账本；GUI legacy 卸载可删来源不明 direct 项，领域 Action 的消费者保护不能反推 GUI 也有。提交后 true 只表示已写 manifest/排队 Resolve，异常可发生在 entry Pending 状态更新前，无回滚。
+
+SaveManifest 读全文保留未知字段后直接重写 dependencies/scopedRegistries，非原子且有并发覆盖窗口。registry存档失败可能只告警，窗口仍继续同步 manifest。远端版本比较剥预发布、按数字段或文本回退，不是完整 SemVer；git缓存取首个目录也不绑定准确 revision，不能据缓存证明当前加载。
+
+CHANGELOG 缓存按包名/版本，不含 registry，跨源同名同版本可能复用旧日志。tar 先同步 ReadToEnd 再进入15秒等待，stdout未排干，不能承诺总耗时15秒；token不终止 tar。下载/解压错误通常 null，但 finally 清理仍可外抛、并发同名临时路径可冲突。Sample Import 覆盖旧导入，不提供整批事务。

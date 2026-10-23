@@ -53,9 +53,9 @@
 `LoadAsync()` 不是重复执行型方法，而是带缓存的惰性任务：
 
 - 第一次调用时启动 `RunLoadAsync()`
-- 后续调用返回同一份 `UniTask`
+- 首次任务通过 `ToAsyncLazy()` 共享，后续调用返回同一完成源支持的 `UniTask`
 
-这保证了外部可以多处 await，而不会重复初始化三种存储实现。
+这保证了初始化未完成时的并发等待与完成后的重复等待都不会重复初始化三种存储实现。成功、异常或取消结果由共享任务保留；失败后的再次等待不会自动重新初始化。Editor 隐私维护门仍在读取缓存前执行。
 
 ### 3. 三种存储实现会并行初始化
 
@@ -78,6 +78,10 @@
 - 自动保存间隔
 
 SQLite 还多一个数据库级 `CipherPassword`。
+
+`CurPlayerPrefsManagerTypeName`、`CurFileFragmentManagerTypeName`、`CurSQLiteManagerTypeName` 的源码初始值分别为 `NovaFramework.Runtime.PlayerPrefsManager`、`NovaFramework.Runtime.FileFragmentManager`、`NovaFramework.Runtime.SQLiteManager`；getter 只返回序列化字段，不验证类型或创建对象。三个 Manager 访问属性同样只返回当前引用，在 `Awake` 前或 `OnDestroy` 后可能为 null；引用非 null 不代表初始化或读写成功。
+
+`RunLoadAsync()` 完成只说明三条 `Initialize` 调用已完成。默认 SQLite 的建连异常会在 `OpenConnection()` 内记录并清空连接，Initialize 仍可正常完成；WebGL SQLite 也仅警告并完成。需要实际 SQLite 可用性时还应核对所选实现的 `Load()` 结果及业务读写，不能把组件共享任务完成当作三种存储耐久性证明。
 
 ## 选型边界
 
@@ -124,3 +128,9 @@ SQLite 还多一个数据库级 `CipherPassword`。
 - [FileFragmentManager.md](FileFragmentManager.md)
 - [SQLiteManager.md](SQLiteManager.md)
 - [PersistManagerBase.md](PersistManagerBase.md)
+
+
+Editor 对现有标准 SQLite 库的非空 `CipherPassword` 轮换复用 `nova-project-integrate-persistence` 的同三 Action，独立 `operation="rotate-sqlite-cipher"`，可自动生成新凭据。macOS Editor 先用项目 Keychain 封存旧/新和独立备份秘密，再同库 rekey 并保存唯一组件密码字段；跨重载恢复仍绑定原迁移 token。源空/明文库转换、设备重启耐久性以及 Privacy AES Key/IV 跨存储轮换另有边界，见 [存档维护契约](../../../Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md)。
+
+
+Editor 的 `LoadAsync()` 在检查已有加载任务之前执行 `PrivacyAesMaintenanceGuard.AssertReady()`；未结束、损坏或无法核实的当前项目维护标记会拒绝读取默认 AES 存档，禁用 Domain Reload 也不能绕过。该门禁仅 `UNITY_EDITOR`，不改变 Player 初始化链。

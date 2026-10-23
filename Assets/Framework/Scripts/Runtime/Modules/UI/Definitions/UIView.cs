@@ -24,6 +24,7 @@ namespace NovaFramework.Runtime
         /// 负责维护框架侧字段，仅在新实例时触发。
         /// <see cref="OnInit(object)"/> 钩子。
         /// </summary>
+        /// <remarks>新实例初始化钩子异常只记录后吞掉，运行字段不回滚，Manager 仍可能继续 OnOpen；复用实例不再调用钩子。</remarks>
         /// <param name="serialID">视图序列编号。</param>
         /// <param name="assetLocation">视图资源地址。</param>
         /// <param name="uiGroup">视图所属的视图分组。</param>

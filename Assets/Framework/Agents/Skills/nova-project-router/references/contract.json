@@ -4,7 +4,7 @@
   "kind": "router",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -17,12 +17,23 @@
       "kind": "unity-editor-automation",
       "entry": "nova_project_action(operation=describe, action_id=<selected action id>)",
       "when": "所选 Skill 引用 Project Action，且需要区分当前 MCP 可执行、传输未就绪或 Action 未开放时；只允许 describe"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; python3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
+      "when": "macOS/Linux需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值；日常查询给inventory/describe显式传--detail summary，精确目标才describe <id> --detail full；原entry默认full保兼容，支持任务/函数/功能族查询，旧包按实际帮助分页 存档密码/Privacy默认AES沿同Persist Skill独立typed分支与当前Editor范围，资源密钥/App AES/外部消费不混用；Router查询不完成写任务。"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
+      "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值；日常查询给inventory/describe显式传--detail summary，精确目标才describe <id> --detail full；原entry默认full保兼容，支持任务/函数/功能族查询，旧包按实际帮助分页"
     }
   ],
   "inputs": [
     {
       "name": "userGoal",
-      "required": true
+      "required": true,
+      "constraint": "开始游戏/结算/重开/回大厅先定位实际业务入口、项目Service与Procedure/FSM；暂停/恢复/倍速区分Nova.Self全局速度缓存和局/页面业务拥有者，按精确目标路由，不推断所有计时/输入/网络停止"
     },
     {
       "name": "projectRoot",
@@ -53,6 +64,11 @@
   "evidence": [
     "当前项目文件、所选 Skill 契约与随包 Docs 的定位证据",
     "所选 Project Action 的 live describe 可用性；未引用 Action 时记录真实 Adapter 类型",
-    "范围、风险、推荐路径及是否命中 SDK/Kit、事件、持久化、Content 场景、构建前检/诊断、Android Resolve、真机诊断或既有专项 Operation 的消歧证据"
+    "范围、风险、推荐路径及是否命中 SDK/Kit、事件、持久化、Content 场景、构建前检/诊断、Android Resolve、真机诊断或既有专项 Operation 的消歧证据",
+    "nova_capabilities inventory/describe 的功能与源码、文档、既有 Skill/Adapter 对应关系；源码默认值与当前有效值明确区分",
+    "明确区分ConfigMaster面板字段/维度及独立normalize-master归一锚点、项目自有SO/Prefab字段、Pipify配置/执行和已有xlsx/csv标量源编辑；按最窄Skill路由，未支持复杂参数不冒充可执行",
+    "WebGL构建失败归diagnose-build；已有浏览器页面启动失败归diagnose-startup的只读loader/Wasm/data→Unity/Nova分层；新本机预览或运行归build-player，诊断不自动serve/刷新/清存储。",
+    "摘要查询保准确身份、导航与源/审查/执行/验收状态，过滤分页基于完整记录；只对选中精确id展开full，不把summary当执行或验收许可",
+    "游戏开始/结算/重开/回大厅复用integrate-procedure的business-flow参考和项目真实Service/Procedure/FSM；暂停/恢复/倍速按全局Nova.Self或业务拥有者消歧，分别路由edit-settings或integrate-procedure；无Nova.Game门面，Router本身不plan、不创建业务实现、不提升验收状态"
   ]
 }

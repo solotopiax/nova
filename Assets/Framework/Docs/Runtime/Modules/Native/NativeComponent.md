@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Runtime`  
 **全局访问**：`Nova.Native`
 
-`NativeComponent` 是 Nova 访问操作系统原生能力的场景门面。当前正式能力覆盖**通知授权状态查询、显式请求、打开应用设置、精准打开通知设置与应用内评价请求**；JNI、P/Invoke、平台状态映射、并发请求协调与回调清理由 `NativeManager` 承担。
+`NativeComponent` 是 Nova 访问操作系统原生能力的场景门面。当前正式能力覆盖**通知授权状态查询、显式请求、打开应用设置、精准打开通知设置、应用内评价请求与可选自身 APK 安装**；JNI、P/Invoke、平台状态映射、并发请求协调与回调清理由 `NativeManager` 承担。
 
 它不负责 APNs / FCM Token 注册、远程消息接收、通知展示策略或业务弹窗策略。这些能力属于对应 SDK 或业务层。
 
@@ -13,6 +13,7 @@
 | 文件 | 说明 |
 |---|---|
 | `NativeComponent.cs` | `Awake` / `Start` / `OnDestroy` 与公开原生能力 API |
+| `NativeComponent.AppInstall.cs` | 可选自身 APK 安装、来源许可查询与显式设置薄门面 |
 | `NativeComponent.Visitors.cs` | Manager 类型、初始化配置与私有 Manager 引用 |
 | `Managers/Interfaces/INativeManager.cs` | 原生能力 Manager 公共契约 |
 | `Managers/Implements/NativeManager*.cs` | 默认实现、并发协调与 Android / iOS / 非移动平台分发 |
@@ -38,6 +39,11 @@ public UniTask<InAppReviewRequestResult> RequestInAppReviewAsync(
 public UniTask<bool> OpenAppSettingsAsync();
 
 public UniTask<bool> OpenNotificationSettingsAsync();
+
+public bool IsAppInstallEnabled { get; }
+public UniTask<bool> CanRequestPackageInstallsAsync(CancellationToken ct = default);
+public UniTask<bool> OpenPackageInstallSettingsAsync();
+public UniTask<NativeAppInstallResult> InstallApkAsync(string apkPath, CancellationToken ct = default);
 ```
 
 - `GetNotificationPermissionStatusAsync` 返回当前操作系统状态。
@@ -46,7 +52,7 @@ public UniTask<bool> OpenNotificationSettingsAsync();
 - `OpenAppSettingsAsync` 打开当前应用的系统设置根页。
 - `OpenNotificationSettingsAsync` 只打开当前应用的通知设置页；不支持或无法精准跳转时直接返回 `false`，绝不回退到应用设置页。
 - 两个设置入口返回 `true` 都只表示框架已成功发起对应的系统跳转请求，不保证用户已经看到目标页面或修改了任何设置。
-- `CancellationToken` 只取消当前调用方的等待；它不取消已发起的共享系统请求。
+- 通知/评价的 `CancellationToken` 只取消当前调用方等待；APK 安装为独占操作，取消会停止准备并放弃未完成 session。
 
 ## 通知状态与请求选项
 
@@ -153,3 +159,19 @@ Editor 中页面会展示真实的 `Unsupported` 结果，不模拟移动平台�
 - [NativeManager.md](Managers/Implements/NativeManager.md)
 - [NativeManagerConfig.md](Managers/Definitions/NativeManagerConfig.md)
 - [NativeComponentInspector.md](../../../Editor/Inspectors/NativeComponentInspector/NativeComponentInspector.md)
+
+## 可选自身 APK 安装
+
+`IsAppInstallEnabled` 只说明当前 Manager 实现可选 `INativeAppInstaller` 且配置总门开启，不代表系统已授权或当前平台支持。`CanRequestPackageInstallsAsync(ct)` 查询来源许可，`OpenPackageInstallSettingsAsync()` 显式打开当前应用来源设置，`InstallApkAsync(apkPath, ct)` 显式安装；门面不承载 JNI 或验证算法。旧自定义 Manager 未实现扩展时安装返回 `Unsupported`，查询和设置入口返回 `false`。
+
+```csharp
+string apkPath = await Nova.App.DownloadAsync(ct); // 文件已提交，不代表已安装
+NativeAppInstallResult result = await Nova.Native.InstallApkAsync(apkPath, ct);
+if (result.Status == NativeAppInstallStatus.PermissionRequired)
+{
+    // 仅在用户选择允许来源后显式调用；返回应用后由用户再次发起安装。
+    await Nova.Native.OpenPackageInstallSettingsAsync();
+}
+```
+
+安装默认关闭，先在 Native Inspector 开启“允许 Android APK 安装”并重新构建。只支持 Android API 28+ 的完整自身包，同包名、严格有效签名、当前 signer 集合相同和递增 `versionCode`；系统来源许可与用户安装确认仍必需。此安装令牌会停止本次准备和未完成 session，语义与通知/评价的共享等待取消不同；已成功安装不可回滚。详细状态与依赖见 [INativeAppInstaller](Managers/Interfaces/INativeAppInstaller.md)。

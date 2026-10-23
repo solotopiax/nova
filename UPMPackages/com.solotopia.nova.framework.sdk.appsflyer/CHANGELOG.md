@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-### Added
+## [0.1.14] - 2026-10-23
 
 ### Changed
 
+- Android OneLink 规则构造供构建回调和受控预测共用，保持原有配置分支、属性写入与导入顺序。
+
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 AppsflyerDemo APK 流水线的旧输出参数，改用 OutputFolderPath。
+
+- 纠正文档中的初始化依赖、失败状态、会话隔离与平台验收说明。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.13] - 2026-10-10
 

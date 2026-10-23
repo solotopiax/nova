@@ -77,3 +77,7 @@ if (collector == null)
 - [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)（字段来源：`YooAssetSettingsPath` / `BundleCollectorSettingPath`）
 - [EditorUtil.Config.WorkspaceActive.md](EditorUtil.Config.WorkspaceActive.md)（调用前获取 master 的入口）
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)（窗口打开或显式绑定时调用 `Inject`；场景切换注入由 `SceneRoute` 统一完成）
+
+## 注入与回退状态
+
+Inject/InjectByPath 先清 Collector 缓存和旧 Settings，null/空/无效路径也会撤销旧注入；只改 Editor 静态态，不保存目标资产。只注册 BundleCollectorSetting 的显式路径 provider，其它类型或缺 Master 返回 null，仍允许 Yoo 自己回退，不能据此证明排除了所有多副本。启动延迟协调可能写路由，没有独立稳定/批模式门；SettingLoader 常规缺失可返回 null，但解析/领域异常仍可传播。

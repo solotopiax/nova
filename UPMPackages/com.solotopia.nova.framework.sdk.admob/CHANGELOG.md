@@ -4,6 +4,22 @@
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- 全屏配置改为 PlacementGroups，兼容旧 Unity 字段和真实 ID 访问器，补齐广告基础包依赖；文档按现有初始化、四格式广告和构建处理器说明官方 SDK 条件、组拓扑与设备验收。
+
+- 最低依赖对齐至Nova Framework 0.7.0、Ad 1.2.0，与本轮发布的框架及 SDK 接口配套。
+
+### Fixed
+
+- 移除已被实际实现取代的“仅骨架、无构建处理器”旧说明；明确 UMP 年龄配置、展开 ID 独立并发重试、统一组间隔和释放后不可复用，MAX 构建处理器不读取独立 AdMob 配置。
+
+### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
+
 ## [0.0.5] - 2026-06-15
 
 ### Changed

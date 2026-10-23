@@ -77,3 +77,13 @@ WebGL 的缓存与内存边界见 [WebGLAssetStrategies.md](../../WebGLAssetStra
 - [IAssetManager.md](IAssetManager.md)
 - [AssetComponent.md](../../AssetComponent.md)
 - [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)
+
+## 执行状态与失败中间态
+
+Tags 与 locations 先 Trim，再按 Ordinal 保序去重；Tag 无命中抛 InvalidOperationException，locations 全部无效抛 ArgumentException。与下载器不同，空 Tag 不表示整包。构造的 scope 仅用于日志/UI，null 归空串，不参与筛选。
+
+RunAsync 先拒绝已释放实例和并发调用；已结束时直接返回此前 Succeeded，不重新加载或重试。它先为所有项发起 BundleFile 加载，再逐帧等待全部完成；FinishedCount 包括失败终态项，空组 Progress 为 1。成功时持有 handles，失败或取消时释放；失败保留 Error，取消同时抛出。进度监听逐个捕获异常并告警，不改变预热结果。
+
+Release 先标记 IsReleased、取消等待，再逐个释放句柄并清监听；不会重置总数、完成数、先前成功值或错误，也不保证 IsDone 已在异步等待中更新。单个 handle.Release 抛出会中断后续释放，没有 finally 保证全部清完；“幂等”不等于失败后再次调用能够补齐。调用方应在当前所有权结束后丢弃引用。
+
+启动控制器按传入 succeeded 决定接管，不独立复核 Group 结果。All 成功保留到 Shutdown；Tags 成功 Release 后置待清理标记，DLL 消费后才 Cleanup。该 Cleanup 的调用方取消继续抛出并保留待清理标记；其他清理异常只告警，后续标记会清除，不触发重复预热。

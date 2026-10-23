@@ -139,12 +139,10 @@ namespace NovaFramework.Editor
                     }
                 }
 
-                if (!AssetDatabase.CopyAsset(source, targetAssetPath))
-                {
-                    throw new IOException($"复制 YooAssetSettings 失败：{source} -> {targetAssetPath}");
-                }
+                // 当前 Unity 的 CopyAsset 会保存其他脏资产；只复制已冻结的正文，让导入生成独立 meta。
+                FileUtil.CopyFileOrDirectory(AssetPathToAbsolutePath(source), AssetPathToAbsolutePath(targetAssetPath));
                 AssetDatabase.ImportAsset(targetAssetPath, ImportAssetOptions.ForceSynchronousImport);
-                AssetDatabase.SaveAssets();
+                // 同步导入不需要全局保存，保留用户其他资产的未保存修改。
                 string actualHash = ComputeFileHash(targetAssetPath);
                 if (!string.Equals(actualHash, expectedHash, StringComparison.Ordinal))
                 {
@@ -341,11 +339,16 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Nova 自有 BuildPlayer finally 调用的同步清理兜底。
+        /// Nova 自有 BuildPlayer finally 与全局后处理共用的同步清理兜底。
+        /// 未能清理时保留所有权记录并抛错，禁止以成功构建掩盖残留。
         /// </summary>
         internal static void CleanupAfterBuild()
         {
-            CleanupOwnedStaging(true);
+            if (!CleanupOwnedStaging(true))
+            {
+                throw new InvalidOperationException(
+                    "YooAssetSettings 构建期暂存未能安全清理；已保留副本与所有权记录，请处理冲突后重试。");
+            }
         }
 
         /// <summary>

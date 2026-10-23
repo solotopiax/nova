@@ -27,6 +27,10 @@ namespace NovaFramework.Runtime
         /// </summary>
         private IAssetHandle<ConfigRuntimeSO> m_ConfigHandle;
         /// <summary>
+        /// 当前 ConfigRuntimeSO 加载的共享完成源；并发调用只发起一次资源加载。
+        /// </summary>
+        private Cysharp.Threading.Tasks.UniTaskCompletionSource m_ConfigLoadTcs;
+        /// <summary>
         /// 加载后持有的 ConfigRuntimeSO 对象引用；直接从 m_ConfigHandle.Asset 读取，Shutdown 时随句柄归零。
         /// </summary>
         private ConfigRuntimeSO m_Runtime;
@@ -35,6 +39,11 @@ namespace NovaFramework.Runtime
         /// 应用运行时配置；直接读 ConfigRuntimeSO.AppConfigs，LoadAsync 完成后可读。
         /// </summary>
         public override AppConfigs AppConfigs => m_Runtime?.AppConfigs;
+
+        /// <summary>
+        /// 隐私运行时配置；仅完整加载完成后暴露当前快照，防止可选消费者提前锁定配置。
+        /// </summary>
+        public override PrivacyConfigs PrivacyConfigs => m_IsLoadOver ? m_Runtime?.PrivacyConfigs : null;
 
         /// <summary>
         /// Namespace；直接读 ConfigRuntimeSO 顶层字段，LoadAsync 完成后可读。

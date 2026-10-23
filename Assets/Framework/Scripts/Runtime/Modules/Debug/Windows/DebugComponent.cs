@@ -48,7 +48,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 启动时根据激活类型决定是否初始化 RuntimeDebugger，再初始化 DebugManager。
+        /// 启动时仅向已创建的 DebugManager 注入磁盘配置；RuntimeDebugger 的激活判断已在 Awake 执行。
         /// </summary>
         private void Start()
         {

@@ -35,6 +35,8 @@ public virtual void SetDepth(int depth);
 
 ## 生命周期
 
+SetDepthFactor 只写因子，不立即更新现有 sortingOrder。SetDepth 的 short 范围检查发生在 int 乘法之后，不能保护乘法本身溢出；字段先更新，Canvas/日志错误不回滚。UIView 子 Canvas 的增量计算是另一条路径，不能继承这段钳制保证。
+
 | 方法 | 说明 |
 |------|------|
 | `Awake()` | 获取或挂载 Canvas 组件 |

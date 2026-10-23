@@ -39,9 +39,11 @@
 确认按钮回调 `OnConfirm()` 会读取 `AppComponent.DownloadRoute`：
 
 - `Store`：调用 `OpenStoreAsync(CancellationToken)`
-- `Apk`：调用 `DownloadAsync(CancellationToken)`
+- `Apk`：首次调用 `DownloadAsync(CancellationToken)` 并保存本地路径；后续确认复用该路径，不再次下载
+- Native 可选安装已开启：显式调用 `InstallApkAsync(path, ct)`，来源许可不足时打开精准来源设置，返回后由用户再次确认；安装失败/系统取消保留文件等待重试
+- Native 未启用、扩展缺失或平台不支持：显示 `AppDownloaded` 文件已保存结果；确认后推荐更新继续、强制更新退出，取消按钮隐藏
 
-无论成功、失败还是异常，`finally` 都会再次 `ShowDialog()`。
+`finally` 仅在本轮流程代际仍有效、令牌未取消时刷新对话框；退出后迟到的下载/安装 continuation 不回灌新流程。系统安装成功可能先自然终止旧进程；若旧进程仍存活，则进入 `AppDownloaded` 交付结果确认，推荐更新续行、强制更新退出。框架不主动 kill、不自动重启。
 
 ### 3. Cancel：强制更新退出，推荐更新继续
 
@@ -59,11 +61,15 @@
 
 ## 风险点 / 易错点
 
-- 当前 `DownloadAsync()` 在 `AppManager.Download.cs` 里仍是待补实现；非商店路由链路目前并未真正打通。
-- 确认后的下载/跳商店操作不会自动让流程继续，而是重新显示弹窗，等待用户下一次操作。
+- 下载路径只表示已提交本地文件；安装层独立严格验签、同包名/当前 signer/递增 versionCode，未绑定远端命中版本。
+- APK 下载完成后不会重复下载；未启用安装时文件交付确认才继续推荐更新，强更仍要求退出。安装失败、取消或来源设置返回后的确认复用保存路径。
 - 只有推荐更新取消分支会记录放弃时间；确认更新与强制更新取消均不会影响推荐提示间隔。
 - 放弃时间落盘失败只输出 warning，推荐取消分支仍必须继续后续启动流程。
 - 离开流程时会清理 `AppVersionResult`、`HasAssetPatch` 与 `RequiresStartupAssetWork` 三个启动黑板键；后续流程不应继续依赖它们。
+
+## 参数与生命周期边界
+
+每次进入重置完成、路径、fileDelivered 与重入门并递增代际；OnLeave 先 base 取消，再递增代际、清三黑板键及销毁 Dialog，不论是否 Shutdown。有效代际校验与冻结 token 用于保护 await 后状态，正式 APK 不在此删除。OnConfirm 在 try 前取得 AppComponent/路由，缺组件等异常不受内部 catch 保障；Store 路由跳转返回 false 也会按现流程再显示对话框，文件交付结果只有后续显式确认才完成。
 
 ## 继续阅读
 
@@ -74,7 +80,7 @@
 
 相关文档：
 
-- [../ProcedureLoadDll.md](../ProcedureLoadDll.md)
+- [ProcedureLoadDll.md](ProcedureLoadDll.md)
 - [../ProcedureHotfix.md](../ProcedureHotfix.md)
 - [../ProcedureDataKeys.md](../ProcedureDataKeys.md)
 - [../../App/AppComponent.md](../../App/AppComponent.md)

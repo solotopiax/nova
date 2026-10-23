@@ -46,7 +46,11 @@
 
 - 每次 `Show()` 都会清理旧监听，因此不会出现按钮回调累积。
 - `onCancel == null` 时不是“空实现取消”，而是直接隐藏取消按钮。
-- 文本行是否显示由 `LauncherDialogLocalizedText.ApplyByType()` 决定，不是按钮状态顺带控制出来的。
+- 文本行由面板 RefreshAllTexts 按 DialogType 处理；取消按钮单独按回调决定。
+
+## 参数与生命周期边界
+
+RefreshAllTexts 实际先以 HashSet 去重隐藏所有文本，再启用并刷新全部匹配 DialogType 的条目，没有调用 ApplyByType。共享同一文本且同类型的多 Key 以后刷新覆盖前刷新；无匹配则全部隐藏。ApplyByType 的 hasCancelAction 参数当前明确忽略，取消按钮仅由 Show 的 onCancel!=null 控制。Show 的 null confirm 仍可显示确认按钮但不绑定动作；按钮点击不自动 Hide，Hide 保留闭包和监听到下次 Show/销毁。RemoveAllListeners 的 Unity 持久监听行为须按实际资源确认，不应将其理解为清除全部序列化事件。
 
 ## 继续阅读
 

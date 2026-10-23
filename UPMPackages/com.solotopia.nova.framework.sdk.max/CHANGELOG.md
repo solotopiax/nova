@@ -2,13 +2,31 @@
 
 ## [Unreleased]
 
-### Added
+## [0.1.14] - 2026-10-23
 
 ### Changed
 
+- 全屏配置改为 PlacementGroups，支持 List 项内逗号/竖线分组，兼容旧字段和真实 ID 访问器；初始化注册前拒绝重复或无效组，构建处理器尚未接入此校验器。
+
+- 恢复原初始化流程，按渠道单次初始化移除重复注册、结果缓存和等待身份；本地等待后主线程处理，保留真实成功判断、事件解绑及隐私等待清理。
+
+- 全屏展示使用各格式 TCS 和真实广告位 ID，终态先清空再通知业务，保持重入、异常和释放时的等待收尾，移除重复展示上下文及状态。
+
+- 常规日志保留全部原厂回调入口、实际 Show 和异常警告，含 Banner/过期重载及加载、收益、失败字段；渠道由 LogTag.Max 标识，移除重复 MAX 前缀与 Load、过滤、奖励采纳、TCS 和 Banner 刷新控制日志。
+
+- 最低依赖对齐至Nova Framework 0.7.0、Ad 1.2.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- Unity Ads Android adapter 升为 4200101.0.0（4.20.1.1，SDK 4.20.1），Unity Ads iOS adapter 升为 4200001.0.0（4.20.0.1），LINE iOS adapter 升为 3010102.0.0（3.1.1.2）；移除 SPM 占位符并使用三段 tag，修复 EDM4U 解析及 Xcode 崩溃，iOS 原生 SDK 仍为 Unity Ads 4.20.0、LINE 3.1.1，全局 SPM 设置保持。
+
+- iOS 顺序 44 后处理定向移除 LINE/Unity Ads 的 SPM repository/product 并按官方 XML 恢复 Pods，避免重复产出 AppLovinSDK.framework；保留 Firebase SPM、其他 Pods 和部署下限，未知合同失败，重复执行幂等。文档明确 Embed 名单、构建校验范围、SKAdNetwork 离线枚举再联网补齐及平台验收边界。
+
+- 初始化保留准确回调委托，释放时注销自身订阅并清空国家及授权缓存，已排队回调遵守取消，避免旧会话回写。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.13] - 2026-10-10
 

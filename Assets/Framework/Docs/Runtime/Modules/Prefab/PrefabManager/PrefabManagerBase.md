@@ -29,7 +29,7 @@ FrameworkManager
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `Priority` | `int` | `10` | 调度优先级（override），高于 AssetManager（4）确保后初始化先关闭 |
+| `Priority` | `int` | `10` | 数值大于 AssetManager（4），所以更晚 Update、更早 Shutdown；不控制 Component.Start 或 Initialize 顺序 |
 
 ---
 

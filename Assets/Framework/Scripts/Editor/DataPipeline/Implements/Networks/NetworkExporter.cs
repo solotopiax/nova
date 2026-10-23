@@ -114,6 +114,7 @@ namespace NovaFramework.Editor
             return ExecuteNetCmds(settings, mode, dataFormat, targetUnit, classExportPath, operations);
         }
 
+        /// <summary>按有效开发模式生成 HostKeys；仅租约持有者清场，刷新结束后释放工作区。</summary>
         private static bool ExecuteHostKeys(
             HostKeySettings settings,
             ExportMode mode,
@@ -124,9 +125,10 @@ namespace NovaFramework.Editor
             ExportOperations operations)
         {
             string tempRoot = IOPath.GetFullPath(IOPath.Combine(settings.SourceDirPath, "_temp"));
+            IDisposable workspace = null;
             try
             {
-                using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
                 DeleteTempRoot(tempRoot);
                 using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
                 string stagedCodeDir = IOPath.Combine(applier.StagingRoot, "code~");
@@ -180,10 +182,19 @@ namespace NovaFramework.Editor
             }
             finally
             {
-                Cleanup(tempRoot, operations);
+                try
+                {
+                    // 拒绝重入时不碰既有暂存内容；正常与异常清场均保持租约。
+                    if (workspace != null) Cleanup(tempRoot, operations);
+                }
+                finally
+                {
+                    workspace?.Dispose();
+                }
             }
         }
 
+        /// <summary>保持 NetCmds 原表结构生成；仅租约持有者清场，刷新结束后释放工作区。</summary>
         private static bool ExecuteNetCmds(
             NetCmdSettings settings,
             ExportMode mode,
@@ -193,9 +204,10 @@ namespace NovaFramework.Editor
             ExportOperations operations)
         {
             string tempRoot = IOPath.GetFullPath(IOPath.Combine(settings.SourceDirPath, "_temp"));
+            IDisposable workspace = null;
             try
             {
-                using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
                 DeleteTempRoot(tempRoot);
                 using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
                 string stagedCodeDir = IOPath.Combine(applier.StagingRoot, "code~");
@@ -249,7 +261,15 @@ namespace NovaFramework.Editor
             }
             finally
             {
-                Cleanup(tempRoot, operations);
+                try
+                {
+                    // 拒绝重入时不碰既有暂存内容；正常与异常清场均保持租约。
+                    if (workspace != null) Cleanup(tempRoot, operations);
+                }
+                finally
+                {
+                    workspace?.Dispose();
+                }
             }
         }
 

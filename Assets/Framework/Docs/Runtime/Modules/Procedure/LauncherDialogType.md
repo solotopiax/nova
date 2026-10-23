@@ -8,6 +8,7 @@
 - `RecommendedDownload`
 - `HotfixFailed`
 - `PreloadFailed`
+- `AppDownloaded`
 
 ## 当前语义边界
 
@@ -17,7 +18,7 @@
 ## 风险点 / 易错点
 
 - 新增一个枚举值，并不会自动带来对应的面板文本；还需要同步补 `LauncherDialogLocalizedText` 配置和启动期本地化内容。
-- 当前数值顺序固定为：`ForcedDownload = 0`、`RecommendedDownload = 1`、`HotfixFailed = 2`、`PreloadFailed = 3`；改枚举时必须同步迁移 prefab 里的 `m_DialogType` 序列化值。
+- 当前数值顺序固定为：`ForcedDownload = 0`、`RecommendedDownload = 1`、`HotfixFailed = 2`、`PreloadFailed = 3`、`AppDownloaded = 4`；改枚举时必须同步迁移 prefab 里的 `m_DialogType` 序列化值。
 
 ## 继续阅读
 
@@ -30,3 +31,5 @@
 - [LauncherDialogPanel.md](LauncherDialogPanel.md)
 - [LauncherDialogLocalizedText.md](LauncherDialogLocalizedText.md)
 - [LauncherUIController.md](LauncherUIController.md)
+
+`AppDownloaded = 4` 追加在既有枚举末尾，表示 APK 文件已保存且没有正在执行的安装。使用对应 Title/Content/Confirm 三行，取消隐藏；文件交付确认使推荐更新续行、强制更新退出。既有数值保持不变。

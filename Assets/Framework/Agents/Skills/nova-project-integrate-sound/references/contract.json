@@ -4,14 +4,19 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
       "kind": "workspace-edit",
       "entry": "project-confirmed Sound source and business sound trigger",
-      "when": "只修改已冻结的声音源行、业务触发和停止 / 释放生命周期"
+      "when": "只编辑冻结的真实源数据与项目自有业务源码；优先复用现有Owner，本次授权覆盖接入时可新增必要触发及唯一停止/释放胶水，调用声明公开API，不新建Framework Manager或并行加载Owner"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-bundle-collector",
+      "when": "目标等于已冻结 ConfigMaster 当前坐标时，只读定位有效 Collector 路径与资产；不替代 Collector 成员或地址验证"
     },
     {
       "kind": "unity-editor-automation",
@@ -26,17 +31,17 @@
     {
       "kind": "agent-action",
       "entry": "nova.project.sound.export",
-      "when": "导出已冻结 Sound Unit 的数据、类型或完整确认范围"
+      "when": "导出已冻结 Sound Unit 的数据、类型或完整确认范围；写后输入漂移、读取异常或取消保留partial与已有Receipt，恢复只读核验，不重放导出"
     },
     {
       "kind": "csharp-api",
       "entry": "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / StopSound / ReleaseAssetBySerialID",
-      "when": "在 Play Mode 中加载、确认目标组、触发并验证停止或释放责任"
+      "when": "在 Play Mode 中加载、确认目标组、触发；本 Owner 显式结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID(serialID)，验证停止与句柄释放。Pause/Resume 保留请求与资源，自然结束仍需履行释放责任"
     },
     {
       "kind": "unity-editor-automation",
       "entry": "Play Mode AudioSource playback inspection",
-      "when": "等待异步 AudioClip 加载后检查目标 AudioSource 播放与停止"
+      "when": "等待异步 AudioClip 加载后检查目标 AudioSource 播放、停止及本 Owner 的资源句柄释放；Release 的 void 调用记录或 Stop bool 不能替代释放证据，helper.clip 非空也不等于句柄仍保留，不保证 Unity 立即卸载内存"
     }
   ],
   "inputs": [
@@ -62,7 +67,8 @@
     },
     {
       "name": "businessTriggerAndLifecycle",
-      "required": true
+      "required": true,
+      "description": "从当前项目读取并冻结实际入口、唯一 Owner 与本 Owner 的 SerialID 结束、替换、关闭、暂停/恢复及自然结束后的释放责任；不再使用时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID，加载中停止由 Manager 在结果到达后释放且不播放。缺现成调用代码时可在授权项目源码内补齐，真实数据/资源缺失仍阻断依赖步骤"
     },
     {
       "name": "runtimeSuccessProbe",
@@ -75,6 +81,11 @@
     {
       "name": "targetPlatformChannelAndMode",
       "required": true
+    },
+    {
+      "name": "activeConfigMasterAndGeneratedNamespace",
+      "required": false,
+      "description": "仅 export-code-data 按目标必需：Sound、Vibration 及 Network 含 hostkey/netcmd 的 all/code 导出，从 ProjectSettings/Nova/Globals.json 核 configMasterGuid、configMasterPathHint 与实际可加载 ConfigMasterSO 的一致身份，冻结其顶层 Namespace（RuntimeProvider.GetNamespace 的当前来源）及预期生成类型全名和既有消费者；未绑定、身份或值漂移时 blocked，不以 ConfigRuntime.Namespace、维度解析值或第一个 Master 代替。已绑定 Master 明确空 Namespace 时允许 global namespace 并按冻结预期验收。Network 仅 proto 时记录 Master 前置不适用，改核已确认 Schema/protoc 的命名空间与类型全名；不要求 ConfigRuntime、Collector、账号或端点，hostkey 原 DevelopMode 前置仍保留。"
     }
   ],
   "effects": [
@@ -87,7 +98,7 @@
       "confirmed Sound source rows and selected data or type output",
       "confirmed AudioClip asset, existing Collector membership and address",
       "confirmed SoundComponent, SoundSettings, SoundGroupShell or AudioMixer settings through Unity Editor or MCP",
-      "confirmed existing business sound trigger and its stop or release lifecycle",
+      "confirmed project-owned business trigger and its single stop/release owner; reuse existing implementation or create minimal authorized source glue using declared public APIs",
       "confirmed existing target Prefab binding directly related to the sound trigger"
     ],
     "deny": [
@@ -121,8 +132,38 @@
       "replace a non-generated asset, create or change an existing target Prefab binding, remove a source row or clean generated output",
       "delete, external write, credential use, Bundle or Player build, Git commit or push"
     ],
-    "rule": "确认激活 ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 的有效路径、真实 AudioClip、唯一地址、Sound 表和导出范围、SoundComponent 加载入口、声音组、业务触发与停止生命周期、实际播放成功探针及最小写入集；任一输入或范围变化后旧确认失效。"
+    "rule": "确认激活 ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 的有效路径、真实 AudioClip、唯一地址、Sound 表和导出范围、SoundComponent 加载入口、声音组、业务触发与停止生命周期、实际播放成功探针及最小写入集；任一输入或范围变化后旧确认失效。 当前精确业务授权持续有效，可在冻结项目源码补必要胶水；缺现成调用点不单独构成永久阻断，缺真实资源/规则/协议和设备证据按依赖保留blocked或partial。测试后遵循START_HERE共同清场规则。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。"
   },
+  "taskProfiles": [
+    {
+      "id": "export-code-data",
+      "description": "仅按已有 SoundSettings 正式导出 all/code 范围；复用原导出 Action，继承全部禁止范围、锁、幂等与确认门，不要求 AudioClip、Collector、业务 Owner 或实际播放，不代表完整声音接入。",
+      "taskIds": [
+        "sound.export"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "soundComponentSettingsAndActiveScene",
+        "soundTableAndExportScope",
+        "activeConfigMasterAndGeneratedNamespace"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "agent-action",
+          "entry": "nova.project.sound.export"
+        }
+      ],
+      "minimumEvidence": "compile",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ]
+    }
+  ],
   "minimumEvidence": "play",
   "resultStates": [
     "success",
@@ -134,6 +175,8 @@
     "冻结的 active ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 有效路径，以及 Sound 表行、AudioClip、Collector、Package、地址和声音组映射",
     "定向 Exporter 或已确认 Sound Batch 的暂存发布与 Unity 编译证据",
     "Play Mode 中 Nova.Sound.LoadAsync、HasSoundGroup、业务触发和实际 AudioSource 播放证据",
-    "BGM 停止或 SFX 停止 / ReleaseAssetBySerialID 的生命周期证据"
+    "本 Owner 的 BGM / SFX 显式结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID 的停止与句柄释放证据；覆盖本次涉及的加载中停止，Pause/Resume 保留请求与资源，自然结束仍需履行释放责任",
+    "资源释放不能只凭 Stop bool、Release 的 void 调用记录或 helper AudioSource.clip 是否非空判断；使用受控只读诊断或等价资源句柄探针，不保证 Unity 立即卸载内存",
+    "本轮测试态、临时runner/脚本/meta/marker/日志/产物清场、必要Refresh与目标工作树核对；正式交付和原有工作保留"
   ]
 }

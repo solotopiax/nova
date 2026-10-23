@@ -4,14 +4,24 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
     {
       "kind": "workspace-edit",
       "entry": "project-confirmed HostKey/NetCmd source and business request entry",
-      "when": "只修改已冻结的路由行、协议映射和允许的业务调用入口"
+      "when": "HTTP分支只修改已冻结的路由行/协议映射；复用或在任务授权内创建项目自有Service及调用入口。缺少现成Service不阻断，协议/认证/响应/幂等不明仍阻断"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed project-owned WebSocket business service, message dispatch and connection lifecycle entry",
+      "when": "WebSocket分支在精确地址、通道、协议、认证/心跳、ack、重放、连接拥有者和写集已确认时直接实现公开API调用；复用现有Service/Procedure/Event/UI，不套HTTP HostKey、主备或导出，不修改Framework或臆造初始化接口"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "current WebSocket NetworkComponent, IWebSocketManager, NetChannelBase and Tcp/TcpPb message public contracts",
+      "when": "仅在WebSocket分支核对初始化、消息/回调所有权、默认与当前配置、账号/协议身份和平台条件；确认SpecialMessageCreator与认证状态真实路径，源码审查不算live验证"
     },
     {
       "kind": "unity-editor-automation",
@@ -21,12 +31,27 @@
     {
       "kind": "agent-action",
       "entry": "nova.project.network.export",
-      "when": "导出已冻结的 HostKey、NetCmd 或 Proto 代码和数据"
+      "when": "仅本轮修改已实际使用的HostKey/NetCmd/Proto源时定向导出；既有单URL取消维护或不使用这些表的普通HTTP跳过。Proto不支持data，Verify按版本2 Receipt完整输出/路径/类型/Hash核验，旧或缺项partial；HostKey Value列必需且有效行必填，FallbackValue可空或缺列，旧表仍校验主域名；官方模板XXXXX占位必须先替换，模板自身不视作项目正式导出"
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / PostAsync",
-      "when": "在 Play Mode 中加载路由、验证 URL，并对适用的公开 HTTP 请求路径验证响应"
+      "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+      "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
+      "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Network.CreateMessage / SendMessage / RecycleMessage / OnWebSocketReceiveMessage / OnWebSocketSendMessage + WebSocketScope.TcpMessage.Initialize / TcpPbMessage.Initialize",
+      "when": "仅在已确认消息协议与真实通道的业务源中接收发送；true仅入队，成功交付后归通道持有，发送/接收回调返回后框架回收，业务只借用并拷贝，不双重回池或以SequenceID替代业务幂等身份"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity compilation and existing WebSocket business entry Play state, message and lifecycle probe",
+      "when": "编译后从实际入口验证唯一通道、连接/认证、消息/ack、断开与注销；重连仅精确授权测试环境，缺初始化/服务器/设备保留partial，不用Mock证明真服务"
     }
   ],
   "inputs": [
@@ -39,20 +64,28 @@
       "required": true
     },
     {
-      "name": "hostKeyAndNetCmdSource",
+      "name": "httpOrWebSocketTransportAndCurrentPlatform",
       "required": true
+    },
+    {
+      "name": "hostKeyAndNetCmdSource",
+      "required": false,
+      "description": "仅实际使用HostKey/NetCmd路由表的HTTP分支必需；既有单URL取消维护跳过表源/导出，WebSocket仅现项目确用这些表时需要"
     },
     {
       "name": "routeAndProtocolContract",
-      "required": true
+      "required": true,
+      "description": "按分支核验：新协议接入必需正式协议/路由；既有单URL取消维护从现代码冻结原URL/方法/编码/响应且不改协议，不要求新增HostKey/NetCmd"
     },
     {
       "name": "authenticationContract",
-      "required": true
+      "required": true,
+      "description": "新协议确认认证方式，可明确无认证；既有取消维护保留当前认证/请求体，不索取新账号或重新接协议"
     },
     {
       "name": "requestResponseAndReplaySemantics",
-      "required": true
+      "required": true,
+      "description": "新协议或重放变更冻结正式请求/响应/重放语义；既有取消维护核原响应处理及最终失败/Unknown/唯一归池，不新增重试或服务端回滚承诺"
     },
     {
       "name": "businessRequestEntry",
@@ -60,7 +93,38 @@
     },
     {
       "name": "testEndpointAccountAndSuccessProbe",
-      "required": true
+      "required": false,
+      "description": "新协议接入需要精确测试端点与响应成功探针，账号仅认证要求时必需；既有单URL取消维护仅需要受控延迟取消探针，已存在请求/无认证GET不强制新账号"
+    },
+    {
+      "name": "webSocketAddressChannelProtocolAuthenticationHeartbeatAndAck",
+      "required": false,
+      "description": "WebSocket分支必需；冻结ws/wss地址、Tcp/TcpPb、帧/命令/响应、真实认证/心跳初始化与ack，不由HTTP协议或主备表推断"
+    },
+    {
+      "name": "webSocketConnectionOwnerSubscriptionsMessageOwnershipReplayAndExit",
+      "required": false,
+      "description": "WebSocket分支必需；明确Service/页面/Procedure拥有者、唯一通道、回调借用、迟到账号、退出及离线重放/业务幂等"
+    },
+    {
+      "name": "confirmedProjectOwnedWebSocketWriteSetAndLocalProbe",
+      "required": false,
+      "description": "WebSocket分支必需；精确source与必要序列化绑定由项目读取，probe验证真实入口而非调用存在；外部请求另行精确授权"
+    },
+    {
+      "name": "networkExportSettingsSourcesTargetsAndScope",
+      "required": false,
+      "description": "仅 export-code-data 分支必需：冻结已保存活动场景、唯一 Nova/NetworkComponent、现有 NetworkSettings/ProtoSettings、scope=all/code、明确 targets 与对应权威源和正式输出；仅选中 hostkey 时核有效 ConfigRuntime.DevelopMode，proto 要求已确认 Schema/生成工具；不要求业务 Owner、HTTP/WebSocket 账号、端点或响应探针"
+    },
+    {
+      "name": "httpCancellationOwnerManagerSupportAndResponseOwnership",
+      "required": false,
+      "description": "仅HTTP生命周期取消维护分支必需；核原URL/方法/协议与当前ICancellableHttpManager、全部原参数必填ct-last调用、退出主动Cancel/迟到拒绝、继续await/finally唯一归池及受控延迟探针；不要求新表导出/账号"
+    },
+    {
+      "name": "activeConfigMasterAndGeneratedNamespace",
+      "required": false,
+      "description": "仅 export-code-data 按目标必需：Sound、Vibration 及 Network 含 hostkey/netcmd 的 all/code 导出，从 ProjectSettings/Nova/Globals.json 核 configMasterGuid、configMasterPathHint 与实际可加载 ConfigMasterSO 的一致身份，冻结其顶层 Namespace（RuntimeProvider.GetNamespace 的当前来源）及预期生成类型全名和既有消费者；未绑定、身份或值漂移时 blocked，不以 ConfigRuntime.Namespace、维度解析值或第一个 Master 代替。已绑定 Master 明确空 Namespace 时允许 global namespace 并按冻结预期验收。Network 仅 proto 时记录 Master 前置不适用，改核已确认 Schema/protoc 的命名空间与类型全名；不要求 ConfigRuntime、Collector、账号或端点，hostkey 原 DevelopMode 前置仍保留。"
     }
   ],
   "effects": [
@@ -73,7 +137,11 @@
       "confirmed HostKey and NetCmd source rows",
       "confirmed NetworkComponent settings through Unity Editor or MCP",
       "confirmed network generated output for the selected route",
-      "confirmed business request entry and its local verification probe"
+      "confirmed business request entry and its local verification probe",
+      "confirmed project-owned WebSocket service, message encoding/dispatch, connection owner, subscriptions, error/exit and idempotent ack consumer source",
+      "confirmed WebSocket component fields and necessary business binding only through selected nova-project-edit-settings or UI Operation and Unity Editor/MCP",
+      "confirmed project-owned HTTP Service creation/reuse, DTO/error mapping and finite idempotent business retry/signature renewal; standard Proto requestFactory only maps the supplied Header once, public facade does not manage identity",
+      "confirmed project-owned HTTP request lifecycle owner passing ct-last overloads, active Cancel, late-result guard and exactly-once HttpResponse finally return; optional ICancellableHttpManager support checked from the actual manager"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -82,7 +150,10 @@
       "manual edits to generated network output",
       "unconfirmed Proto schema, authentication, endpoint or server contract",
       "internal NetService calls from business code",
-      "unrelated HostKey, NetCmd, protocol source, service endpoint or production data"
+      "WebSocket Manager reinitialization, reflection or direct state writes to bypass missing authentication/heartbeat integration",
+      "business recycling or retaining pooled send/receive callback messages, arbitrary production socket or unconfirmed protocol/replay",
+      "unrelated HostKey, NetCmd, protocol source, service endpoint or production data",
+      "pretending old no-token ordinary HTTP or an implementation without ICancellableHttpManager has active physical cancellation, inventing single-URL framework failover, dropping pooled responses with AttachExternalCancellation, blindly replaying side-effect requests with Unknown delivery, or duplicating standard Proto/AES/primary-backup algorithms in project services"
     ]
   },
   "locks": [
@@ -91,18 +162,50 @@
     "network-settings",
     "network-export-output",
     "business-network-entry",
-    "active-scene"
+    "active-scene",
+    "websocket-connection-owner-and-message-consumer",
+    "websocket-test-channel-address-and-session"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
-      "ambiguous HostKey, NetCmd row, HTTP method, path, protocol, authentication or response contract",
-      "unknown request replay semantics, primary/backup behavior, test endpoint, test account or success probe",
-      "create or replace a business request entry, Proto schema, generated type or NetworkComponent setting",
+      "ambiguous current HTTP URL/method/protocol/request owner/cancellation/pooled-response behavior, or HostKey/NetCmd row/path only when the request actually uses these routes",
+      "unknown new-protocol authentication/response/replay/test endpoint/success probe, account only when authentication requires one, or unknown controlled delayed cancellation probe for existing single-URL lifecycle maintenance",
+      "ambiguous WebSocket address/channel, authentication/heartbeat contract, connection owner, pooled-message handling, ack, idempotency or exit behavior",
+      "create or replace a business request entry, WebSocket service/dispatch, Proto schema, generated type or NetworkComponent setting beyond existing authorized scope",
       "credential use, production request, server-side write, delete, external write, Git commit or push"
     ],
-    "rule": "确认唯一的路由、协议、认证、请求响应与重放语义、业务调用入口、测试端点、测试账号和成功探针；任一输入或范围变化后旧确认失效。"
+    "rule": "先确认transport；HTTP冻结唯一路由，WebSocket冻结精确地址/通道、消息、认证/心跳与初始化、ack、连接拥有者/退出和消息池所有权。共用协议、重放、业务source与写集、测试端点、测试账号和成功探针，项目可读事实由Agent取得；现有精确授权持续有效，语义或目标变化后重新冻结。当前effects仅本地实现/配置/导出，真实服务请求及其自动副作用另行精确授权。 HTTP既有单URL生命周期维护复核现协议/认证与原URL、owner、真实取消能力和response所有权，跳过无关表导出/Network.LoadAsync/新账号；新协议及实际用表分支才要求对应全链输入。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。"
   },
+  "taskProfiles": [
+    {
+      "id": "export-code-data",
+      "description": "仅正式导出已有 HostKey/NetCmd/已确认 Proto 的 all/code 范围；继承全部禁止范围、锁、幂等与确认门，按实际选中目标冻结配置前置，不要求业务 Owner、HTTP/WebSocket 账号、端点或响应，不代表协议可用或完整网络接入。",
+      "taskIds": [
+        "network.export"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "networkExportSettingsSourcesTargetsAndScope",
+        "activeConfigMasterAndGeneratedNamespace"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "agent-action",
+          "entry": "nova.project.network.export"
+        }
+      ],
+      "minimumEvidence": "compile",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ]
+    }
+  ],
   "minimumEvidence": "play",
   "resultStates": [
     "success",
@@ -111,9 +214,14 @@
     "not_applicable"
   ],
   "evidence": [
-    "冻结的 HostKey / NetCmd 源、协议、认证与业务调用入口",
-    "定向导出结果与 Unity 编译证据",
-    "Play Mode 中 Nova.Network.LoadAsync、路由解析和目标 URL 证据",
-    "测试端点与账号的预期响应、成功探针，以及受控通信失败下的主备验证（如本次范围包含主备）"
+    "适用分支冻结的协议/认证与业务入口；仅实际用表时包含HostKey/NetCmd源，既有单URL取消维护保原端点/协议与owner",
+    "仅适用源变动的定向导出结果，以及本轮业务写集Unity编译证据",
+    "实际用表时的Play Mode Nova.Network.LoadAsync/路由/URL证据；既有单URL取消维护不要求新增表加载",
+    "HTTP测试端点与账号的预期响应、成功探针，以及受控通信失败下的主备验证（如本次范围包含主备）",
+    "WebSocket时的精确source/public调用、真实初始化、通道/地址/会话身份、消息帧与ack、订阅/注销、回调借用/自动回收及退出/幂等消费者",
+    "WebSocket时的编译和真实业务入口Play证据：连接与认证、请求/响应/ack、退出，范围含重连时的精确测试与离线去重；源码、入队、Mock、Editor不能代替真实服务或WebGL/设备证据",
+    "临时连接/订阅/runner/meta/日志/配置清场、必要Refresh与目标保存范围核对",
+    "SendProtoAsync current public signature and preserved NetService chain; local Unity 11 cases and three-platform managed compilation are partial layer evidence, not ready request success, external response, AOT/Player or device acceptance",
+    "ordinary HTTP cancellation: exact ct-last public overloads and actual ICancellableHttpManager, accepted real connection Abort/terminal failure response, pre-cancel no-send, old custom implementation/default-call compatibility, exactly-once pooled response return and existing UWR aborted telemetry; local loopback/Editor evidence does not prove business server rollback, platform/device or external endpoint acceptance"
   ]
 }

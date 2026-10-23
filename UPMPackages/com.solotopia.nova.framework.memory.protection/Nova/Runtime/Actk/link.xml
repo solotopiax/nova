@@ -1,0 +1,9 @@
+<linker>
+  <!-- 可选商业程序集缺失时不影响构建；存在时保留反射适配的公开方法。 -->
+  <assembly fullname="ACTk.Runtime" ignoreIfMissing="1">
+    <type fullname="CodeStage.AntiCheat.ObscuredTypes.ObscuredInt" preserve="all" />
+    <type fullname="CodeStage.AntiCheat.ObscuredTypes.ObscuredLong" preserve="all" />
+    <type fullname="CodeStage.AntiCheat.Utils.HashUtils" preserve="all" />
+    <type fullname="CodeStage.AntiCheat.Common.ACTk" preserve="all" />
+  </assembly>
+</linker>

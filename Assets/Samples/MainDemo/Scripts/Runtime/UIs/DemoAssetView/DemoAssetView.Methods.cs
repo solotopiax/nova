@@ -38,18 +38,20 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 释放资源按钮点击回调，释放当前已加载的 Sprite 并清空展示图。
+        /// 释放按钮使未完成加载失效并释放当前 Sprite，防止稍后的任务重新显示资源。
         /// </summary>
         private void OnReleaseButtonClick()
         {
+            CancelLoad();
             ReleaseCurrentAsset();
         }
 
         /// <summary>
-        /// 异步加载 Sprite 资源，成功后更新 Image 展示，失败时写入错误反馈。
+        /// 每次加载持有自己的 CTS 和代际；成功只交付当前视图，旧任务、取消和异常均释放局部句柄。
         /// </summary>
         private async UniTaskVoid LoadAssetAsync()
         {
+            if (this == null || m_IsClosed) return;
             if (Nova.Asset == null)
             {
                 AppendFeedback("Nova.Asset.LoadAsync -> AssetComponent 未初始化", FeedbackLevel.Error);
@@ -65,50 +67,55 @@ namespace NovaFramework.Samples.Runtime
 
             CancelLoad();
             ReleaseCurrentAsset();
-            m_LoadCts = new CancellationTokenSource();
-
-            AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> 加载中...");
-
-            NovaFramework.Runtime.IAssetHandle<Sprite> handle = null;
-            bool cancelled = false;
-
+            var loadCts = new CancellationTokenSource();
+            m_LoadCts = loadCts;
+            int generation = m_LoadGeneration;
+            CancellationToken token = loadCts.Token;
+            IAssetHandle<Sprite> handle = null;
             try
             {
-                handle = await Nova.Asset.LoadAsync<Sprite>(location, m_LoadCts.Token);
+                AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> 加载中...");
+                handle = await Nova.Asset.LoadAsync<Sprite>(location, token);
+                if (this == null || m_IsClosed || generation != m_LoadGeneration || token.IsCancellationRequested) return;
+                Sprite sprite = handle?.Asset;
+                if (sprite == null)
+                {
+                    AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> 加载失败，返回 null", FeedbackLevel.Error);
+                    return;
+                }
+
+                m_CurrentHandle = handle;
+                handle = null; // 当前视图接管，之后由 ReleaseCurrentAsset 归还。
+                if (m_ResultImage != null)
+                {
+                    m_ResultImage.sprite = sprite;
+                    m_ResultImage.gameObject.SetActive(true);
+                }
+                AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> loaded " + sprite.texture.width + "x" + sprite.texture.height, FeedbackLevel.Success);
             }
             catch (System.OperationCanceledException)
             {
-                cancelled = true;
+                if (this != null && !m_IsClosed && generation == m_LoadGeneration)
+                    AppendFeedback("Nova.Asset.LoadAsync -> 已取消", FeedbackLevel.Warn);
             }
-
-            if (cancelled || m_LoadCts == null || m_LoadCts.IsCancellationRequested)
+            catch (System.Exception)
             {
-                handle?.Release();
-                AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> 已取消", FeedbackLevel.Warn);
-                return;
+                if (this != null && !m_IsClosed && generation == m_LoadGeneration)
+                    AppendFeedback("Nova.Asset.LoadAsync -> 加载异常", FeedbackLevel.Error);
             }
-
-            if (handle == null || handle.Asset == null)
+            finally
             {
-                handle?.Release();
-                AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> 加载失败，返回 null", FeedbackLevel.Error);
-                return;
+                try { handle?.Release(); }
+                finally
+                {
+                    if (ReferenceEquals(m_LoadCts, loadCts)) m_LoadCts = null;
+                    loadCts.Dispose();
+                }
             }
-
-            m_CurrentHandle = handle;
-            Sprite sprite = handle.Asset;
-
-            if (m_ResultImage != null)
-            {
-                m_ResultImage.sprite = sprite;
-                m_ResultImage.gameObject.SetActive(true);
-            }
-
-            AppendFeedback("Nova.Asset.LoadAsync<Sprite>(\"" + location + "\") -> loaded " + sprite.texture.width + "x" + sprite.texture.height, FeedbackLevel.Success);
         }
 
         /// <summary>
-        /// 释放当前已加载的资源，清空展示图并重置 Asset 地址记录。
+        /// 先清空当前句柄与 UI 引用再释放资源；关闭后的清理不再写入反馈区。
         /// </summary>
         private void ReleaseCurrentAsset()
         {
@@ -117,8 +124,7 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            m_CurrentHandle.Release();
-            AppendFeedback("IAssetHandle.Release() -> ok", FeedbackLevel.Success);
+            IAssetHandle<Sprite> handle = m_CurrentHandle;
             m_CurrentHandle = null;
 
             if (m_ResultImage != null)
@@ -126,16 +132,19 @@ namespace NovaFramework.Samples.Runtime
                 m_ResultImage.sprite = null;
                 m_ResultImage.gameObject.SetActive(false);
             }
+            handle.Release();
+            if (!m_IsClosed) AppendFeedback("IAssetHandle.Release() -> ok", FeedbackLevel.Success);
         }
 
         /// <summary>
-        /// 取消当前进行中的异步加载任务并释放取消令牌源。
+        /// 先使旧任务失效再取消；CTS 由创建它的异步任务 finally 释放，避免跨任务读取已释放的源。
         /// </summary>
         private void CancelLoad()
         {
-            m_LoadCts?.Cancel();
-            m_LoadCts?.Dispose();
+            m_LoadGeneration++;
+            CancellationTokenSource pending = m_LoadCts;
             m_LoadCts = null;
+            pending?.Cancel();
         }
 
     }

@@ -97,6 +97,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 异步触发资源加载、解析与释放的完整流程。
         /// 使用 Interlocked.CompareExchange 保证并发调用时只有第一次真正执行，后续等待同一个任务。
+        /// 加载或释放抛错时所有等待者收到同一异常，清除当前任务后允许再次读取。
         /// </summary>
         /// <param name="assetLocation">Asset 地址。</param>
         /// <returns>是否加载并解析成功。</returns>
@@ -111,14 +112,37 @@ namespace NovaFramework.Runtime
             var existingTcs = Interlocked.CompareExchange(ref m_ReadTcs, newTcs, null);
             if (existingTcs != null)
             {
-                Log.Warning(LogTag.Base, "DataReceiver 正在加载中，不可重复调用 ReadDataAssetAsync。assetLocation={0}", assetLocation);
+                Log.Debug(LogTag.Base, "DataReceiver 已有进行中的读取，本次调用等待共享结果。assetLocation={0}", assetLocation);
                 return await existingTcs.Task;
             }
 
-            Object asset = await m_LoadAssetAsyncFunc(assetLocation);
-            var task = m_ReadTcs.Task;
-            OnAssetLoadComplete(asset, assetLocation);
-            return await task;
+            bool success = false;
+            Exception failure = null;
+            try
+            {
+                Object asset = await m_LoadAssetAsyncFunc(assetLocation);
+                success = OnAssetLoadComplete(asset, assetLocation);
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+            finally
+            {
+                // 通知等待者前先移除本次完成源，使完成回调重入时能发起新的读取。
+                Interlocked.CompareExchange(ref m_ReadTcs, null, newTcs);
+            }
+
+            if (failure == null)
+            {
+                newTcs.TrySetResult(success);
+            }
+            else
+            {
+                newTcs.TrySetException(failure);
+            }
+
+            return await newTcs.Task;
         }
 
         /// <summary>
@@ -190,27 +214,25 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 资源加载完成处理，先尝试 bytes 解析再 fallback 到 text 解析，最后释放资源并设置任务结果。
+        /// 资源加载完成处理，先尝试 bytes 解析再 fallback 到 text 解析，最后释放资源并返回解析结果。
         /// </summary>
         /// <param name="asset">加载到的资源对象。</param>
         /// <param name="assetLocation">Asset 地址（用于日志）。</param>
-        private void OnAssetLoadComplete(Object asset, string assetLocation)
+        /// <returns>是否加载到有效 TextAsset 并成功解析。</returns>
+        private bool OnAssetLoadComplete(Object asset, string assetLocation)
         {
             if (asset == null)
             {
                 Log.Error(LogTag.Base, "DataReceiver 资源加载结果无效。assetLocation={0}", assetLocation);
-                m_ReadTcs?.TrySetResult(false);
-                m_ReadTcs = null;
-                return;
+                return false;
             }
 
             TextAsset textAsset = asset as TextAsset;
             if (textAsset == null)
             {
                 Log.Error(LogTag.Base, "DataReceiver 资源类型无效，期望 TextAsset，实际为 {0}。assetLocation={1}", asset.GetType().FullName, assetLocation);
-                m_ReadTcs?.TrySetResult(false);
-                m_ReadTcs = null;
-                return;
+                OnReleaseDataAsset(asset);
+                return false;
             }
 
             bool success = false;
@@ -228,13 +250,12 @@ namespace NovaFramework.Runtime
                 Log.Error(LogTag.Base, "资源解析失败，assetLocation={0}。", assetLocation);
             }
 
-            m_ReadTcs?.TrySetResult(success);
-            m_ReadTcs = null;
+            return success;
         }
 
         /// <summary>
         /// 先尝试以 bytes 解析 TextAsset，失败后 fallback 到 text 解析。
-        /// bytes 解析抛异常才触发 fallback；bytes 返回 false 但无异常则不 fallback。
+        /// bytes 返回 false 或抛出异常时继续尝试 text；bytes 成功返回 true 时直接结束。
         /// </summary>
         /// <param name="textAsset">已加载的 TextAsset。</param>
         /// <returns>任意解析路径成功返回 true，否则返回 false。</returns>

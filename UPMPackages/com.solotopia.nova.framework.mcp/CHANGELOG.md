@@ -4,13 +4,29 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-10-23
+
 ### Added
+
+- 通过单一 nova_project_action 显式开放 config.patch-coordinate、ui.export、Config 面板、资源密钥、Pipify、对象字段、平台宏、FileFragment 及 Tracks 汇总等 Action，保持 Gateway 白名单、Framework Registry 和文档一致。
+
+- 新增有界 verify_mode=start/status/forget 收件协议，核验仅执行一次并保留完整脱敏响应，兼容同步协议、领域门及旧 partial。
 
 ### Changed
 
+- 开放商品目录一次提交 Action，要求最低 Framework API 0.6.40 配对；不开放任意类型、代码或未注册 Action。
+
 ### Fixed
 
+- describe 保留凭据字段请求类型结构，移除示例和默认载荷，实际计划及结果值继续脱敏，避免遮蔽 Schema。
+
+- 慢计划可先登记，再按同一请求编号断线取回完整脱敏响应；重复请求不重跑，过期或域重载明确失效，兼容同步计划及执行门。
+
+- 补齐 IAP 商品目录上传文档，按当前 ExposurePolicy 维护开放 Action。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.4] - 2026-10-12
 

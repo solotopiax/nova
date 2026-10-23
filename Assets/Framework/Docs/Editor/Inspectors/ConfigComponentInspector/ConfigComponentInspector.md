@@ -129,6 +129,8 @@ Config 管理器:  [ConfigManager                             ▼]
 
 ## §13 关联文档
 
+运行信息只显示 AOT 元数据与启动 DLL 的 `AssetLocation`，没有显示运行时按需 DLL 列表，也不扫描或证明程序集已经加载。SDK 配置通过 public 可读属性反射显示，跳过 `DisplayName`；getter 可能有业务副作用，GetValue 异常被跳过，但随后 `ToString` 异常仍可传播。只读 TextField 不做秘密隐藏，App AES 等字段的诊断截图或导出仍须脱敏。
+
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [ConfigComponent.md](../../../Runtime/Modules/Config/ConfigComponent.md)
 - [ConfigManager.md](../../../Runtime/Modules/Config/ConfigManager.md)

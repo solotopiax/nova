@@ -83,6 +83,16 @@ void PlayUISound(int uiSoundID);
 static void SetMainFont(Font mainFont);
 ```
 
+`PlayUISound(int uiSoundID)` 当前方法体没有执行播放逻辑，调用后不会发起声音请求。业务音效需接入 [SoundComponent](../../Sound/SoundComponent.md) 的实际播放与释放链，不能以该预留方法调用完成作为播放成功证据。
+
+## 状态与初始化失败
+
+公开 OnInit 先写序号、地址、分组及策略；复用实例不再调用受保护初始化，新实例才执行该钩子。钩子异常被记录并吞掉，不向 Manager 返回失败，已写字段不回滚，因此后续 OnOpen 仍可能执行。默认钩子增加 Canvas/GraphicRaycaster、记根 Layer/原深度并拉伸 RectTransform，要求有效的 UI 根；自动本地化/主字体应用代码当前未执行，SetMainFont 只缓存旧 UGUI 字体入口。
+
+Available/Visible 是框架状态：Visible 读取 Available 与内部可见字段，不检查 activeInHierarchy，父节点关闭时仍可能返回 true。Visible setter 在不可用时只警告，合法修改先写字段再 SetActive；激活失败不回滚。OnPause/OnResume 默认通过 Visible 禁用/启用 GameObject，不重载数据。
+
+OnClose 把根及全部子对象统一设回最初根 Layer，并不记忆各子对象独立 Layer，再隐藏并清 Available；失败可留下部分状态。OnRecycle 只重置序号/组/深度/策略/可见字段，保留 AssetLocation、Canvas 与 Transform 缓存，不主动 SetActive、销毁或替代 OnClose。默认 OnCover/OnReveal/OnRefocus/OnUpdate 为空，业务行为须由子类实现。
+
 ## 非公开方法（UIView.Methods.cs）
 
 ```csharp
@@ -107,6 +117,8 @@ deltaDepth  = targetDepth - (oldDepth - OriginalDepth)
 ```
 
 遍历所有子 Canvas 统一加同一个 delta，保留了 View 内部子 Canvas 的相对层级关系。两个换算系数由 UIComponent Inspector 配置，UIManager 透传至 UIGroup，再由 UIView 通过 `m_UIGroup` 直接读取。
+
+这里使用 int 乘加，没有组 Helper 的 short 钳制或 long 溢出保护；缺 Canvas/分组或逐 Canvas 写入失败仍会中断，不能把 Helper 的检查推导成所有子 Canvas 都有同样保护。
 
 ## 关联文档
 

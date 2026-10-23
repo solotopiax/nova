@@ -39,7 +39,7 @@ related:
 
 | 场景 | 红线 |
 |---|---|
-| Manager 构造时机 | 必须在 `Component.Start()` 中创建，禁止在 `Awake()` 中创建 |
+| Manager 构造与初始化 | `Awake()` 完成本组件注册与 Manager 创建；`Start()` 再取得跨组件依赖并执行 `Initialize(config)`，构造阶段不读取尚未就绪的其他模块 |
 | Manager 获取 | 只能 `FrameworkManagersGroup.GetManager<IXxx>()`，传**接口类型**；传具体类抛异常 |
 | `Util.TypeCreator` 入参 | 必须传完整限定类名（含 namespace），如 `"NovaFramework.Runtime.XxxManager"` |
 | `base.Awake()` | 任何 Component 子类重写 `Awake` 必须先调 `base.Awake()`，否则不会注册到 `FrameworkComponentsGroup` |
@@ -84,15 +84,20 @@ related:
 
 ## Why（为什么这些是铁律）
 
-- `Start` 阶段构造保证 Component 就绪，`Awake` 内构造会破坏注册顺序。
+- `Awake` 负责自身注册与 Manager 创建，`Start` 再初始化跨模块依赖，避免把自身构造与其他组件就绪混为一谈。
 - 外部只能见到接口，`GetManager<具体类>` 直接抛异常是契约保护。
 - `AssetComponent` 的销毁与 `PrefabInstanceTag.OnDestroy` 单路收口绑定，Editor 工具统一入口则是为了减少全局改 callsite。
 
 ## 反模式
 
-- ❌ `Awake()` 中创建 Manager 或读取 `Nova.Config.*`——其他 Component / Config 数据未就绪
+- ❌ `Awake()` 构造时读取其他 Component 或尚未加载的 `Nova.Config.*`——自身 Manager 已创建不代表其他组件或配置数据已就绪
 - ❌ `FrameworkManagersGroup.GetManager<XxxManager>()`——传具体类必抛异常，必须传 `IXxxManager`
 - ❌ `Object.Destroy(prefabInstance)` 之外用 `Nova.Asset.Destroy(go)`——`AssetComponent` 上根本没有这个方法，编译期就该挡住
 - ❌ Inspector 子类里 `EditorGUILayout.PropertyField(...)` / `GUILayout.Label(...)`——绕开 `EditorUtil.Draw` 表面看着没事，实际丢失了对齐 / 多语言 / Width 等统一规则
 - ❌ Inspector `OnInspectorGUI` 内 `serializedObject.FindProperty("m_X")`——基类已 Update，子类再绑定一次还每帧重查，性能直接掉
 - ❌ Editor 里直接 `File.WriteAllText`/`Directory.CreateDirectory`——绕过 AssetDatabase，刷新时机不可控
+
+## 来源与影响面
+
+- [ConfigComponent](../../../Docs/Runtime/Modules/Config/ConfigComponent.md) 与其 [当前源码](../../../Scripts/Runtime/Modules/Config/ConfigComponent.cs)：`Awake` 创建 `IConfigManager`，`Start` 调用 `Initialize`，实际配置加载独立执行。
+- 本清单用于调用边界复核；具体模块的初始化、加载条件与有效状态仍以当前源码/XML和对应 Docs 为准。

@@ -178,3 +178,7 @@ if (dllPath != null)
 - [EditorUtil.ProcessRunner.md](../EditorUtil.ProcessRunner/EditorUtil.ProcessRunner.md)
 - [EditorUtil.Proto.CliRunner.md](../EditorUtil.Proto/EditorUtil.Proto.CliRunner.md)
 - [EditorUtil.md](../EditorUtil.md)
+
+## 命令与日志边界
+
+ResolveDotnetPath 只按 PATH/常见目录找文件，不校可执行位、SDK版本或架构；非 Windows 常见候选仍偏向 macOS。旧 CLI 参数用字符串插值，target 不加引号，内嵌引号未转义；不能当任意外部参数安全编码器。RunLuban 同步默认等 120 秒，没有取消 token；Kill 失败不证明进程已终止。失败完整命令/输出和摘要未额外脱敏，摘要关键词只作定位线索，不等根因或完整错误集。

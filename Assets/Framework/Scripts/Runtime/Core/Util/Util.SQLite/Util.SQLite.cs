@@ -69,10 +69,38 @@ namespace NovaFramework.Runtime
             /// <returns>已就绪的 SQLiteConnection 实例。</returns>
             public static SQLiteConnection CreateConnection(string databasePath, string password = null, SynchronousLevel synchronous = SynchronousLevel.Normal)
             {
-                var connection = new SQLiteConnection(databasePath, password);
-                connection.Execute($"PRAGMA synchronous = {(int)synchronous};");
-                connection.BeginTransaction();
-                return connection;
+                var connection = CreateRegisteredConnection(databasePath, password);
+                try
+                {
+                    connection.Execute($"PRAGMA synchronous = {(int)synchronous};");
+                    connection.BeginTransaction();
+                    return connection;
+                }
+                catch { connection.Dispose(); throw; }
+            }
+
+            /// <summary>打开参与维护门的连接，不额外开始事务；运行时与 Inspector 共用同一路径登记。</summary>
+            /// <param name="databasePath">数据库路径。</param>
+            /// <param name="password">原有数据库密码。</param>
+            /// <returns>任意 Close/Dispose 都会释放登记的连接。</returns>
+            internal static SQLiteConnection CreateRegisteredConnection(string databasePath, string password)
+            {
+                IDisposable registration = SQLiteMaintenanceLease.RegisterConnection(databasePath);
+                try { return new RegisteredConnection(databasePath, password, registration); }
+                catch { registration.Dispose(); throw; }
+            }
+
+            /// <summary>不改变插件连接事务语义；关闭时对称释放本连接的维护登记。</summary>
+            private sealed class RegisteredConnection : SQLiteConnection
+            {
+                private IDisposable m_Registration;
+                internal RegisteredConnection(string path, string password, IDisposable registration) : base(path, password)
+                { m_Registration = registration; }
+                protected override void Dispose(bool disposing)
+                {
+                    try { base.Dispose(disposing); }
+                    finally { m_Registration?.Dispose(); m_Registration = null; }
+                }
             }
 
             /// <summary>

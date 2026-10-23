@@ -148,3 +148,11 @@ public override void OnInspectorGUI()
 - [EditorUtil.Luban.Pipeline.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
 - [EditorUtil.Draw.SourceFileTree.md](../../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md)
 - [FileFolderTree.md](../../Definitions/FileFolderTree.md)
+
+## 输入与执行边界
+
+格式切换本身只改文本/字体 Unit 和支持语言路径的标准后缀，不转换现有文件、不修改 AssetLocation，也不立即执行导出；自定义后缀保留，未知枚举沿 JSON 显示分支处理。导出按钮的可用条件主要是目录文本非空与 Unit 数量，不等于实际目录、占位符、schema 或 Collector 就绪。全量导出先 Apply，再从组件的真实 LocalizationSettings 直接读取，并丢弃下层返回值；按钮结束不能替代正式产物验证。
+
+OnEnable 可填空模板路径并 Apply，因此打开面板不是绝对只读。预览/路径校验在某些行先于当前文本编辑计算，可能下一帧才反映新值；空白 Asset 地址也不由 `IsNullOrEmpty` 拒绝。Prefab 修复按钮作用于扫描到的工程 Prefab，不能把它误认为仅修当前组件。
+
+文本模板的 Name 是 Key，`#Desc` 是说明列，语言列必须对应 Language 枚举；样例业务键不构成正式词表。字体模板以 Language/Mark 选择字体，AssetLocation 是资源地址，MaterialName 为空使用默认材质，FontSizeScaleRatio 相对初始字号；模板的 Main、中文字体地址和 1.0 只是样例，不保证消费项目存在这些资源。

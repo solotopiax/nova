@@ -22,13 +22,15 @@ namespace NovaFramework.Runtime
     public struct DllAssetEntry
     {
         /// <summary>
-        /// 运行期 Asset 地址（传入 AssetComponent.LoadAssetAsync 的 location 参数；与 HybridCLR assemblyName 等价）。
+        /// 原始运行期 Asset 地址，由 ProcedureLoadDll 传给 Util.HybridCLR 加载工具。
+        /// 该值不是命名空间、asmdef 程序集名或经 DLL 内容校验的程序集身份。
         /// </summary>
         [SerializeField]
         private string m_AssetLocation;
 
         /// <summary>
-        /// 运行期 Asset 地址（与 HybridCLR assemblyName 等价）。
+        /// 获取构造时原样保存的运行期 Asset 地址，不执行 Trim、地址校验或 DLL 加载。
+        /// Asset 地址、DLL 文件和实际加载的 Assembly 需由消费者分别核对。
         /// </summary>
         public string AssetLocation => m_AssetLocation;
 

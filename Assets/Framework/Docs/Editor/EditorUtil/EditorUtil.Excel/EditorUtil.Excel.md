@@ -3,7 +3,7 @@
 **类签名**：`public static class Excel`（嵌套于 `public static partial class EditorUtil`）
 **命名空间**：`NovaFramework.Editor`
 
-Excel 读写工具，基于 `ExcelDataReader` 读取（支持 .xlsx / .xls）和 `EPPlus` 写入，提供 Sheet 级别的行列字符串数据接口，用于各类预过滤流程的临时 Excel 生成与数据读取。
+表格数据读取与 CSV 写出工具：使用 `ExcelDataReader` 读取 .xlsx / .xls 的 Sheet，两个 `Write` 重载则将行列字符串写为 CSV 文件，供预过滤流程使用。本类不创建或修改 .xlsx 工作簿，也不写入样式或公式元数据。
 
 ---
 
@@ -11,7 +11,7 @@ Excel 读写工具，基于 `ExcelDataReader` 读取（支持 .xlsx / .xls）和
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil/EditorUtil.Excel/EditorUtil.Excel.cs` | `EditorUtil.Excel`（嵌套静态类） | 全部方法定义，`ExcelDataReader` 读取 + `EPPlus` 写入 |
+| `EditorUtil/EditorUtil.Excel/EditorUtil.Excel.cs` | `EditorUtil.Excel`（嵌套静态类） | 全部方法定义，`ExcelDataReader` 读取 .xlsx / .xls + UTF-8 CSV 写出 |
 
 ---
 
@@ -52,13 +52,13 @@ public static class Excel
     /// 异常：文件路径为空抛 ArgumentException，文件不存在抛 FileNotFoundException
     public static List<string> GetSheetNames(string filePath);
 
-    /// 创建新 Excel 文件并写入多个 Sheet 数据（覆盖已有文件）
-    /// 异常：filePath 为空抛 ArgumentException，sheets 为空抛 ArgumentException
-    public static void Write(string filePath, Dictionary<string, List<IReadOnlyList<string>>> sheets);
+    /// 将多个 Sheet 分别写入 {dirPath}/{sheetName}.csv，覆盖同名 CSV
+    /// 异常：dirPath 为空、sheets 为 null 或无项时抛 ArgumentException
+    public static void Write(string dirPath, Dictionary<string, List<IReadOnlyList<string>>> sheets);
 
-    /// 创建新 Excel 文件，写入单个 Sheet（重载）
-    /// 异常：sheetName 为空抛 ArgumentException
-    public static void Write(string filePath, string sheetName, List<IReadOnlyList<string>> rows);
+    /// 写入单个 {dirPath}/{sheetName}.csv，复用多 Sheet 重载
+    /// 异常：sheetName 为空抛 ArgumentException；目录/数据/IO 失败沿用委托调用
+    public static void Write(string dirPath, string sheetName, List<IReadOnlyList<string>> rows);
 
     /// 检查文件是否为有效 Excel 格式（.xlsx / .xls，忽略大小写）
     public static bool IsExcelFile(string filePath);
@@ -85,14 +85,15 @@ ReadAllSheets(filePath)
 ### Write 写入流程
 
 ```
-Write(filePath, sheets)
-  ├── Util.SysIO.Directory.CreateIfNotExist(directory)          （ExcelPackage.LicenseContext 在静态构造器中已设置）
-  ├── new ExcelPackage()
-  ├── foreach (sheetName, rows) in sheets:
-  │     WriteSheet(package, sheetName, rows)
-  │       └── package.Workbook.Worksheets.Add(sheetName)
-  │           EPPlus 行列索引从 1 开始，rowIndex+1 / colIndex+1
-  └── package.SaveAs(new FileStream(filePath, Create, Write))
+Write(dirPath, sheets)
+  ├── 参数校验：目录非空，sheets 非 null 且至少一项
+  ├── Util.SysIO.Directory.CreateIfNotExist(dirPath)
+  └── foreach (sheetName, rows) in sheets:
+        WriteCsvFile(Path.Combine(dirPath, sheetName + ".csv"), rows)
+          ├── null 单元格转空字符串
+          ├── 含逗号/双引号/换行的单元格加双引号，内部双引号写为两个
+          ├── 行内以逗号分隔，每行追加换行
+          └── Util.SysIO.File.WriteAllTextSync(..., Encoding.UTF8)
 ```
 
 ---
@@ -118,7 +119,7 @@ var adMobRows = EditorUtil.Excel.ReadSheet(filePath, "AdMob");
 // 获取 Sheet 名称列表
 var names = EditorUtil.Excel.GetSheetNames(filePath);
 
-// 写入临时 Excel（预过滤输出）
+// 写入预过滤 CSV：下面会生成 Assets/Game/Temp/AdMob.csv
 var outputSheets = new Dictionary<string, List<IReadOnlyList<string>>>();
 outputSheets["AdMob"] = new List<IReadOnlyList<string>>
 {
@@ -128,7 +129,7 @@ outputSheets["AdMob"] = new List<IReadOnlyList<string>>
     new List<string> { "配置名", "值" },
     new List<string> { "AdMobAppId", "ca-app-pub-xxx" },
 };
-EditorUtil.Excel.Write("Assets/.../Temp/Configs_Global_AdMob.xlsx", outputSheets);
+EditorUtil.Excel.Write("Assets/Game/Temp", outputSheets);
 
 // 格式检查
 bool valid = EditorUtil.Excel.IsExcelFile("Configs.xlsx");   // true
@@ -139,7 +140,8 @@ bool valid = EditorUtil.Excel.IsExcelFile("Configs.xlsx");   // true
 ## §12 注意事项
 
 - `ReadAllSheets` 使用 `FileShare.ReadWrite` 打开文件，允许在 Excel 应用程序打开时读取，但写入锁定的文件仍会失败
-- `ExcelPackage.LicenseContext = NonCommercial` 在静态构造函数中设置，表明使用 EPPlus 的非商业许可；商业项目需配置正确许可
+- `Write` 的首参数是输出目录，不能传 .xlsx 文件路径；每个 Sheet 名直接作为 CSV 文件名。多个文件逐一写入，中途失败不会回滚已写文件；调用方需保证文件名与行集合有效。
+- `IsExcelFile` 只检查扩展名，不读取文件内容；本类读取入口不支持将上述 CSV 作为 Excel 工作簿读取。
 - 行列数据均以 `string` 存储（`cell.ToString()`），数值精度由 Excel 原始格式决定
 - `IReadOnlyList<string>` 接口防止外部修改读取到的行数据，但不阻止 `List<string>` 强制转型
 
@@ -150,3 +152,9 @@ bool valid = EditorUtil.Excel.IsExcelFile("Configs.xlsx");   // true
 - [EditorUtil.md](../EditorUtil.md)（EditorUtil 静态工具类概览）
 - [DataPipeline.md](../../DataPipeline/DataPipeline.md)（预过滤总览）
 - [EditorUtil.Luban.DataTypeNameHelper.md](../EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md)（调用方：导出前读取并筛选 Sheet 名）
+
+## 调用与失败边界
+
+读取使用 FileShare.ReadWrite，UseHeaderRow=false，保持原行列顺序并把所有单元格转字符串；不保留公式类型、格式或样式。ReadSheet 按 Ordinal 精确名称选择，缺 Sheet/无数据抛 KeyNotFoundException；IsExcelFile 只认 .xls/.xlsx 后缀，不证明文件存在、可读，也不排除 ~$ 临时文件。
+
+Write 的输出是一个 Sheet 对应一个 CSV，不能作为权威 xlsx 编辑器。多 Sheet 逐文件覆盖没有总事务，Sheet 名直接用于输出文件名，不负责路径安全；null 行/枚举/IO 错误可能留部分结果。CSV 写入按单元格做 RFC4180 引号转义，但不能借此保留原工作簿元数据或样式。

@@ -6,11 +6,11 @@
  *            使命完成后自动删除脚本，功成身退。
  *
  *            设计要点：
- *            - Unity 版本门槛：低于最低要求（6000.4.2f1）时不执行任何补全，
+ *            - Unity 版本门槛：低于最低要求（6000.6.7f1）时不执行任何补全，
  *              仅弹窗提示升级，且不自删（便于升级后重试）。
  *            - 自包含、零第三方依赖（内嵌保序 mini-JSON），可在尚未
  *              安装任何 Nova 包的空工程上直接运行。
- *            - 幂等：对已安装/框架源工程自动跳过；缺什么补什么。
+ *            - 幂等：file: 引用 Framework 的源码工程自动跳过；已安装的其他工程仍检测并经确认矫正配置。
  *            - 不属于任何自定义程序集，放在 Assets/Editor 下即可。
  ***************************************************************/
 
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -39,13 +40,13 @@ namespace NovaBootstrap
         private const string c_SessionDeclinedKey = "NovaSpark.Declined";
 
         /// <summary>Nova 框架要求的最低 Unity 版本（含）。当前工程低于此版本时引导器不执行任何补全，仅提示升级。</summary>
-        private const string c_MinUnityVersion = "6000.4.2f1";
+        private const string c_MinUnityVersion = "6000.6.7f1";
 
         /// <summary>本会话内"已提示 Unity 版本过低"标记键，避免同一会话每次域重载反复弹窗。</summary>
         private const string c_SessionVersionWarnedKey = "NovaSpark.VersionWarned";
 
         /// <summary>PlugPals 窗口菜单路径。用 ExecuteMenuItem 字符串调用，避免对框架类型的编译期依赖。</summary>
-        private const string c_PlugPalsMenuPath = "Nova/Open Plug Pals";
+        private const string c_PlugPalsMenuPath = "Nova/Open PlugPals";
 
         /// <summary>
         /// 单轮域重载内"尝试打开 PlugPals 窗口"的最大轮询次数上限。
@@ -68,12 +69,24 @@ namespace NovaBootstrap
         /// <summary>
         /// Nova 框架主包键。双重用途：
         /// (1) 安装目标——新工程经 Solotopia registry 拉取主包及其传递的 com.solotopia.* 子包；
-        /// (2) "已安装 / 框架源工程"判据——manifest 已含该键时引导器静默退场，杜绝误改本仓或已装工程。
+        /// (2) "已安装 / 框架源工程"判据——manifest 已含该键且值为 file: 引用时静默退场；其他已装工程仍检测并经确认矫正。
         /// </summary>
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.6.39";
+        private const string c_FrameworkValue = "0.7.1";
+
+        /// <summary>默认显式安装的 Nova 内存防护扩展包键；不随之安装付费 Anti-Cheat Toolkit。</summary>
+        private const string c_MemoryProtectionKey = "com.solotopia.nova.framework.memory.protection";
+
+        /// <summary>Nova 内存防护扩展包的固定目标版本，经 Solotopia registry 解析。</summary>
+        private const string c_MemoryProtectionValue = "0.1.1";
+
+        /// <summary>默认显式安装的 Nova MCP 中立契约包键，与 Unity MCP Provider 包分开管理。</summary>
+        private const string c_NovaMcpKey = "com.solotopia.nova.framework.mcp";
+
+        /// <summary>Nova MCP 中立契约包的固定目标版本；其 Unity MCP Provider 依赖经 OpenUPM 解析。</summary>
+        private const string c_NovaMcpValue = "0.1.5";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";
@@ -127,7 +140,8 @@ namespace NovaBootstrap
             EditorApplication.delayCall += Run;
         }
 
-        /// <summary>引导主流程：检测 → 询问 → 补全 → 询问自删。</summary>
+        /// <summary>引导主流程：检测、确认、矫正，并通过域重载标记接力打开窗口和自动自删。</summary>
+        /// <remarks>跨文件写入不提供事务回滚；发起 Client.Resolve 不等待成功，重试预算耗尽也可能保留标记。</remarks>
         private static void Run()
         {
             try
@@ -183,7 +197,7 @@ namespace NovaBootstrap
                 if (isSourceProject)
                     return;
 
-                var missing = Detect(manifest, alreadyInstalled);
+                var missing = Detect(manifest);
                 if (missing.Count == 0)
                 {
                     // 环境已就绪：若是已装工程（用户重复拖入到已完成工程），火种使命已完成，直接自删走人；
@@ -264,31 +278,19 @@ namespace NovaBootstrap
             }
         }
 
-        /// <summary>检测当前 manifest 缺失了哪些必备项，返回可读的缺失清单。</summary>
-        /// <param name="alreadyInstalled">已装工程（framework 已在 dependencies）时，仍检查现有版本与 registry 配置。</param>
-        private static List<string> Detect(JObj manifest, bool alreadyInstalled)
+        /// <summary>检测新工程与已装工程的默认直接依赖、registry 及配置缺项，统一核对固定目标版本。</summary>
+        /// <param name="manifest">当前工程 manifest；Framework 的 file: 源工程已由调用方提前跳过。</param>
+        /// <returns>缺失项及与本版目标不一致的可读说明。</returns>
+        private static List<string> Detect(JObj manifest)
         {
             var missing = new List<string>();
 
             var deps = manifest.Get("dependencies") as JObj;
-            if (!alreadyInstalled)
-            {
-                if (deps == null || !deps.ContainsKey(c_FrameworkKey))
-                    missing.Add($"依赖 {c_FrameworkKey}（Nova 框架主包）");
-                if (deps == null || !deps.ContainsKey(c_EdmKey))
-                    missing.Add($"依赖 {c_EdmKey}");
-            }
-            else
-            {
-                // 已装工程：检测 semver 依赖版本号是否过时（如 framework 0.5.31 公网已下架→需矫正为 0.5.32）。
-                if (deps != null)
-                {
-                    if (deps.ContainsKey(c_FrameworkKey) && (deps.Get(c_FrameworkKey) as string) != c_FrameworkValue)
-                        missing.Add($"依赖 {c_FrameworkKey} 版本过时，需矫正为 {c_FrameworkValue}");
-                    if (deps.ContainsKey(c_EdmKey) && (deps.Get(c_EdmKey) as string) != c_EdmValue)
-                        missing.Add($"依赖 {c_EdmKey} 版本过时，需矫正为 {c_EdmValue}");
-                }
-            }
+            // 四项都作为工程直接依赖检测；已有传递安装结果不能代替 manifest 中的明确声明。
+            DetectDepVersion(deps, missing, c_FrameworkKey, c_FrameworkValue, "Nova Framework");
+            DetectDepVersion(deps, missing, c_MemoryProtectionKey, c_MemoryProtectionValue, "Nova Framework - MemoryProtection");
+            DetectDepVersion(deps, missing, c_NovaMcpKey, c_NovaMcpValue, "Nova Framework - MCP");
+            DetectDepVersion(deps, missing, c_EdmKey, c_EdmValue, "EDM");
 
             var registries = manifest.Get("scopedRegistries") as JArr;
             foreach (var spec in s_Registries)
@@ -336,19 +338,22 @@ namespace NovaBootstrap
             return missing;
         }
 
-        /// <summary>执行补全：合并 manifest 依赖与 registry，写入 PlugPals 配置，触发 UPM 解析。</summary>
+        /// <summary>执行补全：显式写入四项默认依赖，合并 registry 与 PlugPals 配置并触发 UPM 解析。</summary>
+        /// <param name="manifest">已获得用户确认的当前工程 manifest。</param>
+        /// <param name="manifestPath">当前工程 manifest 的实际写入路径。</param>
         private static void Apply(JObj manifest, string manifestPath)
         {
-            // 1) dependencies：缺键才补，不覆盖既有值。
+            // 1) dependencies：缺键补齐，已有值与固定目标不一致时覆盖，不比较版本高低。
             var deps = manifest.Get("dependencies") as JObj;
             if (deps == null)
             {
                 deps = new JObj();
                 manifest.Set("dependencies", deps);
             }
-            // framework/edm 是 semver 版本号，已装工程的旧版本可能公网已下架（如 framework 0.5.31）→
-            // 强制对齐本版规格，避免 UPM 解析"cannot be found"。
+            // 固定工程的直接安装目标；Nova MCP 的 Provider 继续由其依赖解析，ACTk 仍由获授权项目另行安装。
             UpsertDepVersion(deps, c_FrameworkKey, c_FrameworkValue);
+            UpsertDepVersion(deps, c_MemoryProtectionKey, c_MemoryProtectionValue);
+            UpsertDepVersion(deps, c_NovaMcpKey, c_NovaMcpValue);
             UpsertDepVersion(deps, c_EdmKey, c_EdmValue);
 
             // 2) scopedRegistries：按 name 找，命中则强制覆盖 url（矫正旧版过时地址）+ 补齐 scope；
@@ -457,21 +462,24 @@ namespace NovaBootstrap
         /// <summary>工程根目录（Assets 的父级）。</summary>
         private static string ProjectRoot => Directory.GetParent(Application.dataPath).FullName;
 
-        /// <summary>当前 Unity 版本是否达到 Nova 要求的最低版本 c_MinUnityVersion（按 major.minor.patch 比较，含等于）。</summary>
+        /// <summary>当前 Unity 版本是否达到 Nova 要求的最低版本 c_MinUnityVersion（含发布阶段与修订号，含等于）。</summary>
         private static bool IsUnityVersionSupported()
         {
             return CompareUnityVersion(Application.unityVersion, c_MinUnityVersion) >= 0;
         }
 
         /// <summary>
-        /// 比较两个 Unity 版本字符串（形如 "6000.4.2f1"），按 major.minor.patch 三段数值比较。
-        /// 返回负数表示 a 低于 b，0 表示相等，正数表示 a 高于 b；无法解析的段按 0 计。
+        /// 比较两个 Unity 版本字符串（形如 "6000.6.7f1"），先比较三段数值，再按 a、b、f、p 阶段及修订号比较。
+        /// 同一 patch 的预发行版不能满足正式版门槛；无法解析的版本视为零版本。
         /// </summary>
+        /// <param name="a">待比较的 Unity 完整版本。</param>
+        /// <param name="b">作为门槛的 Unity 完整版本。</param>
+        /// <returns>负数表示 a 较低，零表示相等，正数表示 a 较高。</returns>
         private static int CompareUnityVersion(string a, string b)
         {
             int[] va = ParseUnityVersion(a);
             int[] vb = ParseUnityVersion(b);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < va.Length; i++)
             {
                 if (va[i] != vb[i])
                     return va[i] < vb[i] ? -1 : 1;
@@ -479,21 +487,23 @@ namespace NovaBootstrap
             return 0;
         }
 
-        /// <summary>把 Unity 版本字符串解析为 [major, minor, patch] 三段整数；patch 段自动去除 f/b/a 等发布后缀。</summary>
+        /// <summary>解析 Unity 的主、次、patch、发布阶段及修订号；允许中国版 c 后缀，不改变基础版本顺序。</summary>
+        /// <param name="version">完整 Unity 版本；不完整、未知发布阶段或整数溢出均视为零版本。</param>
+        /// <returns>五段排序值；非法输入返回全零数组。</returns>
         private static int[] ParseUnityVersion(string version)
         {
-            int[] result = new int[3];
-            if (string.IsNullOrEmpty(version))
+            int[] result = new int[5];
+            Match match = Regex.Match(version ?? string.Empty, @"^(\d+)\.(\d+)\.(\d+)([abfp])(\d+)(?:c\d+)?$");
+            if (!match.Success)
                 return result;
-            string[] parts = version.Split('.');
-            for (int i = 0; i < 3 && i < parts.Length; i++)
+            for (int i = 0; i < 3; i++)
             {
-                int end = 0;
-                while (end < parts[i].Length && char.IsDigit(parts[i][end]))
-                    end++;
-                if (end > 0)
-                    int.TryParse(parts[i].Substring(0, end), out result[i]);
+                if (!int.TryParse(match.Groups[i + 1].Value, out result[i]))
+                    return new int[5];
             }
+            result[3] = "abfp".IndexOf(match.Groups[4].Value[0]);
+            if (!int.TryParse(match.Groups[5].Value, out result[4]))
+                return new int[5];
             return result;
         }
 
@@ -522,6 +532,20 @@ namespace NovaBootstrap
             if (idx < 0)
                 return absolute.StartsWith("Assets/", StringComparison.Ordinal) ? absolute : null;
             return absolute.Substring(idx + 1);
+        }
+
+        /// <summary>检查默认直接依赖是否缺失或与固定目标不一致，供新工程和已装工程共用。</summary>
+        /// <param name="deps">当前直接依赖对象；缺少整个对象时按缺失处理。</param>
+        /// <param name="missing">收集待用户确认的配置调整说明。</param>
+        /// <param name="key">准确的 UPM 包名。</param>
+        /// <param name="value">本版固定目标版本，不比较版本高低。</param>
+        /// <param name="label">包的可读名称。</param>
+        private static void DetectDepVersion(JObj deps, List<string> missing, string key, string value, string label)
+        {
+            if (deps == null || !deps.ContainsKey(key))
+                missing.Add($"依赖 {key}（{label}，目标版本 {value}）");
+            else if ((deps.Get(key) as string) != value)
+                missing.Add($"依赖 {key}（{label}）版本与目标不一致，需对齐为 {value}");
         }
 
         /// <summary>缺键则补、键存在但值不一致则覆盖（用于 semver 依赖矫正，避免 UPM 拉到下架版本）。</summary>
@@ -612,7 +636,8 @@ namespace NovaBootstrap
         // 解析与序列化均保持键序，仅追加缺失项，最大限度减少 diff。
         // ============================================================
 
-        /// <summary>保序 JSON 对象。</summary>
+        /// <summary>保序 JSON 对象；重复键覆盖旧值，首次插入位置保持不变。</summary>
+        /// <remarks>Keys 返回内部列表的只读接口而非快照；Get 不区分缺键与显式 null。本类型不验证 JSON schema。</remarks>
         private sealed class JObj
         {
             private readonly List<string> _keys = new List<string>();
@@ -637,9 +662,17 @@ namespace NovaBootstrap
             public void Add(object value) => Items.Add(value);
         }
 
-        /// <summary>JSON 解析与序列化。</summary>
+        /// <summary>启动引导内部使用的保序 JSON 解析与序列化，不是严格或通用 JSON 实现。</summary>
+        /// <remarks>
+        /// 数字以 double 表示，可能丢失原文本精度；解析不完整验证字面量、冒号和全部转义，写入也不转义所有控制字符。
+        /// 不限制递归深度或循环引用，调用方仅应使用已知清单模型，不用于不可信输入、通用校验或安全路径解析。
+        /// </remarks>
         private static class Json
         {
+            /// <summary>解析启动脚本内部使用的 JSON 值，不作为通用严格 JSON 校验器。</summary>
+            /// <param name="text">待解析文本；调用方负责提供预期的清单结构。</param>
+            /// <returns>内部保序对象、数组或标量；只读取第一个值，不要求消耗全部尾部文本。</returns>
+            /// <remarks>无递归深度限制，畸形或截断输入可能直接抛出解析或索引异常。</remarks>
             public static object Parse(string text)
             {
                 int pos = 0;
@@ -752,6 +785,10 @@ namespace NovaBootstrap
                     pos++;
             }
 
+            /// <summary>将内部 JSON 模型写成保序文本并追加换行，不写入文件。</summary>
+            /// <param name="value">由内部解析器或调用方按支持类型构造的值。</param>
+            /// <returns>格式化文本；不保证任意业务对象都能生成合法 JSON。</returns>
+            /// <remarks>不做 schema 或递归深度校验，不替代项目通用序列化器。</remarks>
             public static string Write(object value)
             {
                 var sb = new StringBuilder();

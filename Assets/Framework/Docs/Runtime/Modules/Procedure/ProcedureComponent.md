@@ -127,6 +127,10 @@
 - `ProcedureComponent` 不会扫描业务程序集；如果你期待业务 Procedure 一开场就可见，那是错误时序假设。
 - `RunHistory` 只在 Editor 可用，不能把它当成发布包里的监控能力。
 
+## 参数与生命周期边界
+
+CurManagerTypeName 与 EntranceProcedureTypeName 仅读序列化字段，源码默认分别为 NovaFramework.Runtime.ProcedureManager/ProcedureSplash，不自动迁移旧资产字符串。Start 只扫描 typeof(ProcedureBase).Assembly，按 Ordinal 名称顺序反射创建全部内置具体流程，再精确匹配入口；业务程序集稍后由 LoadDll 追加。LauncherSettings 返回原引用而非副本。OnDestroy 只断 Manager 引用，不执行 Shutdown。Editor RunHistory 是每帧类型变化采样，最多 128 条、返回 live 列表及可变记录，帧内多次切换可漏；Elapsed 用 realtime 秒差，不校验未初始化或负数时间，不属于 Player 运行协议。
+
 ## 继续阅读
 
 关键源码：

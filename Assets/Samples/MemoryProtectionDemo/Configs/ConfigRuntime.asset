@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dfaab8119e7041728b92d6d28ff7998, type: 3}
+  m_Name: ConfigRuntime
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
+  DevelopMode: 0
+  Namespace: NovaFramework.Memory.Protection.Samples.Runtime
+  AppConfigs:
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
+    CustomConfigCmdName: AppCustomConfig
+    CustomName: CustomConfigs
+  PrivacyConfigs:
+    AESKey: YOUR_PRIVACY_AES_KEY
+    AESIV: YOUR_PRIVACY_AES_IV
+    ExtensionConfigsJson: '{"com.solotopia.nova.framework.memory.protection":{"EnableMemoryTamperDetection":true,"EnableMemoryKeyRotation":true}}'
+    PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+    InfoPlistUsageDescriptions: '{}'
+  Platform: 1
+  Channel: 1
+  EnabledSDKConfigs: []
+  EnabledKitConfigs: []
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    StartupGameDlls:
+    - m_AssetLocation: NovaFramework.Memory.Protection.Samples.Runtime.dll
+  Custom:
+    Entries:
+    - Key: ThirdIAPOpen
+      Value: false
+    - Key: ThirdIAPIOSOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPAndroidOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPSkipGoogleMsgAlertShow
+      Value: false
+    - Key: GlobalSwitchThirdIAPOpen
+      Value: false
+  references:
+    version: 2
+    RefIds: []

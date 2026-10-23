@@ -77,10 +77,9 @@ Pipify 是顺序 Batch 与 UI/CLI 流水线，不提供每个业务单元统一�
 ## 验证依据（Verification）
 
 - 首个 Handler `nova.project.upm.manage-latest` 复用 `EditorUtil.PlugPals` 的计划、执行和验证实现。
-- `AgentActionRegistryTests` 覆盖 Framework-only 注册、稳定描述、非法请求、确认快速路径、未知计划和 Receipt 契约拒绝。
-- Gateway 契约测试要求 live Registry 与显式 ExposurePolicy 的 Action ID 集合完全一致。
-- `NovaFramework.Editor.csproj --no-restore` 编译通过，Action 相关代码无编译错误。
-- Nova Project Skills 校验通过，工具测试 97/97 通过。
+- 长期 [AgentActionRegistryTests](../../../../Tests/Editor/AgentActions/AgentActionRegistryTests.cs) 维护 Framework-only 注册、稳定描述、非法请求、确认快速路径、未知计划和 Receipt 契约拒绝。
+- 长期 [MCP 契约测试](../../../../Tests/Editor/AgentActions/NovaProjectActionMcpContractTests.cs) 要求 live Registry 与显式 ExposurePolicy 的 Action ID 集合完全一致。
+- 当前协议、执行保护与证据要求见 [Action 执行层](../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)。任务通过与否以本次真实执行核验，不由旧编译记录、测试数量、导航或接口存在性续签。
 
 ## 关联
 

@@ -3,7 +3,7 @@
 **类签名**：`public static class SceneDevelopModeWriter`（嵌套于 `EditorUtil.Config`）  
 **命名空间**：`NovaFramework.Editor`
 
-将 `ConfigWindow` 当前导出选中的 `DevelopMode` 回写到当前激活场景中的 `Nova + 所有 FrameworkComponent`，并可将当前 `Channel` 同步为 `AssetComponent` 的启动期快照。
+将 `ConfigWindow` 当前导出选中的 `DevelopMode` 回写到当前激活场景中的 `Nova + 所有 FrameworkComponent`，并可将当前 `Channel` 同步为 `AssetComponent` 与 `AppComponent` 的启动期快照，同时更新 App 默认资源包名。
 
 ---
 
@@ -33,7 +33,7 @@ public static void WriteActiveScene(DevelopMode developMode, ChannelType channel
 1. 取当前激活场景 `SceneManager.GetActiveScene()`
 2. 遍历所有根节点及其子孙中的 `FrameworkComponent`
 3. 将每个组件的私有序列化字段 `m_DevelopMode` 写成目标值
-4. 使用双参数重载时，将 `AssetComponent.m_Channel` 写成同次导出的渠道
+4. 使用双参数重载时，将 `AssetComponent.m_Channel` 与 `AppComponent.m_Channel` 写成同次导出的渠道；`AppComponent.m_DefaultPackageName` 取场景首个 AssetComponent 的默认包名，空时回退其包列表首项
 5. 对改动过的对象 `SetDirty`
 6. 若有任意变更，调用 `EditorSceneManager.MarkSceneDirty(activeScene)`
 

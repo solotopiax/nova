@@ -1,0 +1,20 @@
+{
+  "name": "NovaFramework.MemoryProtection.Editor",
+  "rootNamespace": "NovaFramework.Editor",
+  "references": [
+    "NovaFramework.Runtime",
+    "NovaFramework.Editor",
+    "NovaFramework.MemoryProtection.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

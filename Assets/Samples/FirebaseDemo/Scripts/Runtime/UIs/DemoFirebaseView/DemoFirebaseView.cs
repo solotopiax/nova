@@ -21,7 +21,7 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
     {
         /// <summary>
         /// 视图初始化钩子，仅在首次创建实例时触发。
-        /// 注册示例按钮事件并设置标题与 API 副标题。
+        /// 注册示例按钮事件并设置标题与 API 副标题，初始化空 Topic 输入；登录提示只展示负责 SDK 账号通知的 GameLogin 入口。
         /// 子类重写须调用 base.OnInit(userData)。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
@@ -43,6 +43,21 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
                 SetButtonApiHint(m_GetTokenButton, "FirebasePlugin.GetToken()");
             }
 
+            if (m_TopicInput != null)
+            {
+                m_TopicInput.SetTextWithoutNotify(string.Empty);
+            }
+
+            if (m_SubscribeTopicButton != null)
+            {
+                SetButtonApiHint(m_SubscribeTopicButton, "FirebasePlugin.SetTopicSubscribed(topic, true)");
+            }
+
+            if (m_UnsubscribeTopicButton != null)
+            {
+                SetButtonApiHint(m_UnsubscribeTopicButton, "FirebasePlugin.SetTopicSubscribed(topic, false)");
+            }
+
             if (m_AddEventParamButton != null)
             {
                 m_AddEventParamButton.onClick.AddListener(OnAddEventParamButtonClick);
@@ -62,7 +77,7 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
             if (m_LoginButton != null)
             {
                 m_LoginButton.onClick.AddListener(OnLoginButtonClick);
-                SetButtonApiHint(m_LoginButton, "Nova.Network.Kit<Login>().Async(...) / Nova.SDK.Login(uid)");
+                SetButtonApiHint(m_LoginButton, "Nova.Network.Kit<Login>().Async(...)");
             }
 
             InitializePushTaskControls();
@@ -149,6 +164,7 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
 
         /// <summary>
         /// 视图打开钩子，每次 OpenUIViewAsync 调用时触发。
+        /// Topic 按钮在每次打开时接线，先移除本页监听以避免重复打开产生重复派发。
         /// 子类重写须调用 base.OnOpen(userData)。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
@@ -156,17 +172,39 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
         {
             base.OnOpen(userData);
 
+            if (m_SubscribeTopicButton != null)
+            {
+                m_SubscribeTopicButton.onClick.RemoveListener(OnSubscribeTopicButtonClick);
+                m_SubscribeTopicButton.onClick.AddListener(OnSubscribeTopicButtonClick);
+            }
+
+            if (m_UnsubscribeTopicButton != null)
+            {
+                m_UnsubscribeTopicButton.onClick.RemoveListener(OnUnsubscribeTopicButtonClick);
+                m_UnsubscribeTopicButton.onClick.AddListener(OnUnsubscribeTopicButtonClick);
+            }
+
             AppendFeedback("Firebase 演示已打开，可获取 Instance ID、Token，编辑事件属性、发送打点或执行登录；Push Task 需先登录后才可发送。");
         }
 
         /// <summary>
-        /// 视图关闭钩子，关闭时由基类清空反馈区。
+        /// 视图关闭钩子，解绑本页 Topic 按钮监听，再由基类清空反馈区。
         /// 子类重写须调用 base.OnClose(isShutdown, userData)。
         /// </summary>
         /// <param name="isShutdown">是否因视图管理器关闭而触发。</param>
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
+            if (m_SubscribeTopicButton != null)
+            {
+                m_SubscribeTopicButton.onClick.RemoveListener(OnSubscribeTopicButtonClick);
+            }
+
+            if (m_UnsubscribeTopicButton != null)
+            {
+                m_UnsubscribeTopicButton.onClick.RemoveListener(OnUnsubscribeTopicButtonClick);
+            }
+
             base.OnClose(isShutdown, userData);
         }
     }

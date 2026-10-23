@@ -66,16 +66,16 @@ internal static bool MergeAll(string lubanOutputDir, string tablesXmlPath, Luban
 
 ## §9 关键算法
 
-若 manifest/XML 声明的任一 Luban 中间 JSON 缺失，合并立即失败，不会写出部分或空的最终 JSON。
+XML 匹配到的任一中间 JSON 缺失或解析失败，`MergeForUnit` 返回 false，且不会写聚合目标。XML 缺失或没有匹配表时，映射为空，函数返回 true，但不写、不清旧目标，也不记录成功统计；true 不证明产物存在。
 
 ### ParseTablesXmlForUnit — 表名匹配
 
-1. 加载 __tables__.xml，遍历所有 `<table>` 节点
+1. XML 不存在则返回空映射；存在时加载 __tables__.xml，遍历所有 `<table>` 节点
 2. 对每个节点，解析 `input` 属性：`@` 前为 sheetName，`@` 后为 filePart
 3. 将 filePart 与 `unitLubanInputPath` 做规范化路径比较（统一正斜杠后字符串相等）
 4. 匹配成功时收集 `name` 属性（如 `"TbTestAAA"`）→ sheetName（如 `"TestAAA"`）
 
-> Table 模块的 `LubanInputPath` 等于 `SourcePath`（完整相对路径），Config 模块的 `LubanInputPath` 带 `_temp/` 前缀。统一用文件名匹配可同时兼容两种格式。
+> Excel 按 `@` 后的完整规范路径匹配；CSV 按完整路径或目录前缀匹配。Table 正式导出不使用该聚合链。
 
 ### BuildMergedJson — 文件合并
 
@@ -88,7 +88,7 @@ internal static bool MergeAll(string lubanOutputDir, string tablesXmlPath, Luban
 ```
 MergeForUnit(lubanOutputDir, tablesXmlPath, unit)
   ├── ParseTablesXmlForUnit → tableToSheet 映射
-  ├── 映射为空 → 返回 true（无需合并）
+  ├── 映射为空（含 XML 缺失）→ true；不写、不清旧目标、不记录成功统计
   ├── BuildMergedJson → 合并 JObject
   ├── 确保输出目录存在
   └── 写入 unit.DatasExportPath（UTF-8，Indented 格式）

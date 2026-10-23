@@ -53,6 +53,10 @@ IReference
         └── 业务子类（如 MySoundObject、MyAssetObject 等）
 ```
 
+## 参数与所有权边界
+
+构造/Clear 使 Name、Target=null、Locked=false、Priority=0、LastUseTime=default；Clear 不释放真实 Target，派生类仍须清自身字段。Initialize 的短重载缺省 name→empty、locked=false、priority=0，最终只拒 null Target、原样存其余元数据并记 UTC；再次 Initialize 不释放旧 Target。OnGet/OnPut 基类为空，CustomCanReleaseFlag 默认 true，只影响普通释放而不阻止 Get。真实资源释放属于派生 Release(isShutdown)，普通 false、整池 Shutdown true；抽象声明不证明任何派生资源已正确释放。
+
 ## 关联文档
 
 - [IObjectPool\<T\>](IObjectPool.md) -- 泛型约束 `where T : ObjectBase`

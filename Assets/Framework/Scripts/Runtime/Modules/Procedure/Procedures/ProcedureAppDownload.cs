@@ -21,7 +21,7 @@ namespace NovaFramework.Runtime
     /// 大版本下载提示流程。
     /// 1. 根据 AppVersionResult 弹出 ForcedDownload / RecommendedDownload 弹窗。
     /// 2. 确认后按 AppManagerConfig.DownloadRoute 选择跳商店或下载 APK。
-    /// 3. 操作结束（无论成败）重新显示弹窗，直到用户选择退出或下载完成。
+    /// 3. APK 保存返回路径，独立安装开启时等待系统结果；重试复用文件，文件交付后不再重复下载。
     /// 4. 推荐更新取消后，按启动资源工作状态回到热更/Warmup 或 DLL 启动流程。
     /// </summary>
     public sealed class ProcedureAppDownload : ProcedureBase
@@ -46,6 +46,15 @@ namespace NovaFramework.Runtime
         /// </summary>
         private bool m_IsOperationInProgress;
 
+        /// <summary>本流程已完成下载的本地路径；安装失败、拒绝或权限跳转后重试不重新下载。</summary>
+        private string m_DownloadedApkPath;
+
+        /// <summary>没有启用可选安装时展示文件交付结果，确认后推荐续行/强制退出。</summary>
+        private bool m_IsFileDelivered;
+
+        /// <summary>离开或重新进入时使旧异步操作失效，不依赖成员令牌被下一轮替换后的状态。</summary>
+        private int m_OperationVersion;
+
         /// <summary>
         /// 进入流程时调用。
         /// </summary>
@@ -58,6 +67,9 @@ namespace NovaFramework.Runtime
             m_AppResult = procedureOwner.GetData<AppVersionResult>(ProcedureDataKeys.AppVersionResult);
             m_RequiresStartupAssetWork = procedureOwner.GetData<bool>(ProcedureDataKeys.RequiresStartupAssetWork);
             m_IsOperationInProgress = false;
+            m_DownloadedApkPath = null;
+            m_IsFileDelivered = false;
+            m_OperationVersion++;
 
             if (m_AppResult != AppVersionResult.ForcedDownload
                 && m_AppResult != AppVersionResult.RecommendedDownload)
@@ -104,15 +116,13 @@ namespace NovaFramework.Runtime
         protected internal override void OnLeave(ProcedureOwner procedureOwner, bool isShutdown)
         {
             base.OnLeave(procedureOwner, isShutdown);
+            m_OperationVersion++;
             procedureOwner.RemoveData(ProcedureDataKeys.AppVersionResult);
             procedureOwner.RemoveData(ProcedureDataKeys.HasAssetPatch);
             procedureOwner.RemoveData(ProcedureDataKeys.RequiresStartupAssetWork);
             m_IsOperationInProgress = false;
 
-            if (isShutdown)
-            {
-                LauncherUIController.DestroyDialog();
-            }
+            LauncherUIController.DestroyDialog();
         }
 
         /// <summary>
@@ -128,6 +138,16 @@ namespace NovaFramework.Runtime
             }
 
             LauncherUIController.DestroyDialog();
+            if (m_IsFileDelivered)
+            {
+                LauncherUIController.ShowDialog(LauncherDialogType.AppDownloaded, () =>
+                {
+                    LauncherUIController.DestroyDialog();
+                    if (m_AppResult == AppVersionResult.ForcedDownload) Nova.Self.QuitApplication();
+                    else m_Complete = true;
+                });
+                return;
+            }
             LauncherDialogType dialogType = ResolveDialogType();
             Action onConfirm = () => OnConfirm().Forget();
             Action onCancel = m_AppResult == AppVersionResult.ForcedDownload
@@ -151,7 +171,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 确认按钮回调：按 DownloadRoute 执行跳商店或下载 APK。
-        /// 操作结束后（无论成败）重新调用 ShowDialog 等待用户再次操作。
+        /// 冻结本轮令牌与版本；APK 路径保存后只重试独立安装，不重新下载或将系统界面当安装成功。
         /// </summary>
         /// <returns>UniTask。</returns>
         private async UniTaskVoid OnConfirm()
@@ -162,6 +182,8 @@ namespace NovaFramework.Runtime
             }
 
             m_IsOperationInProgress = true;
+            CancellationToken operationToken = CancellationToken;
+            int operationVersion = m_OperationVersion;
             LauncherUIController.DestroyDialog();
 
             AppComponent appComponent = FrameworkComponentsGroup.GetComponent<AppComponent>();
@@ -172,11 +194,43 @@ namespace NovaFramework.Runtime
             {
                 if (route == AppDownloadRoute.Store)
                 {
-                    await appComponent.OpenStoreAsync(CancellationToken);
+                    await appComponent.OpenStoreAsync(operationToken);
                 }
                 else
                 {
-                    await appComponent.DownloadAsync(CancellationToken);
+                    if (string.IsNullOrEmpty(m_DownloadedApkPath))
+                    {
+                        string downloaded = await appComponent.DownloadAsync(operationToken);
+                        operationToken.ThrowIfCancellationRequested();
+                        if (operationVersion != m_OperationVersion) return;
+                        m_DownloadedApkPath = downloaded;
+                        Log.Debug(LogTag.Procedure, "APK 文件已保存：{0}", downloaded);
+                    }
+                    NativeComponent native = FrameworkComponentsGroup.GetComponent<NativeComponent>();
+                    if (native == null || !native.IsAppInstallEnabled)
+                    {
+                        m_IsFileDelivered = true;
+                    }
+                    else
+                    {
+                        NativeAppInstallResult result = await native.InstallApkAsync(m_DownloadedApkPath, operationToken);
+                        operationToken.ThrowIfCancellationRequested();
+                        if (operationVersion != m_OperationVersion) return;
+                        if (result.Status == NativeAppInstallStatus.Unsupported || result.Status == NativeAppInstallStatus.Disabled)
+                            m_IsFileDelivered = true;
+                        else if (result.Status == NativeAppInstallStatus.PermissionRequired)
+                        {
+                            await native.OpenPackageInstallSettingsAsync();
+                            Log.Warning(LogTag.Procedure, "请允许当前应用的安装来源，返回后可确认重试；APK 文件已保留。");
+                        }
+                        else if (result.IsInstalled)
+                        {
+                            // 自身升级通常由系统自然替换并终止旧进程；框架不主动 kill，也不自动重启。
+                            m_IsFileDelivered = true;
+                            Log.Debug(LogTag.Procedure, "系统报告 APK 安装完成。");
+                        }
+                        else Log.Warning(LogTag.Procedure, "APK 安装未完成，状态={0}：{1}", result.Status, result.ErrorMessage);
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -189,11 +243,10 @@ namespace NovaFramework.Runtime
             }
             finally
             {
-                m_IsOperationInProgress = false;
-
-                if (!m_Complete && !CancellationToken.IsCancellationRequested)
+                if (operationVersion == m_OperationVersion)
                 {
-                    ShowDialog();
+                    m_IsOperationInProgress = false;
+                    if (!m_Complete && !operationToken.IsCancellationRequested) ShowDialog();
                 }
             }
         }

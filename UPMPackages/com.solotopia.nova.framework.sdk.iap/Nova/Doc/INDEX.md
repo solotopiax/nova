@@ -18,6 +18,7 @@
 
 - [IAPPlugin.md](./IAPPlugin.md) — `IAPPlugin` 类规格、配置、公开 API、生命周期和用法。
 - [IAP-Architecture.md](./IAP-Architecture.md) — IAP 核心包架构、Store 扩展规则、错误码分层和数据流。
+- [IAPProductCatalogProtocol.md](./IAPProductCatalogProtocol.md) — Editor 商品目录快照、开发/正式上传地址、App AES、一次提交 Action 与脱敏回执；HTTP 接受和后台应用分开验收。
 
 ## 当前契约重点
 
@@ -29,6 +30,7 @@
 - Mobile 官方内购的 Unity IAP 购买失败已纳入 `IAPMobileErrorCode` 的 1000+ 专用号段，避免与 Mobile 通用错误码 0-9 冲突。
 - 父包不解释渠道订单号语义；例如 Mobile 的 Google 验单和本地支付成功打点使用 purchase token，Apple 才使用 `TransactionId`。
 - IAP Products 支持 Inspector 内导出 SKU Excel 模板并导入 Excel，全量覆盖当前 `IAPPluginConfig.Products`；该能力是 Editor 专用导入工具，不接入 Luban，也不改变运行时商品表读取链路。
+- Inspector 按钮和 Pipify 的 `iap.product_catalog.upload` Step 保留 `IAPProductCatalogUploader.UploadCurrentAsync` 兼容入口；受控 `nova.project.iap.upload-product-catalog` 通过固定 `IAPProductCatalogActionBridge` 冻结显式导出物并复用同一协议/一次发送核心。精确409仍表示新目录未应用，2xx也不单独证明后台落库；目录提交不等支付、验单或发货完成。
 - 登录后自动补单等父包后台任务统一经 IAPPlugin 后台任务入口启动；插件 Dispose 时会先取消后台任务，再释放 Store。后台入口只接受 `Func<CancellationToken, UniTask>`，有返回值的 `UniTask<T>` 方法需要包装后接入。
 
 ## 最新支付代码口径

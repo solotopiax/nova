@@ -157,6 +157,10 @@ namespace NovaFramework.Runtime
             }
         }
 
+        /// <summary>
+        /// 立即执行真实 getter，无 getter 时返回 null；业务或反射异常继续传播，不缓存结果。
+        /// </summary>
+        /// <returns>属性当前值或无 getter 时的 null。</returns>
         public object GetValue()
         {
             if (_getter != null)
@@ -167,6 +171,10 @@ namespace NovaFramework.Runtime
             return null;
         }
 
+        /// <summary>
+        /// 立即执行真实 setter，不自动发变更通知；不可写时抛出，业务失败不回滚已发生副作用。
+        /// </summary>
+        /// <param name="value">业务新值，类型与合法性由包装和目标 setter 检查。</param>
         public void SetValue(object value)
         {
             if (_setter != null)

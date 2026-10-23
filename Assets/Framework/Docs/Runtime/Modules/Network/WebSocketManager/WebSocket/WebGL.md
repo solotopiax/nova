@@ -57,6 +57,12 @@ static extern void WebSocketSetOnClose(OnCloseCallback callback)
 static void Initialize()
 ```
 
+`Initialize` 依次设置五个全局 native 回调，没有 C# 幂等标志或静态事件 reset。桥接回调直接分发事件，不按实例过滤，也不隔离订阅者异常；当前通道负责核实例 ID/连接轮次。二进制回调先复制到新的 byte[]，字符串用 Marshal.PtrToStringAuto；临时 native 指针不能被消费方保留或释放。
+
+配套 `WebSocket.jslib` 用单调 ID 管理实例，binaryType 为 arraybuffer；ArrayBuffer、Blob、字符串、error、close 的临时分配在调用 C# 后由 JavaScript finally `_free`。C# OnWebGLError 释放的是 WebSocket 实例，不是该消息指针。WebSocketFree 移除实例并可能先 close，不能由此推断浏览器绝无晚到事件；通道仍须拒绝旧 ID。
+
+JS 返回码与 C# extern 声明分开理解：缺实例为 -1、重复连接为 -2、无 socket 为 -3、关闭中 -4、已关闭 -5、非 Open 发送 -6、close 参数异常 -7；0 表示该调用发起成功，不是连接/业务确认。状态查询直接返回浏览器 readyState，缺实例 -1，无 socket 为 Closed(3)。声明存在不证明 AOT 链接、回调编码或浏览器行为已验收，Editor 分支不运行这些 P/Invoke。
+
 ## 关联文档
 
 - [WebSocketScope](WebSocketScope.md)

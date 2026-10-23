@@ -32,7 +32,7 @@
 
 ## 3. 初始化语义
 
-- `Priority => 30`，在 TGA 与 AppsFlyer 分桶之后初始化
+- `Priority => 30` 只参与稳定通知和逆序释放排序；SDKManager 按能力依赖调度初始化，不按 Priority 分桶。
 
 - `OnInitializeAsync(...)` 会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；只有依赖检查通过并成功注册 `FirebaseMessaging` 回调后才返回。
 - `SDKPluginBase` 会在 `OnInitializeAsync(...)` 正常返回后把 `IsAvailable` 置为 `true`，因此 Firebase 插件的 `IsAvailable == true` 表示 Firebase 依赖已可用且 Messaging 事件已完成注册。
@@ -41,6 +41,12 @@
 - 大多数公开方法都会在 `m_InitOver == false` 时直接静默返回。
 - 默认 Topic 和显式 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token 后再调用 Firebase；iOS 首次安装时如果 Firebase topic API 返回 APNs Token 尚未就绪，会对订阅或退订操作本身做有界延迟重试。
 - `GetTokenAsync(...)` 不依赖 `m_InitOver` 直接返回，而是等待 `m_TokenReceived` 非空。
+
+依赖检查与 Token 等待没有统一的内置截止时间，调用方需要限制等待时须传入自己的令牌。Topic 操作对可恢复错误按 2/5/10/20/30 秒间隔重试，包含首次最多六次；默认 Topic 同步耗尽后还可能安排后续补偿。单次等待、某个 Topic 调用成功与完整默认 Topic 差异同步完成应分别判断，不能从初始化 Ready 推导订阅或后台推送送达。
+
+释放会取消内部等待并退订 Messaging，但清理没有逐项 finally，某次取消或退订抛异常可打断后续步骤。已 Post 到主线程的 Token/Message 回调没有释放态门禁，仍可能更新缓存、发布槽或通知业务；业务 Token 事件也没有逐监听者异常隔离。插件不清 Token、标识与消息去重缓存，业务订阅须自行配对移除。`IsNotificationLaunch` 在处理后续推送点击时也可变 true，不只表示冷启动来源。Token 和标识原文可能进入现有 Debug 日志，收集诊断时须脱敏。
+
+结束业务会话只换 session 标记，不清原厂用户 ID 或取消标识等待；登录上报等齐 Token、Analytics ID、国家码后才核一次 session，HTTP 已发出便不能撤回。自动权限请求在检测到不在前台时会退出，不等待下一次前台补发。
 
 ## 4. 配置与上报
 
@@ -89,6 +95,10 @@
 
 当前 `PbPushTaskResult` 不返回 `task_key`，因此客户端按 `NetResponse<PbNetCreatePushTasksResp>.IsSuccess == true` 视为整批发送成功，不做单条结果删除。
 
+数量阈值只决定何时 flush，每次快照发送全部有效缓存，并不限制为五条。缓存分类没有 UID 隔离，UserReady 也是布尔值；HTTP 头在发送时读取当前身份，跨账号项目须在业务层约束任务归属。同 key 写失败可能已经改变 Persist 内存；发送后删除又会忽略 Save 的布尔结果，取消删除或重启均可能重发，不能承诺恰好一次。CacheVersion 是本进程计数，不恢复历史最大值，服务端仍需稳定 TaskKey 幂等。
+
+Flush 间隔的 NaN/Infinity 回退 100 秒，非正数为立即尝试；失败路径也复用该间隔，没有独立网络退避。Dispose 不等待旧发送循环结束，旧计时器/循环标志也没有完整代际隔离；外部保留调度器后再次调用可能重建服务。`FirebasePushTaskNetService.SetDebugMode` 当前只存字段，Async 没有消费它，不应据此判断请求已切换环境。
+
 `FirebasePushTask.Cancel == true` 表示取消同 `TaskKey` 下尚未派发的服务端任务。协议层会只发送 `task_key` 与 `cancel`，不会携带 `trigger_time` 或 `template_id`；创建任务时才发送触发时间和模板 ID。若业务对象里同时填了 `TriggerTime` 或 `TemplateId`，底层协议构造也会忽略它们。
 
 ## 6. 默认推送 Topic
@@ -133,6 +143,8 @@ Android、`zh-CN`、UTC+08、国家码 `CN` 的 Debug 分群会同步 `top_debug
 
 国家码最终无效或为 `IV` 时，不会订阅国家 topic，也不会退订旧国家 topic 或覆盖旧国家存档。这样可以避免广告 SDK 临时返回 `IV` 或国家码暂不可用时误删上一次有效国家订阅。
 
+Topic 差异逐项先退订再订阅，部分完成后失败不会回滚；状态保存忽略 Save 的布尔结果，日志不能证明落盘。基础同步有串行锁，国家同步没有同样的锁。国家码只做 Trim/大写/安全字符规范化并排除空值与 `IV`，没有严格验证 ISO 两字母；安全段替换可能碰撞，也没有长度校验。显式 Topic 接口不自动 Trim，非移动编译分支的空操作成功不作为平台订阅证据；原厂 Topic Task 等待本身也不保证随调用令牌立刻取消。
+
 ## 8. 使用示例
 
 ```csharp
@@ -164,4 +176,8 @@ await pushTasks.QueuePushTaskAsync(new FirebasePushTask
 
 ## 9. 关联
 
+Editor 桌面库 Guard 只检查固定版本文件是否存在，每个 Session 一次，不识别 LFS 指针或证明原生库可加载；退出 Play 的既有修复还会按 `FirebaseHandler` 对象名清理，并非精确实例认证。iOS 构建处理器注入的 `aps-environment=development` 与最终签名产物分开核验。`SetUserProperty` 当前直接透传 key/value，不实现 XML 所述的空参数过滤；业务应在调用边界校验。
+
 - 配置类型：[FirebasePluginConfig.md](./FirebasePluginConfig.md)
+
+Android构建规则由内部纯`CreateAndroidManifestRules()`集中构造，正常SDK回调与框架内部叶子预测共用原MessageForwardingService及default_notification_icon完整规则树，不复制转换算法。原回调仍在原位置注册`MessagingUnityPlayerActivity`并AddManifestRules，保持不读取运行时Firebase配置的原Android行为。该纯入口只产生领域数据，不初始化Firebase、不执行构建回调或写文件；叶子预测和离线编译不代表实际Android SDK/Player构建成功。

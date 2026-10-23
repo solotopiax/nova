@@ -14,6 +14,9 @@ using Newtonsoft.Json.Linq;
 
 namespace NovaFramework.Samples.Runtime
 {
+/// <summary>
+/// ListB
+/// </summary>
 
 public sealed partial class ListB : Luban.BeanBase
 {

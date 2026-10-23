@@ -22,6 +22,71 @@ namespace NovaFramework.Runtime
     public sealed partial class TextLocalizing : MonoBehaviour
     {
         /// <summary>
+        /// 等待下一帧末尾，使 EventComponent.Start 的事件池重建先完成。
+        /// 销毁取消等待，禁用或独立文本接管期间不补订阅；重新启用时复用已完成的启动状态。
+        /// </summary>
+        /// <returns>首次启动等待和可用实例的订阅刷新任务。</returns>
+        private async UniTask InitializeAfterStartAsync()
+        {
+            if (m_IsTextRenderingRelinquished)
+            {
+                return;
+            }
+
+            try
+            {
+                await UniTask.NextFrame(PlayerLoopTiming.LastPostLateUpdate, this.GetCancellationTokenOnDestroy());
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            m_IsStartupComplete = true;
+            SubscribeAndRefresh();
+        }
+
+        /// <summary>
+        /// 为已启动且仍启用的实例获取当前管理器，确保真实事件池内只有本实例的一条订阅并刷新显示。
+        /// 重启后管理器身份变化时先安全摘除旧订阅，禁止继续使用旧本地化或资源管理器。
+        /// </summary>
+        private void SubscribeAndRefresh()
+        {
+            if (!m_IsStartupComplete || !isActiveAndEnabled || m_IsTextRenderingRelinquished || m_TextMeshProUGUI == null)
+            {
+                return;
+            }
+
+            IEventManager currentEventManager = FrameworkManagersGroup.GetManager<IEventManager>();
+            if (!ReferenceEquals(m_EventManager, currentEventManager))
+            {
+                UnsubscribeRefresh();
+                m_EventManager = currentEventManager;
+            }
+
+            m_LocalizationManager = FrameworkManagersGroup.GetManager<ILocalizationManager>();
+            m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
+            if (m_EventManager != null && !m_EventManager.Check<LocalizationRefreshEventData>(OnLocalizationRefresh))
+            {
+                m_EventManager.Subscribe<LocalizationRefreshEventData>(OnLocalizationRefresh);
+            }
+
+            RefreshText();
+            RefreshFont();
+        }
+
+        /// <summary>
+        /// 只取消实际事件池仍持有的本实例订阅，兼容初始化重建或 Shutdown 已经清空事件池。
+        /// </summary>
+        private void UnsubscribeRefresh()
+        {
+            if (m_EventManager != null && m_EventManager.Check<LocalizationRefreshEventData>(OnLocalizationRefresh))
+            {
+                m_EventManager.Unsubscribe<LocalizationRefreshEventData>(OnLocalizationRefresh);
+            }
+        }
+
+        /// <summary>
         /// 本地化刷新事件回调。
         /// </summary>
         /// <param name="sender">事件发送者。</param>

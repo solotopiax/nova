@@ -17,7 +17,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// HTTP 管理器基类。
     /// </summary>
-    internal abstract class HttpManagerBase : FrameworkManager, IHttpManager
+    internal abstract class HttpManagerBase : FrameworkManager, IHttpManager, ICancellableHttpManager
     {
         /// <summary>
         /// 管理器优先级（值越小越先 Update、越后 Shutdown）。
@@ -71,6 +71,43 @@ namespace NovaFramework.Runtime
         /// <param name="headerInfos">请求头（JSON 键值对格式）。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
         public abstract UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, string headerInfos = null);
+
+        /// <summary>声明可取消GET重载，原参数必填以保留旧调用的重载选择。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的HttpResponse，取消返回失败响应。</returns>
+        public abstract UniTask<HttpResponse> GetAsync(string url, float requestTimeout, string headerInfos, CancellationToken cancellationToken);
+
+        /// <summary>声明可取消字符串POST重载，不改变既有UTF8编码与旧签名。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="contentString">按 UTF-8 编码的请求体，null 按旧语义为空。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的HttpResponse。</returns>
+        public abstract UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout, string headerInfos, CancellationToken cancellationToken);
+
+        /// <summary>声明可取消原始字节POST重载，不增加自动主备或重试。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="contentBytes">原始请求体字节。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的HttpResponse。</returns>
+        public abstract UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout, string headerInfos, CancellationToken cancellationToken);
+
+        /// <summary>声明可取消multipart上传重载，取消不代表服务端回滚。</summary>
+        /// <param name="url">单一请求 URL。</param>
+        /// <param name="bodyJsonData">一级表单字段 JSON，可为 null。</param>
+        /// <param name="fileBytes">文件内容字节。</param>
+        /// <param name="fileName">上传文件名。</param>
+        /// <param name="requestTimeout">单次总超时（秒），负数使用当前默认值。</param>
+        /// <param name="headerInfos">请求头 JSON 键值对，null 不附加额外头。</param>
+        /// <param name="cancellationToken">调用方拥有的取消令牌；传输取消返回失败响应。</param>
+        /// <returns>调用方负责归池的HttpResponse。</returns>
+        public abstract UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout, string headerInfos, CancellationToken cancellationToken);
 
         /// <summary>
         /// 异步下载二进制数据。

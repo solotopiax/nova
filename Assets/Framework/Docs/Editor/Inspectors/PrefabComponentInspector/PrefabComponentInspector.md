@@ -58,3 +58,7 @@
 - [IPrefabManager.md](../../../Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md)
 - [PrefabManagerConfig.md](../../../Runtime/Modules/Prefab/PrefabManager/PrefabManagerConfig.md)
 - [PrefabInstanceTag.md](../../../Runtime/Modules/Prefab/Definitions/PrefabInstanceTag.md)
+
+## 数据来源与失败边界
+
+运行列表只展示已记录实例，不提供 Destroy/Release。ObjectField 没有统一 DisabledScope，只是忽略其返回值，因此“只读”指没有把选取结果写回实例记录，不表示控件从不接受交互；资源地址、实例计数及重绘均不构成资源/生命周期验收。

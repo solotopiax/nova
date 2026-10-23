@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.4",
+    "unity": ">=6000.6.7f1",
     "externalUpmHost": "a Framework-external controlled UPM client with live single-package upgrade and Resolve capabilities"
   },
   "requires": [],
@@ -71,14 +71,16 @@
   "writeScope": {
     "allow": [
       "the confirmed external UPM host change to the single direct com.solotopia.nova.framework manifest entry, retaining the frozen configured registry source",
-      "Packages/packages-lock.json and resolved dependency closure updates produced only by Unity Package Manager Resolve after that confirmed change"
+      "Packages/packages-lock.json and resolved dependency closure updates produced only by Unity Package Manager Resolve after that confirmed change",
+      "Library/Nova/ImportantUpdates/<local-user-hash>/State.json automatic upgrade-scope bookkeeping and explicit human acknowledgement; never edited directly by the Agent"
     ],
     "deny": [
       "nova_project_action, Framework C# AgentAction, arbitrary C#, reflection, execute_code or menu simulation for Framework self-upgrade",
       "manual Packages/manifest.json or Packages/packages-lock.json edits, Git/file/local source, registry switch, downgrade or batch package upgrade",
       "direct changes to Packages/com.solotopia.nova.framework/**, Library/PackageCache/**, package cache or Library cleanup",
       "ConfigMaster, ConfigRuntimeSO, business Config fields, SDK/Kit setup, Sample, Scene, Prefab, Bundle or Player changes",
-      "automatic retry, rollback, dependency substitution, Git commit/push, UPM publish, external deployment or credential output"
+      "automatic retry, rollback, dependency substitution, Git commit/push, UPM publish, external deployment or credential output",
+      "automatic Important acknowledgement, UI confirmation simulation, reflection or direct edits to local acknowledgement markers"
     ]
   },
   "locks": [
@@ -114,8 +116,9 @@
     "升级前冻结的 current direct manifest entry、lock version/source、脱敏 registry identity、目标 metadata 和外部 UPM host capability",
     "用户对唯一同源目标及其外部 UPM diff 的明确确认，以及 host 提供的提交 receipt（如有）",
     "Resolve 与 domain reload 稳定后的 direct manifest、packages-lock 和 resolved Framework package 精确版本/来源，以及 Unity 编译结果",
-    "目标 Framework 的 catalog.json 实际 Skill 数量和 nova_skills.py doctor 对 .agents/skills 的 clean 结果；数量不硬编码为 28",
+    "目标 Framework 的 catalog.json 实际 Skill 数量和 nova_skills.py doctor 对 .agents/skills 的 clean 结果；数量不硬编码",
     "同一项目重连后 MCP tools/list 中 nova_project_action 的可见性，及缺失时未使用它或任意 C# 绕过的事实",
-    "未执行 Config、缓存清理、回滚、Git、发布、外部部署或凭据输出的边界说明"
+    "未执行 Config、缓存清理、回滚、Git、发布、外部部署或凭据输出的边界说明",
+    "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。"
   ]
 }

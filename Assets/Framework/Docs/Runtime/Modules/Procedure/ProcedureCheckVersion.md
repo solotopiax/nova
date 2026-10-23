@@ -59,3 +59,7 @@
 Package 初始化会注入微信预下载策略，Manifest 加载后重新计算 `RequiresLaunchWarmup` / `RequiresLaunchPreload`。真实启用预下载的 TagsOnLaunch 使用 Tag Downloader 检查；有待处理项时进入 ProcedureHotfix，并沿用进度、失败重试和取消。这个检查表示待预下载范围，不表示资源版本必然发生变化；平台缓存查询保守返回 false，实际缓存复用由微信插件处理。
 
 OnDemand 不进入启动下载，AllOnLaunch 保留全量 Warmup。初始化前和再次进入检查时均考虑启动资源准备，不因 EnableHotfix 关闭而漏掉已初始化包的原生预下载。Web Player 的 CommitBootableVersion 为空操作，平台缓存不能成为原生离线启动证明。
+
+## 参数与生命周期边界
+
+OnEnter 重置结果并 Forget，OnUpdate 才写黑板/切换；异常降级 LoadDll 只表示续行，不能据此证明资源/Config 已就绪。WebGL 编译跳 App 检查，Manifest 后重算启动能力；无工作才 CommitBootableVersion。取消 catch 返回而不设置完成，但 App.CheckAsync 可先将取消降成 NoDownload，且强更/无需资源分支存在后续显式 token 检查前的早退，不能把本流程视为底层操作已物理终止的保证。owner 参数由 FSM 注入，RunCheckAsync 本体不直接读它。

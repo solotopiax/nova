@@ -1,12 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - MCP",
   "description": "Nova Framework 的 Provider 中立 MCP 契约与受控 Project Action 桥接基础包",
   "category": "Editor",
-  "unity": "6000.4",
+  "unity": "6000.6",
+  "unityRelease": "7f1",
   "keywords": [
     "nova",
     "framework",
@@ -21,5 +22,8 @@
   "dependencies": {
     "com.coplaydev.unity-mcp": "10.2.0",
     "com.unity.nuget.newtonsoft-json": "3.2.2"
+  },
+  "nova": {
+    "requiredFrameworkApiVersion": "0.7.0"
   }
 }

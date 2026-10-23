@@ -74,12 +74,20 @@ namespace NovaFramework.Editor
             public GenerateActionCommon.Artifact[] artifacts;
         }
 
+        /// <summary>
+        /// 校验 Master GUID、精确三维坐标和资产保存路径；在本 Action 边界拒绝 None 渠道。
+        /// </summary>
         protected override bool TryValidateRequest(Request request, out string error)
         {
             if (!GenerateActionCommon.TryValidateGuid(request?.masterGuid, out error)) return false;
             if (!GenerateActionCommon.TryParseCoordinate(
                     request.platform, request.channel, request.developMode,
-                    out _, out _, out _, out error)) return false;
+                    out _, out ChannelType channel, out _, out error)) return false;
+            if (channel == ChannelType.None)
+            {
+                error = "ConfigRuntime 导出需要明确的非 None 渠道。";
+                return false;
+            }
             return GenerateActionCommon.TryResolveAssetSavePath(request.savePath, out _, out _, out error);
         }
 

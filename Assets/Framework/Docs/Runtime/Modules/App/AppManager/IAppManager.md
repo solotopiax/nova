@@ -42,7 +42,7 @@
 - `OpenStoreAsync()`：商店跳转
 - `DownloadAsync()`：APK 下载
 
-当前实现上，只有商店跳转链是可用的；APK 下载仍是占位骨架。
+内置 APK 下载仅支持 Android Player，完成后返回 persistentDataPath 下已提交的本地绝对路径。取消或失败保留旧正式文件；路径不表示签名、目标版本或安装成功，安装由独立 Native 能力或业务显式发起。
 
 ### 4. 检查状态通过属性暴露
 
@@ -70,7 +70,7 @@
 
 - `CheckAsync()` 返回枚举语义变化
 - `MatchedRule` 的规则定义变化
-- `DownloadAsync()` 从骨架变成正式实现后的调用预期变化
+- `DownloadAsync()` 的平台、取消、文件提交与独立安装边界
 
 ## 相关实现
 

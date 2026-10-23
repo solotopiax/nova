@@ -129,7 +129,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 将单个 ITable 的数据扁平化到 m_LanguageTexts。
-        /// 通过 ITable<ILocalizationTextRow> 协变转型直接访问 DataList，零反射。
+        /// 通过 <see cref="ITable{ILocalizationTextRow}"/> 协变转型直接访问 DataList，零反射。
         /// </summary>
         /// <param name="table">Luban 表实例。</param>
         private void FlattenTableToLanguageTexts(ITable table)
@@ -305,14 +305,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 清空已支持语言列表并校验语言列表资源路径是否已配置。
+        /// 校验语言列表资源路径是否已配置，加载成功前保留当前支持语言快照。
         /// 返回 true 表示校验通过可继续加载，返回 false 表示跳过加载（路径未配置）。
         /// </summary>
         /// <returns>是否可继续加载。</returns>
         private bool PrepareLoadSupportedLanguages()
         {
-            m_SupportedLanguages.Clear();
-
             if (m_Config == null || string.IsNullOrEmpty(m_Config.SupportedLanguagesAssetLocation))
             {
                 Log.Warning(LogTag.Localization, "语言列表资源路径未配置，跳过加载。");
@@ -351,6 +349,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 从格式无关缓存构建支持语言 Tables，并填充运行时支持语言列表。
+        /// 本次有效语言全部收集完成后再替换，失败保留旧快照，重复加载不累加。
         /// </summary>
         /// <param name="cache">JSON 或 Binary Receiver 产生的 Luban 数据缓存。</param>
         /// <returns>是否加载到至少一种有效语言。</returns>
@@ -370,6 +369,7 @@ namespace NovaFramework.Runtime
             {
                 return false;
             }
+            var nextSupportedLanguages = new List<Language>();
             foreach (ITable table in tables.Values)
             {
                 if (!(table is ITable<ILocalizationSupportedLanguageRow> typedTable))
@@ -382,12 +382,19 @@ namespace NovaFramework.Runtime
                     string name = rows[i]?.Name;
                     if (Enum.TryParse(name, true, out Language language) && language != Language.Unspecified)
                     {
-                        m_SupportedLanguages.Add(language);
+                        nextSupportedLanguages.Add(language);
                     }
                 }
             }
+            if (nextSupportedLanguages.Count == 0)
+            {
+                return false;
+            }
+
+            m_SupportedLanguages.Clear();
+            m_SupportedLanguages.AddRange(nextSupportedLanguages);
             Log.Debug(LogTag.Localization, "已从 Luban 表加载 {0} 种支持语言。", m_SupportedLanguages.Count);
-            return m_SupportedLanguages.Count > 0;
+            return true;
         }
 
         /// <summary>
@@ -396,9 +403,10 @@ namespace NovaFramework.Runtime
         private const string c_FontTablesClassName = "LocalizationFontTables";
 
         /// <summary>
-        /// 反射构造 LocalizationFontTables 实例，通过 ITable<ILocalizationFontRow> 协变直接访问 DataList 填充 m_FontDatas。
+        /// 反射构造 LocalizationFontTables 实例，通过 <see cref="ITable{ILocalizationFontRow}"/> 协变直接访问 DataList 填充 m_FontDatas。
+        /// 先构建本次独立快照，成功后整体替换；重复加载不累加，加载或构建失败时保留原字体数据。
         /// </summary>
-        /// <param name="fontDataCache">Phase 1 写入的字体数据加载缓存，消费后由本方法清空。</param>
+        /// <param name="fontDataCache">本次加载得到的字体数据缓存，只用于构建，不修改缓存内容。</param>
         private void BuildFontTablesFromCache(LubanDataCache fontDataCache)
         {
             if (fontDataCache.DataMap.Count == 0)
@@ -424,6 +432,8 @@ namespace NovaFramework.Runtime
                 return;
             }
 
+            var nextFontDatas = new Dictionary<Language, List<ILocalizationFontRow>>();
+            bool hasFontTable = false;
             int totalCount = 0;
             foreach (var kv in tables)
             {
@@ -433,6 +443,7 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
+                hasFontTable = true;
                 IReadOnlyList<ILocalizationFontRow> dataList = typedTable.DataList;
                 for (int i = 0; i < dataList.Count; i++)
                 {
@@ -448,10 +459,10 @@ namespace NovaFramework.Runtime
                         continue;
                     }
 
-                    if (!m_FontDatas.TryGetValue(lang, out List<ILocalizationFontRow> list))
+                    if (!nextFontDatas.TryGetValue(lang, out List<ILocalizationFontRow> list))
                     {
                         list = new List<ILocalizationFontRow>();
-                        m_FontDatas[lang] = list;
+                        nextFontDatas[lang] = list;
                     }
 
                     list.Add(row);
@@ -459,12 +470,24 @@ namespace NovaFramework.Runtime
                 }
             }
 
+            if (!hasFontTable)
+            {
+                return;
+            }
+
+            // 本次表构建已完成；一次提交新映射，旧调用方持有的只读列表也不会被追加或清空。
+            m_FontDatas.Clear();
+            foreach (var kvp in nextFontDatas)
+            {
+                m_FontDatas[kvp.Key] = kvp.Value;
+            }
+
             Log.Debug(LogTag.Localization, "Localization Font 成功加载了 {0} 个数据文件，共计 {1} 条字体数据。", m_FontUnitSettings?.Count ?? 0, totalCount);
         }
 
         /// <summary>
         /// 通过 AssetManager 同步加载 TextAsset 并返回其文本内容。
-        /// 读取文本后立即释放资源，避免 TextAsset 驻留内存。
+        /// 当前先释放 Handle，再读取 TextAsset.text；没有持有到文本提取结束的所有权保证。
         /// </summary>
         /// <param name="assetLocation">资源地址。</param>
         /// <returns>TextAsset 的文本内容，加载失败时返回 null。</returns>
@@ -490,7 +513,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 通过 AssetManager 异步加载 TextAsset 并返回其文本内容。
-        /// 读取文本后立即释放资源，避免 TextAsset 驻留内存。
+        /// 当前先释放 Handle，再读取 TextAsset.text；没有持有到文本提取结束的所有权保证。
         /// await 前捕获 assetManager 引用，以便 Shutdown 竞态时仍能释放已加载资源。
         /// </summary>
         /// <param name="assetLocation">资源地址。</param>
@@ -688,7 +711,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 将临时文本缓存替换到主缓存，重建 Luban Tb 对象和扁平字典。
+        /// 将临时文本缓存替换到主缓存，再重建表与扁平字典；构表/行读取失败不回滚已清除的旧数据。
         /// </summary>
         /// <param name="tempCache">临时数据加载缓存。</param>
         /// <returns>是否存在有效文本数据。</returns>
@@ -777,7 +800,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步加载资源的委托（供 LubanDataReceiver 使用）。
+        /// 异步加载资源的委托；取得 TextAsset 后立即释放 Handle，再把同一对象交给 Receiver。
         /// await 前捕获 assetManager 引用，以便 Shutdown 竞态时仍能释放已加载资源。
         /// </summary>
         /// <param name="assetLocation">资源地址。</param>

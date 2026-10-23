@@ -1,10 +1,12 @@
 # Nova Framework - SDK - Google Sign-In
 
-> 当前版本：`0.0.22`
+> 当前版本：`0.1.0`
 
 Nova Google Sign-In SDK package for Unity. It provides a Nova adapter around
 Google Sign-In on Android, returns Nova `AuthResult` values, and keeps
 Android-specific native code inside this UPM package.
+
+完整文档入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 
 ## What This Package Contains
 

@@ -2,11 +2,13 @@
 
 > 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
 >
-> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 31 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
+> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 33 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
 >
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
+
+自然语言开发与源码/XML、参数及工具导航见 [开发入口](Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) 和 [Nova Project Skills](../Agents/INDEX.md)；历史验收档案不随框架保留。
 
 ## 按任务类型快速定位
 
@@ -17,12 +19,12 @@
 | **当前 Skills 覆盖的日常 Nova 项目任务** | 用自然语言描述任务 → [Nova Project Skills](../Agents/INDEX.md)（确认匹配 Skill、影响范围与证据门）→ 该 Skill 引用的模块 Docs；全量可发现不代表全量顺序执行。 |
 | **理解 Skill、Router、Workflow、Operation、Action 与 MCP 的关系** | [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)：分别看任务拆解和请求传递，理解 Nova 为什么复用 Unity MCP。 |
 | **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
-| **检查 Nova 场景 / Resources 边界** | [EditorUtil.ProjectGuard.md · 集中规则与 Profiles](Editor/EditorUtil/EditorUtil.ProjectGuard.md) → [ProjectGuardWindow.md · 只读窗口](Editor/Windows/ProjectGuardWindow.md) |
+| **检查场景 / Resources 边界或构建前置条件** | [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
 | **新增、补漏或统一 Tracks 埋点表** | [Tracks 维护规范](TRACKS.md) → [TrackRegistry](Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md) |
 | 理解框架整体架构与设计模式 | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | **新增业务 UI 界面**（UIView 子类） | [UIComponent.md · 泛型 Open API + 注册表](Runtime/Modules/UI/UIComponent.md) → [UIView.md · UIView 继承模板](Runtime/Modules/UI/Definitions/UIView.md) → [UIManager.md · OpenUIView 流程](Runtime/Modules/UI/UIManager/UIManager.md) |
 | **新增全局事件** | [EventManager.md · EventData模板 + 订阅/发布](Runtime/Modules/Event/EventManager.md) |
-| **新增 Runtime 模块**（Component + Manager） | [Runtime.md · 9 步骤](Runtime/Runtime.md) → [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) → [FrameworkManager.md · 三层继承规范](Runtime/Modules/FrameworkManager.md) |
+| **新增 Runtime 模块**（Component + Manager） | [Runtime.md · 模块导航](Runtime/Runtime.md) → [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) → [FrameworkManager.md · 三层继承规范](Runtime/Modules/FrameworkManager.md) |
 | **查询 / 请求系统通知权限或应用内评价**（Native） | [NativeComponent.md · 显式请求、状态与平台边界](Runtime/Modules/Native/NativeComponent.md) → [NativeManager.md · Android / iOS 分发与并发语义](Runtime/Modules/Native/Managers/Implements/NativeManager.md) |
 | **新增 Inspector 面板** | [Editor.md · 开发规范](Editor/Editor.md) → [BaseComponentInspector.md · 子类模板](Editor/Inspectors/BaseComponentInspector.md) |
 | **Inspector 运行时数据面板** | [IEditorRuntimeDrawer.md](Editor/Definitions/IEditorRuntimeDrawer.md) → [EditorUtil.Serializer.md · 读取私有字段](Editor/EditorUtil/EditorUtil.Serializer/EditorUtil.Serializer.md) |
@@ -41,6 +43,7 @@
 | **构建 AssetBundle / RawFile (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset Scriptable/RawFile 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `bundlebuilder.build` / `bundlebuilder.build_raw_file` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
 | **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
+| **升级后强制确认重要内容（CHANGELOG Important / 单包与批量 / 本地已读）** | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) → [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) |
 | **Inspector GUI 绘制工具** | [EditorUtil.Draw.md · 全方法签名](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) |
 | **持久化存储（读写数据）** | [PersistComponent.md · 直接访问属性](Runtime/Modules/Persist/PersistComponent.md) → [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) / [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) / [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) |
 | 理解 UIGroup 深度 / 遮挡排序 | [UIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/UIGroupHelper.md) → [UIManager.md · UIGroup.Refresh 算法](Runtime/Modules/UI/UIManager/UIManager.md) |
@@ -50,7 +53,8 @@
 | **HybridCLR 编辑期原子操作**（由 Pipify 编排流水线） | [EditorUtil.HybridCLR.md · link.xml/Generate/DLL 拷贝 API](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) |
 | **一键流水线 Step / 批处理配置**（Pipify 自动化） | [EditorUtil.Pipify.md · Registry+Runner+Reporters](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) → [PipifySteps.md · 全 Step 清单](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → [PipifySteps.Export.Helpers.md · 定位辅助](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.Export.Helpers.md) |
 | **Pipify 导出新模块 Step（Table/UI/Localization/Network/Sound/Vibrate）** | [PipifySteps.md · 导出分组表](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → 对应 EditorUtil.\*.Exporter.md |
-| **Nova Project Skill 的确定性 C# 单元操作** | [当前架构、实施路线图与原候选决策](Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActions-Overall-Design.md) → [EditorUtil.AgentActions.md · 当前 20 项实现事实](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) |
+| **Nova Project Skill 的确定性 C# 单元操作** | [当前架构、实施路线图与原候选决策](Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActions-Overall-Design.md) → [EditorUtil.AgentActions.md · 当前受控实现事实](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) |
+| **本地构建的产物与附带统计验收** | [本地构建验收边界](Onboarding/LOCAL_BUILD_EVIDENCE.md) |
 | **新平台打包 / Build 封装** | [EditorUtil.Build.md · BuildPlayer 薄封装](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) |
 | **Android AAB 自动上传 Google Play** | [后台配置说明 · 应用首包、API、服务账号与权限](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.Setup.md) → [nova-project-upload-google-play](../Agents/Skills/nova-project-upload-google-play/SKILL.md) → [Google Play 上传 Step · 默认配置、用途、审核与 CI](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md) → [凭据与外网物料边界](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md#凭据与外网物料边界) |
 | **Pipify 流水线配置窗口**（UI 入口） | [PipifyWindow.md · Batch 管理+参数编辑+运行](Editor/Windows/PipifyWindow.md) |
@@ -58,12 +62,13 @@
 | **热更新业务脚本挂载**（HybridCLR 原生 MB + Prefab 直挂） | 业务 UIView / 业务逻辑类直接继承 `MonoBehaviour`，Prefab 预挂后由 HybridCLR dll 加载时 Unity 反序列化自动恢复。旧 NovaBehaviour/IBaseLife 桥接已废止（2026-05-21）。 |
 | **多语言本地化**（显示文本/切换语言/字体适配） | [LocalizationComponent.md · 初始化时序+GetText](Runtime/Modules/Localization/LocalizationComponent.md) → [LocalizationManager.md · ResolveLanguage+状态机](Runtime/Modules/Localization/LocalizationManager.md) → [LocalizationSettings.md · 文本Map+字体List双组设置](Runtime/Modules/Localization/LocalizationSettings.md) → [TextLocalizing.md · TMP专用+字体刷新链](Runtime/Modules/Localization/TextLocalizing.md) |
 | **理解 FSM 工具** | [FsmState.md · 状态基类](Runtime/Core/Fsm/FsmState.md) → [Fsm.md · FSM 实现+接口](Runtime/Core/Fsm/Fsm.md) |
-| **HTTP 请求（AES 加密 / UniTask 异步）** | [NetworkComponent.md · GetAsync/PostAsync](Runtime/Modules/Network/NetworkComponent.md) → [HttpManager.md · UnityWebRequest + 业务主备候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [IDownloadService.md · 下载接口](Runtime/Modules/Network/HttpManager/IDownloadService.md) → [HttpResponse.md · 响应与进度数据](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
+| **业务短连接（Proto / AES / 主备 / 取消）与普通 HTTP** | [NetworkComponent.md · SendProtoAsync 标准门面及普通 Get/Post](Runtime/Modules/Network/NetworkComponent.md) → [NetService.md · 内部 Proto 传输链](Runtime/Modules/Network/NetService.md) → [HttpManager.md · UnityWebRequest 与主备候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [HttpResponse.md · 响应所有权与交付状态](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
 | **Alibaba Cloud OSS Runtime 上传/下载** | [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
 | **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Editor/Config/ConfigMasterSO.md) → [CDNEditorConfigs.md · 12 字段定义](Editor/Config/Definitions/CDNEditorConfigs.md) → [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
 | **WebSocket 长连接（认证/心跳/重连）** | [NetworkComponent.md · ConnectServer/SendMessage](Runtime/Modules/Network/NetworkComponent.md) → [WebSocketManager.md · 状态机+协程链](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) |
 | **NetCmd URL 路由配置（Host+Path）** | [NetworkManager.md · Luban 加载+URL 路由算法](Runtime/Modules/Network/NetworkManager/NetworkManager.md) → [NetworkSettings.md · HostKeySettings/NetCmdSettings](Runtime/Modules/Network/Definitions/NetworkSettings.md) |
 | **新增 SDK 插件**（UPM 拔插式） | [SDK/INDEX.md · 模块入口与目录导航](Runtime/Modules/SDK/INDEX.md) → [ARCHITECTURE.md · 当前结构与分层](Runtime/Modules/SDK/ARCHITECTURE.md) → [Definitions/SDKPluginBase.md · 纯C#抽象基类+模板方法](Runtime/Modules/SDK/Definitions/SDKPluginBase.md) → [SDKComponent.md · InitializeAsync+使用示例](Runtime/Modules/SDK/SDKComponent.md) → [Definitions/ISDKPlugin.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPlugin.md) |
+| **接入第三方支付**（ThirdPay） | [ThirdPay 包文档入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/INDEX.md) → [接入与验收顺序](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#接入与验收顺序) → [Store 配置](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStoreConfig.md) |
 | **触觉振动反馈**（NiceVibrations） | [VibrateComponent.md · Play/StopAll/LoadAsync](Runtime/Modules/Vibrate/VibrateComponent.md) → [VibrateManager.md · 链式播放+CTS](Runtime/Modules/Vibrate/VibrateManager.md) |
 | **播放声音 / 管理声音组**（Sound） | [SoundComponent.md · PlaySound+LoadAsync](Runtime/Modules/Sound/SoundComponent.md) → [SoundManager.md · 优先级抢占+按name查表算法](Runtime/Modules/Sound/SoundManager.md) → [PlaySoundParams.md · 参数池化](Runtime/Modules/Sound/PlaySoundParams.md) |
 | 理解框架启动顺序 / Manager 优先级 | [ARCHITECTURE.md · 启动与销毁顺序](ARCHITECTURE.md) → [Nova.md](Runtime/Modules/Nova/Nova.md) |
@@ -75,11 +80,12 @@
 | 文档 | 说明 |
 |------|------|
 | [Core/Core.md](Runtime/Core/Core.md) | 核心层概览 |
+| [MemoryProtection 包文档](../../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/INDEX.md) | 独立可选核心扩展：敏感整数防护、可选 Anti-Cheat Toolkit、隐私配置迁移与存档兼容 |
 | [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) | 所有 Component 基类 |
 | [FrameworkManager.md](Runtime/Modules/FrameworkManager.md) | 所有 Manager 基类 |
 | [Definitions.md](Runtime/Core/Definitions/Definitions.md) | 框架级枚举（渠道/平台/模式/语言类型） |
 | [ChannelType.md](Runtime/Core/Definitions/ChannelType.md) | 游戏运营渠道类型枚举；Config 坐标仅允许非 None 值 |
-| [DevelopMode.md](Runtime/Core/Definitions/DevelopMode.md) | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
+| [DevelopMode.md](Runtime/Core/Definitions/DevelopMode.md) | 开发/发布模式枚举（Debug / Release），Config 第三维度 |
 | [PlatformType.md](Runtime/Core/Definitions/PlatformType.md) | 运行平台类型枚举；Config 坐标仅允许 Android/iOS/WebGL |
 | [Language.md](Runtime/Core/Definitions/Language.md) | 游戏语言枚举与 LanguageMetadata（GetDesc/GetFlag 字典查询） |
 | [LanguageSelectionWay.md](Runtime/Core/Definitions/LanguageSelectionWay.md) | 已移除，保留历史兼容说明页 |
@@ -161,9 +167,9 @@
 | [AssetComponent.md](Runtime/Modules/Asset/AssetComponent.md) | 资源加载 Component（全 Load/Warmup/Release API 薄代理入口） |
 | [AssetCallbacks.md](Runtime/Modules/Asset/AssetCallbacks.md) | 说明旧回调式资源契约已被当前 Handle 模式取代 |
 | [IAssetManager.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md) | Asset Manager 接口（全量契约，所有 LoadXxx 返回 Handle） |
-| [IAssetHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md) | 主资源句柄接口（非泛型基接口 + 泛型 IAssetHandle&lt;T&gt;） |
-| [ISubAssetsHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/ISubAssetsHandle.md) | 子资源批量句柄接口（ISubAssetsHandle + ISubAssetsHandle&lt;T&gt;，整批同生共死） |
-| [IAllAssetsHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAllAssetsHandle.md) | 全资源批量句柄接口（IAllAssetsHandle + IAllAssetsHandle&lt;T&gt;，整批同生共死） |
+| [IAssetHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md) | 主资源句柄接口（非泛型基接口 + 泛型 `IAssetHandle<T>`） |
+| [ISubAssetsHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/ISubAssetsHandle.md) | 子资源批量句柄接口（ISubAssetsHandle + `ISubAssetsHandle<T>`，整批同生共死） |
+| [IAllAssetsHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAllAssetsHandle.md) | 全资源批量句柄接口（IAllAssetsHandle + `IAllAssetsHandle<T>`，整批同生共死） |
 | [IRawFileHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IRawFileHandle.md) | 原始文件句柄接口（FilePath / GetBytes / Release） |
 | [ISceneHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md) | 场景句柄接口（IsValid / IsDone / UnloadAsync） |
 | [IAssetDownloader.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetDownloader.md) | 资源下载器接口（TotalCount/Progress/RunAsync/Cancel） |
@@ -218,6 +224,7 @@
 | [ConfigManagerConfig.md](Runtime/Modules/Config/Definitions/ConfigManagerConfig.md) | 配置 Manager 初始化入参（AssetLocation） |
 | [ConfigManagerBase.md](Runtime/Modules/Config/Implements/ConfigManagerBase.md) | 配置 Manager 抽象基类（Priority=10） |
 | [IConfigManager.md](Runtime/Modules/Config/Interfaces/IConfigManager.md) | Runtime 分组配置接口；应用配置刷新能力由 Nova.Config 门面与内部 IAppConfigManager 承接 |
+| [IPrivacyConfigProvider.md](Runtime/Modules/Config/Interfaces/IPrivacyConfigProvider.md) | 独立的已加载隐私快照读取接口，不扩张 IConfigManager 的既有实现契约 |
 | [ConfigMasterSO.md](Editor/Config/ConfigMasterSO.md) | Editor 设计态主配置；持有三维矩阵、Editor 工具配置与导出目标 |
 | [CDNEditorConfigs.md](Editor/Config/Definitions/CDNEditorConfigs.md) | CDN 部署与清缓存 Editor 配置，不导出 Runtime |
 | [HybridEditorConfigs.md](Editor/Config/Definitions/HybridEditorConfigs.md) | HybridCLR 构建、link.xml 与 DLL 路径 Editor 配置 |
@@ -231,7 +238,7 @@
 | [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName）；实例按 Platform×Channel×DevelopMode 存于 PlatformChannelEntry，EnabledKits 为白名单，导出为当前单格 ConfigRuntimeSO |
 | [Definitions/KitConfigMissingException.md](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) | Kit 配置缺失异常；fail-fast 暴露配置漏填 |
 | [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（应用标识、AES、启动拉取 NetCmd 与配置项名称） |
-| [PrivacyConfigs.md](Runtime/Modules/Config/PrivacyConfigs.md) | Runtime 隐私配置（AES 默认 Key/IV、iOS Required Reason API 清单与 Info.plist 权限用途说明） |
+| [PrivacyConfigs.md](Runtime/Modules/Config/PrivacyConfigs.md) | Runtime 隐私配置（AES 默认 Key/IV、独立包通用扩展 JSON、iOS Required Reason API 清单与 Info.plist 权限用途说明） |
 | [HybridConfigs.md](Runtime/Modules/Config/Definitions/HybridConfigs.md) | Runtime HybridCLR 配置（入口名与 DLL Asset 地址） |
 | [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Custom 本地 JSONPath 默认值与云端完整 JSON 查询入口 |
 | [PlatformChannelEntry.md](Editor/Config/Definitions/PlatformChannelEntry.md) | Editor 三维配置矩阵行 |
@@ -302,11 +309,11 @@
 
 ### Network（网络）
 
-> Kit 包文档（`NetService` / `NetBuilder` / `Login` 等业务层封装）不在主框架 Docs 内，见下方 Kit 包链接。
+> `NetService` / `NetBuilder` 已归属主框架公共编排层，文档见下方；登录、云存档等独立 Kit 的业务能力与文档仍由各自 UPM 包维护。
 
 | 文档 | 说明 |
 |------|------|
-| [NetworkComponent.md](Runtime/Modules/Network/NetworkComponent.md) | 网络 Component（Http / Network / WebSocket 三管理器入口） |
+| [NetworkComponent.md](Runtime/Modules/Network/NetworkComponent.md) | 网络 Component（标准 SendProtoAsync 门面及 Http / Network / WebSocket 三管理器入口） |
 | [NetworkSettings.md](Runtime/Modules/Network/Definitions/NetworkSettings.md) | 网络设置：HostKeySettings（HostKeyUnits 单套列表）/ NetCmdSettings（NetCmdUnits 单套列表），实现 IDataTableSettings |
 | [ProtoSettings.md](Runtime/Modules/Network/Definitions/ProtoSettings.md) | Protobuf 编辑器设置：ProtoSourceDirPath + ProtoUnits 列表（SourcePath / CSharpExportPath），仅 Editor 工具链使用 |
 | [HttpSettings.md](Runtime/Modules/Network/Definitions/HttpSettings.md) | HTTP 管理器配置 |
@@ -410,7 +417,7 @@
 | [IFileFragmentManager.md](Runtime/Modules/Persist/IFileFragmentManager.md) | 文件片段 Manager 独立接口（28 个方法） |
 | [FileFragmentManagerConfig.md](Runtime/Modules/Persist/FileFragmentManagerConfig.md) | 文件片段 Manager 配置类（继承 PersistManagerConfigBase） |
 | [FileFragmentItemGroup.md](Runtime/Modules/Persist/FileFragmentItemGroup.md) | 文件片段数据容器（旧格式兼容、完整性校验、坏档隔离与备份恢复） |
-| [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) | SQLite Manager（写缓冲 + 事务批量 + WAL，ValidateSQLiteClassify；WebGL 下静默禁用） |
+| [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) | SQLite Manager（写缓冲 + 事务批量 + WAL，ValidateSQLiteClassify；WebGL 初始化提示警告，操作返回默认值） |
 | [ISQLiteManager.md](Runtime/Modules/Persist/ISQLiteManager.md) | SQLite Manager 独立接口（28 个方法 + GetAllClassifyNames） |
 | [SQLiteManagerConfig.md](Runtime/Modules/Persist/SQLiteManagerConfig.md) | SQLite Manager 配置类（继承 PersistManagerConfigBase，额外含 CipherPassword） |
 | [SQLiteManager.Table.md](Runtime/Modules/Persist/SQLiteManager.Table.md) | SQLite 表操作嵌套类 |
@@ -435,7 +442,7 @@
 > 完整模块文档树见 [Runtime/Modules/SDK/INDEX.md](Runtime/Modules/SDK/INDEX.md)
 > 本索引只覆盖主框架内的 SDK 公共层。各 SDK / Kit 子包可以单向依赖这些公共契约，但文档仍由各自 UPM 包独立维护，不在主框架索引中逐包建立反向链接。
 >
-> Agent 处理具体 SDK / Kit 任务时，应从任务关键字识别当前工程中的候选包，再查找包内 `Nova/Doc/INDEX.md`。开发仓优先搜索 `UPMPackages/<package>/Nova/{Doc,Docs,DOCS}/INDEX.md`；消费工程依次搜索 `Packages/<package>/...` 与 `Library/PackageCache/<package>@<version>/...`。查阅已安装包文档是允许进入 `Library/PackageCache` 的定向场景。先读包内 INDEX，再按 INDEX 进入具体文档；不要因主框架索引未列出包名就判定“没有文档”。
+> Agent 处理具体独立包（核心扩展、SDK、Kit 等）任务时，应从任务关键字识别当前工程中的候选包，再查找包内 `Nova/{Doc,Docs,DOCS}/INDEX.md`。开发仓优先搜索 `UPMPackages/<package>/Nova/{Doc,Docs,DOCS}/INDEX.md`；消费工程依次搜索 `Packages/<package>/...` 与 `Library/PackageCache/<package>@<version>/...`。查阅已安装包文档是允许进入 `Library/PackageCache` 的定向场景。先读包内 INDEX，再按 INDEX 进入具体文档；不要因主框架索引未列出包名就判定“没有文档”。
 
 | 文档 | 说明 |
 |------|------|
@@ -482,11 +489,6 @@
 | [PlaySoundErrorCode.md](Runtime/Modules/Sound/PlaySoundErrorCode.md) | 播放声音错误码枚举（SoundManager 嵌套私有枚举） |
 | [SoundConstant.md](Runtime/Modules/Sound/SoundConstant.md) | 声音常量定义（内部静态类） |
 
-## Runtime — 临时 (Tmp)
-
-| 文档 | 说明 |
-|------|------|
-
 ## Editor — EditorUtil（工具集）
 
 | 文档 | 说明 |
@@ -503,7 +505,7 @@
 | [EditorUtil.TypeCache.md](Editor/EditorUtil/EditorUtil.TypeCache/EditorUtil.TypeCache.md) | 编辑器类型缓存（反射收集实现类名称） |
 | [EditorUtil.CsvExporter.md](Editor/EditorUtil/EditorUtil.CsvExporter/EditorUtil.CsvExporter.md) | CSV 导出工具 |
 | [EditorUtil.Asmdef.md](Editor/EditorUtil/EditorUtil.Asmdef/EditorUtil.Asmdef.md) | Assembly Definition 命名空间解析（向上查找 .asmdef） |
-| [EditorUtil.Excel.md](Editor/EditorUtil/EditorUtil.Excel/EditorUtil.Excel.md) | Excel 读写工具（EPPlus 写入 + ExcelDataReader 读取，Config 预过滤使用） |
+| [EditorUtil.Excel.md](Editor/EditorUtil/EditorUtil.Excel/EditorUtil.Excel.md) | ExcelDataReader 读取工作簿与派生 CSV 写入；不编辑权威 xlsx 源表 |
 | [EditorUtil.Environment.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) | 编辑器运行时环境数据工具（EnvironmentData / ColumnIndices / GetEnvironmentData，Channel 来自 RuntimeProvider） |
 | [EditorUtil.Environment.Python3.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md) | Python3 运行环境多路径探测检查器（5 策略：ExplicitPath/PATH/PyLauncher/Where/PythonFallback；SessionState 缓存；33 候选路径） |
 | [EditorUtil.Environment.LubanChecker.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md) | Luban 运行环境检查器（dotnet-sdk 路径/版本≥8.0/Luban.dll 检测，SessionState 缓存；由 Pipeline 和 ConfigWindow 调用） |
@@ -519,24 +521,31 @@
 | [EditorUtil.Luban.DataTypeNameHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md) | internal Excel Sheet 纯扫描器（不访问 SerializedProperty） |
 | [EditorUtil.Draw.SourceFileTree.md](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md) | 数据源文件树绘制与命名空间列表编辑静态工具集 |
 | [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动自动检查 + `MarkSkip`/`ClearSkip` 持久化，复用 PlugPals 网络层） |
+| [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) | 已安装包 CHANGELOG Important 提取、本地确认、单包/批量范围与重载补查 |
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate 系列封装、AOT/业务 DLL 拷贝；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
-| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 20 项 |
+| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 37 项 |
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
 | [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
-| [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 Find&lt;T&gt; / CreateAt&lt;T&gt; / LoadAt&lt;T&gt;） |
+| [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 `Find<T>` / `CreateAt<T>` / `LoadAt<T>`） |
 | [EditorUtil.Asset.Cache.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.md) | 动态解析并清理 YooAsset Editor 沙盒与框架 version 记录 |
 | [EditorUtil.FileSystem.OutputApplier.md](Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md) | Editor 内部批量文件替换、删除、备份与失败回滚基础设施 |
 | [EditorUtil.Config.StructureGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.md) | Platform×Channel 枚举网格补齐与缺失引用清理 |
 | [EditorUtil.Config.SDKPluginScanner.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) | 全程序集扫描 ISDKPluginConfig 实现类型 + 实例补全/移除（EnsureInstance/RemoveInstance 按 DevelopMode 分组） |
 | [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | AppConfigs/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
 | [EditorUtil.Config.ActivePlatform.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.md) | Unity Active BuildTarget 到 Nova 编辑期执行 PlatformType 的实时唯一映射与生产操作门禁入口 |
-| [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) | 将 ConfigMasterSO 三维组合导出为 ConfigRuntimeSO.asset |
+| [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) | 将 ConfigMasterSO 三维组合导出为指定路径的 ConfigRuntimeSO 快照 |
 | [EditorUtil.Config.SchemaGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaGuard.md) | 检查 ConfigMasterSO 结构版本，只接受当前版本且不自动迁移 |
-| [EditorUtil.Config.RuntimeProvider.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md) | 从 AssetDatabase 按三维（Platform×Channel×DevelopMode）读取 ConfigRuntimeSO（不缓存，替代已删除的 ConfigLookup）；GetChannel() 新增 |
+| [EditorUtil.Config.RuntimeProvider.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md) | GetCurrent() 读取 WorkspaceActive 锚定的激活 ConfigMaster 配对 ConfigRuntimeSO；GetNamespace() 直接读取激活 Master 顶层 Namespace |
 | [EditorUtil.Config.WorkspaceActive.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) | 工程级激活 ConfigMaster 锚点；通过 Globals.json 持久化 GUID，四段回退策略，根除多 Sample 共存命中歧义 |
 | [EditorUtil.Config.YooAssetInjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) | Asset 模块编辑期注入层；按 ConfigMaster 路径字段注入 YooAssetSettings / 加载 BundleCollectorSetting，替代全工程扫描 |
+| [EditorUtil.Config.DesignTimeEditing.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md) | ConfigWindow 与固定字段批量 Action 共用保存链；逐函数参数、掩码逻辑组、精确叶子写集、草稿和只读验证边界。 |
+| [EditorUtil.Config.PanelEditing.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.md) | 十类面板字段、严格值转换、维度与物理写集、Custom/资源密钥、单资产保存和只读验证。 |
+| [SerializedTargetEditing.md](Editor/EditorUtil/EditorUtil.AgentActions/SerializedTargetEditing.md) | 普通 SO/Prefab 组件精确字段编辑；场景、变体、嵌套和事件复用共享 Unity MCP。 |
+| [EditorObjectJson.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorObjectJson.md) | Settings JSON 包裹兼容解析；导出工具与真实 resolver 共用。 |
+| [EditorUtil.AgentActions.PersistenceMaintenance.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md) | FileFragment 全集 AES 开关维护、完整原字节备份、阶段提交及原收据绑定恢复；其它存储独立说明边界。 |
+| [EditorUtil.Pipify.ConfigurationEditing.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md) | Batch/Step 配置与参数元数据，保存值与 Runner 有效值分离；配置不运行。 |
 | [EditorUtil.Config.DimensionProjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) | 维度投影器；按 PanelDimensionMask 在 WorkingCopy 上切换、广播及保存自动归一，覆盖 App/Privacy/SDK/Kit、四类顶层 Override 和资源加密编号 |
 | [EditorUtil.Config.DimensionalResolver.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) | 顶层类维度取数器（只读）；按坐标 + 掩码从 Override 列表解析 Namespace / HybridCLR / YooAsset 最终值 |
 | [EditorUtil.Table.Exporter.md](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) | Table 正式 Luban Project 导出（五种格式、原始单表、Catalog、事务发布） |
@@ -546,6 +555,7 @@
 | [EditorUtil.Network.HostKeyExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.HostKeyExporter.md) | HostKeys 公共导出门面（ConfigRuntime DevelopMode、配对 Sheet 与暂存发布） |
 | [EditorUtil.Network.NetCmdExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.NetCmdExporter.md) | NetCmds 公共导出门面（保持表结构并暂存发布） |
 | [EditorUtil.Network.ProtoExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.ProtoExporter.md) | Proto 协议批量编译（ExportAllProtos：按每个 Unit.CSharpExportPath 分别调 Proto.CliRunner.CompileSingle） |
+| [EditorUtil.Network.Http.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.Http.md) | Editor 管理协议固定五字段默认 Head 与单次 JSON HTTP 门面 |
 | [EditorUtil.Sound.Exporter.md](Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.md) | Sound 专用导出编排（API 不变，Luban 暂存、验证并通过 OutputApplier 发布） |
 | [EditorUtil.Vibrate.Exporter.md](Editor/EditorUtil/EditorUtil.Vibrate/EditorUtil.Vibrate.Exporter.md) | Vibrate 双轨导出编排（Emphasis/Custom 独立暂存、验证与事务发布） |
 
@@ -562,6 +572,7 @@
 |------|------|
 | [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口：三段布局、独立编辑坐标、各面板三维开关、WorkingCopy 全局保存与自动维度整理、ConfigRuntime 及客户端密钥源码导出；生产导出与 YooAsset 生效受 Active BuildTarget 门禁约束。 |
 | [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（表格展示 Package/Current/Latest，支持"跳过当前版本"持久化） |
+| [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) | 升级后重要声明模态确认窗口，无手动菜单 |
 | [PipifyWindow.md](Editor/Windows/PipifyWindow.md) | Pipify 流水线配置与执行窗口（Nova/Open Pipify） |
 | [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | 空壳说明页：`EnvironmentWindow` 类不存在、`Windows/EnvironmentWindow/` 目录为空；「环境检测」UI 实际内嵌在 ConfigWindow 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment` |
 

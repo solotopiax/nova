@@ -41,8 +41,8 @@ API 细节见 [AssetComponent](../Runtime/Modules/Asset/AssetComponent.md)，Bun
 - 业务代码直接使用 `Resources.Load` 不等于项目损坏；它可能失去版本、依赖和释放能力，因此更适合作为迁移建议。
 - 已有自定义 Addressables、StreamingAssets 或文件系统方案不应被静默改写。
 
-ProjectGuard 若执行资源检查，只应在项目明确声明的 Nova 托管业务范围内给出建议；插件和 BuiltIn 豁免不依赖 Contract 存在。
+Agent 检查资源时只覆盖任务声明的业务范围；插件和 BuiltIn 的合法性不依赖 Contract 存在。
 
 ## 构建前检查
 
-普通开发构建确认当前资源能在目标平台加载即可。只有项目显式启用 Release Strict 时，才要求它声明的 Bundle fingerprint、代表资源或真实 Player Smoke 等发布证据。Pipify 可以编排这些步骤，但不是资源构建或 Player 构建的唯一合法入口。
+普通开发构建确认当前资源能在目标平台加载即可。发布任务再按项目声明的目标补足 Bundle、代表资源或真实 Player 运行证据。Pipify 可以编排这些步骤，但不是资源构建或 Player 构建的唯一合法入口。

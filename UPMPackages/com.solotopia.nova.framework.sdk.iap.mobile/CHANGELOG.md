@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-10-23
+
+### Changed
+
+- 补充商品级回调注册、重复成功忽略及平台已有购买结果汇总日志，便于定位商品与恢复链路的回调停点。
+
+- 最低依赖对齐至Nova Framework 0.7.0、IAP Core 0.2.0，与本轮发布的框架及 SDK 接口配套。
+
+### Fixed
+
+- `MobileStore` 实现 `IIAPStorePauseListener` 与 `IIAPStoreFocusListener`：Android 下平台已有购买拉取期间回到前台时，延迟 3 秒重新调用 `FetchPurchases`。Unity IAP（5.3.0 至最新 5.4.4 均未修复）只保留最后一次 `FetchPurchases` 的回调，Google 平台回到前台时其内部 `OnFocusChanged` 重拉会覆盖本模块回调，导致"已有购买拉取中"永不结束、登录后的权益刷新一直延后，订阅与去广告权益不再发送验单协议。相关代码以 `[UnityIAP-FocusRefetch-Workaround]` 标记，官方修复后可整体删除。
+
+### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
+
 ## [0.1.14] - 2026-09-23
 
 ### Changed

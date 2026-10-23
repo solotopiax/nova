@@ -3,7 +3,7 @@
 **类签名**：`public static class SDKPluginScanner`（嵌套于 `EditorUtil.Config`）
 **命名空间**：`NovaFramework.Editor`
 
-反射扫描全部已加载程序集中符合条件的 `ISDKPluginConfig` 实现类型，并提供对 `PlatformChannelEntry` 指定 `DevelopMode` 的 SDKConfigs 列表的实例补全与移除操作。
+反射扫描已加载的非测试程序集中符合条件的 `ISDKPluginConfig` 实现类型，并提供对 `PlatformChannelEntry` 指定 `DevelopMode` 的 SDKConfigs 列表的实例补全与移除操作。
 
 ---
 
@@ -35,7 +35,7 @@ EditorUtil (public static partial class)
 ## §5 完整公开 API
 
 ```csharp
-// 扫描全程序集中满足条件的 Plugin Config 类型
+// 扫描满足条件的 Plugin Config 类型并读取 DisplayName
 // 条件：非抽象、非接口、实现 ISDKPluginConfig、标注 [Serializable]
 // 无匹配时返回空列表
 public static List<PluginConfigEntry> ScanAll();
@@ -73,9 +73,11 @@ ScanAll():
 
 `SafeGetTypes` 在程序集包含加载失败类型时捕获 `ReflectionTypeLoadException` 并返回 `e.Types` 非 null 部分，避免中断整个扫描。
 
+`ScanAll` 排除引用 `nunit.framework` 的程序集，返回的 `PluginConfigEntry` 包含 `ConfigType` 与 `DisplayName`。读取名称时会构造候选配置；构造失败则以类型名展示，仍保留候选。因此扫描结果不保证后续实例化成功。
+
 ### ScanPanelActions — SDK Config 面板快捷动作
 
-SDK 的 Editor 程序集可以声明 `[assembly: SDKPluginConfigPanelAction(...)]`，ConfigWindow 会按当前 Config 类型在字段上方绘制按钮，并通过 `EditorApplication.ExecuteMenuItem` 转发到已有 Unity 菜单。Framework 不直接依赖具体 SDK Editor 类型，按钮也只负责打开入口，不执行转换等耗时操作。
+SDK 的 Editor 程序集可以声明 `[assembly: SDKPluginConfigPanelAction(...)]`，ConfigWindow 会按当前 Config 类型在字段上方绘制按钮，并通过 `EditorApplication.ExecuteMenuItem` 转发到已有 Unity 菜单。Framework 不直接依赖具体 SDK Editor 类型；Scanner 只收集入口，点击后的行为与副作用由目标菜单负责。
 
 ---
 
@@ -83,7 +85,7 @@ SDK 的 Editor 程序集可以声明 `[assembly: SDKPluginConfigPanelAction(...)
 
 ```csharp
 // ConfigWindow.OnEnable 中缓存扫描结果
-List<Type> pluginTypes = EditorUtil.Config.SDKPluginScanner.ScanAll();
+var pluginEntries = EditorUtil.Config.SDKPluginScanner.ScanAll();
 
 // SDK 左树勾选时向所有 Entry 所有 DevelopMode 补实例
 DevelopMode[] allModes = (DevelopMode[])System.Enum.GetValues(typeof(DevelopMode));
@@ -95,9 +97,11 @@ for (int i = 0; i < allEntries.Count; i++)
     }
 }
 
-// SDK 左树取消勾选时（当前 ConfigWindow 实现中不移除实例，仅从 EnabledSDKs 移除类型名）
+// 显式删除指定格的配置实例；ConfigWindow 取消勾选只移除 EnabledSDKs 类型名，不调用此方法
 EditorUtil.Config.SDKPluginScanner.RemoveInstance(entry, mode, pluginType);
 ```
+
+`pluginType` 应取扫描条目的 `ConfigType`。补实例/移除操作会通过 Getter 取得模式列表，缺模式时可能追加空条目；不会修改启用白名单、标脏或保存资产。`EnsureInstance` 的构造和类型转换异常不会在 Scanner 内吞掉。
 
 ---
 

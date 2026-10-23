@@ -45,6 +45,17 @@ public float DownloadProgress { get; }
 
 普通业务调用方不能直接创建有状态实例，应通过 `IHttpManager` / `IDownloadService` 的异步方法获得。消费完毕后通过 `ReferencePool.Put(response)` 归还。
 
+## 字段、失败结果与所有权
+
+- `IsSuccess` 来自 UWR.Result.Success；`HasServerResponse` 仅检查 DeliveryState 是否为 ServerResponded。4xx/5xx 及已有正式响应后的处理失败可以有正文、RawData 和 Headers，因此不能用“字段非空”判断成功。
+- 最终响应构建时复制响应头为大小写不敏感字典，并在 UWR 释放前取出正文/字节。`HttpResponse.Create()` 自身仅保存传入引用，不深拷贝 RawData/Headers，也不验证 isSuccess 与状态码是否一致；statusCode 大于 0 会强制 DeliveryState 为 ServerResponded。
+- 正常完成时，可信非负 Content-Length 写入 TotalBytes；没有该头时回退为已完成字节数。失败构建没有可信长度时回退为当前 RawData 长度，否则 -1。内部 `TotalBytesIsKnown` 仅对明确长度为 true，因此 TotalBytes 非负不一定代表服务器事先声明了总量。
+- `DownloadProgress` 在 TotalBytes 大于 0 时计算并钳制到 0～1，其余返回 0；它不是成功判据。下载中间响应与最终响应是两种不同所有权，详见 [IDownloadService.md](../IDownloadService.md#内置下载的边界)。
+- `Clear()` 把状态码、字节数归零，正文/字节/头/错误置 null，成功为 false，总量为 -1，交付状态为 Unknown，并清空内部传输诊断字段。它不取消或 Dispose 网络请求，也不清除被其他引用持有的数组/字典内容。
+- Put 后禁止再访问响应对象。需要继续使用的数据应先保存到自己的变量；仅保存数组/字典引用不等于深拷贝，需要隔离后续修改时自行复制。
+
+内部诊断字段 `TransportState`、`UploadedBytes`、`TotalBytesIsKnown` 由 Create 填充，供框架埋点使用，不属于公开请求配置。状态码与无符号字节数转入响应时分别饱和到 int/long 上限；这只防统计溢出，不额外校验标准 HTTP 状态码范围。
+
 ---
 
 ## § 11 使用示例

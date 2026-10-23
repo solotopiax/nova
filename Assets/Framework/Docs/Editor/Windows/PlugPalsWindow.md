@@ -58,6 +58,8 @@ public static void OpenInternalRegistry();
 
 进入“已安装”页后，列表顶部显示横向拉满的绿色“一键升级”按钮。当前可见列表没有可升级包时按钮禁用；点击并确认后，窗口会对当前列表中全部可升级包依次调用既有安装入口，统一复用依赖预检与延迟 UPM Resolve 机制。
 
+一键升级的所有已接受目标还会共用一个本地重要声明批次。实际安装核验结束后，从这些包的 CHANGELOG 汇总 Important 到一个 [强制确认窗口](ImportantUpdatesWindow.md)，并按包和版本展开。单包操作只显示该包；失败目标不写已读。该状态保存在工具层，窗口重开或 domain reload 不会丢失，不新增手动查看重要声明的菜单。
+
 所有表格条目在进入当前视图后都会重新按**显示名**做字母升序排序，不依赖仓库拉取顺序，也不依赖单仓库内部排序结果。
 
 ## 视觉区分
@@ -91,3 +93,13 @@ public static void OpenInternalRegistry();
 - [../Editor.md](../Editor.md)
 - [../EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md](../EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md)
 - [./CheckUpdateWindow.md](./CheckUpdateWindow.md)
+
+## 窗口状态和操作边界
+
+“已安装”筛选仅排 NotInstalled，仍可包含 Pending/Failed；解析失败警告当前按显示名优先去重，同显示名不同包可能折叠。一键升级仅当前搜索可见项，不去重双仓同名，false继续、异常停止，已提交前项不回滚；数量是提交数，不是最终安装数。单侧请求失败后另一侧列表仍可开放操作，known映射不完整，不等于 Agent Plan 的双侧完整门。
+
+窗口 URL 可在已有 fetched 列表时编辑，安装/日志再读当前 URL，旧列表不绑定原来源。只按引用认内部条目，复制或旧条目默认外网；两侧都空也可能被当请求失败。取消仅处理列表 fetch，日志用 None token 且关闭不取消；async完成没有全部窗口/请求身份保护。
+
+按钮忽略 Install 的 bool，工具实际写 Pending 后无自动 refetch/Resolve后验；错误可能只存 m_ErrorMessage 而已有列表区域不显示。折叠行手动赋 GUI.enabled，未完全合并父禁用态，与展开动作保护不同；没有整体 Play 禁用。文档中的状态应结合真实刷新结果，不把 UI灰显或无错误文案当安装保证。
+
+依赖缺失窗口只展示元数据购买/打开仓库入口，不自动购买或安装。日志入口当前不限 Framework，取远端 latest优先；Samples 仍通过原 Sample API覆盖导入，未重新冻结来源与目录写集。

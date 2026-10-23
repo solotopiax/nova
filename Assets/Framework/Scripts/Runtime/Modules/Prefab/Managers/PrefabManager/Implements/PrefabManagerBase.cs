@@ -19,7 +19,7 @@ namespace NovaFramework.Runtime
     /// PrefabManager 抽象基类，声明 IPrefabManager 全部成员的 abstract 形式。
     /// </summary>
     /// <remarks>
-    /// Priority = 10，高于 AssetManager（4）确保 PrefabManager 在资源管理器后初始化、先关闭。
+    /// Priority = 10，数值大于 AssetManager（4），因此更晚 Update、更早 Shutdown；不决定 Initialize 顺序。
     /// Update/Shutdown 由 FrameworkManager 派生强制覆盖。
     /// </remarks>
     internal abstract class PrefabManagerBase : FrameworkManager, IPrefabManager
@@ -93,7 +93,7 @@ namespace NovaFramework.Runtime
         public abstract int RecordedInstanceCount { get; }
 
         /// <summary>
-        /// 当前所有被记录实例的只读快照，供 Inspector 诊断面板展示，禁止修改。
+        /// 当前所有被记录实例的只读视图，供 Inspector 诊断面板展示；默认实现随实例创建与销毁变化。
         /// </summary>
         public abstract IReadOnlyList<PrefabRecordedInstance> RecordedInstances { get; }
     }

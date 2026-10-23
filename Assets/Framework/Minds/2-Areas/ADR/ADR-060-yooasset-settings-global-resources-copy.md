@@ -30,7 +30,7 @@ tags:
 - `Editor/YooAssetSettings.asset` 是 Sample 内唯一权威源；仓库和 UPM 发布产物都不保存常驻 `Resources/YooAssetSettings.asset`。
 - 正式 Player 构建前，以 `WorkspaceActive.Get()` 的当前 `ConfigMasterSO` 为锚点，按 Platform / Channel / DevelopMode 调用 `DimensionalResolver.ResolveYooAsset`，从解析结果取得权威源路径。
 - 开发态临时副本放在当前 Demo 根目录 `Resources`。UPM Sample 消费态只在当前 Demo 目录树内由浅到深选择已有 `Resources`，同层按路径稳定排序；无候选时创建 Demo 根目录 `Resources`。
-- 构建前若发现任何其他常驻运行时副本，直接中止，不覆盖用户资产。临时副本通过 `AssetDatabase.CopyAsset` 生成独立 GUID。
+- 构建前若发现任何其他常驻运行时副本，直接中止，不覆盖用户资产。临时副本以 `FileUtil.CopyFileOrDirectory` 仅复制正文，再通过同步 `AssetDatabase.ImportAsset` 生成独立 GUID；不复制源 `.meta`，不保存无关脏资产。
 - 构建结束、失败或取消后清理；使用 `Library/Nova/YooAssetRuntimeSettingsStaging.json` 记录所有权并校验正文哈希，覆盖域重载、Editor 退出和下次启动恢复。内容已被外部修改时保留文件，禁止误删。
 - Editor Play Mode 不生成临时副本；在 `BeforeSceneLoad` 按当前三维坐标重新注入 Editor 权威源。
 - HybridCLR `StrippedAOTDllsTempProj` 内部 Player 构建跳过该流程。
@@ -51,7 +51,9 @@ tags:
 
 ## 验证依据
 
-- EditMode 契约测试覆盖开发态与消费态目标选择、HybridCLR 跳过、冲突拒绝、复制/正常清理和内容变化时不误删。
+- [YooAssetRuntimeSettingsStaging.cs](../../../Scripts/Editor/BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs) 使用正文复制与同步导入，避免 `AssetDatabase.CopyAsset` 保存无关脏资产；当前实现与恢复说明见 [Player 构建工具](../../../Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md)。
+- 长期 [EditMode 契约测试](../../../../Tests/Editor/YooAssetRuntimeSettingsStagingTests.cs) 维护开发态与消费态目标选择、HybridCLR 跳过、冲突拒绝、复制/正常清理、无关资产脏状态保护和内容变化时不误删。测试存在不代表本次已运行，不依赖旧验收文件或测试次数证明当前有效。
+- 正式构建清理发现 staging 正文漂移时抛出异常并保留副本与所有权 marker，避免返回构建成功；后台恢复仍保留原记录并报告失败。
 - 正式 Player 构建需验证产物能加载当前 Settings，且构建后工作树无临时资产与 marker 残留。
 
 ## 关联

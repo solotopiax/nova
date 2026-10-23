@@ -4,7 +4,7 @@
 它管理的不是“一个池”，而是一组以 `Type + Name` 为键的对象池，并负责：
 
 - 创建 / 查询 / 销毁池
-- 按优先级轮询每个池
+- 将逐帧轮询分发给每个池
 - 统一触发全局释放
 
 ## 什么时候先看这页
@@ -87,10 +87,12 @@
 `Release()` 和 `ReleaseAllUnused()` 都会先：
 
 1. `GetAllObjectPools(true, m_CachedAllObjectPools)`
-2. 按池 `Priority` 排序
+2. 按池 `Priority` 升序排序，数值较小的池先处理
 3. 依次调用各池的释放逻辑
 
 所以先后顺序不只是“枚举顺序”，而是明确受池优先级控制。
+
+该排序用于这两个全局释放入口及显式 `GetAllObjectPools(sort: true)`；`Update()` 直接遍历字典，不按池优先级排序。池优先级也不替代池内对象的 `ObjectBase.Priority`。
 
 ### 5. 单个池内部的自动释放语义
 
@@ -98,8 +100,8 @@
 
 - `Update()` 用 `Time.unscaledDeltaTime` 推进 `m_AutoReleaseTimeCounter`
 - 到达 `AutoReleaseInterval` 后触发 `Release()`
-- `Put()` 后若超出容量，也可能立即触发 `Release()`
-- 修改 `Capacity` / `ExpireTime` 也可能触发释放
+- `Register()` 后超出容量会触发 `Release()`；`Put()` 还要求本次归还对象的引用计数已不大于 0
+- `Capacity` / `ExpireTime` setter 接受不同的新值后触发 `Release()`
 
 可进入释放候选的对象必须同时满足：
 
@@ -109,8 +111,10 @@
 
 默认筛选策略是：
 
-1. 先释放已过期对象
-2. 再从剩余对象里按“低优先级、最久未使用”优先释放
+1. 先选择全部已过期候选，即使目标数量为 0；这一步可超过目标数量
+2. 若还未达到目标数量，再从剩余对象按 `ObjectBase.Priority` 升序、同值时 `LastUseTime` 从旧到新补足
+
+无参 `Release()` 的目标数量为 `Count - Capacity`，负数修正为 0。`ReleaseAllUnused()` 不经过这个默认筛选器，会选择全部当前候选，但仍执行上述三个保护条件；详见 [ObjectPool.md](ObjectPool.md)。
 
 ## 高价值 API 面
 
@@ -144,6 +148,16 @@
 - Manager 的 `Release()` 不是直接销毁所有对象，而是触发每个池按自身规则释放当前可释放对象。
 - 某个对象能否被释放，最终不止看 `Locked`，还要看是否在用、以及 `CustomCanReleaseFlag`。
 - 反射创建泛型池的 `CreateMulti/SingleGettingObjectPool(Type, ...)` 在 IL2CPP 下需要相关泛型类型可被 AOT 支持。
+
+## 参数与所有权边界
+
+默认 Initialize(config) 当前为空，接受 null 也不创建默认池；Component Awake 反射创建 Manager、Start 传空配置，OnDestroy 仅断引用。Component API 与 Count 通常直接解引用，无未就绪兜底；日志/下层异常继续传播。Base Priority=2 决定全框架较早 Update、较晚 Shutdown，与池 Priority/对象 Priority 是三个不同层级。
+
+Type 参数是 ObjectBase 包装派生类型，不是 Target 类型；仅检查非空与 IsAssignableFrom，不拒抽象、开放泛型或缺少 AOT，Type 创建在 MakeGenericType/Activator 处仍可能失败。config=null 使用新默认配置，创建只构造空池，不创建 T/Target；各项复制后不热绑定 DTO，数值不经过运行 setter。唯一性检查与 Add 无锁，构造后 Add 失败没有 Shutdown 回滚。
+
+无名查询/销毁只匹配 empty 名，null 池名同样归 empty；精确 Type+Name 键不按 namespace/字符串宽匹配。predicate 必须非 null、按本次字典枚举即时调用，首匹配不保证 Priority 顺序；结果数组为新容器但成员是原池引用，List 重载先 Clear，异常可留下部分结果。共享缓存及字典不保护并发/回调重入，持有查询结果不延长池注册或资源寿命。
+
+DestroyObjectPool 的引用重载只读取 Type/Name，不验证属于本 Manager 或引用同一性；外来同键池可定位并销毁本地池。找到后先 Shutdown、成功才 Remove，异常时键仍可存在而资源已部分释放；不存在返回 false。全局 Release 取 Priority 升序结果，但 Update 与 Shutdown 直接按字典枚举，单池异常中断后续及最后清场，均无跨池事务。
 
 ## 继续阅读
 

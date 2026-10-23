@@ -158,7 +158,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         /// <param name="productId">商品 ID，用作缓存键。</param>
         /// <param name="receiptJson">order.Info.Receipt 原始 JSON 字符串。</param>
-        /// <returns>解析结果；失败时返回 null。</returns>
+        /// <returns>解析结果；空票据或反序列化结果为 null 时返回 null。JSON 格式异常会向调用方传播。</returns>
         internal static MobileReceiptInfo Parse(string productId, string receiptJson)
         {
             if (string.IsNullOrEmpty(receiptJson))
@@ -189,10 +189,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 实际执行 JSON 解析，不走缓存；解析失败时返回 null。
+        /// 实际执行 JSON 解析，不走缓存；不执行签名、商品或账号校验，格式异常向调用方传播。
         /// </summary>
         /// <param name="receiptJson">原始 receipt JSON 字符串。</param>
-        /// <returns>解析成功返回 MobileReceiptInfo，失败返回 null。</returns>
+        /// <returns>反序列化的 MobileReceiptInfo；外层 JSON 值为 null 时返回 null，格式错误不转换为空结果。</returns>
         private static MobileReceiptInfo ParseInternal(string receiptJson)
         {
             MobileReceiptInfo info = JsonConvert.DeserializeObject<MobileReceiptInfo>(receiptJson);

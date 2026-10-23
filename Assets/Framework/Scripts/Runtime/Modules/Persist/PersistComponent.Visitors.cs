@@ -16,9 +16,9 @@ namespace NovaFramework.Runtime
     public sealed partial class PersistComponent : FrameworkComponent
     {
         /// <summary>
-        /// LoadAsync 的惰性任务缓存，首次调用时启动三个存储实现的 Initialize WhenAll，后续调用返回同一 UniTask。
+        /// LoadAsync 的共享任务缓存，首次调用初始化三个存储实现，支持并发与完成后重复等待。
         /// </summary>
-        private UniTask? m_LoadTask;
+        private AsyncLazy m_LoadTask;
 
         // ---- PlayerPrefs Manager
 

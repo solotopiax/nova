@@ -1,74 +1,20 @@
 # EditorUtil.Serializer
 
-**类签名**：`public static class EditorUtil.Serializer`
-**命名空间**：`NovaFramework.Editor`
+`NovaFramework.Editor.EditorUtil.Serializer` 通过 `SerializedObject` 和 `SerializedProperty` 访问 Unity 序列化数据，提供泛型 Get/Set 和场景定位辅助方法。它不反射读取普通运行时字段，不能用来获取未序列化的 IManager 引用。
 
-反射读写工具，用于在 RuntimeDrawer 中访问目标 Component 的私有/序列化字段。RuntimeDrawer 无法通过 `SerializedObject` 读取运行时值（`SerializedObject` 反映的是序列化快照），通过此工具直接反射字段可获取真实运行时数据。
+## 属性读写
 
----
+`GetProperty<TTarget,TValue>(target, propertyName)` 和 `SetProperty<TTarget,TValue>(target, propertyName, value)` 要求 target 为 UnityEngine.Object，propertyName 为真实序列化路径。null 目标抛 ArgumentNullException，找不到属性抛 ArgumentException。Set 写属性后调用 ApplyModifiedProperties；不调用业务对象的运行时 setter、初始化或授权流程。
 
-## 文件
+支持 int、long、float、double、bool、string、Color、Vector2/3/4、Rect、AnimationCurve、Bounds、Quaternion、枚举和 UnityEngine.Object 引用。内部依据泛型类型选择访问器，没有完整核验 SerializedPropertyType；不支持的类型抛 NotSupportedException，失效属性、类型不匹配和转换异常向上传播。枚举读取使用 intValue 和 Enum.ToObject，保留非连续整数值；写入 Convert.ToInt32 仍可能溢出。内部 SetValueToProperty 只改属性，Apply 由外层负责。
 
-| 文件 | 说明 |
-|------|------|
-| `EditorUtil.Serializer.cs` | 所有方法实现，内部使用 `BindingFlags.NonPublic | BindingFlags.Instance` 反射 |
+## 场景定位
 
----
+`FindInScene<T>(goPath)` 使用 GameObject.Find 的名字/层级路径再 GetComponent，仅能找到活动对象，不保证限制在 Active Scene，也不能消除加法场景或同名对象歧义；不是持久对象身份。空路径、对象或组件不存在时告警并返回 null。
 
-## 完整 API 签名
-
-```csharp
-// 读取私有/序列化字段值
-// TTarget：Component 类型（如 UIComponent）
-// TValue：字段类型（如 IUIManager）
-// propertyName：字段名（如 "m_UIManager"）
-TValue EditorUtil.Serializer.GetProperty<TTarget, TValue>(TTarget target, string propertyName)
-
-// 写入私有/序列化字段值
-void EditorUtil.Serializer.SetProperty<TTarget, TValue>(TTarget target, string propertyName, TValue value)
-```
-
-**支持的字段类型：**
-
-`int` / `long` / `float` / `double` / `bool` / `string` / `Color` / `Vector2` / `Vector3` / `Vector4` / `Rect` / `AnimationCurve` / `Bounds` / `Quaternion` / `Enum` 子类 / `UnityEngine.Object` 子类
-
-> **枚举读取说明**：`GetProperty` 对枚举类型使用 `property.intValue`（实际整数值）而非 `property.enumValueIndex`（下拉列表显示索引），确保非连续枚举值（如 `None=0, TypeA=10`）也能正确读取。
-
----
-
-## 使用示例
-
-```csharp
-private sealed class UIManagerRuntimeDrawer : IEditorRuntimeDrawer
-{
-    public void Draw(Object target)
-    {
-        if (!Application.isPlaying) return;
-        var comp = (UIComponent)target;
-
-        // 读取私有 IUIManager 引用
-        var mgr = EditorUtil.Serializer.GetProperty<UIComponent, IUIManager>(comp, "m_UIManager");
-        if (mgr == null) return;
-
-        EditorUtil.Draw.Label("UIGroup 数量", mgr.UIGroupCount.ToString());
-    }
-}
-```
-
----
-
-## 注意事项
-
-| 场景 | 说明 |
-|------|------|
-| 字段名变更 | 反射依赖字段名字符串，重命名字段后需同步更新 Drawer 中的字符串常量 |
-| 性能 | 反射有性能开销，仅在 RuntimeDrawer 中（即 `isPlaying` 时）调用；非 `isPlaying` 时不调用 |
-| 只读字段 | `GetProperty` 可读取 `readonly` 字段；`SetProperty` 对 `readonly` 字段无效 |
-
----
+`FindInSceneProperty<T>(goPath, propertyName)` 继续 FindProperty，缺字段告警并返回 null。返回属性依赖其 SerializedObject 的有效生命周期，不自行核验值类型、提交修改或保存场景。
 
 ## 关联文档
 
-- [EditorUtil.md](../EditorUtil.md)
-- [IEditorRuntimeDrawer.md](../../Definitions/IEditorRuntimeDrawer.md)
-- [BaseComponentInspector.md](../../Inspectors/BaseComponentInspector.md)
+- [EditorUtil](../EditorUtil.md)
+- [IEditorRuntimeDrawer](../../Definitions/IEditorRuntimeDrawer.md)

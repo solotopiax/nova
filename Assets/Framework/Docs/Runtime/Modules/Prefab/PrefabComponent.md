@@ -14,7 +14,7 @@
 优先看这页的场景：
 
 - 你要确认场景里 Prefab 子系统是怎么挂起来的。
-- 你要看 `Nova.Prefab.Destroy(go)` 为什么不是普通 `Object.Destroy(go)` 的简单别名。
+- 你要确认 `Nova.Prefab.Destroy(go)` 与 `PrefabInstanceTag.OnDestroy` 的单路回收关系。
 - 你要判断实例记录和诊断数据是在哪一层维护的。
 
 如果你要看单路径回收和 `PrefabInstanceTag`，继续看 [PrefabManager.md](PrefabManager/PrefabManager.md)。
@@ -95,7 +95,7 @@
 ## 风险点 / 易错点
 
 - `PrefabComponent` 只是门面；如果要排查句柄泄漏、实例记录不一致、销毁后未释放，应该直接看 `PrefabManager`。
-- `Destroy(instance)` 的真实意义不是“销毁 GameObject”本身，而是进入统一的句柄回收路径。
+- 内置 `PrefabManager.Destroy(instance)` 当前调用 `Object.Destroy(instance)`；由 `PrefabInstanceTag.OnDestroy` 通知 Manager 移除记录并释放句柄。业务使用公开门面，不能另外手动 Release；原生销毁、父节点销毁与场景退出也汇聚到同一 Tag 回调。
 - `RecordedInstances` 是运行时诊断视图，不是持久化登记表。
 - `OnDestroy()` 这里只是清空 Manager 引用，不是实例句柄真正释放点；真正兜底清理在 `PrefabManager.Shutdown()`。
 

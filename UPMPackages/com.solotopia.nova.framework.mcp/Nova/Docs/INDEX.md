@@ -35,17 +35,88 @@
 
 `confirmation_token=plan_id` 把调用绑定到同一份一次性 Plan。所有已注册 Project Action 默认开放，但该开放不取消精确目标确认、资源锁、Receipt、脱敏或 Verify。
 
+令牌相等只证明请求绑定，不证明人类已批准；网关将授权来源标为 `caller_asserted`，调用方仍须遵守当前任务授权。传输信封总量最多 64 KiB，普通标识字符串最多 512 字节、Receipt 最多 64 KiB；请求树深度上限 64（属性节点也计层）、字符串值最多 16 KiB。它们是传输边界，required、嵌套结构与领域值仍由 Core 严格解析，不能用网关接收成功代替领域准入。
+
+## 长计划的传输记录
+
+`operation` 仍只有四个阶段。预计捕获较慢的计划，在当前 Tool Schema 已提供 `plan_mode` 与 `request_id` 时，可在 `operation=plan` 内选择以下传输子模式；不传 `plan_mode` 保持原同步调用。
+
+优先使用当前真实可调用、参数 Schema 已包含 `plan_mode/request_id` 的 Tool 路由。若外部 MCP 服务仍用旧 `nova_project_action` Schema 拒绝新字段，而 Unity 的 custom-tools 资源已列出更新后的同名 Tool，可通过现有 `execute_custom_tool` 转交同一个 Nova Tool：`tool_name="nova_project_action"`，`parameters` 为本文完整请求对象。它仍进入同一中立 Gateway、严格 Action Schema、暴露策略及 Core 门；不是任意 C#、反射或第二条领域执行旁路。仅当当前 Provider 真实提供该入口且新 Schema 已核实才使用。单独新建客户端会话未必刷新服务端缓存；缺可用转交入口时保留具体阻碍，由用户后续按 Provider 正式方式刷新或重启服务，不擅改服务器配置或当前重启。
+
+| plan_mode | 同时必填 | 作用 |
+|---|---|---|
+| `start` | `action_id`、`request_id`、`request` | 先登记并返回 `queued`，下一次 Editor update 经原严格 Plan 入口捕获 |
+| `status` | `action_id`、`request_id` | 非消费式读取该记录和原网关脱敏响应；断线后用同号取回 |
+| `forget` | `action_id`、`request_id` | 仅释放已结束的传输记录；不消费、删除或重放领域 Plan/Operation |
+
+Agent 先生成并保留一个 N 格式 GUID 作为 `request_id`，无需让用户填写。登记响应丢失时，使用同一编号、同一 Action 和同一请求重试 `start`；对象属性顺序不影响摘要，数组顺序有意义。同号改参、改 Action、记录失效或域重载都不自动重跑。`forget` 后该编号不得再次使用；另一次独立计划必须生成新编号。
+
+例如 Player 的四字段请求仍放在 `request` 内，传输字段不进入 Action DTO：
+
+```json
+{
+  "operation": "plan",
+  "plan_mode": "start",
+  "request_id": "<Agent预先生成并保留的32位GUID>",
+  "action_id": "nova.project.player.build",
+  "request": {
+    "target": "WebGL",
+    "outputPath": "Build/WebGL/Current",
+    "developmentBuild": true,
+    "buildMode": "build"
+  }
+}
+```
+
+查询时保留 `operation=plan`，改为 `plan_mode=status` 并只带相同 `action_id/request_id`。外层 `completed` 只表示原计划响应已保存；必须继续查看 `payload.response.success` 和 `payload.response.data.status`。只有原计划为 `ready` 才可能进入原 `execute`；`blocked` 诊断不会因取回成功升级。`payload.plan_candidate` 只说明同域、未超过原计划期限的 ready 候选，不能证明 Registry generation、输入或一次性 Plan 仍有效，最终仍由 Core Execute 检查。
+
+收件箱最多 16 条记录、同一时刻一项活动计划；每条响应最多 2 MiB，超过时明确为 `response_too_large`，不截断后伪称完整。记录 TTL 为一小时；过期清除响应、保留失效编号，直到明确 `forget` 才释放容量，避免过期后悄然重放。SessionState 只保存请求摘要及已有脱敏响应，不保存原请求、凭据或可执行 HandlerState；它用于同一 Editor 进程会话，不能承诺 Editor 退出后恢复。域重载后状态为 `interrupted`，旧响应仅作诊断，旧内存计划不可恢复；需要继续时重新计划，不重放执行。
+
+此入口仍在 Unity 主线程串行执行，慢捕获期间 Editor 可能暂不响应，传输也可能断开；恢复连接后用 `status` 读取。它不修改 Provider 超时、心跳、统计设置、第三方回调或构建门，也不代表 Player 构建、设备或外部服务验收已完成。已有安全诊断记录的读取和释放不要求当前 Registry 正常；新登记和实际开始捕获仍分别验证当前暴露策略，领域 Plan 保留原全部检查。
+
+## 长核验的传输记录
+
+捕获较慢或需要完整后验 Evidence 的核验，可在当前 Tool Schema 已提供 `verify_mode/request_id` 时使用 `operation=verify` 的 `start/status/forget`；省略 `verify_mode` 保持原同步协议。新模式只保存同一次原 Verify 的完整脱敏响应，不改变 Action、Receipt、资源锁、观察门或结果判据，也不调用 Execute。旧同步请求已经丢失的响应不能由此补回。
+
+| verify_mode | 同时必填 | 作用 |
+|---|---|---|
+| `start` | `action_id`、`request_id`、`receipt` | 先登记并返回 `queued`；下一次 Editor update 恰一次进入原 Verify |
+| `status` | `action_id`、`request_id` | 读取已登记状态与同一次原响应；不带 Receipt，不再调用 Verify |
+| `forget` | `action_id`、`request_id` | 仅释放本条终态传输记录；不改变原 Receipt、Operation 或领域结果 |
+
+```json
+{
+  "operation": "verify",
+  "verify_mode": "start",
+  "request_id": "<Agent预先生成并保留的32位GUID>",
+  "action_id": "nova.project.hotfix.generate-artifacts",
+  "receipt": "<同一次Execute返回的原recovery_token>"
+}
+```
+
+Agent 保留新生成的 N 格式 GUID。登记响应断线时，同号、同 Action、同 Receipt 的 `start` 只取已有状态；同号改 Action 或 Receipt 拒绝。随后使用相同 `operation/action_id/request_id` 与 `verify_mode=status`，严格不带 `receipt`。`completed` 只说明已保存原响应，须读取 `payload.response.success`、`payload.response.data.status` 以及完整 `payload.response.data.payload.evidence`；原 `partial`、`blocked` 或错误不会升级。Verify 响应不含 `plan_candidate`。在当前会话完整读取并核对原后验响应后，才显式 `forget`；该编号不再复用。
+
+Verify 使用独立的 `Nova.ProjectActions.VerifyJobs.v1` SessionState 命名空间，与 Plan 记录互不覆盖；每个命名空间仍最多16条、每条脱敏响应仍最多2MiB、TTL仍一小时，Plan/Verify合计只允许一项活动登记。复用原有界算法：超限明确 `response_too_large`，不截断或扩大预算；过期清掉响应但保留编号墓碑，域重载标记 `interrupted`，均不自动重跑。登记只持久化 Action、Receipt 摘要及传输元数据，原输入 Receipt 不另存；原结果自带的不透明 `recovery_token` 仍保留于完整脱敏响应。SessionState 只承载当前会话的传输记录，Editor 退出后不承诺恢复；调用方须及时读取完整返回，按 Action 最低证据核验，并在对话中报告结果。临时响应、日志和摘要在当次验收后清理，不另存历史验收档案；Operation journal 仍不保存 Evidence 正文，尚在使用的恢复材料按原事务生命周期保留。
+
+新登记与实际开始仍分别核当前暴露策略，`status/forget` 不依赖当前 Registry 正常。重载、过期、容量、存储或Provider失败应保留准确终态；不得用新编号自动再核验来掩盖旧响应缺失。需要后续独立核验时，先明确原调用已结束，再依原Action合同决定，不能重放Execute。若远端缓存旧 Tool Schema，沿上节已核实的正式 custom-tool 转交方式调用同一 Gateway；不改服务器配置或第三方超时，不增加任意代码入口。
+
 ## 当前开放边界
 
-Adapter 目前显式允许 Registry 中全部 20 个 Action：
+Adapter 目前显式允许 Registry 中全部 37 个 Action：
 
 - `nova.project.upm.manage-latest`
 - `nova.project.upm.uninstall-direct`
 - `nova.project.config.validate-coordinate`
+- `nova.project.config.patch-coordinate`
+- `nova.project.config.inspect-panel`
+- `nova.project.config.patch-panels`
+- `nova.project.config.ensure-panel-references`
+- `nova.project.config.normalize-master`
 - `nova.project.config.inspect-plugin-types`
 - `nova.project.config.ensure-plugin-instances`
 - `nova.project.config.inspect-bundle-collector`
 - `nova.project.config.export-runtime`
+- `nova.project.config.generate-resource-keys`
 - `nova.project.hotfix.refresh-game-dlls`
 - `nova.project.hotfix.generate-artifacts`
 - `nova.project.build.inspect-readiness`
@@ -54,19 +125,34 @@ Adapter 目前显式允许 Registry 中全部 20 个 Action：
 - `nova.project.player.build`
 - `nova.project.android.resolve-dependencies`
 - `nova.project.table.export`
+- `nova.project.tracks.generate-registry`
+- `nova.project.iap.upload-product-catalog`
+- `nova.project.ui.export`
 - `nova.project.network.export`
 - `nova.project.sound.export`
 - `nova.project.vibration.export`
 - `nova.project.localization.export`
 - `nova.project.pipify.run-batch`
+- `nova.project.pipify.inspect-settings`
+- `nova.project.pipify.configure-batch`
+- `nova.project.settings.inspect-target`
+- `nova.project.settings.patch-target`
+- `nova.project.settings.patch-build-defines`
+- `nova.project.persistence.inspect-data`
+- `nova.project.persistence.migrate-encryption`
+- `nova.project.persistence.recover-maintenance`
 
-Nova Project Skills 与 MCP Tool 不是一张清单：31 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
+Nova Project Skills 与 MCP Tool 不是一张清单：33 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
 
 能力发现继续使用 `describe`；原能力总览视图专用的 `NovaProjectActionGateway.GetExposureSnapshot` 与 `NovaProjectActionExposureSnapshot` 已移除，外部 C# 调用方需改用现有 `describe` 协议。
 
 该清单用于说明当前包版本，不替代 live Registry。运行时必须先调用 `describe`；未注册、Registry 存在 issue、Schema 无效，或 Registry 与 ExposurePolicy 不完全一致时整个 Action 面都会 fail-closed。高风险副作用不会隐藏 Action，但仍必须由 Descriptor 准确声明并经过完整执行协议。
 
 `nova.project.pipify.run-batch` 的 Execute 只登记异步任务并返回 recovery token；Verify 轮询持久化 Job 状态。Job 在真实运行期间持有资源锁，状态写入 `Library/Nova/Pipify/Jobs/`；domain reload 前未结束的任务标记为 `Interrupted`，绝不自动恢复或重放。
+
+`describe` 保留凭据字段的参数名及类型结构，不将 Schema 当实际值遮蔽；示例、默认和描述载荷移除。Plan/Execute/Verify 的实际数据仍按敏感字段脱敏。
+
+脱敏按已知敏感字段名、当前项目根及 URL 用户信息/query/fragment处理，不是通用秘密扫描；未知自定义字段或自由文本仍可能泄漏，领域 Handler 应先避免输出秘密。描述、计划和结果 DTO 只是当前发现/返回快照，数组属性可能保留原引用；读取或修改 DTO 不获得锁、不延长期限，也不使 Action Ready。
 
 ## 恢复与证据
 
@@ -84,5 +170,7 @@ Nova Project Skills 与 MCP Tool 不是一张清单：31 个 `nova-project-*` �
 5. domain reload、Plan 过期、Registry generation 改变或 Editor 状态漂移后重新 Plan，不复用旧 `plan_id`。
 
 ## 扩展约束
+
+中立 Provider Registry 只接受程序集 `NovaFramework.Editor` 中的 `NovaFramework.Editor.NovaProjectActionContractProvider`。同一实例重复注册幂等，不同实例即使同类型也拒绝替换；静态引用保留到 Domain 结束，没有注销或 Dispose 入口。精确名称检查不是程序集签名认证，TryGet 也只返回引用，完整 Registry/Schema/开放策略仍在每次网关准入时核验。
 
 新增 Project Action 必须同时完成：Core Registry 注册、专用 DTO 与证据契约、Adapter 显式 `ExposurePolicy`、包内文档更新及定向安全测试。Registry 与白名单集合必须完全一致，任一侧遗漏都会整体 fail-closed。

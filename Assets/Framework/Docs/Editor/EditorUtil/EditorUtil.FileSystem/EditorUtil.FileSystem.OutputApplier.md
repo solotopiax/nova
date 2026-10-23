@@ -44,3 +44,11 @@ applier.Apply();
 - [EditorUtil.FileSystem.md](EditorUtil.FileSystem.md)
 - [EditorUtil.Luban.GeneratedOutput.md](../EditorUtil.Luban/EditorUtil.Luban.GeneratedOutput.md)
 - [DataPipeline.md](../../DataPipeline/DataPipeline.md)
+
+## 失败补偿的实际限制
+
+登记目标按 OrdinalIgnoreCase 去重，既不检查业务归属、源目标相等、父子冲突或符号链接，也不锁正式文件；独立 tempRoot 必须由调用方保障，已有 `_publish` 会复用。CreateEntry 先登记目标再解析 staged 路径，后者失败可留下去重占位。
+
+PrepareBackups 在应用 try 之外，失败可能留下部分备份但正式文件尚未写。每条操作先标 Applied 再替换/删除；恢复时逆序补偿，原本不存在的目标直接 File.Delete，不使用注入 delete 委托，新增父目录不清理。单文件 Replace 使用固定 `target.tmp`，已有同名临时文件会删除，并发冲突须上层避免。
+
+成功标记先于备份删除；成功后的清备份异常也进入回滚，状态不会复位，不应重用实例重试。回滚失败保留聚合异常，但之后 Dispose 仍递归删除 `_publish`（包含恢复材料），不能据此承诺备份长期保留。Dispose 或 finally 的清理异常也可能遮蔽先前错误。

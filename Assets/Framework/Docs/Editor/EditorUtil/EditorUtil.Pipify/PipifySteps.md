@@ -39,6 +39,8 @@
 - `hybridclr.copy_aot_dll`
 - `hybridclr.copy_game_dll`
 
+`hybridclr.generate_all` 正常返回后会调用现有 `ValidateLinkXml()`，按激活 ConfigMaster 当前坐标补全生成文件中的 AOT 保留条目；生成失败时直接终止，不补写、不重放。该后补只约束 Step 返回后的 XML；Generate 内部已完成的 AOT 裁剪，以及最终 Player 后的 AOT 拷贝仍分别验收，不能追溯认定已使用后补内容。
+
 适合场景：
 
 - 热更 DLL 产物刷新
@@ -124,6 +126,12 @@
 ### Google Play 上传
 
 Google Play 发布使用独立 Step `googleplay.upload_aab`，添加在 `build.package` 之后即可自动接收本次成功构建的 AAB；默认内部测试草稿。一次性凭据、签名、轨道、更新说明与 CI 配置见 [Google Play 上传](PipifySteps.GooglePlay.md)。
+
+### IAP 商品目录上传
+
+安装 `com.solotopia.nova.framework.sdk.iap` 后会自动注册 `iap.product_catalog.upload`，分类为 `IAP`，显示名为“导出IAP数据到服务器”。该步骤没有参数配置项，也不会显示参数配置区域。
+
+该 Step 读取当前激活且已导出的 `ConfigRuntimeSO`，与 IAP Config 商品列表中的“上传支付表到服务器”按钮共用 IAP 包内的静态上传入口。请求外层由明文 `head` 和 Base64 AES 密文 `body` 组成；Body 使用同一份导出物的 `AppAesKey/AppAesIV` 加密，两个值按 UTF-8 编码必须分别为 16 字节。Debug 上传测试服务器，Release 上传正式服务器；配置校验、取消、超时、网络异常或其他非 2xx 响应会抛错并中断 Batch。仅 HTTP 409 且业务码准确为 `CATALOG_VERSION_CONFLICT` 时，IAP 上传入口记 Warning 并让 Step 继续；该次商品表未生效，须核对表并使用新客户端版本重传。Framework 只提供通用注册和执行能力，不依赖 IAP 包。完整字段与失败条件见 IAP 包的 `Nova/Doc/IAPProductCatalogProtocol.md`。
 
 ### 6. 系统外壳辅助
 
@@ -413,3 +421,11 @@ When enabled, the Step temporarily writes `PlayerSettings.Android.useCustomKeyst
 AssetBundle 与 RawFile 构建 Step 沿用 `BundleEncryptorClassName`、`ManifestEncryptorClassName`、`ManifestDecryptorClassName`，候选与排序和 YooAsset Bundle Builder 一致；不增加另一套方案配置。三个字段共用一个简短 HelpBox，只说明密钥在 Config → 通用配置 → 资源加解密配置中配置，以及清单 AES 对 AES、XOR 对 XOR。
 
 Editor 构建按 PackageName 从激活且已保存的 `ConfigMaster.ResourceEncryption` 读取密钥，不写入 Step JSON，不从独立 JSON 或环境变量覆盖。顶部保存只保存配置；顶部导出或 `export.config` 生成客户端密钥源码。配置与生成文件共同纳入项目私有仓库，客户端解密由 Nova 自动接入。详见 [资源加解密](../../../Runtime/Modules/Asset/ResourceEncryption.md)。
+
+## 各类 Step 的真实完成边界
+
+Build Step 先清本 Batch 最新产物，只接受 Succeeded 报告，随后取消也不记录为可上传成功；文件名 DevelopMode 来自 Runtime，DevelopmentBuild 是独立参数，Android 签名临时覆盖 finally 恢复但不校凭据有效，恢复异常可遮结果。Bundle/HybridCLR/EDM4U 薄 Step 不提供额外事务或强制取消。
+
+领域导出调用内部全量 bool 入口，false 转异常停止；代码路径有时只是首个非空预检，真实发布由 Exporter/settings 决定。export.config 使用 active 平台和明确 channel/mode，不改 Master 当前坐标，但可生成密钥追踪路径；GenerateAll 成功后另 ValidateLinkXml，后补失败会保留已生成物，并非同一 Master/坐标原子读取。
+
+CDN Step 用当前配置快照覆路径/凭据，不回写 Master；回调取消可能在远端已写后停止，无远端回滚。飞书 Step 会真实发消息，格式门只要求 HTTP(S)，未限定厂商 host；成功业务码不证明人已阅读，存在发送接口不产生自动发送授权。Shell 只 Reveal 本地路径，允许工程外路径；不存在时可回父目录/工程根，不执行 shell 命令。

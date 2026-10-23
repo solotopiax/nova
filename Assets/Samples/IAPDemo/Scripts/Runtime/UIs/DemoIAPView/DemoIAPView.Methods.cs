@@ -8,6 +8,7 @@
  * descrip:   IAP Demo 登录、可选商店发现与动态 Tab 编排方法
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Kit.Network.GameLogin.Runtime;
@@ -33,6 +34,16 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             {
                 m_IapBridge = new DemoIAPBridge(AppendFeedback, SetPaymentInteractable);
             }
+        }
+
+        /// <summary>
+        /// 判断异步操作是否仍属于当前打开的页面；重新打开会创建另一 Bridge，旧结果不得回写。
+        /// </summary>
+        /// <param name="bridge">操作启动时保存的 Bridge。</param>
+        /// <returns>页面仍打开、Bridge 未释放且所有者相同时返回 true。</returns>
+        private bool IsCurrentBridge(DemoIAPBridge bridge)
+        {
+            return m_IsOpen && bridge != null && !bridge.IsDisposed && ReferenceEquals(m_IapBridge, bridge);
         }
 
         /// <summary>
@@ -121,12 +132,14 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 登录账号；成功后隐藏登录按钮并显示第一个已安装商店 Tab。
+        /// 登录账号；成功后仅向仍持有启动时 Bridge 的打开页面显示已安装商店。
+        /// GameLogin 没有页面取消参数，其异常保持原传播路径，旧会话结果不回写登录状态。
         /// </summary>
         /// <returns>异步任务。</returns>
         private async UniTaskVoid LoginAsync()
         {
-            if (m_LoggedIn || m_LoginInProgress)
+            DemoIAPBridge bridge = m_IapBridge;
+            if (!IsCurrentBridge(bridge) || m_LoggedIn || m_LoginInProgress)
             {
                 return;
             }
@@ -141,6 +154,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             try
             {
                 NetResponse<PbNetLoginResp> response = await Nova.Network.Kit<Login>().Async(string.Empty, string.Empty, false);
+                // GameLogin 没有页面取消参数；保持其身份处理，仅丢弃已经失效页面的展示结果。
+                if (!IsCurrentBridge(bridge))
+                {
+                    return;
+                }
                 if (!response.IsSuccess)
                 {
                     AppendFeedback("登录失败：" + response.ErrorCode + "，" + response.ErrorMessage, FeedbackLevel.Error);
@@ -152,16 +170,19 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 ShowFirstAvailableTab();
                 BuildAllStoreProducts();
                 AppendFeedback("登录成功，已展示当前工程安装的支付商店。", FeedbackLevel.Success);
-                m_IapBridge?.CheckLocalOrdersAsync().Forget();
+                bridge.CheckLocalOrdersAsync().Forget();
                 RefreshAllPaymentStateAsync().Forget();
             }
             finally
             {
-                m_LoginInProgress = false;
-                if (!m_LoggedIn && m_LoginButton != null)
+                if (IsCurrentBridge(bridge))
                 {
-                    m_LoginButton.interactable = true;
-                    SetButtonLabel(m_LoginButton, "登录");
+                    m_LoginInProgress = false;
+                    if (!m_LoggedIn && m_LoginButton != null)
+                    {
+                        m_LoginButton.interactable = true;
+                        SetButtonLabel(m_LoginButton, "登录");
+                    }
                 }
             }
         }
@@ -178,20 +199,22 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 并行刷新全部已发现商店状态；未安装的商店不会进入调用链。
+        /// 在当前打开会话内按模块快照并行刷新商店状态；具体模块核对 Bridge 后才回写页面。
         /// </summary>
         /// <returns>异步任务。</returns>
         private async UniTaskVoid RefreshAllPaymentStateAsync()
         {
-            if (m_StoreModules.Count == 0)
+            DemoIAPBridge bridge = m_IapBridge;
+            if (!IsCurrentBridge(bridge) || m_StoreModules.Count == 0)
             {
                 return;
             }
 
-            var tasks = new UniTask[m_StoreModules.Count];
-            for (int i = 0; i < m_StoreModules.Count; i++)
+            IDemoIAPStoreModule[] modules = m_StoreModules.ToArray();
+            var tasks = new UniTask[modules.Length];
+            for (int i = 0; i < modules.Length; i++)
             {
-                tasks[i] = m_StoreModules[i].RefreshAsync();
+                tasks[i] = modules[i].RefreshAsync();
             }
             await UniTask.WhenAll(tasks);
         }

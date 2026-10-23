@@ -36,6 +36,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         private void InitializePlatform()
         {
+            InitializeAppInstallerAndroid();
         }
 
         /// <summary>

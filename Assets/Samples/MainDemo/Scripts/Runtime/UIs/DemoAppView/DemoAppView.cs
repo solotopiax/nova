@@ -10,6 +10,7 @@
  *            展示当前版本号，并将操作结果追加到反馈区。
  ***************************************************************/
 
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -55,6 +56,9 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private CancellationTokenSource m_Cts;
 
+        /// <summary>每次打开或关闭递增，旧操作不能写入重新打开的页面。</summary>
+        private int m_ViewGeneration;
+
         /// <summary>
         /// 视图初始化钩子，注册按钮事件，设置标题与 API 副标题。
         /// </summary>
@@ -92,8 +96,8 @@ namespace NovaFramework.Samples.Runtime
         {
             base.OnOpen(userData);
 
-            m_Cts?.Cancel();
-            m_Cts?.Dispose();
+            m_ViewGeneration++;
+            CancelRequests();
             m_Cts = new CancellationTokenSource();
 
             if (m_VersionText != null)
@@ -109,10 +113,45 @@ namespace NovaFramework.Samples.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
-            m_Cts?.Cancel();
-            m_Cts?.Dispose();
+            m_ViewGeneration++;
+            try
+            {
+                CancelRequests();
+            }
+            finally
+            {
+                base.OnClose(isShutdown, userData);
+            }
+        }
+
+        /// <summary>销毁时使旧操作失效，并释放本页的等待令牌。</summary>
+        private void OnDestroy()
+        {
+            m_ViewGeneration++;
+            CancelRequests();
+        }
+
+        /// <summary>先断开页面所有权；取消回调抛错时仍释放令牌源。</summary>
+        private void CancelRequests()
+        {
+            CancellationTokenSource cancellation = m_Cts;
             m_Cts = null;
-            base.OnClose(isShutdown, userData);
+            if (cancellation == null) return;
+            try
+            {
+                cancellation.Cancel();
+            }
+            finally
+            {
+                cancellation.Dispose();
+            }
+        }
+
+        /// <summary>操作结果和异常反馈只属于发起时的那一次页面打开。</summary>
+        private bool IsCurrentView(CancellationToken token, int generation)
+        {
+            return this != null && Available && m_Cts != null &&
+                   !token.IsCancellationRequested && generation == m_ViewGeneration;
         }
 
         /// <summary>
@@ -144,20 +183,30 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private async UniTaskVoid CheckAsync()
         {
+            if (!Available || m_Cts == null) return;
+            CancellationToken token = m_Cts.Token;
+            int generation = m_ViewGeneration;
             if (Nova.App == null)
             {
                 AppendFeedback("Nova.App.CheckAsync() -> AppComponent 未初始化", FeedbackLevel.Error);
                 return;
             }
 
-            AppVersionResult result = await Nova.App.CheckAsync(m_Cts.Token);
-
-            if (m_Cts == null || m_Cts.IsCancellationRequested)
+            try
             {
-                return;
+                AppVersionResult result = await Nova.App.CheckAsync(token);
+                if (!IsCurrentView(token, generation)) return;
+                AppendFeedback("Nova.App.CheckAsync() -> Result=" + result, FeedbackLevel.Success);
             }
-
-            AppendFeedback("Nova.App.CheckAsync() -> Result=" + result, FeedbackLevel.Success);
+            catch (OperationCanceledException)
+            {
+                // 页面关闭只结束本次操作等待，不追加失败反馈。
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentView(token, generation))
+                    AppendFeedback("Nova.App.CheckAsync() -> " + exception.Message, FeedbackLevel.Error);
+            }
         }
 
         /// <summary>
@@ -165,22 +214,33 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private async UniTaskVoid DownloadAsync()
         {
+            if (!Available || m_Cts == null) return;
+            CancellationToken token = m_Cts.Token;
+            int generation = m_ViewGeneration;
             if (Nova.App == null)
             {
                 AppendFeedback("Nova.App.DownloadAsync() -> AppComponent 未初始化", FeedbackLevel.Error);
                 return;
             }
 
-            string downloadPath = await Nova.App.DownloadAsync(m_Cts.Token);
-
-            if (m_Cts == null || m_Cts.IsCancellationRequested)
+            try
             {
-                return;
+                string downloadPath = await Nova.App.DownloadAsync(token);
+                if (!IsCurrentView(token, generation)) return;
+                bool success = !string.IsNullOrEmpty(downloadPath);
+                FeedbackLevel level = success ? FeedbackLevel.Success : FeedbackLevel.Warn;
+                AppendFeedback("Nova.App.DownloadAsync() -> path=" +
+                    (success ? downloadPath + "（文件已下载，尚未安装）" : "null（无更新包）"), level);
             }
-
-            bool success = !string.IsNullOrEmpty(downloadPath);
-            FeedbackLevel level = success ? FeedbackLevel.Success : FeedbackLevel.Warn;
-            AppendFeedback("Nova.App.DownloadAsync() -> path=" + (success ? downloadPath : "null（无更新包）"), level);
+            catch (OperationCanceledException)
+            {
+                // 页面关闭只结束本次操作等待，不追加失败反馈。
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentView(token, generation))
+                    AppendFeedback("Nova.App.DownloadAsync() -> " + exception.Message, FeedbackLevel.Error);
+            }
         }
 
         /// <summary>
@@ -188,21 +248,32 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private async UniTaskVoid OpenStoreAsync()
         {
+            if (!Available || m_Cts == null) return;
+            CancellationToken token = m_Cts.Token;
+            int generation = m_ViewGeneration;
             if (Nova.App == null)
             {
                 AppendFeedback("Nova.App.OpenStoreAsync() -> AppComponent 未初始化", FeedbackLevel.Error);
                 return;
             }
 
-            bool opened = await Nova.App.OpenStoreAsync(m_Cts.Token);
-
-            if (m_Cts == null || m_Cts.IsCancellationRequested)
+            try
             {
-                return;
+                bool opened = await Nova.App.OpenStoreAsync(token);
+                if (!IsCurrentView(token, generation)) return;
+                FeedbackLevel level = opened ? FeedbackLevel.Success : FeedbackLevel.Warn;
+                AppendFeedback("Nova.App.OpenStoreAsync() -> opened=" + opened +
+                    "（仅表示跳转请求结果，不表示已更新应用）", level);
             }
-
-            FeedbackLevel level = opened ? FeedbackLevel.Success : FeedbackLevel.Warn;
-            AppendFeedback("Nova.App.OpenStoreAsync() -> opened=" + opened, level);
+            catch (OperationCanceledException)
+            {
+                // 页面关闭只结束本次操作等待，不追加失败反馈。
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentView(token, generation))
+                    AppendFeedback("Nova.App.OpenStoreAsync() -> " + exception.Message, FeedbackLevel.Error);
+            }
         }
     }
 }

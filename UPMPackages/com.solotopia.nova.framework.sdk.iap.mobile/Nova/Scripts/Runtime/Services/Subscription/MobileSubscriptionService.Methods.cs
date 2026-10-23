@@ -19,7 +19,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     {
         /// <summary>
         /// 订阅到期倒计时：等待到期时间（含 30 秒缓冲）后先拉取平台已有购买，再刷新订阅状态。
-        /// 30 秒缓冲确保服务端订阅状态已更新，避免刚好到期时拉到旧状态。
+        /// 30 秒仅是客户端缓冲，不能保证服务端已更新；默认 Delay 还会受游戏缩放时间影响。
         /// </summary>
         /// <param name="tableId">订阅商品配置表行 ID，用于日志标识。</param>
         /// <param name="expireTimeMs">到期 Unix 毫秒时间戳。</param>
@@ -27,7 +27,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private async UniTask RunCountdownAsync(long tableId, long expireTimeMs, CancellationToken ct)
         {
             long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            // 到期时间 + 30 秒缓冲，确保服务端订阅状态已更新
+            // 用到期差额加客户端缓冲安排刷新，真实权益仍由后续平台与服务端结果决定。
             long delayMs = expireTimeMs - nowMs + 30_000L;
             if (delayMs <= 0L)
             {

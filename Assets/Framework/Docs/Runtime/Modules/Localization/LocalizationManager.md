@@ -63,8 +63,10 @@
 - 支持语言列表来自 `m_Config.SupportedLanguagesAssetLocation`
 - 支持语言、字体和文本使用同一个 `LubanDataFormat`
 - JSON 走 `LubanDataReceiver`，Binary 走 `LubanBinaryDataReceiver` 与生成的 `*TablesBinding`
-- 支持语言由独立 `LocalizationSupportedLanguagesTables` 构建；旧 JSON 数组仅作为升级兼容回退
+- 支持语言由独立 `LocalizationSupportedLanguagesTables` 构建，要求行实现 `ILocalizationSupportedLanguageRow`；当前 Runtime 不提供旧裸 JSON 数组回退
 - 字体数据通过 Luban 表加载进 `m_FontDatas`
+
+`LoadAsync()` 和 `LoadSync()` 每次都会重新读取基础数据。支持语言先收集本次全部有效语言，再替换当前名单；加载未完成或失败时保留旧名单，重复或重叠加载不会累加名单。字体表在本次构建成功后整体替换当前字体映射，重复加载不会累加同一批字体行；新快照不再包含的语言或标记会移除。加载失败、缓存为空或 Tables 构建失败时保留原字体映射，已取得的只读字体列表也不会被原地追加或清空。基础加载完成后，仍需单独调用当前语言初始化入口。
 
 也就是说，支持语言来自独立导出的 `SupportedLanguages` 列表，不从文本单元的 Excel Sheet 缓存字段推断。
 
@@ -126,9 +128,9 @@ Unity 映射，再按配置回退。标签由运行平台提供，若没有可�
 - 每次切换先自增版本号
 - 每个请求把数据加载到自己的临时缓存
 - await 返回后如果版本已变化，旧请求直接终止，不提交临时缓存
-- 只有最新请求会把缓存原子替换为当前语言数据
+- 通过版本检查的请求才进入缓存提交；提交本身没有失败回滚
 
-这保证了快速连续切语言时，只有最后一次请求生效。
+该保护只适用于通过前置校验的异步请求。同步切换不递增版本；请求当前语言也会提前返回，不会撤销另一个在飞目标，见下文。
 
 ## 高价值 API 面
 
@@ -171,3 +173,27 @@ Unity 映射，再按配置回退。标签由运行平台提供，若没有可�
 - [LocalizationManagerConfig.md](LocalizationManagerConfig.md)
 - [LocalizationRefreshEventData.md](LocalizationRefreshEventData.md)
 - [EventManager.md](../Event/EventManager.md)
+
+## 返回值、快照与失败中间态
+
+Initialize 拒绝 null config，保存同一对象与两个单元 List 引用，null List 才新建空列表；不会清旧字典或递增切换版本，依赖不存在也不在这里报错。LoadAsync 忽略支持语言加载的 bool，字体 false 只告警，正常到末尾始终返回 true；LoadSync 没有成功返回值。两者均不加载当前语言文本，也不能证明表或字体资源完整。
+
+支持语言表的 Name 以忽略大小写的 Enum.TryParse 解析，跳过 Unspecified，保留行顺序及重复值，没有 Enum.IsDefined 校验；数字字符串可进入未知枚举值。GetSupportedLanguages 暴露同一个 List 的只读接口，下一次成功加载会改变该视图。字体表先建立本次私有映射，完整构建后替换；GetFontDatas 返回该轮行列表引用，旧列表不会因后续换映射被追加或清空。有字体行只证明配置存在，不保证地址资源可加载、类型为 TMP_FontAsset 或字形齐全。
+
+文本单元地址以 `Txt.Format(unit.AssetLocation, language.ToString())` 得到。同步读取不汇总逐单元 bool；异步 WhenAll 中某个 false 只告警，只要缓存有数据仍可能提交。因此部分表成功不代表所有翻译完备。JSON 缺表提供空 JArray 并告警，Binary 缺 byte[] 表直接抛异常；两者不能视作相同的失败结果。
+
+CommitLanguageTextCache 先清主缓存并复制本轮数据，再清/构表、清/扁平化字典；构表或行属性异常可能留下空表、部分新文本而 Language 仍是旧值，不提供事务回滚。扁平化跳 null 行和空 Name，Value=null 转空串，跨表重复 Name 后写覆盖；DataList=null 未统一保护。GetText(null/空串) 返回空串，缺键告警并返回键本身；HasText 只查键存在。类型化表按 typeof(T) 精确查找，字符串重载按 Type.Name 取首项，同短名跨命名空间不保证唯一，查询不自动加载。
+
+SetLanguageAsync 无 ct 参数；只有通过非 Unspecified、已支持、不同当前语言校验后才递增版本。同步切换、Initialize、Shutdown 都不递增该版本，不能据此承诺最后一次任意调用获胜。InitCurrentLanguageSync/Async 返回 Resolve 的候选，即使切换被拒或文本为空，也可能正常返回该候选；验收应核当前 Language 与目标 GetText。
+
+ApplyLanguageSwitchResult 先写 Language，再保存正式偏好/启动镜像，最后 FireNow。正式 Save 或事件链异常不回滚语言与文本；缺 EventManager 则告警且不广播。事件只能在同步回调内消费，不能持有其池对象。Shutdown 清缓存与依赖，不负责释放 TextLocalizing 已持有的字体/材质资源。
+
+数据加载委托取得 TextAsset 后先 Release handle，再把同一对象交给 Receiver；ReleaseAsset 是空回调，不是延后释放入口。LoadTextAssetSync/Async 也在读 `.text` 前 Release，异步辅助函数的 finally 只保护 handle 归还；这些路径没有自动持有 TextAsset 到解析结束的保证，资源寿命须按实际加载/回收场景验证。
+
+## 启动镜像与正式语言偏好
+
+正式偏好按 config 的 PersistClassifyName/PersistItemKey 通过 IPlayerPrefsManager 读写，Enum.TryParse 忽略大小写但不校验 IsDefined。保存执行 SetString→Save(分类)，之后才写 `PlatformPlayerPrefs` 的非敏感镜像 `Nova.Localization.BootstrapLanguage.v1`。正式依赖/config 缺失会整体返回，镜像也不更新；正式 Save 异常传播，镜像自身异常只告警。
+
+LocalizationBootstrapLanguage 在 SubsystemRegistration 恢复 `(Unspecified, true, English)` 默认策略，不删除镜像。组件 Awake Configure 发布策略，多个组件以后写覆盖；正式 Manager 和独立启动文本共用决策器，但各自提供该阶段可用语言集合。镜像读取额外拒绝未定义枚举与 Unspecified，不能拿启动镜像读取规则替代正式偏好规则。
+
+Resolve 最终可能返回未被支持的配置 fallback 或 English；解析成功不等于加载成功。isSupported 为 null 时所有候选不被支持，delegate 自身异常传播。可选 systemLocale 只有 null 才读取 Culture，显式空串用于跳过地区细分；Culture 是当前线程 UI Culture（空时普通 Culture），不是直接调用设备地区 API。标签只覆盖源码列出的语言与 pt-BR/sr-Latn 变体，不能当完整 BCP 47 映射；Unity Chinese 映射 ChineseSimplified。

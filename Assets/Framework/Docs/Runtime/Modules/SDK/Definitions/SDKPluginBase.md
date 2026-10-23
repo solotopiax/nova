@@ -26,7 +26,8 @@ protected void PublishData(string key, object value);
 
 ## 当前语义
 
-- `InitializeAsync(...)` 成功后由基类把 `IsAvailable` 置为 `true`。
+- `InitializeAsync(...)` 先等待派生类 `OnInitializeAsync`，再检查传入令牌，均完成后才把 `IsAvailable` 置为 `true`。基类不自动切回主线程，派生实现必须在完成前自行切回。
+- 此模板没有重复或并发初始化门禁，也不在入口把既有可用状态重置为 `false`。首次失败不会置为可用；已经成功的实例再次初始化失败时，不能据此推断旧 `IsAvailable` 自动归零。正常使用应由 Manager 管理实例与初始化任务。
 - `DisposeAsync(...)` 无论是否异常，都会把 `IsAvailable` 置为 `false`，并取消所有等待中的数据槽位。
 - `ConfigType` 返回已构造插件需要的配置类型；`RequiredConfigType` 只是对外公开这一结果。
 - Manager 与 Inspector 不会构造候选插件来读取 `RequiredConfigType`，而是通过 `TryGetRequiredConfigType(...)` 读取静态类型元数据。
@@ -47,6 +48,10 @@ protected void PublishData(string key, object value);
 - 数据不存在时，调用方挂起等待。
 - `PublishData` 写入后会唤醒当前所有等待者。
 - 插件释放时，所有仍在等待的调用方都会被取消。
+
+同一 key 共享一个完成源，已发布值允许为 null；key 为 null 或空串会被拒绝。调用方取消只结束自己的等待，不移除共享槽位；全部调用方取消后若再无 Publish，槽位仍保留至释放。Publish 覆盖缓存并在锁外唤醒等待者，已经返回的消费者不会自动收到新值。释放在锁内摘取等待者并清两组字典，随后锁外取消；这些锁只保护数据槽位。Fetch/Publish 不检查可用或永久 disposed 状态，晚到 Publish 可以再次写入，派生类仍须结束原生回调和生产任务。
+
+静态配置解析优先查 `PluginBase<TConfig>` 继承链，再查具体类型上不继承的 `SDKPluginConfigTypeAttribute`；特性构造只存 Type，解析仅核对 `ISDKPluginConfig` 可赋值性，不等于具体类型可构造或已启用。强类型桥接不接受 null/错误配置，抛 `InvalidCastException`；token 的主动检查与线程切换不能从抽象声明推得。
 
 ## 使用示例
 

@@ -4,7 +4,7 @@
   "kind": "workflow",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [
     "nova-project-manage-upm-package",
@@ -22,6 +22,16 @@
       "when": "Resolve 稳定后确认精确包 id、版本、来源及其首个存在的包内文档入口；不能用主框架文档替代目标包文档"
     },
     {
+      "kind": "workspace-inspection",
+      "entry": "selected existing UI/Event/Procedure/Persistence/Network Operation references/contract.json + target package INDEX-documented public C# source",
+      "when": "仅在用户要求业务接入时核对项目现有入口、程序集、成功/失败/取消、订阅拥有者、账号/订单身份、保存与探针，按命中分支复用已有 Operation，不把所有分支变成强制依赖"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed project-owned business source and existing SDK/Kit entry, lifecycle, identity and idempotency integration",
+      "when": "仅在用户授权业务实现且精确项目自有 source、入口、生命周期、数据和副作用已冻结时直接实现匹配版本的 Nova 公开调用；复用已有 Operation 完成必要表源、正式导出及 Unity 绑定，不修改包、vendor 或生成代码，不执行未经精确授权的真实外部请求"
+    },
+    {
       "kind": "agent-action",
       "entry": "nova.project.config.inspect-plugin-types",
       "when": "只读识别目标包文档定义的 SDK/Kit Config 类型"
@@ -30,6 +40,21 @@
       "kind": "agent-action",
       "entry": "nova.project.config.ensure-plugin-instances",
       "when": "只在已确认 Platform Channel DevelopMode 坐标和类型范围内补齐插件实例"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-panel",
+      "when": "通过 nova-project-configure-runtime 只读取得已存在 SDK/Kit Config 的精确字段路径、类型、可编辑性、掩码与同组坐标，凭据只查存在性"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.patch-panels",
+      "when": "通过 nova-project-configure-runtime 对 inspect-panel 已开放路径计划、确认并保存一个 Master 的字段或维度变更；完整写集包括共享组广播，不自动导出 Runtime"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.normalize-master",
+      "when": "仅在已确认三维锚点、整 Master 脱敏差异和独立归一计划时复用 nova-project-configure-runtime；Verify 后重新 inspect 与 Plan，不隐含在字段 patch 内"
     },
     {
       "kind": "agent-action",
@@ -49,7 +74,87 @@
     {
       "kind": "unity-editor-automation",
       "entry": "Play Mode state inspection and target package INDEX-documented local initialization probe",
-      "when": "配置和编译完成、用户允许使用现有项目入口，且探针不要求安装应用、厂商后台写入或声称真机成功时"
+      "when": "配置和编译完成后在已允许的现有项目入口验证初始化或已实现业务的范围内本地行为；先核对启动/登录/权限/打点/任务自动副作用，未经精确授权不触发真实外部请求，不用 Mock 验收真实服务"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.SDK.WaitForPluginAsync<TPlugin>(ct) / Get<TPlugin>() / TryGet<TPlugin>(out plugin) / GetAll<TInterface>() / Login(uid, userProperties) / RegisterAndLogin(uid) / EndLoginSession()",
+      "when": "仅在已确认项目业务源接入 SDK 生命周期与会话时调用匹配版本公开门面；复用既有 InitializeTask，Ready 不证明业务成功，RegisterAndLogin 只接 uid，GameLogin 已通知时不重复 Login/注册"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Runtime.IAuthPlugin.LoginAsync(provider, ct) / LogoutAsync(ct) + Nova.Network.Kit<NovaFramework.Kit.Network.GameLogin.Runtime.Login>().Async(uid, openid, forceNewAccount)",
+      "when": "仅在已确认登录业务入口中接平台身份与游戏服结果；Auth 不等于游戏服登录，失败/取消不自动新建账号，真实账号请求由另行精确授权的运行阶段验收"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Network.Kit<NovaFramework.Kit.Network.GameBind.Runtime.Bind>().QueryBindingAsync / BindAsync / QueryConflictAsync / ResolveAsync + Nova.Network.Kit<NovaFramework.Kit.Network.GameSave.Runtime.Save>().SetGameVersion / GetAsync / GetFullAsync / SetAsync / SetFullAsync",
+      "when": "仅在已确认绑定冲突、账号选择与云进度业务源中实现；Resolve 只裁决账号，按最终 UID、版本与玩家选择对接 Persistence，核对现有会话通知拥有者，不按时间自动覆盖或重放云写"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Runtime.IAdPlugin.RequestAsync / IsReady / ShowAsync / IBannerControl + NovaFramework.SDK.AdPlugin.Runtime.AdPlugin.Events",
+      "when": "仅在已确认广告格式、配置与领取策略的业务入口实现；ShowAsync 不返回 AdResult，事件在具体 AdPlugin 上，Replay 结果沿项目真实业务身份幂等消费，Banner 走 IBannerControl，真实广告与发奖另行验收"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.SDK.IAP.Runtime.IAPPlugin.PayAsync<T> / RestorePurchasesAsync<T> / CheckLocalOrdersAsync / TryGetCapability<T> / Events",
+      "when": "仅在已确认商品、商店、订单与发货台账的项目业务源中接入；IsSuccess 与 CanDeliver 分别判断，返回、Replay 和补单共用幂等消费者，Editor 模拟不能证明正式交易或验单"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.iap.upload-product-catalog",
+      "when": "仅按 references/product-catalog-upload.md 提交已保存 Master 显式 ExportTarget 的完整 IAP 商品目录；请求 runtimeGuid+developMode，先冻结六文件/内存态/版本/完整目录与最终请求及固定桥身份；真实提交须精确环境、目录Hash、客户端版本、目标和至多一次请求授权。网络前正式Library意图，2xx/冲突/失败均最高partial，Verify只读原记录不重发，不代替支付验单发货。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.SDK.AIHelp.Runtime.AIHelpPlugin.Show / Close / IsShowing / SetLanguage / UpdateUserInfo / ResetUserInfo / OnMessageArrived / OnUnreadTaskCountChanged",
+      "when": "仅在已确认客服入口、语言与账号生命周期的项目业务源中接入；已有自动登录不重复，登出核对 ResetUserInfo，事件成对注销，Show true 不证明工单送达，不自动上传日志"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Runtime.IPushPlugin.GetTokenAsync / OnTokenRefreshed / SetTopicSubscribed + NovaFramework.SDK.FirebasePlugin.Runtime.IFirebasePushTaskPlugin.QueuePushTaskAsync + Nova.Native.RequestNotificationPermissionAsync",
+      "when": "仅在已确认通知业务源中分别接权限、Token、Topic 与任务；先核对自动权限/账号上报，Queue 只缓存且可能随后自动发送，冻结 TaskKey、接收方与时间，外部订阅、权限提示和任务运行不由本地编写授权覆盖"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.DataMasterPlugin.GetParamValue<T> / GetParamValueJson / WaitForRefreshAsync / OnConfigRefreshed / OnConfigRefreshFailed / MarkExposure / LogExperimentEvent",
+      "when": "仅在已确认主题、参数类型、fallback、应用时点及曝光归属的业务源中接入；绑定当前账号/请求，既有 GameLogin 已通知时不以第二次 Login 补属性，默认值/Editor 不证明实验命中，真实曝光与上报另行验收"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Runtime.ITrackPlugin.TrackEvent / SetUserProperty + NovaFramework.Runtime.IAttributionPlugin.TrackEvent / GetAttributionAsync / OnAttributionResolved",
+      "when": "仅在已确认事件触发、归属、接收目标与字段的项目业务源中接入；遵守当前 Tracks 文档及集中源定义，不重复框架注册/登录或 SDK 内置打点，本地回调不证明厂商数据到账"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B <resolvedFramework>/Agents/Tools/nova_inline_products.py --project-root <projectRoot> --source <relative.xlsx> --source-hash <sha256> --sheet <exact> --family <iap|wechat> [--coins-per-yuan <frozen positive int>]",
+      "when": "已有项目自有商品表完整列表导入时，只读精确转换为prepared-only；sourceHash、Sheet、真实Config字段和覆盖差异冻结后复用已有inspect-panel/patch-panels/export-runtime，不写源或创建新Action"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B <resolvedFramework>/Agents/Tools/nova_table_source.py --project-root <projectRoot> inspect|plan|execute|verify (layout=tracks-events)",
+      "when": "项目自有已存在Tracks九列事件页文字补漏，冻结sourceSHA、eventName/propertyName、beforeValue和实际合并首格；复用原事务/单写锁/Receipt，只改现有文字叶，不新增行页、改身份目标或调用Luban导出"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "NovaFramework.Runtime.Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / RequestInAppReviewAsync / OpenAppSettingsAsync / OpenNotificationSettingsAsync",
+      "when": "已有Framework Native业务接入：跳过SDK/Kit安装与维度配置，在授权项目自有入口复用唯一门面、options/ct/生命周期与系统结果语义；系统提示、评价与设置跳转由另行精确授权运行阶段验收，不伪装Nova Action"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B <resolvedFramework>/Agents/Tools/nova_tracks_source.py --project-root <projectRoot> inspect|plan|execute|verify|recover",
+      "when": "对当前全登记快照中的项目自有Tracks事件页，以完整草稿和代码证据执行新页、事件、属性、定向文字/目标及单色样式结构事务；复用共享事务，不改已安装缓存源；Verify只读，Recover绑定原Receipt和原草稿独立重算"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.tracks.generate-registry",
+      "when": "只对scope=all冻结全登记源/meta、真实resolved包、manifest/lock和既有输出，复用TrackRegistry.Generate生成并独立核验汇总；编辑源后重新Plan，不自动打开Excel或触发上报"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.ensure-panel-references",
+      "when": "只对已安装IAP Mobile/ThirdPay/Voucher白名单Store，在已有IAPPluginConfig的真实m_StoreConfigList.m_Items中补同一逻辑组缺项；保留旧项值与顺序，冻结程序集/源码/版本，独立Plan和Verify后再字段patch、正式Runtime导出"
     }
   ],
   "inputs": [
@@ -59,31 +164,42 @@
     },
     {
       "name": "sdkOrKitPackageName",
+      "required": false,
+      "description": "SDK/Kit分支必需且从实际工程读取；Framework Native分支不要求包/Config，直接核对当前Framework Native文档与门面。"
+    },
+    {
+      "name": "configurationOnboardingOrBusinessIntegrationIntent",
       "required": true
     },
     {
       "name": "packageManagementIntent",
-      "required": true
+      "required": false,
+      "description": "只有实际需要安装或升级时才提供；已解析、配置且满足业务目标的包跳过 UPM 写入"
     },
     {
       "name": "resolvedPackageDocumentationEntry",
-      "required": true
+      "required": false,
+      "description": "SDK/Kit分支必需且从实际工程读取；Framework Native分支不要求包/Config，直接核对当前Framework Native文档与门面。"
     },
     {
       "name": "configMaster",
-      "required": true
+      "required": false,
+      "description": "SDK/Kit分支必需且从实际工程读取；Framework Native分支不要求包/Config，直接核对当前Framework Native文档与门面。"
     },
     {
       "name": "platformChannelDevelopMode",
-      "required": true
+      "required": false,
+      "description": "SDK/Kit分支必需且从实际工程读取；Framework Native分支不要求包/Config，直接核对当前Framework Native文档与门面。"
     },
     {
       "name": "targetSdkOrKitConfigTypesAndDocumentedChangeSet",
-      "required": true
+      "required": false,
+      "description": "SDK/Kit分支必需且从实际工程读取；Framework Native分支不要求包/Config，直接核对当前Framework Native文档与门面。"
     },
     {
       "name": "configRuntimeTarget",
-      "required": true
+      "required": false,
+      "description": "SDK/Kit分支必需且从实际工程读取；Framework Native分支不要求包/Config，直接核对当前Framework Native文档与门面。"
     },
     {
       "name": "targetPlatformAndDocumentedPreconditions",
@@ -96,6 +212,119 @@
     {
       "name": "confirmedUpmPlanId",
       "required": false
+    },
+    {
+      "name": "businessGoalAndConfirmedProjectOwnedSourceEntryAndWriteSet",
+      "required": false,
+      "description": "业务接入分支必需；可读取的入口、程序集与路径由 Agent 核实，不要求新手抄写"
+    },
+    {
+      "name": "businessSuccessFailureCancellationAndSubscriptionOwner",
+      "required": false,
+      "description": "业务接入分支必需；核对异步取消、迟到回调、订阅释放与现有流程拥有者"
+    },
+    {
+      "name": "businessIdentityPersistenceIdempotencyAndDependencyChain",
+      "required": false,
+      "description": "业务接入分支按真实 API 必需；冻结账号、订单、请求或领取身份及表源、正式导出、Config、资源与运行消费链，不虚构协议或唯一标识"
+    },
+    {
+      "name": "businessLocalProbeAndSelectedOperationContracts",
+      "required": false,
+      "description": "业务接入分支必需；只读取命中 Operation，探针验证实际可达入口与明确本地行为，不以 Ready 或 Mock 替代服务证据"
+    },
+    {
+      "name": "separatelyAuthorizedExternalExecutionContext",
+      "required": false,
+      "description": "只记录另行授权运行阶段的脱敏环境、账号来源、商品/订单/任务、接收方、数据范围、次数与重放策略；不扩大本 Workflow 的本地 effects 或允许未经授权请求"
+    },
+    {
+      "name": "inlineProductSourceSheetHashAndFullReplacementScope",
+      "required": false,
+      "description": "IAP/微信商品导入必需已有自有xlsx、显式Sheet、整源SHA256、family、目标Config/list路径及新增变更删除差异；GameCurrency还冻结当前或授权最终m_GameCurrencyCoinsPerYuan并与列表同次保存，单字段容量超限不拆批"
+    },
+    {
+      "name": "tracksOwnedWorkbookEventPropertyAndTextWriteSet",
+      "required": false,
+      "description": "已有Tracks文字维护必需自有xlsx及sourceRoots/generatedRoots、whole sourceSHA、唯一Sheet/eventName/propertyName、允许文字列beforeValue/afterValue、实际合并首格范围与证据；身份/目标/新行页/样式治理不由叶子入口完成"
+    },
+    {
+      "name": "nativeCapabilityEntryPlatformOptionsFrequencyAndSession",
+      "required": false,
+      "description": "Native分支必需已确认项目自有入口、系统能力/平台版本、权限options或评价触发频率、取消/迟到回调拥有者、已有Firebase自动权限策略；真实系统请求和跳转须另行精确授权，不向新手转嫁可读取类型路径"
+    },
+    {
+      "name": "tracksStructureRegistryCodeEvidenceAndCompleteDraft",
+      "required": false,
+      "description": "结构分支必需全sourceHash/ownerRoot、真实registry源/meta/package/codeEvidence、完整operations及wholeSource写集；精确冻结newSheet/appendEvent/appendProperties/setCell/normalizeStyle，目标需原值和目的地证据，拒不支持坐标关系"
+    },
+    {
+      "name": "registeredPanelReferenceCollectionAndTypes",
+      "required": false,
+      "description": "首次IAP Store必需已有SDK面板target、真实m_StoreConfigList.m_Items、已安装精确Store FullName、掩码同组坐标及全部旧项保留写集；类型从已解析包核实，不接受任意CLR或初始值"
+    },
+    {
+      "name": "iapProductCatalogUploadRuntimeEnvironmentVersionHashAndAuthorizedSingleAttempt",
+      "required": false,
+      "constraint": "仅商品目录上传分支必需：现有runtimeGuid及Debug/Release意图、持久化激活Master已保存显式ExportTarget、精确App/坐标/版本/固定目标/目录Hash与数量、六文件/内存态/代码身份、最终请求Hash和一次外部授权；无任意URI/Header/Body/Key/商品数组。目录和请求只在原Prepared内存冻结，公开证据仅有限元数据。"
+    }
+  ],
+  "taskProfiles": [
+    {
+      "id": "tracks-source-text",
+      "description": "只通过既有 nova_table_source tracks-events 事务修改项目自有既有事件页文字；冻结整源、复合身份、位置、合并与写集，验收实际文字及全部非目标部件并清场。不执行 UPM/Config 子节点，不初始化 SDK、不改事件/属性身份、目标或结构，不生成汇总或发送事件；完整工作流的原写入、锁、确认和源码闭包保持。",
+      "taskIds": [
+        "tracks.source.text"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "tracksOwnedWorkbookEventPropertyAndTextWriteSet"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B <resolvedFramework>/Agents/Tools/nova_table_source.py --project-root <projectRoot> inspect|plan|execute|verify (layout=tracks-events)"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write"
+      ],
+      "requires": []
+    },
+    {
+      "id": "tracks-source-structure",
+      "description": "仅在已冻结的真实全登记与自有源归属下，复用结构CLI修改Tracks事件页并生成本地全源汇总；验收真实源与产物、独立恢复及清场。不执行UPM/Config子节点，不修改生成器或业务代码，不初始化SDK、发送事件或证明厂商接收；完整原Skill闭包指纹、写入/确认/锁/幂等门保持。",
+      "taskIds": [
+        "tracks.source.structure"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "tracksStructureRegistryCodeEvidenceAndCompleteDraft"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B <resolvedFramework>/Agents/Tools/nova_tracks_source.py --project-root <projectRoot> inspect|plan|execute|verify|recover"
+        },
+        {
+          "kind": "agent-action",
+          "entry": "nova.project.tracks.generate-registry"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "requires": []
     }
   ],
   "effects": [
@@ -107,14 +336,30 @@
     "allow": [
       "Packages/manifest.json and Packages/packages-lock.json changes produced only by the confirmed nova-project-manage-upm-package plan and Unity Package Manager Resolve",
       "confirmed ConfigMasterSO, explicit EnabledSDKs or EnabledKits members, ConfigRuntimeSO target and resolved YooAssetSettings.asset changes delegated to nova-project-configure-runtime",
-      "target package INDEX-documented project-local platform prerequisite or configuration target only after its exact write set has separate user confirmation"
+      "target package INDEX-documented project-local platform prerequisite or configuration target only after its exact write set has user authorization",
+      "explicitly authorized project-owned business source and existing reachable SDK/Kit entry, subscription, lifecycle, error/cancel, identity and idempotent consumer implementation",
+      "necessary confirmed business UI, Event, Procedure, Persistence, Network and table source or formal generated output through the matching existing Operation and its exact write scope",
+      "necessary confirmed Scene, Prefab, asset reference or UI event binding only through the selected existing Operation and Unity Editor/MCP, never handwritten YAML",
+      "explicit project-owned existing Tracks event-page text cells through shared nova_table_source tracks-events transaction; preserve identity, targets, rows, merges, styles and all other ZIP parts",
+      "confirmed project-owned Framework Native business entry and lifecycle through shared source/UI/Event/Procedure operations, without SDK/Kit install, ConfigMaster changes or direct native/vendor integration",
+      "confirmed project-owned registered Tracks event pages through nova_tracks_source structural transaction; exact one-source OOXML part write set plus owned Library/Nova/AgentActions/TableSource/ backup, plan and receipt; existing event/property/order/ownership preserved",
+      "Library/Nova/Tracks/Tracks.generated.xlsx and exact owned backup only through nova.project.tracks.generate-registry all-source plan and independent content/style/hash verification",
+      "only nova.project.iap.upload-product-catalog: explicitly authorized single HTTP submission of the exact frozen exported catalog to its mode-bound fixed endpoint; no payment, restore, order, validation or delivery operation",
+      "Library/Nova/AgentActions/IapCatalogUploads/<attemptId>.json formal intent/result through the catalog Action; exact original Operation and records retained for read-only Verify; no replay after reload",
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**, resolved SDK/Kit package contents or Library/PackageCache/** manual edits",
       "arbitrary JSON, YAML, reflection or execute_code field patches",
       "unconfirmed ConfigMaster coordinate, Config type, platform prerequisite, native project file, Sample, Scene, Prefab or business source",
-      "vendor dashboard, credential, store, CDN, external deployment, application install or device state changes",
-      "Bundle or Player build, Git commit or push"
+      "hand-edited generated output, direct vendor API integration, duplicated SDK initialization or login notification, invented protocol, reward identity or order identity",
+      "real login/bind, cloud overwrite, payment/restore/delivery, Topic subscription, analytics/exposure or push task execution without a separate exact external authorization and capable execution stage",
+      "vendor dashboard or credential/store management, CDN or other external deployment, application install or device state changes outside the exact separately authorized product-catalog Action; catalog credentials are read only from the frozen Runtime and never exposed",
+      "Bundle or Player build, Git commit or push",
+      "installed Tracks package snapshots, new/deleted Tracks rows or sheets, event/property/target identity edits and merge/style governance through text-leaf transaction",
+      "system notification prompt, in-app review request or settings-page jump during local integration without separately frozen exact runtime authorization",
+      "Tracks structural deletion, sheet renaming, moving event ownership, unsupported coordinate-bound OOXML relationships or third-party source changes; restore only original receipt and independently recomputed before/after hash",
+      "catalog upload by arbitrary URI, Header, Body, Key/IV, reflection or C#; automatically change client version, repeat a consumed Prepared, recover Execute, replay a Batch, or report catalog application/payments from HTTP/Step/Batch completion"
     ]
   },
   "locks": [
@@ -128,18 +373,27 @@
     "config-master",
     "config-runtime-target",
     "target-platform-prerequisites",
-    "active-scene"
+    "active-scene",
+    "confirmed-business-source-and-binding",
+    "selected-operation-shared-output",
+    "business-account-order-request-and-idempotency-state",
+    "tracks-all-registered-sources-and-package-metadata",
+    "tracks-owned-source-and-transaction-root",
+    "Library/Nova/Tracks/Tracks.generated.xlsx",
+    "iap-product-catalog-upload",
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
   ],
   "idempotency": "orchestrate",
   "confirmation": {
     "requiredFor": [
       "the exact nova-project-manage-upm-package plan for install-latest or upgrade-latest",
-      "ambiguous package identity, source, package documentation entry, ConfigMaster, coordinate, Config type, field change, runtime target, platform prerequisite or local probe",
+      "ambiguous package identity, source, package documentation entry, ConfigMaster, coordinate, Config type, field change, runtime target, platform prerequisite, business entry, progress/delivery policy, event ownership or probe",
       "any documented platform prerequisite that writes project configuration or native platform files",
-      "create or change SDK/Kit configuration, ConfigRuntimeSO, project platform settings or generated output",
-      "credential use, vendor dashboard operation, external write, application install, delete, Git commit or push"
+      "create or change SDK/Kit configuration, ConfigRuntimeSO, project platform settings, business source, necessary Unity binding or generated output beyond the user's existing precise authorized scope",
+      "credential use, vendor dashboard operation, external write, account/transaction/task execution or automatic probe side effects, application install, delete, Git commit or push",
+      "catalog submission exact Debug/Release environment, fixed receiver, exported runtime/client version, catalog identity and at-most-one request; plan_id binding is not human authorization"
     ],
-    "rule": "Workflow 权限等于子 Operation 与目标包文档化平台入口的精确权限并集；每次确认只绑定唯一包、版本/来源、包内文档、三维坐标、Config 类型、写入集、平台前置和本地探针。包 Resolve、文档、坐标、字段、平台或写入集漂移后旧确认失效，且密钥值永不进入确认或报告。"
+    "rule": "Workflow 权限等于已授权本地业务实现、选中子 Operation 与目标包文档化入口的精确权限并集；现有授权持续有效，不为必要本地实施反复确认。冻结唯一包、版本/来源、包内文档、三维坐标、Config 类型、写集、平台前置、业务入口/生命周期/身份/幂等与本地探针，目标或语义漂移则重新核对。Catalog effects 保持本地范围；真实账号、交易、云写、任务、权限、打点及自动探针外部副作用须由另行精确授权的运行阶段冻结环境、目标、接收方、数据、次数与重放，缺条件继续其余已授权本地工作并报告 partial。密钥值永不进入确认或报告。 商品目录上传作为独立受控外部阶段，复用当前Action的ExternalWrite/Credential声明、精确环境/目录/版本/接收方与至多一次请求授权；不改变Tracks本地profiles的副作用，也不扩展其它服务权限。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -149,10 +403,23 @@
     "not_applicable"
   ],
   "evidence": [
-    "UPM Plan、用户确认、Resolve 后的精确 package id、版本与来源",
+    "必要时的 UPM Plan、用户授权与 Resolve 后精确 package id、版本/来源；既有包满足目标时提供只读匹配证据并跳过写入",
     "目标已解析包的首个存在 Nova/Doc、Nova/Docs 或 Nova/DOCS INDEX，以及仅由该 INDEX 指向的配置和平台前置证据",
-    "单一 Platform Channel DevelopMode 的 ConfigMaster、目标 Config 类型、ConfigRuntimeSO 导出与 Unity 编译证据",
+    "单一 Platform Channel DevelopMode 的 ConfigMaster、目标 Config 类型与实际 ConfigRuntimeSO 一致性；变更后的正式导出和 Unity 编译证据，不重复导出已满足配置",
     "目标包文档定义的最小本地初始化、注册、可用性或错误信号",
-    "已脱敏的平台前置结论、未验证外部条件，以及未声称厂商后台或真实设备成功的边界说明"
+    "业务接入时的实际可达入口、精确公开 API、真实依赖及表源/正式导出/Config/资源绑定链、成功/失败/取消/订阅释放和账号/订单/请求幂等消费证据",
+    "业务接入时的编译与允许范围内 Play 行为证据，Unity 绑定须核对持久化；只读源码审查、Ready 或 Mock 不得标为真实业务 validated",
+    "已脱敏的平台前置结论、真实服务运行阶段的精确授权与独立证据或具体缺项，未取得外部/设备证据时整体 partial",
+    "本轮临时探针、脚本/meta、对象、日志、测试态配置与非目标序列化噪声清理，必要 Refresh 和目标写集/git status 核对",
+    "inline products exact source/SHA/Sheet/family and all known entry fields, no unrelated cells; prepared-only is not a Master save",
+    "complete replacement additions/changes/deletions, dimensional physical write set, live editable fields, source recheck, Config receipt and formal runtime export; actual store transaction evidence separate",
+    "Tracks source ownership/current actual event-field-target chain and exact deterministic executor or remaining explicit gap; workbook registration, generated aggregation and vendor receipt separate",
+    "Framework Native branch: exact current NativeComponent/INativeManager and platform requirements, existing initialized facade/reachable business binding, options/ct/result semantics and owner lifetime; Editor Unsupported, device authority and review RequestDispatched limitations separate; skipped SDK/Kit configuration facts explicit",
+    "Tracks structural source Plan/Execute/Verify/Recover receipts with exact all-source/package/code freeze, supported OOXML part changes and original bytes; independently recomputed recovery, followed by fresh all-source aggregation Plan/Execute/Verify; vendor receipt remains separate",
+    "ensure-panel-references exact installed whitelist/source/assembly/MVID and all physical group additions, preserved old lists/values, sole Master receipt and readonly Verify; subsequent field patch and formal Runtime export checked independently",
+    "product catalog upload: original describe/Plan, exact saved Master ExportTarget and six-file/memory/code identity, mode/version/catalogHash/productCount/requestSha256/requestByteCount; App AES values, Body and raw response never emitted",
+    "product catalog upload: exact external authorization and one consumed Plan/Prepared; durable pre-network intent and finite outcome under Library/Nova/AgentActions/IapCatalogUploads; shared legacy/Action busy guard, no queued retry",
+    "product catalog upload: read-only Verify of original attempt; 2xx only HTTP acceptance, exact409 code CATALOG_VERSION_CONFLICT means not-applied; missing/partial outcome, cancellation, failure or reload never drives resend; current application proof absent means partial",
+    "product catalog upload: independent catalog branch only, no added top-level Skill/task profile or original payment task completion; no-network fake sender tests are not actual backend upload acceptance"
   ]
 }

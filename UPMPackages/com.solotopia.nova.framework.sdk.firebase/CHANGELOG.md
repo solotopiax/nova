@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-10-23
+
 ### Added
+
+- FirebaseDemo 新增默认空的 Topic 输入框及独立订阅、退订按钮，显式点击调用 FirebasePlugin.SetTopicSubscribed；页面打开和关闭仅接线或解绑，不自动改变订阅，请求已派发不代表 SDK 回执成功。
 
 ### Changed
 
+- Android Manifest 规则构造供构建回调和受控预测共用，保持原有 Activity 注册和配置分支行为。
+
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 FirebaseDemo APK 流水线的旧输出参数，改用 OutputFolderPath。
+
+- 移除 FirebaseDemo 在 GameLogin 成功后重复触发的 SDK 登录通知。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
 
 ## [0.1.19] - 2026-10-10
 

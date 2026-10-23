@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -19,9 +19,24 @@
       "when": "修改已确认的 Prefab 节点、组件或序列化引用"
     },
     {
-      "kind": "unity-menu",
-      "entry": "confirmed project UI registration and export entry",
-      "when": "注册内容确有变化且需要更新本次生成物"
+      "kind": "workspace-inspection",
+      "entry": "confirmed business UI Prefab TMP nodes and localization Key/FontMark authoritative mapping",
+      "when": "仅在批量本地化绑定分支查出精确自有页面/目录节点、已有组件/值、variant/嵌套来源与权威Key/字体映射，不扩大到全工程，不以当前文案猜唯一Key"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "manage_prefabs modify_contents / manage_components set_property for confirmed TextLocalizing node mappings",
+      "when": "按当前Provider Schema串行补唯一缺失TextLocalizing并保存真实m_LocalizingKeyName/m_LocalizingFontMark；已存在不重复挂，相同值跳过，遵守edit-settings目标/override/Stage保存门，不全工程FixMissingInPrefabs、不手写YAML"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "TextLocalizing.SetKeyName / SetFontMark / KeyName / FontMark + Nova.Localization.HasSupportedLanguage / HasText / GetText / SetLanguageSync / SetLanguageAsync",
+      "when": "仅在已授权业务source实现动态绑定或本次完整请求语言集合Play观察；运行时setter不证明Prefab持久化，切换后核对实际语言文本/字体，测试偏好需恢复，不以compile替代全部请求语言验收（切换未指定集合最少两种）"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.ui.export",
+      "when": "UI注册源和已保存UISettings已冻结；全量scope=all/code/data，单文件sourcePath仅code/data；使用Plan/Execute/编译后Verify"
     },
     {
       "kind": "csharp-api",
@@ -48,7 +63,22 @@
     },
     {
       "name": "uiExportAction",
-      "required": false
+      "required": false,
+      "constraint": "使用nova.project.ui.export，传scope与可选精确sourcePath；单文件all不支持，不拼接伪原子调用"
+    },
+    {
+      "name": "ordinaryUiUpdateOrBatchLocalizationBindingIntent",
+      "required": true
+    },
+    {
+      "name": "confirmedPrefabOrSceneNodeSetAndAuthoritativeKeyFontMarkMapping",
+      "required": false,
+      "description": "批量本地化分支必需；从精确自有页面/目录读出节点与现有绑定，冻结映射、补组件、override/源范围，不猜Key、不覆盖无关节点"
+    },
+    {
+      "name": "localizationSourceFontResourceDependencyAndRequestedLanguageSetAcceptance",
+      "required": false,
+      "description": "批量本地化分支必需；语言源/正式导出复用update-localization，字体Mark/资源/布局与完整请求Play语言集合明确：三种请求覆盖三种，明确单语言不扩大；只要求切换但未指定集合时冻结基准与目标至少两种，记录测试偏好及恢复路径"
     }
   ],
   "effects": [
@@ -61,31 +91,41 @@
       "confirmed existing business UIView source",
       "confirmed existing target Prefab and serialized bindings",
       "confirmed existing UI registration source",
-      "generated UI output required by this registration change"
+      "generated UI output required by this registration change",
+      "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
+      "confirmed project-owned UI node set missing TextLocalizing and explicit Key/FontMark fields through shared Unity MCP or selected edit-settings Operation",
+      "necessary authoritative localization source and formal output only through selected nova-project-update-localization and its exact write scope"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
       "handwritten Prefab or Scene YAML",
       "unknown layout or unrelated Prefab nodes",
-      "unrelated UI registration or generated output"
+      "unrelated UI registration or generated output",
+      "manual edits to generated UI output",
+      "unconfirmed global TextLocalizing repair, inferred Key mapping, duplicate component, inherited source Apply/Unpack or unknown Stage/global dirty asset save",
+      "runtime TextLocalizing setters used as a substitute for persistent binding, handwritten RTL reversal or unconfirmed input/layout migration"
     ]
   },
   "locks": [
     "unity-editor",
     "asset-database",
     "active-scene",
-    "ui-registration"
+    "ui-registration",
+    "ui-export",
+    "batch-localization-node-mapping-and-prefab-override",
+    "localization-play-language-preference"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
       "ambiguous existing View, Prefab, UIGroup, registration source or layout scope",
+      "ambiguous batch node set, authoritative Key/FontMark, source/variant/override scope, font resource, test language or layout acceptance",
       "change UIGroup or registration semantics",
       "replace non-generated asset",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认目标页面、最小写入集和副作用；输入或范围改变后旧确认失效。"
+    "rule": "确认目标页面、最小写入集和副作用；批量本地化冻结精确节点/原值/目标Key与字体、补组件、override/源范围、完整请求验证语言集合和偏好恢复（明确单语言不扩大，切换未指定集合时基准与目标至少两种）。可读事实由Agent取得，现有精确授权持续有效，目标或语义漂移后重新冻结。UI导出确认绑定Action PlanId及共享配置/UITables/删除范围；来源/语言/字体导出与Stage全局保存遵守所选Operation，不因批量扩大未确认写集。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -97,7 +137,10 @@
   "evidence": [
     "目标 View、Prefab 和注册源的局部 diff",
     "Unity 保存的 Prefab 与序列化绑定",
-    "选定 UI 导出 Action 的结果",
-    "Unity 编译或明确授权后的 Play smoke"
+    "注册源确有变更时的 nova.project.ui.export Plan/Receipt/编译后Verify，来源Hash与完整选定输出一致",
+    "Unity 编译及任务必需的Play交互证据，compile不能代替明确要求的行为验收",
+    "批量本地化时逐节点权威映射、唯一组件、持久Key/FontMark与variant/嵌套override证据，必要源/正式导出/Config/字体资源消费完整链",
+    "批量本地化时实际入口完整请求语言集合逐项的文本/字体/布局/开关页验证及原语言偏好恢复，源码/Schema/未覆盖请求集合的截图不能标validated",
+    "测试对象/runner/meta/日志/偏好/动态字体及非目标序列化噪声清场与目标保存范围核对"
   ]
 }

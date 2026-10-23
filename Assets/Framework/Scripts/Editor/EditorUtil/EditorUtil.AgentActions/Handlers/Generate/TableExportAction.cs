@@ -12,11 +12,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Path = System.IO.Path;
 
 namespace NovaFramework.Editor
 {
@@ -60,7 +63,7 @@ namespace NovaFramework.Editor
         }
 
         [Serializable]
-        private sealed class OutputEvidence
+        internal sealed class OutputEvidence
         {
             public string kind;
             public string projectId;
@@ -71,11 +74,15 @@ namespace NovaFramework.Editor
         [Serializable]
         private sealed class Receipt
         {
+            public int receiptVersion;
             public string scope;
             public string scenePath;
             public string componentId;
+            public string settingsHash;
             public Job[] jobs;
             public OutputEvidence[] outputs;
+            public TableSettings sourceSettings;
+            public DataModuleExportActionCommon.InputSnapshot sourceInputs;
         }
 
         private sealed class State
@@ -86,6 +93,7 @@ namespace NovaFramework.Editor
             public string SettingsHash;
             public TableSettings Settings;
             public Job[] Jobs;
+            public DataModuleExportActionCommon.InputSnapshot SourceInputs;
         }
 
         /// <summary>
@@ -145,13 +153,15 @@ namespace NovaFramework.Editor
                     }
                 }
             }
+            if (!TryCaptureSourceInputs(selectedSettings, jobs, context.CancellationToken,
+                    out DataModuleExportActionCommon.InputSnapshot sourceInputs, out string sourceError))
+            {
+                return Blocked(sourceError);
+            }
 
-            string[] writeSet = jobs.SelectMany(EnumerateJobOutputPaths)
-                .Select(path => Normalize(path).TrimEnd('/') + "/**")
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(path => path, StringComparer.Ordinal)
-                .ToArray();
-            string scope = request.scope.ToLowerInvariant();
+            string[] writeSet = BuildWriteSet(jobs);
+            // 选择、冻结和执行使用同一规范范围，避免首尾空白使 code/data 落入全量分支。
+            TryNormalizeScope(request.scope, out string scope);
             var state = new State
             {
                 Scope = scope,
@@ -160,14 +170,19 @@ namespace NovaFramework.Editor
                 SettingsHash = resolved.SettingsHash,
                 Settings = selectedSettings,
                 Jobs = jobs,
+                SourceInputs = sourceInputs,
             };
             var receipt = new Receipt
             {
+                receiptVersion = 2,
                 scope = scope,
                 scenePath = resolved.ScenePath,
                 componentId = resolved.ComponentId,
+                settingsHash = resolved.SettingsHash,
                 jobs = jobs,
                 outputs = Array.Empty<OutputEvidence>(),
+                sourceSettings = selectedSettings,
+                sourceInputs = sourceInputs,
             };
             return Task.FromResult(new AgentActionHandlerPlan
             {
@@ -179,6 +194,8 @@ namespace NovaFramework.Editor
                 Evidence = new[]
                 {
                     "Plan 已只读冻结活动场景、唯一 Nova/TableComponent、TableSettings、Project、Description 与输出目录。",
+                    "已冻结正式 luban.conf、已解析的配置/数据/Schema 读根、模板与实际 Luban/protoc 工具文件集合和 SHA；Table 命名空间仍由自身 Luban Target 决定。",
+                    "读根采用保守全文件快照；Schema 的二次外部 include 不由当前 Project 模型解析，不据此声明其完整依赖闭包。",
                 },
                 RecoveryPayloadJson = Util.Json.Serialize(receipt),
             });
@@ -202,6 +219,12 @@ namespace NovaFramework.Editor
                     c_ActionId, "blocked", resolveError ?? "活动场景、TableComponent 或 TableSettings 已漂移，请重新 Plan。"));
             }
 
+            if (!TryMatchSourceInputs(frozen.Settings, frozen.Jobs, frozen.SourceInputs,
+                    context.CancellationToken, out string sourceError))
+            {
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked",
+                    "Table 配置、源文件或模板已漂移，请重新 Plan：" + sourceError));
+            }
             context.CancellationToken.ThrowIfCancellationRequested();
             string[] ids = frozen.Jobs.Select(job => job.qualifiedDescriptionId).ToArray();
             bool exported;
@@ -223,6 +246,12 @@ namespace NovaFramework.Editor
                     c_ActionId, "partial", "Table Exporter 返回失败；此前描述可能已经发布，Action 不会自动重放。"));
             }
 
+            if (!TryMatchSourceInputs(frozen.Settings, frozen.Jobs, frozen.SourceInputs,
+                    context.CancellationToken, out string postSourceError))
+            {
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial",
+                    "Table 已导出，但读取来源在执行期间漂移；不会自动重放：" + postSourceError));
+            }
             var outputs = new List<OutputEvidence>();
             try
             {
@@ -246,11 +275,15 @@ namespace NovaFramework.Editor
 
             var receipt = new Receipt
             {
+                receiptVersion = 2,
                 scope = frozen.Scope,
                 scenePath = frozen.ScenePath,
                 componentId = frozen.ComponentId,
+                settingsHash = frozen.SettingsHash,
                 jobs = frozen.Jobs,
                 outputs = outputs.ToArray(),
+                sourceSettings = frozen.Settings,
+                sourceInputs = frozen.SourceInputs,
             };
             AgentActionResult result = AgentActionResult.Create(
                 c_ActionId, "partial", "Table 已导出，等待 Verify 核对代码与数据产物摘要。" );
@@ -271,17 +304,28 @@ namespace NovaFramework.Editor
         public override Task<AgentActionResult> VerifyAsync(string receiptJson, AgentActionExecutionContext context)
         {
             Receipt receipt;
+            bool sourceContract = false;
             try
             {
+                sourceContract = JObject.Parse(receiptJson).Properties().Any(property =>
+                    new[] { "receiptVersion", "sourceSettings", "sourceInputs", "settingsHash" }
+                        .Contains(property.Name, StringComparer.Ordinal));
                 receipt = Util.Json.Deserialize<Receipt>(receiptJson);
             }
             catch (Exception exception)
             {
-                return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", "Table Export Receipt 无法解析：" + exception.Message));
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, sourceContract ? "partial" : "blocked",
+                    "Table Export Receipt 无法解析：" + exception.Message));
             }
             if (receipt?.jobs == null || receipt.jobs.Length == 0 || receipt.outputs == null)
             {
                 return Task.FromResult(AgentActionResult.Create(c_ActionId, "blocked", "Table Export Receipt 不完整。"));
+            }
+            if (sourceContract && (receipt.receiptVersion != 2 ||
+                !TryVerifyCurrentSourceScope(receipt, context, out _)))
+            {
+                return Task.FromResult(AgentActionResult.Create(c_ActionId, "partial",
+                    "Table 新 Receipt 的配置、源文件或模板快照缺失或已漂移；不会重放导出。"));
             }
 
             OutputEvidence[] expectedOutputs = receipt.jobs.SelectMany(job =>
@@ -310,7 +354,239 @@ namespace NovaFramework.Editor
             success.Evidence.AddRange(receipt.outputs.Select(output =>
                 $"{output.kind}:{output.projectId}/{output.descriptionId}，{output.artifact.fileCount} 个文件，SHA-256={output.artifact.sha256}"));
             success.Evidence.Add("Verify 未调用 Exporter、AssetDatabase.Refresh 或任何恢复写入。" );
+            if (!sourceContract)
+            {
+                success.Warnings.Add("旧 Table Receipt 仅证明产物摘要一致，未冻结配置、源文件或模板，不能继承新输入快照证据。");
+            }
             return Task.FromResult(success);
+        }
+
+        /// <summary>
+        /// 将新收据绑定到当前活动场景、组件与设置，再由当前设置重建选择和直接读取范围。
+        /// </summary>
+        /// <param name="receipt">必须包含设置身份和完整输入的新收据。</param>
+        /// <param name="context">只读验证上下文。</param>
+        /// <param name="error">设置、选择或来源漂移原因。</param>
+        /// <returns>当前配置与来源仍完全匹配收据时返回 true。</returns>
+        private static bool TryVerifyCurrentSourceScope(Receipt receipt, AgentActionExecutionContext context, out string error)
+        {
+            error = "新收据缺少完整场景、组件或设置身份。";
+            try
+            {
+                if (string.IsNullOrWhiteSpace(receipt.scenePath) || string.IsNullOrWhiteSpace(receipt.componentId) ||
+                    string.IsNullOrWhiteSpace(receipt.settingsHash) ||
+                    !TableSettingsResolver.TryResolve(out TableSettingsResolver.Resolved current, out error) ||
+                    current.ScenePath != receipt.scenePath || current.ComponentId != receipt.componentId ||
+                    current.SettingsHash != receipt.settingsHash ||
+                    !TryMatchSourceSelection(current.Settings, receipt.scope, receipt.sourceSettings, receipt.jobs,
+                        out TableSettings selected, out Job[] jobs, out error)) return false;
+                return TryMatchOutputPaths(jobs, receipt.outputs, out error) &&
+                       TryMatchSourceInputs(selected, jobs, receipt.sourceInputs, context.CancellationToken, out error);
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException))
+            { error = exception.Message; return false; }
+        }
+
+        /// <summary>
+        /// 将新收据每个 code/data 证据绑定当前重建 Job 的真实输出目录，避免另一目录的合法摘要替代正式产物。
+        /// </summary>
+        /// <param name="jobs">由当前 TableSettings 重建且已匹配的完整 Job。</param>
+        /// <param name="outputs">新收据的执行后产物证据。</param>
+        /// <param name="error">槽位、产物类型或物理输出路径不一致的原因。</param>
+        /// <returns>每个正式输出槽位恰有同路径的 directory 证据时返回 true。</returns>
+        internal static bool TryMatchOutputPaths(Job[] jobs, OutputEvidence[] outputs, out string error)
+        {
+            error = "新收据的正式输出目录证据缺失或范围不完整。";
+            try
+            {
+                if (jobs == null || jobs.Any(job => job == null) || outputs == null ||
+                    outputs.Length != jobs.Sum(job => (job.exportsCode ? 1 : 0) + (job.exportsData ? 1 : 0))) return false;
+                foreach (Job job in jobs)
+                    foreach (string kind in new[] { "code", "data" }.Where(kind => kind == "code" ? job.exportsCode : job.exportsData))
+                    {
+                        OutputEvidence[] matches = outputs.Where(output => SameOutput(CreateExpectedOutput(kind, job), output)).ToArray();
+                        if (matches.Length != 1 || matches[0].artifact?.kind != "directory" ||
+                            !GenerateActionCommon.TryResolveProjectPath(kind == "code" ? job.codeOutputPath : job.dataOutputPath,
+                                "Table 当前输出", out string expected, out error) ||
+                            !GenerateActionCommon.TryResolveProjectPath(matches[0].artifact.path,
+                                "Table Receipt 输出", out string actual, out error) ||
+                            !string.Equals(expected, actual, StringComparison.Ordinal))
+                        { error = error ?? "新收据产物类型或物理路径与当前正式输出不一致。"; return false; }
+                    }
+                error = null;
+                return true;
+            }
+            catch (Exception exception) { error = exception.Message; return false; }
+        }
+
+        /// <summary>
+        /// 从当前 TableSettings 重建收据的限定描述，核对原生参数和完整 Job，不能由收据自造另一组合法来源。
+        /// </summary>
+        /// <param name="currentSettings">当前组件的真实设置。</param>
+        /// <param name="scope">收据记录的规范导出范围。</param>
+        /// <param name="expectedSettings">收据冻结的已选设置。</param>
+        /// <param name="expectedJobs">收据冻结的完整输出身份。</param>
+        /// <param name="selectedSettings">从当前设置重新解析的已选设置。</param>
+        /// <param name="jobs">从当前设置重新解析的完整 Job。</param>
+        /// <param name="error">限定描述或参数漂移原因。</param>
+        /// <returns>完整设置和输出身份一致时返回 true。</returns>
+        internal static bool TryMatchSourceSelection(TableSettings currentSettings, string scope,
+            TableSettings expectedSettings, Job[] expectedJobs, out TableSettings selectedSettings,
+            out Job[] jobs, out string error)
+        {
+            selectedSettings = null; jobs = Array.Empty<Job>(); error = "新收据缺少完整选中设置或 Job。";
+            if (expectedSettings?.Projects == null || expectedSettings.Projects.Count == 0 ||
+                expectedSettings.Projects.Any(project => project == null) || expectedJobs == null || expectedJobs.Length == 0 ||
+                expectedJobs.Any(job => job == null || string.IsNullOrWhiteSpace(job.qualifiedDescriptionId)) ||
+                expectedJobs.Select(job => job.qualifiedDescriptionId).Distinct(StringComparer.Ordinal).Count() != expectedJobs.Length)
+                return false;
+            if (!TryBuildSelection(currentSettings, new Request
+                { scope = scope, projectId = expectedSettings.Projects.Count == 1 ? expectedSettings.Projects[0].Id : null,
+                    descriptionIds = expectedJobs.Select(job => job.qualifiedDescriptionId).ToArray() },
+                    out selectedSettings, out jobs, out error)) return false;
+            if (!JToken.DeepEquals(JToken.FromObject(selectedSettings), JToken.FromObject(expectedSettings)) ||
+                !JToken.DeepEquals(JToken.FromObject(jobs), JToken.FromObject(expectedJobs)))
+            { error = "当前 TableSettings、原生参数或正式输出身份与新收据不一致。"; return false; }
+            error = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 复用 Project 只读模型解析直接读根，冻结全部非元文件及模板；不解释或改写 Luban 配置。
+        /// </summary>
+        /// <param name="settings">仅包含本次已选 Project 与导出描述的快照。</param>
+        /// <param name="jobs">本次正式输出，用于拒绝读取根与输出重叠。</param>
+        /// <param name="cancellationToken">取消只读扫描的令牌。</param>
+        /// <param name="snapshot">配置、文件集合及 SHA 快照。</param>
+        /// <param name="error">无法确定直接读根或存在路径风险时的原因。</param>
+        /// <returns>已取得保守直接读根快照时返回 true。</returns>
+        internal static bool TryCaptureSourceInputs(TableSettings settings, Job[] jobs, CancellationToken cancellationToken,
+            out DataModuleExportActionCommon.InputSnapshot snapshot, out string error)
+        {
+            snapshot = null; error = null;
+            try
+            {
+                if (settings?.Projects == null || settings.Projects.Count == 0 || jobs == null || jobs.Length == 0)
+                    throw new InvalidDataException("Table 输入快照缺少 Project 或 Job。");
+                var files = new HashSet<string>(StringComparer.Ordinal);
+                var directories = new HashSet<string>(StringComparer.Ordinal);
+                string luban = EditorUtil.Luban.CliRunner.GetLubanDllPath();
+                if (string.IsNullOrWhiteSpace(luban)) throw new InvalidDataException("Luban 工具未安装，不能冻结实际生成工具。");
+                directories.Add(Path.GetDirectoryName(Path.GetFullPath(luban)));
+                bool requiresProtoc = false;
+                foreach (TableLubanProjectSetting project in settings.Projects)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (project == null || !GenerateActionCommon.TryResolveProjectPath(project.ConfigPath,
+                            "Table luban.conf", out string configPath, out error) || !File.Exists(configPath))
+                        throw new InvalidDataException(error ?? "Table luban.conf 不存在。");
+                    files.Add(configPath);
+                    // 模型的 Excel/XML 诊断属于 Inspector 子集；不用这些诊断否定原生 Luban 支持的 Schema。
+                    TableProjectModel model = TableProjectModelBuilder.Build(configPath, _ => new List<string>());
+                    if (string.IsNullOrWhiteSpace(model.DataDirectory) || !Directory.Exists(model.DataDirectory))
+                        throw new InvalidDataException("无法由现有 Project 模型解析数据读根；请核实原生 luban.conf。");
+                    directories.Add(Path.GetDirectoryName(configPath));
+                    directories.Add(Path.GetFullPath(model.DataDirectory));
+                    foreach (string schemaPath in model.SchemaFiles)
+                    {
+                        if (Directory.Exists(schemaPath)) directories.Add(Path.GetFullPath(schemaPath));
+                        else
+                        {
+                            files.Add(Path.GetFullPath(schemaPath));
+                            directories.Add(Path.GetDirectoryName(Path.GetFullPath(schemaPath)));
+                        }
+                    }
+                    foreach (TableExportDescriptionSetting description in project.ExportDescriptions)
+                    {
+                        foreach (string template in description.CustomTemplateDirs ?? new List<string>())
+                            directories.Add(Path.GetFullPath(EditorUtil.Luban.ExportHelper.ResolveCustomTemplateDirectory(template)));
+                        bool code = jobs.Any(job => job.projectId == project.Id && job.descriptionId == description.Id && job.exportsCode);
+                        requiresProtoc |= code && description.CodeTargets?.Contains("protobuf3") == true;
+                        if (code && description.CodeTargets?.Contains("protobuf3") == true &&
+                            description.CodeTargets.Contains("cs-newtonsoft-json"))
+                            directories.Add(Path.GetFullPath(EditorUtil.Luban.ExportHelper.ResolveCustomTemplateDirectory(
+                                "Packages/com.solotopia.nova.framework/Templates/Luban/table-protobuf")));
+                    }
+                }
+                if (requiresProtoc)
+                {
+                    string protoc = EditorUtil.Proto.CliRunner.GetProtocPath();
+                    if (string.IsNullOrWhiteSpace(protoc)) throw new InvalidDataException("protoc 工具未安装，不能冻结实际生成工具。");
+                    files.Add(Path.GetFullPath(protoc));
+                    string include = EditorUtil.Proto.CliRunner.GetProtocIncludePath();
+                    if (!string.IsNullOrWhiteSpace(include)) directories.Add(Path.GetFullPath(include));
+                }
+                foreach (string output in jobs.SelectMany(EnumerateJobOutputPaths).Select(Path.GetFullPath))
+                    foreach (string directory in directories)
+                        if (IsPathWithin(output, directory) || IsPathWithin(directory, output))
+                            throw new InvalidDataException("Table 正式输出与冻结读根重叠，无法保证来源只读：" + output);
+                snapshot = DataModuleExportActionCommon.CaptureInputs(files, directories, cancellationToken);
+                return true;
+            }
+            catch (Exception exception) when (!(exception is OperationCanceledException))
+            {
+                error = exception.Message;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 重建相同直接读根与模板解析结果，核对文件内容和新增、删除成员，避免旧路径 SHA 漏掉集合漂移。
+        /// </summary>
+        /// <param name="settings">计划或新收据中的选中配置。</param>
+        /// <param name="jobs">计划或新收据中的正式输出。</param>
+        /// <param name="expected">必须存在的原始输入快照。</param>
+        /// <param name="cancellationToken">取消扫描令牌。</param>
+        /// <param name="error">身份、字节或成员集合漂移原因。</param>
+        /// <returns>当前来源仍完全匹配原快照时返回 true。</returns>
+        internal static bool TryMatchSourceInputs(TableSettings settings, Job[] jobs,
+            DataModuleExportActionCommon.InputSnapshot expected, CancellationToken cancellationToken, out string error)
+        {
+            error = null;
+            if (expected == null) { error = "输入快照缺失。"; return false; }
+            if (!TryCaptureSourceInputs(settings, jobs, cancellationToken,
+                    out DataModuleExportActionCommon.InputSnapshot actual, out error)) return false;
+            if (!DataModuleExportActionCommon.TryVerifyInputs(expected, cancellationToken, out error)) return false;
+            if (!string.Equals(Util.Json.Serialize(expected), Util.Json.Serialize(actual), StringComparison.Ordinal))
+            { error = "Luban 配置解析出的读根或模板文件集合已漂移。"; return false; }
+            return true;
+        }
+
+        /// <summary>
+        /// 按完整目录边界判断路径包含关系，不把相同前缀的相邻目录视作包含。
+        /// </summary>
+        /// <param name="candidate">待核路径。</param>
+        /// <param name="directory">候选父目录。</param>
+        /// <returns>路径等于或位于目录内时返回 true。</returns>
+        private static bool IsPathWithin(string candidate, string directory)
+        {
+            string root = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string path = Path.GetFullPath(candidate).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return string.Equals(path, root, StringComparison.OrdinalIgnoreCase) ||
+                   path.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 展示正式输出目录及 Unity 为新目录和祖先目录创建的元文件，不把只读来源纳入写集。
+        /// </summary>
+        /// <param name="jobs">本次已选的正式 code/data 目录。</param>
+        /// <returns>排序去重后的保守正式写入范围。</returns>
+        internal static string[] BuildWriteSet(IEnumerable<Job> jobs)
+        {
+            var paths = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string output in jobs.SelectMany(EnumerateJobOutputPaths))
+            {
+                string normalized = Normalize(output).TrimEnd('/');
+                paths.Add(normalized + "/**");
+                string directory = Path.GetFullPath(output);
+                while (!string.IsNullOrEmpty(directory) && GenerateActionCommon.ToProjectRelative(directory).StartsWith("Assets/", StringComparison.Ordinal))
+                {
+                    if (!Directory.Exists(directory) || !File.Exists(directory + ".meta"))
+                        paths.Add(GenerateActionCommon.ToProjectRelative(directory + ".meta"));
+                    directory = Path.GetDirectoryName(directory);
+                }
+            }
+            return paths.OrderBy(value => value, StringComparer.Ordinal).ToArray();
         }
 
         /// <summary>
@@ -539,7 +815,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 只读取活动且已保存场景，要求其中恰好一个 Nova 根及其下恰好一个 TableComponent。
+        /// 只读取活动且已保存场景的唯一 TableComponent，严格解包组件 JSON 后冻结真实存在的 m_Setting。
         /// </summary>
         internal static bool TryResolve(out Resolved resolved, out string error)
         {
@@ -568,7 +844,8 @@ namespace NovaFramework.Editor
             }
 
             string componentJson = EditorJsonUtility.ToJson(components[0], false);
-            TableComponentSnapshot snapshot = JsonUtility.FromJson<TableComponentSnapshot>(componentJson);
+            if (!EditorObjectJson.TryReadSnapshot(componentJson, nameof(TableComponent), "m_Setting", out TableComponentSnapshot snapshot, out error))
+                return false;
             if (snapshot?.m_Setting == null)
             {
                 error = "TableComponent.m_Setting 未配置。";

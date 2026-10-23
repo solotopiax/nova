@@ -5,7 +5,7 @@
  * filename:  AdChannelPluginBase.Methods.cs
  * author:    yingzheng
  * created:   2026/5/13
- * descrip:   AdChannelPluginBase 私有工具方法
+ * descrip:   广告渠道公共工具、原厂调用保护与展示生命周期
  ***************************************************************/
 
 using System;
@@ -19,313 +19,250 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     public abstract partial class AdChannelPluginBase
     {
         /// <summary>
-        /// 向指定 format 的状态机注册多个 AdUnit 槽位。
-        /// 空 options 直接 Warning 跳过；同 placementId 重复时 Warning 跳过。
-        /// 派生类须在 InitChannelSDKAsync 内部调用此方法完成槽位注入。
+        /// 保留旧注册入口，每个真实ID作为独立单ID组累加；重复ID保持跳过兼容。
         /// </summary>
         /// <param name="format">广告格式。</param>
-        /// <param name="options">槽位配置列表。</param>
+        /// <param name="options">仅包含真实ID的旧槽位列表。</param>
         protected void RegisterAdUnits(AdFormat format, IReadOnlyList<AdUnitOptions> options)
         {
-            if (options == null || options.Count == 0)
+            RequireAdMainThread();
+            if (m_IsDisposed || options == null) return;
+            foreach (var option in options)
             {
-                Log.Warning(LogTag.AD, $"[{Name}] RegisterAdUnits({format}) 传入空列表，跳过注册。");
-                return;
-            }
-            if (!m_AdUnits.TryGetValue(format, out var list))
-            {
-                list = new List<AdUnit>(options.Count);
-                m_AdUnits[format] = list;
-            }
-            for (int i = 0; i < options.Count; i++)
-            {
-                var opt = options[i];
-                if (string.IsNullOrEmpty(opt.PlacementId))
+                string id = option.PlacementId;
+                if (string.IsNullOrEmpty(id) || FindAdUnit(id) != null)
                 {
-                    Log.Warning(LogTag.AD, $"[{Name}] RegisterAdUnits({format}) 第 {i} 项 PlacementId 为空，跳过。");
+                    Log.Warning(LogTag.AD, $"[{Name}] RegisterAdUnits({format}) 的空或重复广告ID已跳过：{id}");
                     continue;
                 }
-                if (FindAdUnit(opt.PlacementId) != null)
-                {
-                    Log.Warning(LogTag.AD, $"[{Name}] RegisterAdUnits({format}) PlacementId={opt.PlacementId} 重复，跳过。");
-                    continue;
-                }
-                list.Add(new AdUnit
-                {
-                    PlacementId = opt.PlacementId,
-                    Format = format,
-                    State = AdUnitState.Idle,
-                    Revenue = 0,
-                    RetryCount = 0,
-                    LastErrorMessage = null,
-                    RetryCts = null,
-                });
+                // 旧入口不解析表达式，防止外部旧渠道的真实ID含特殊字符被静默改写。
+                RegisterGroupUnits(format, new[] { id });
             }
         }
 
         /// <summary>
-        /// 广告加载成功后推进状态机：找到对应 AdUnit，取消 pending 重试任务，置 Ready 并重置重试计数。
-        /// 取消旧 RetryCts 防止 DelayedRetryAsync 倒计时结束后把已 Ready 的槽位回置 Loading。
+        /// 在主线程更新收益槽位，收益金额不会决定业务奖励资格。
         /// </summary>
-        /// <param name="placementId">加载成功的广告位标识。</param>
-        /// <param name="revenue">加载时 SDK 报告的预期收益（USD），无法获取时传 0。</param>
-        private void MarkLoaded(string placementId, double revenue)
-        {
-            var unit = FindAdUnit(placementId);
-            if (unit == null) return;
-            if (unit.RetryCts != null)
-            {
-                unit.RetryCts.Cancel();
-                unit.RetryCts.Dispose();
-                unit.RetryCts = null;
-            }
-            unit.State = AdUnitState.Ready;
-            unit.Revenue = revenue;
-            unit.RetryCount = 0;
-            unit.LastErrorMessage = null;
-        }
-
-        /// <summary>
-        /// 广告加载失败后推进状态机（solar RetryRequestAd 语义）：
-        /// 未达全局 RetryLoadAdMaxNum 时立即发起下一次 OnRequestAsync；达到上限后等待 RetryLoadAdInterv 秒，
-        /// 计数清零后继续无限重试。槽位回置 Idle 表示当前轮次已结束，避免重复请求时被 Loading 卡住。
-        /// </summary>
-        /// <param name="placementId">加载失败的广告位标识。</param>
-        /// <param name="err">失败错误描述。</param>
-        private void MarkLoadFailed(string placementId, string err)
-        {
-            var unit = FindAdUnit(placementId);
-            if (unit == null) return;
-            unit.LastErrorMessage = err;
-            unit.State = AdUnitState.Idle;
-            unit.RetryCount++;
-            if (unit.RetryCount < RetryLoadAdMaxNum)
-            {
-                Log.Debug(LogTag.AD, $"[{Name}] 广告位 {placementId} 立即重试（{unit.RetryCount}/{RetryLoadAdMaxNum}）。");
-                ImmediateRetry(unit);
-                return;
-            }
-            Log.Debug(LogTag.AD, $"[{Name}] 广告位 {placementId} 重试达到上限 {RetryLoadAdMaxNum}，等待 {RetryLoadAdInterv} 秒后清零继续。");
-            ScheduleRetry(unit);
-        }
-
-        /// <summary>
-        /// 广告收益回调后更新对应 AdUnit 的 Revenue 字段。
-        /// </summary>
-        /// <param name="placementId">广告位标识。</param>
-        /// <param name="revenue">本次 SDK 报告的收益值（USD）。</param>
+        /// <param name="placementId">已注册真实ID。</param>
+        /// <param name="revenue">本次收益金额。</param>
         private void MarkRevenue(string placementId, double revenue)
         {
             var unit = FindAdUnit(placementId);
-            if (unit == null) return;
-            unit.Revenue = revenue;
+            if (unit != null) unit.Revenue = revenue;
         }
 
         /// <summary>
-        /// 广告关闭或展示失败后推进状态机：Showing 回置 Idle；非 Banner 自动触发续杯请求（fire-and-forget）。
-        /// 续杯前清除 ShowCustomProps，以 AutoRefill 原因和空 customProps 调 RequestAsync；结果不被观察。
+        /// Banner隐藏或销毁只重置自身槽位与单ID组，不触发全屏续杯。
         /// </summary>
-        /// <param name="placementId">关闭或展示失败的广告位标识。</param>
-        private void MarkShown(string placementId)
-        {
-            var unit = FindAdUnit(placementId);
-            if (unit == null) return;
-            unit.State = AdUnitState.Idle;
-            unit.Revenue = 0;
-            if (unit.Format != AdFormat.Banner)
-            {
-                unit.ShowCustomProps = null;
-                RequestAsync(unit.Format, AdRequestReason.AutoRefill, null, CancellationToken.None).Forget();
-            }
-        }
-
-        /// <summary>
-        /// Banner 隐藏/销毁后推进状态机：Showing 回置 Idle（Banner 不触发续杯）。
-        /// 派生类在 HideBanner / DestroyBanner 回调中调用。
-        /// </summary>
-        /// <param name="placementId">Banner 广告位标识。</param>
+        /// <param name="placementId">Banner真实ID。</param>
         protected void MarkBannerHidden(string placementId)
         {
-            var unit = FindAdUnit(placementId);
-            if (unit == null) return;
-            unit.State = AdUnitState.Idle;
-            unit.Revenue = 0;
+            DispatchAdStateCallback(() =>
+            {
+                var unit = FindAdUnit(placementId);
+                if (unit != null && unit.Format == AdFormat.Banner) ResetConsumedGroup(unit.Group);
+            });
         }
 
         /// <summary>
-        /// 安全包装 OnRequestAsync，捕获派生侧同步异常并将 AdUnit 回置 Idle 而不是卡在 Loading。
-        /// OperationCanceledException 单独处理，不打印 Warning 日志，槽位同样回置 Idle 以防永久卡 Loading。
+        /// SDK调用完成只代表发出请求；异常统一成为当前活动项失败，不取消其他观察者。
         /// </summary>
-        /// <param name="unit">目标 AdUnit 槽位。</param>
+        /// <param name="unit">已预留的活动项。</param>
         /// <param name="format">广告格式。</param>
-        /// <param name="ct">取消令牌。</param>
+        /// <param name="ct">渠道生命周期令牌。</param>
         private async UniTask InvokeOnRequestSafeAsync(AdUnit unit, AdFormat format, CancellationToken ct)
         {
+            long roundId = unit.Group.RoundId;
             try
             {
                 await OnRequestAsync(format, unit.PlacementId, ct);
             }
             catch (OperationCanceledException)
             {
-                unit.State = AdUnitState.Idle;
+                if (!m_IsDisposed) PostAdCallbackToMainThread(() =>
+                {
+                    if (unit.Group.RoundId == roundId) RaiseAdLoadFailed(BuildLoadFailure(format, unit.PlacementId, -3, "渠道加载调用已取消。"));
+                });
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.AD, $"[{Name}] OnRequestAsync({format}, {unit.PlacementId}) 同步异常，槽位回置 Idle：{ex.Message}");
-                unit.State = AdUnitState.Idle;
-            }
-        }
-
-        /// <summary>
-        /// 取消并清理所有 AdUnit 持有的 RetryCts，同时取消所有待定批次，防止资源泄露。
-        /// 所有活跃 RequestBatch 以 OperationCanceledException 结束。
-        /// </summary>
-        private void CancelAllRetryCts()
-        {
-            foreach (var list in m_AdUnits.Values)
-                for (int i = 0; i < list.Count; i++)
+                Log.Warning(LogTag.AD, $"[{Name}] OnRequestAsync({format}, {unit.PlacementId}) 异常：{ex.Message}");
+                PostAdCallbackToMainThread(() =>
                 {
-                    var unit = list[i];
-                    if (unit.RetryCts == null) continue;
-                    unit.RetryCts.Cancel();
-                    unit.RetryCts.Dispose();
-                    unit.RetryCts = null;
-                }
-            for (int i = 0; i < m_PendingBatches.Count; i++)
-            {
-                var batch = m_PendingBatches[i];
-                batch.Registration.Dispose();
-                batch.Tcs.TrySetCanceled();
+                    if (unit.Group.RoundId == roundId) RaiseAdLoadFailed(BuildLoadFailure(format, unit.PlacementId, -3, ex.Message));
+                });
             }
-            m_PendingBatches.Clear();
         }
 
         /// <summary>
-        /// 从指定 format 的 Ready 槽位中按 Revenue 降序挑选最优 AdUnit；无就绪槽位时返回 null。
+        /// 释放全部广告组等待和业务观察；先摘除批次，再取消完成源以支持重入。
+        /// </summary>
+        private void CancelGroupRetriesAndBatches()
+        {
+            foreach (var groups in m_AdGroups.Values)
+            {
+                foreach (var group in groups)
+                {
+                    CancelGroupRetry(group);
+                }
+            }
+
+            var batches = m_PendingBatches.ToArray();
+            m_PendingBatches.Clear();
+            foreach (var batch in batches)
+            {
+                batch.Registration.Dispose();
+            }
+
+            foreach (var batch in batches)
+            {
+                batch.Tcs.TrySetCanceled(ChannelLifetimeToken);
+            }
+        }
+
+        /// <summary>
+        /// 所有候选共同检查真实SDK Ready；过期槽位在主线程清空等待普通请求补充。
+        /// </summary>
+        /// <param name="unit">本地缓存槽位。</param>
+        /// <returns>本地和原厂均可播才为true。</returns>
+        private bool IsUnitReallyReady(AdUnit unit)
+        {
+            if (unit.State != AdUnitState.Ready) return false;
+            if (IsSdkReady(unit)) return true;
+            ResetConsumedGroup(unit.Group);
+            return false;
+        }
+
+        /// <summary>
+        /// 安全查询原厂Ready，查询异常按不可播处理。
+        /// </summary>
+        /// <param name="unit">真实ID槽位。</param>
+        /// <returns>原厂仍可播时为true。</returns>
+        private bool IsSdkReady(AdUnit unit)
+        {
+            try { return OnIsReady(unit.Format, unit.PlacementId); }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.AD, $"[{Name}] 查询 {unit.Format}/{unit.PlacementId} Ready失败：{ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 以真实 Ready 筛选最高收益；相同收益保留注册顺序。
         /// </summary>
         /// <param name="format">广告格式。</param>
-        /// <returns>eCPM 最高的 Ready AdUnit，或 null。</returns>
+        /// <returns>可播槽位或null。</returns>
         private AdUnit PickBestReadyUnit(AdFormat format)
         {
-            if (!m_AdUnits.TryGetValue(format, out var units)) return null;
+            RequireAdMainThread();
+            if (m_IsDisposed || !IsChannelInitialized || m_AdConfigFailures.ContainsKey(format) || !m_AdUnits.TryGetValue(format, out var units)) return null;
             AdUnit best = null;
-            for (int i = 0; i < units.Count; i++)
+            foreach (var unit in units)
             {
-                var unit = units[i];
-                if (unit.State != AdUnitState.Ready) continue;
-                if (best == null || unit.Revenue > best.Revenue) best = unit;
+                bool ready = IsUnitReallyReady(unit);
+                if (ready && (best == null || unit.Revenue > best.Revenue)) best = unit;
             }
             return best;
         }
 
         /// <summary>
-        /// 立即重试：在当前调用栈外通过 UniTask.Yield 推迟一帧后重新发起 OnRequestAsync，
-        /// 避免在 SDK 失败回调内同步深递归。每次调度前取消已有 RetryCts 防止重叠。
+        /// 检查展示回调是否属于当前占用，不接受未知、错误格式、重复displayed。
         /// </summary>
-        /// <param name="u">需要立即重试的 AdUnit 槽位。</param>
-        private void ImmediateRetry(AdUnit u)
+        /// <param name="result">原厂展示结果。</param>
+        /// <returns>当前显示槽位，未匹配时为null。</returns>
+        private AdUnit GetActiveShowUnit(AdResult result)
         {
-            if (u.RetryCts != null)
-            {
-                u.RetryCts.Cancel();
-                u.RetryCts.Dispose();
-            }
-            u.RetryCts = new CancellationTokenSource();
-            var ct = u.RetryCts.Token;
-            ImmediateRetryAsync(u, ct).Forget();
+            var unit = FindAdUnit(result.PlacementId);
+            if (unit == null || unit.Format != result.Format || unit.State != AdUnitState.Showing) return null;
+            if (!IsFullscreenAd(result.Format)) return unit;
+            return m_ActiveAdShow != null && m_ActiveAdShow.Format == result.Format && m_ActiveAdShow.PlacementId == result.PlacementId ? unit : null;
         }
 
         /// <summary>
-        /// 立即重试异步实现：让出一帧后将槽位置回 Loading 并调用 OnRequestAsync。
-        /// 让出帧的目的是把递归打散为顺序调度，避免深栈和回调风暴。
+        /// 匹配真实终态后一次清除原生占用与消费组；调用方随后完成事件/原厂TCS。
         /// </summary>
-        /// <param name="u">需要立即重试的 AdUnit 槽位。</param>
-        /// <param name="ct">用于取消重试的令牌。</param>
-        private async UniTaskVoid ImmediateRetryAsync(AdUnit u, CancellationToken ct)
+        /// <param name="result">hidden或displayFailed结果。</param>
+        /// <returns>本次消费槽位，重复终态为null。</returns>
+        private AdUnit FinishActiveShow(AdResult result)
         {
-            try
+            var unit = GetActiveShowUnit(result);
+            if (unit == null) return null;
+            if (IsFullscreenAd(result.Format))
             {
-                await UniTask.Yield(PlayerLoopTiming.Update, ct);
+                m_ActiveAdShow = null;
             }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-            u.State = AdUnitState.Loading;
-            TrackAdRequest(u.Format, u.PlacementId, AdRequestReason.Retry, u.RequestCustomProps);
-            await InvokeOnRequestSafeAsync(u, u.Format, ct);
+            return unit;
         }
 
         /// <summary>
-        /// 启动延时重试任务：等待全局 RetryLoadAdInterv 秒后将 RetryCount 清零、置回 Loading 并调用 OnRequestAsync。
-        /// 每次调度前先取消已有的 RetryCts 防止重叠。
+        /// 真实终态后清空消费组，并普通检查全部组；仅消费组从首ID重启。
         /// </summary>
-        /// <param name="u">需要重试的 AdUnit 槽位。</param>
-        private void ScheduleRetry(AdUnit u)
+        /// <param name="unit">本次结束展示的槽位。</param>
+        private void RefillAfterShow(AdUnit unit)
         {
-            if (u.RetryCts != null)
-            {
-                u.RetryCts.Cancel();
-                u.RetryCts.Dispose();
-            }
-            u.RetryCts = new CancellationTokenSource();
-            var ct = u.RetryCts.Token;
-            DelayedRetryAsync(u, ct).Forget();
+            ResetConsumedGroup(unit.Group);
+            if (unit.Format != AdFormat.Banner && !m_IsDisposed)
+                RequestAsync(unit.Format, AdRequestReason.AutoRefill, null, CancellationToken.None).Forget();
         }
 
         /// <summary>
-        /// 延时重试异步实现：等待全局 RetryLoadAdInterv 秒后清零 RetryCount，置 Loading 并调用 OnRequestAsync。
-        /// ct 被取消时 UniTask.Delay 抛出 OperationCanceledException，由 try/catch 捕获后安全退出，不再推进状态机。
+        /// 异步观察原厂show结果，业务取消只结束外层等待，异常结果统一排队收尾。
         /// </summary>
-        /// <param name="u">需要重试的 AdUnit 槽位。</param>
-        /// <param name="ct">用于取消等待的令牌。</param>
-        private async UniTaskVoid DelayedRetryAsync(AdUnit u, CancellationToken ct)
+        /// <param name="unit">已占用的广告位。</param>
+        /// <returns>原厂等待结果。</returns>
+        private async UniTask<AdResult> InvokeOnShowSafeAsync(AdUnit unit)
         {
-            try
+            var showContext = m_ActiveAdShow;
+            try { return await OnShowAsync(unit.Format, unit.PlacementId, ChannelLifetimeToken); }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
             {
-                await UniTask.Delay(TimeSpan.FromSeconds(RetryLoadAdInterv), cancellationToken: ct);
+                var failure = new AdResult { Format = unit.Format, PlacementId = unit.PlacementId, ErrorMessage = ex.Message };
+                var completed = new UniTaskCompletionSource<AdResult>();
+                PostAdCallbackToMainThread(() =>
+                {
+                    // 可识别的旧托管任务异常不能按同ID误终结后来的新Show；原厂无token限制仍保留。
+                    try
+                    {
+                        if (!IsFullscreenAd(unit.Format) || m_ActiveAdShow == showContext) RaiseShowFailed(failure);
+                    }
+                    finally { completed.TrySetResult(failure); }
+                });
+                return await completed.Task.AttachExternalCancellation(ChannelLifetimeToken);
             }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-            u.RetryCount = 0;
-            u.State = AdUnitState.Loading;
-            TrackAdRequest(u.Format, u.PlacementId, AdRequestReason.Retry, u.RequestCustomProps);
-            await InvokeOnRequestSafeAsync(u, u.Format, ct);
         }
 
         /// <summary>
-        /// 在所有已注册的 AdUnit 中按 placementId 查找目标槽位；未找到时返回 null。
+        /// 仅三种全屏格式参与渠道互斥，Banner保留原厂视图生命周期。
         /// </summary>
-        /// <param name="placementId">要查找的广告位唯一标识。</param>
-        /// <returns>匹配的 AdUnit，或 null。</returns>
+        /// <param name="format">广告格式。</param>
+        /// <returns>激励、插屏或开屏时为true。</returns>
+        private static bool IsFullscreenAd(AdFormat format)
+            => format == AdFormat.Rewarded || format == AdFormat.Interstitial || format == AdFormat.AppOpen;
+
+        /// <summary>
+        /// 查找渠道内唯一真实ID；format在各回调门再次验证。
+        /// </summary>
+        /// <param name="placementId">真实ID。</param>
+        /// <returns>对应槽位或null。</returns>
         private AdUnit FindAdUnit(string placementId)
         {
-            foreach (var list in m_AdUnits.Values)
-                for (int i = 0; i < list.Count; i++)
-                    if (list[i].PlacementId == placementId) return list[i];
+            foreach (var units in m_AdUnits.Values)
+                foreach (var unit in units)
+                    if (string.Equals(unit.PlacementId, placementId, StringComparison.Ordinal)) return unit;
             return null;
         }
 
         /// <summary>
-        /// 构造统一的加载失败结果。
+        /// 构造失败载荷，保留原厂码或基类明确错误码。
         /// </summary>
         /// <param name="format">广告格式。</param>
-        /// <param name="placementId">广告位唯一标识，可为 null。</param>
-        /// <param name="errorCode">错误码。</param>
-        /// <param name="errorMessage">错误描述。</param>
-        /// <returns>Success=false 的加载结果。</returns>
+        /// <param name="placementId">真实ID或null。</param>
+        /// <param name="errorCode">失败码。</param>
+        /// <param name="errorMessage">失败说明。</param>
+        /// <returns>失败载荷。</returns>
         private static AdLoadResult BuildLoadFailure(AdFormat format, string placementId, int errorCode, string errorMessage)
-        {
-            return new AdLoadResult
-            {
-                Success = false,
-                Format = format,
-                PlacementId = placementId,
-                ErrorCode = errorCode,
-                ErrorMessage = errorMessage,
-            };
-        }
+            => new AdLoadResult { Format = format, PlacementId = placementId, ErrorCode = errorCode, ErrorMessage = errorMessage };
     }
 }

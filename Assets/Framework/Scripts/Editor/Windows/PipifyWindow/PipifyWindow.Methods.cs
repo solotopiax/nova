@@ -23,6 +23,56 @@ namespace NovaFramework.Editor
 {
     internal sealed partial class PipifyWindow : EditorWindow
     {
+        /// <summary>等待下一帧模态交互的 Batch 变更也属于草稿，Action 不可抢先覆盖。</summary>
+        private int m_PendingBatchEditCount;
+        /// <summary>注册草稿与保存刷新适配器；共享工具不引用窗口类。</summary>
+        [InitializeOnLoadMethod]
+        private static void RegisterAgentEditingAdapter()
+        {
+            EditorUtil.Pipify.ConfigurationEditing.RegisterDraftGuard(HasUnsavedSettingsDraft);
+            EditorUtil.Pipify.ConfigurationEditing.RegisterSavedListener(RefreshSavedSettingsWindows);
+        }
+
+        /// <summary>保护所有打开窗口尚未提交的参数和 SerializedProperty 草稿。</summary>
+        private static bool HasUnsavedSettingsDraft(PipifySettingsSO settings)
+        {
+            foreach (PipifyWindow window in Resources.FindObjectsOfTypeAll<PipifyWindow>())
+            {
+                if (window == null || window.m_Settings != settings) continue;
+                if (window.m_IsDirty || window.m_PendingBatchEditCount > 0 ||
+                    (window.m_SettingsSO != null && window.m_SettingsSO.hasModifiedProperties)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>仅重建干净窗口的缓存和列表，保留当前选中 Batch，避免覆盖其它窗口草稿。</summary>
+        private static void RefreshSavedSettingsWindows(PipifySettingsSO settings)
+        {
+            foreach (PipifyWindow window in Resources.FindObjectsOfTypeAll<PipifyWindow>())
+            {
+                if (window == null || window.m_Settings != settings || window.m_IsDirty || window.m_PendingBatchEditCount > 0 ||
+                    (window.m_SettingsSO != null && window.m_SettingsSO.hasModifiedProperties)) continue;
+                window.m_SettingsSO?.Update();
+                window.m_ParamsCache.Clear();
+                window.m_ExpandedItemIndices.Clear();
+                window.m_ItemsListBoundBatchIndex = -1;
+                window.m_ItemsList = null;
+                window.m_SelectedBatchIndex = Mathf.Clamp(window.m_SelectedBatchIndex, -1, settings.Batches.Count - 1);
+                window.Repaint();
+            }
+        }
+
+        /// <summary>延迟模态变更并成对维护待编辑标记，异常或窗口关闭也不会留下永久草稿锁。</summary>
+        private void ScheduleBatchEdit(Action edit)
+        {
+            m_PendingBatchEditCount++;
+            EditorApplication.delayCall += () =>
+            {
+                try { if (this != null) edit(); }
+                finally { m_PendingBatchEditCount = Math.Max(0, m_PendingBatchEditCount - 1); }
+            };
+        }
+
         /// <summary>
         /// 窗口启用时从 WorkspaceActive 读取当前 PipifySettingsSO，
         /// 同时订阅场景切换监听，确保 Sample 与业务工作区成对切换。
@@ -176,9 +226,9 @@ namespace NovaFramework.Editor
         private void OnClickSave()
         {
             if (m_Settings == null) return;
-            EditorUtility.SetDirty(m_Settings);
-            AssetDatabase.SaveAssets();
+            EditorUtil.Pipify.ConfigurationEditing.SaveTarget(m_Settings);
             m_IsDirty = false;
+            EditorUtil.Pipify.ConfigurationEditing.NotifySaved(m_Settings);
         }
 
         /// <summary>
@@ -205,9 +255,7 @@ namespace NovaFramework.Editor
                 "保存", "取消", "丢弃");
             if (choice == 0)
             {
-                if (m_Settings != null) EditorUtility.SetDirty(m_Settings);
-                AssetDatabase.SaveAssets();
-                m_IsDirty = false;
+                OnClickSave();
                 return true;
             }
             if (choice == 2)
@@ -233,8 +281,7 @@ namespace NovaFramework.Editor
                 "丢弃旧改动并切换");
             if (save)
             {
-                if (m_Settings != null) EditorUtility.SetDirty(m_Settings);
-                AssetDatabase.SaveAssets();
+                OnClickSave();
             }
             else
             {
@@ -259,7 +306,7 @@ namespace NovaFramework.Editor
         {
             if (m_Settings == null) return;
             // 推迟到下一帧再弹模态，避免 ShowModal 的嵌套消息泵在 OnGUI 布局栈内触发 EndLayoutGroup 不对称。
-            EditorApplication.delayCall += DoNewBatch;
+            ScheduleBatchEdit(DoNewBatch);
         }
 
         /// <summary>
@@ -281,8 +328,7 @@ namespace NovaFramework.Editor
                 EditorUtility.DisplayDialog("名称重复", $"已存在名为 \"{name}\" 的 Batch，请使用其他名称。", "确认");
                 return;
             }
-            Batch newBatch = new Batch { Name = name };
-            m_Settings.Batches.Add(newBatch);
+            EditorUtil.Pipify.ConfigurationEditing.AddBatch(m_Settings, name);
             m_SelectedBatchIndex = m_Settings.Batches.Count - 1;
             MarkDirty();
             Repaint();
@@ -297,7 +343,7 @@ namespace NovaFramework.Editor
             if (m_Settings == null || index < 0 || index >= m_Settings.Batches.Count) return;
             // 推迟到下一帧再弹模态，避免 ShowModal 的嵌套消息泵在 OnGUI 布局栈内触发 EndLayoutGroup 不对称。
             int captured = index;
-            EditorApplication.delayCall += () => DoRenameBatch(captured);
+            ScheduleBatchEdit(() => DoRenameBatch(captured));
         }
 
         /// <summary>
@@ -334,11 +380,8 @@ namespace NovaFramework.Editor
         {
             if (m_Settings == null || index < 0 || index >= m_Settings.Batches.Count) return;
             Batch original = m_Settings.Batches[index];
-            // 通过 JSON 往返实现深拷贝，保持所有子字段独立
-            string json = Util.Json.Serialize(original);
-            Batch copy = Util.Json.Deserialize<Batch>(json);
-            copy.Name = GenerateUniqueBatchName(original.Name + " (Copy)");
-            m_Settings.Batches.Add(copy);
+            EditorUtil.Pipify.ConfigurationEditing.AddBatch(m_Settings,
+                GenerateUniqueBatchName(original.Name + " (Copy)"), original);
             m_SelectedBatchIndex = m_Settings.Batches.Count - 1;
             MarkDirty();
         }
@@ -352,7 +395,7 @@ namespace NovaFramework.Editor
             if (m_Settings == null || index < 0 || index >= m_Settings.Batches.Count) return;
             // 推迟到下一帧，避免 DisplayDialog 的嵌套消息泵可能触及 OnGUI 布局栈。
             int captured = index;
-            EditorApplication.delayCall += () => DoDeleteBatch(captured);
+            ScheduleBatchEdit(() => DoDeleteBatch(captured));
         }
 
         /// <summary>
@@ -406,13 +449,7 @@ namespace NovaFramework.Editor
         /// <returns>名称已被其他 Batch 使用时返回 true。</returns>
         private bool IsBatchNameDuplicate(string name, int excludeIndex = -1)
         {
-            if (m_Settings == null) return false;
-            for (int i = 0; i < m_Settings.Batches.Count; i++)
-            {
-                if (i == excludeIndex) continue;
-                if (m_Settings.Batches[i].Name == name) return true;
-            }
-            return false;
+            return EditorUtil.Pipify.ConfigurationEditing.IsNameDuplicate(m_Settings, name, excludeIndex);
         }
 
         /// <summary>
@@ -545,12 +582,7 @@ namespace NovaFramework.Editor
         {
             if (m_Settings == null || m_SelectedBatchIndex < 0 || m_SelectedBatchIndex >= m_Settings.Batches.Count) return;
             Batch batch = m_Settings.Batches[m_SelectedBatchIndex];
-            BatchItem newItem = new BatchItem { StepId = info.Id };
-            if (info.ParamsType != null)
-            {
-                object defaultParams = EditorUtil.Pipify.CreateDefaultParams(info);
-                newItem.ParamsJson = Util.Json.Serialize(defaultParams);
-            }
+            BatchItem newItem = EditorUtil.Pipify.ConfigurationEditing.CreateItem(info);
             batch.Items.Add(newItem);
             // 重建 list 以同步新条目
             m_ItemsListBoundBatchIndex = -1;

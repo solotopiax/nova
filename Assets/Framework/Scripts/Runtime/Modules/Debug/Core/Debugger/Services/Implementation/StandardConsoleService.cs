@@ -89,11 +89,17 @@ namespace NovaFramework.Runtime
             }
         }
 
+        /// <summary>
+        /// 含 Clear 前内容的有限容量历史缓冲活视图，不复制元素，不提供并发读取快照。
+        /// </summary>
         public IReadOnlyList<ConsoleEntry> AllEntries
         {
             get { return _allConsoleEntries; }
         }
 
+        /// <summary>
+        /// 清显示缓冲及计数，保留 AllEntries 历史；缓冲 Clear 仅清游标，不擦除原数组引用。
+        /// </summary>
         public void Clear()
         {
             lock (_threadLock)

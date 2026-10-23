@@ -26,15 +26,16 @@ Schema manifest 是一次导出的 Excel 结构快照。每次调用 Luban 前�
 ```text
 点击导出
   -> Pipeline.SyncSchema
+  -> ConfigSyncer 先初始化/更新 luban.conf
   -> 扫描当前 Profile 的所有 Excel
   -> 构建并验证 LubanSchemaManifest
-  -> 从同一快照原子生成 __tables__.xml
-  -> 原子保存 _configs/nova-export-manifest.json
+  -> 保存原 XML 字节，从同一快照以 .tmp + Replace/Move 发布 __tables__.xml
+  -> 独立保存 _configs/nova-export-manifest.json；保存失败才尝试恢复 XML
   -> 调用 Luban CLI
   -> JsonMerger / MapPropGen / 文件筛选继续使用同一快照
 ```
 
-扫描或验证失败时会抛出异常，旧 manifest 和旧 `__tables__.xml` 保持不变，Pipeline 不会调用 Luban。缺失、无法读取的 Excel 不会被当成空表静默跳过。
+扫描或验证失败会抛出异常，Pipeline 不会调用 Luban；此前 `luban.conf` 或初始化目录可能已经改变，不会整体回滚。XML 与 manifest 分别保存，manifest 保存失败才尝试恢复 XML，回滚失败会抛出 `AggregateException`。缺失、无法读取的 Excel 不会被当成空表静默跳过。
 
 ---
 
@@ -43,7 +44,7 @@ Schema manifest 是一次导出的 Excel 结构快照。每次调用 Luban 前�
 ```json
 {
   "schemaVersion": 1,
-  "profileId": "table",
+  "profileId": "sound",
   "units": [
     {
       "sourcePath": "Main/Hero.xlsx",
@@ -66,7 +67,7 @@ Schema manifest 是一次导出的 Excel 结构快照。每次调用 Luban 前�
 | 字段 | 含义 |
 |------|------|
 | `schemaVersion` | manifest 格式版本；当前为 `1`，读取不支持的版本会失败 |
-| `profileId` | 本次导出使用的固定 Profile 标识，如 `table`、`network-cmd` |
+| `profileId` | 本次导出使用的固定 Profile 标识，如 `sound`、`network-cmd` |
 | `units` | 本次导出的数据源单元列表；路径经过标准化并按 `sourcePath` 稳定排序 |
 | `units[].sourcePath` | Excel 相对数据源根目录的路径，禁止绝对路径和 `..` 穿越 |
 | `units[].lubanInputPath` | 写入 `__tables__.xml` 的 Luban 输入路径；预过滤模块可指向 `_temp` |
@@ -78,7 +79,7 @@ Schema manifest 是一次导出的 Excel 结构快照。每次调用 Luban 前�
 | `tables[].name` | Luban 表容器名，例如 `TbHero` |
 | `tables[].valueType` | Excel Sheet 对应的值类型短名，例如 `Hero` |
 
-`DataTypeNameHelper` 会忽略以 `#` 开头的 Sheet 和表头行数不足的 Sheet。Table Profile 的最低行数是 4，其他内置 Profile 默认是 5。
+`DataTypeNameHelper` 忽略以 `#` 开头的 Sheet，并按 Sheet 总行数阈值筛选。当前九个内置 Profile 均默认 5；不存在 Table Profile，也不据此验证表头结构。
 
 ---
 

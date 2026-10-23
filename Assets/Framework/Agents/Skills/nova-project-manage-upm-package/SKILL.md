@@ -29,10 +29,14 @@ description: Use when Nova 项目组要安装某个已配置 registry 包的最�
 4. 只有用户确认精确计划后，才使用同一 action_id 调用 execute，并把当前 planId 作为 confirmation_token。任一状态漂移后必须重新计划，不得自动重放。
 5. Execute 提交 Resolve 后只能报告 `partial`。Unity 稳定后用同一 action_id 验证；安装/升级必须精确命中目标 registry 版本，卸载必须同时从 direct manifest 和解析图消失。
 
+后台长期停留在 `partial` 时，先只读核对原回执、目标 manifest 与当前解析图。若目标写入已完成且仅解析未跟进，可按当前 live Schema 使用包外受控宿主的 Resolve 能力继续解析，再 Verify 原回执；不重新执行安装/卸载，不修改目标、registry 或其它依赖。宿主无此能力则保留 `partial`，不改用任意代码。
+
 ## 安全语义
 
 安装/升级复用 PlugPals 的 dependencies 预检与 scoped registry 维护，不降级。卸载只处理 direct dependency；仍有其他节点消费时必须 `blocked`。不手写 packages-lock，不删 PackageCache、清缓存、修改 registry 配置或重放失败操作。
 
 ## 结果与边界
+
+安装完成后，如已安装包的 `CHANGELOG.md` 正式版本含 `### Important`，Editor 会按当前单包范围自动弹出重要升级声明，跨版本内容按版本分组。提示只在用户亲自阅读并明确确认后记为已读；Agent 不得自动勾选、调用确认函数或修改 `Library/Nova/ImportantUpdates`。模态窗口等待用户确认时，应说明此等待项，不将其误判为 Resolve 卡死或重放升级。仅在需要解释提示/本地恢复时读取 `Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md`。已安装包的技术核验与人工阅读确认分别报告。
 
 Plan 未执行不算成功；Execute 已提交但未完成后验时为 `partial`；达到精确后验才为 `success`。不默认启用 SDK/Kit、修改 ConfigMaster、导入 Sample、改业务代码、运行 Play、构建 Bundle/Player、发布包或执行 Git 操作。

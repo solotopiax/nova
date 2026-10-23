@@ -63,3 +63,7 @@ private List<string> m_ReferenceHelperTypeNames;
 
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [Nova.md](../../../Runtime/Modules/Nova/Nova.md)
+
+## 输入与执行边界
+
+帧率和速度编辑会立即经组件门面影响 `Application.targetFrameRate / Time.timeScale`，后台运行和常亮也会影响当前系统属性，不是只编辑下次启动配置。速度选择只提供列出的十个预设；反向匹配用近似比较，未匹配或 NaN 返回 -1，不强行归一任意自定义速度。索引取值才按预设数组边界 clamp，UI 滑条范围不等于 Runtime API 的全部输入保证。

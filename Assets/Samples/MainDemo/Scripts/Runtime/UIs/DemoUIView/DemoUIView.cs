@@ -12,6 +12,7 @@
  ***************************************************************/
 
 using System.Collections.Generic;
+using NovaFramework.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -47,6 +48,12 @@ namespace NovaFramework.Samples.Runtime
         /// 本 View 打开的子 View SerialID 列表，关闭时逐一 CloseUIView。
         /// </summary>
         private readonly List<int> m_OpenedSerialIDs = new List<int>();
+
+        /// <summary>本次打开所属 UI 门面；只清理本页面发起的子页面。</summary>
+        private UIComponent m_OwnerUI;
+
+        private bool m_IsClosed = true;
+        private int m_ViewGeneration;
 
         /// <summary>
         /// 视图初始化钩子，注册按钮事件，设置标题与各按钮 API 提示。
@@ -84,8 +91,20 @@ namespace NovaFramework.Samples.Runtime
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
-            m_OpenedSerialIDs.Clear();
-            AppendFeedback("当前活跃 SerialIDs: []");
+            m_IsClosed = true;
+            m_ViewGeneration++;
+            DetachOpenFailureHandler();
+            CloseAllOpenedViews();
+            if (m_OpenedSerialIDs.Count > 0)
+            {
+                AppendFeedback("Nova.UI -> 旧子页面尚未全部关闭，保留编号并暂停新打开请求", FeedbackLevel.Error);
+                AppendActiveSerialsToFeedback();
+                return;
+            }
+            m_IsClosed = false;
+            m_OwnerUI = Nova.UI;
+            if (m_OwnerUI != null) m_OwnerUI.OnOpenUIViewFail += OnOpenChildViewFail;
+            AppendActiveSerialsToFeedback();
         }
 
         /// <summary>
@@ -95,8 +114,42 @@ namespace NovaFramework.Samples.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
+            m_IsClosed = true;
+            m_ViewGeneration++;
+            DetachOpenFailureHandler();
+            try
+            {
+                CloseAllOpenedViews();
+            }
+            finally
+            {
+                base.OnClose(isShutdown, userData);
+            }
+        }
+
+        /// <summary>销毁时解除本页事件，并取消仍在加载的子页面。</summary>
+        private void OnDestroy()
+        {
+            m_IsClosed = true;
+            m_ViewGeneration++;
+            DetachOpenFailureHandler();
             CloseAllOpenedViews();
-            base.OnClose(isShutdown, userData);
+        }
+
+        /// <summary>子页面自关闭或加载失败后移除失效编号。</summary>
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+            if (m_IsClosed || m_OwnerUI == null) return;
+            bool changed = false;
+            for (int i = m_OpenedSerialIDs.Count - 1; i >= 0; i--)
+            {
+                int serialID = m_OpenedSerialIDs[i];
+                if (m_OwnerUI.HasUIView(serialID) || m_OwnerUI.IsLoadingUIView(serialID)) continue;
+                m_OpenedSerialIDs.RemoveAt(i);
+                changed = true;
+            }
+            if (changed) AppendActiveSerialsToFeedback();
         }
     }
 }

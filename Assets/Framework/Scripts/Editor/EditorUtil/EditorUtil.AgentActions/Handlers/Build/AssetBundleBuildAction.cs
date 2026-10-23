@@ -10,6 +10,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using NovaFramework.Runtime;
 using UnityEditor;
@@ -29,6 +30,7 @@ namespace NovaFramework.Editor
                   AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead |
                   AgentActionEffect.UnityWrite |
+                  AgentActionEffect.ExternalWrite |
                   AgentActionEffect.BuildArtifact |
                   AgentActionEffect.Destructive,
         RequiredEvidence = AgentActionEvidence.Artifact,
@@ -36,7 +38,7 @@ namespace NovaFramework.Editor
         RequiresConfirmation = true,
         RequiresEditMode = true,
         ReloadSemantics = AgentActionReloadSemantics.ReloadNotExpected,
-        Locks = new[] { "unity-editor", "yooasset-build", "sbp-build-cache", "Bundles", "Assets/StreamingAssets" })]
+        Locks = new[] { "unity-editor", "asset-database", "yooasset-build", "sbp-build-cache", "Library/PlayerScriptAssemblies", "Library/AssetDependencyDB", "Bundles", "Assets/StreamingAssets" })]
     internal sealed class AssetBundleBuildAction : AgentActionHandler<AssetBundleBuildAction.Request>
     {
         [Serializable]
@@ -74,6 +76,7 @@ namespace NovaFramework.Editor
             public EBundledCopyOption BundledCopyOption;
             public string BundledCopyParams;
             public BuildActionCommon.BundleInputSnapshot Inputs;
+            public BuildActionCommon.BundleWriteSnapshot Writes;
         }
 
         [Serializable]
@@ -96,6 +99,7 @@ namespace NovaFramework.Editor
             public string bundledCopyOption;
             public string bundledCopyParams;
             public BuildActionCommon.BundleInputSnapshot inputs;
+            public BuildActionCommon.BundleWriteSnapshot sharedWrites;
         }
 
         /// <summary>
@@ -179,6 +183,15 @@ namespace NovaFramework.Editor
             }
             string manifestPath = BuildActionCommon.ResolveBundleManifest(
                 outputPath, request.packageName, version, inputs.packageFilePrefix);
+            if (!BuildActionCommon.TryCaptureBundleWrites(target, request.packageName, version, false, request.useAssetDependencyDB, inputs,
+                    context.CancellationToken, out BuildActionCommon.BundleWriteSnapshot writes, out string writeError))
+            {
+                return Task.FromResult(new AgentActionHandlerPlan
+                {
+                    Status = "blocked", Summary = writeError,
+                    DataJson = Util.Json.Serialize(new { inputs, sharedWrites = writes }),
+                });
+            }
 
             if (!request.clearBuildCache && Directory.Exists(outputPath))
             {
@@ -210,6 +223,7 @@ namespace NovaFramework.Editor
                 BundledCopyOption = copyOption,
                 BundledCopyParams = bundledCopyParams,
                 Inputs = inputs,
+                Writes = writes,
             };
             var recovery = new BuildActionCommon.ArtifactReceipt
             {
@@ -219,11 +233,14 @@ namespace NovaFramework.Editor
                 manifestPath = manifestPath,
                 packageName = request.packageName,
                 packageVersion = version,
+                bundleWrites = writes,
+                bundleInputs = inputs,
                 bundledOutputPath = copyOption == EBundledCopyOption.None
                     ? null
                     : BuildActionCommon.ResolveBundledPackageRoot(request.packageName),
             };
             var writeSet = new System.Collections.Generic.List<string> { outputPath };
+            writeSet.AddRange(BuildActionCommon.GetBundleSharedWriteSet(writes));
             if (request.clearBuildCache)
             {
                 writeSet.Add(packageRoot + " (delete/recreate package root)");
@@ -242,6 +259,9 @@ namespace NovaFramework.Editor
             {
                 writeSet.Add(BuildActionCommon.ResolveBundledPackageRoot(request.packageName) + " (delete stale WebGL bundled package root)");
             }
+
+            if (!BuildArtifactReceiptCodec.TryEncode(recovery, out string recoveryPayload, out string recoveryError))
+                return Task.FromResult(new AgentActionHandlerPlan { Status = "blocked", Summary = "完整构建恢复回执无法安全保存：" + recoveryError });
 
             return Task.FromResult(new AgentActionHandlerPlan
             {
@@ -267,97 +287,140 @@ namespace NovaFramework.Editor
                     bundledCopyOption = request.bundledCopyOption,
                     bundledCopyParams = bundledCopyParams,
                     inputs = inputs,
+                    sharedWrites = writes,
                 }),
                 WriteSet = writeSet.ToArray(),
                 Evidence = new[]
                 {
                     "已冻结激活 ConfigMaster 当前坐标、YooAssetSettings、BundleCollectorSetting、目标 Package 与配置 Hash。",
+                    "已冻结共享 OutputCache、脚本/临时输出、可选依赖数据库及实际回调编译身份；共享缓存可增写或后台清理。",
                     "已冻结 Bundle 与清单加密逻辑值、正式类型名及清单解密配对；不会接受任意 C# 类型名。",
                     copyOption == EBundledCopyOption.None
                         ? "构建后只读核对输出目录、YooAsset manifest 与 SHA-256。"
                         : "构建后额外核对首包目标 Package 目录与 SHA-256。",
                 },
-                RecoveryPayloadJson = Util.Json.Serialize(recovery),
+                RecoveryPayloadJson = recoveryPayload,
             });
         }
 
         /// <summary>
-        /// 复核冻结输入未漂移后，用计划中的正式加解密类型执行一次构建并记录产物证据。
+        /// 复核冻结输入后只构建一次，再只读等待正规 Editor update 完成已审 EDM 工作；域变化或未知工作保留 partial。
         /// </summary>
-        public override Task<AgentActionResult> ExecuteAsync(object state, AgentActionExecutionContext context)
+        /// <param name="state">已确认且尚未漂移的正式构建计划。</param>
+        /// <param name="context">执行令牌、项目上下文及本次回执归属。</param>
+        /// <returns>本次构建的成功或 partial 结果，不自动重复执行。</returns>
+        public override async Task<AgentActionResult> ExecuteAsync(object state, AgentActionExecutionContext context)
         {
             if (!(state is State plan))
             {
-                return Task.FromResult(AgentActionResult.Create(null, "blocked", "AssetBundle Action 的冻结计划状态无效。"));
+                return AgentActionResult.Create(null, "blocked", "AssetBundle Action 的冻结计划状态无效。");
             }
             if (EditorUserBuildSettings.activeBuildTarget != plan.Target)
             {
-                return Task.FromResult(AgentActionResult.Create(null, "blocked", "activeBuildTarget 已变化；不会切换平台或执行旧计划。"));
+                return AgentActionResult.Create(null, "blocked", "activeBuildTarget 已变化；不会切换平台或执行旧计划。");
             }
             if (!BuildActionCommon.TryCaptureBundleInputs(
                     plan.PackageName, context.CancellationToken,
                     out BuildActionCommon.BundleInputSnapshot currentInputs, out string inputError) ||
                 !BuildActionCommon.BundleInputsEqual(plan.Inputs, currentInputs))
             {
-                return Task.FromResult(AgentActionResult.Create(null, "blocked", "激活 ConfigMaster、YooAsset、Collector 或 Package 输入已漂移，请重新 Plan：" + inputError));
+                return AgentActionResult.Create(null, "blocked", "激活 ConfigMaster、YooAsset、Collector 或 Package 输入已漂移，请重新 Plan：" + inputError);
             }
             if (!BuildActionCommon.TryValidateActiveBundleRuntime(plan.Inputs, plan.Version, out string runtimeError))
             {
-                return Task.FromResult(AgentActionResult.Create(null, "blocked", runtimeError));
+                return AgentActionResult.Create(null, "blocked", runtimeError);
             }
+            if (!BuildActionCommon.TryCaptureBundleWrites(plan.Target, plan.PackageName, plan.Version, false, plan.UseAssetDependencyDB, currentInputs,
+                    context.CancellationToken, out BuildActionCommon.BundleWriteSnapshot currentWrites, out string writeError) ||
+                !BuildActionCommon.BundleWritesEqual(plan.Writes, currentWrites))
+                return AgentActionResult.Create(null, "blocked", "共享路径、回调或未保存资产状态已漂移，请重新 Plan：" + writeError);
             if (!plan.ClearBuildCache && Directory.Exists(plan.OutputPath))
             {
-                return Task.FromResult(AgentActionResult.Create(null, "blocked", "目标版本目录在确认后出现；不会覆盖或自动重计划。"));
+                return AgentActionResult.Create(null, "blocked", "目标版本目录在确认后出现；不会覆盖或自动重计划。");
             }
 
-            YooAsset.Editor.BuildResult result = EditorUtil.BundleBuilder.BuildAssetBundle(new AssetBundleBuildArgs
+            using (BuildActionCommon.CallbackExecutionScope callbackScope = BuildActionCommon.BeginCallbackExecution(plan.Writes.callbacks))
+            try
             {
-                Target = plan.Target,
-                PackageName = plan.PackageName,
-                BuildVersion = plan.Version,
-                ClearBuildCache = plan.ClearBuildCache,
-                UseAssetDependencyDB = plan.UseAssetDependencyDB,
-                BundleEncryptorClassName = plan.BundleEncryptorClassName,
-                ManifestEncryptorClassName = plan.ManifestEncryptorClassName,
-                ManifestDecryptorClassName = plan.ManifestDecryptorClassName,
-                Compression = plan.Compression,
-                FileNameStyle = plan.FileNameStyle,
-                BundledCopyOption = plan.BundledCopyOption,
-                BundledCopyParams = plan.BundledCopyParams,
-            });
-            string actualOutput = Path.GetFullPath(result.OutputPackageDirectory);
-            if (!string.Equals(actualOutput, plan.OutputPath, StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException($"领域构建输出与冻结计划不一致：expected={plan.OutputPath}, actual={actualOutput}。");
-            }
-            BuildActionCommon.ArtifactReceipt receipt = BuildActionCommon.CaptureArtifact(
-                new BuildActionCommon.ArtifactReceipt
+                YooAsset.Editor.BuildResult result = EditorUtil.BundleBuilder.BuildAssetBundle(new AssetBundleBuildArgs
                 {
-                    target = plan.Target.ToString(),
-                    outputPath = plan.OutputPath,
-                    manifestPath = plan.ManifestPath,
-                    packageName = plan.PackageName,
-                    packageVersion = plan.Version,
-                    bundledOutputPath = plan.BundledCopyOption == EBundledCopyOption.None
-                        ? null
-                        : BuildActionCommon.ResolveBundledPackageRoot(plan.PackageName),
-                },
-                "Succeeded",
-                context.CancellationToken);
-            AgentActionResult actionResult = AgentActionResult.Create(null, "success", "AssetBundle 构建完成，产物与 manifest 已生成。");
-            actionResult.ReceiptJson = Util.Json.Serialize(receipt);
-            actionResult.DataJson = actionResult.ReceiptJson;
-            actionResult.EvidenceKinds = AgentActionEvidence.Artifact;
-            actionResult.Artifacts.Add(plan.OutputPath);
-            actionResult.Artifacts.Add(plan.ManifestPath);
-            if (!string.IsNullOrWhiteSpace(receipt.bundledOutputPath))
-            {
-                actionResult.Artifacts.Add(receipt.bundledOutputPath);
+                    Target = plan.Target,
+                    PackageName = plan.PackageName,
+                    BuildVersion = plan.Version,
+                    ClearBuildCache = plan.ClearBuildCache,
+                    UseAssetDependencyDB = plan.UseAssetDependencyDB,
+                    BundleEncryptorClassName = plan.BundleEncryptorClassName,
+                    ManifestEncryptorClassName = plan.ManifestEncryptorClassName,
+                    ManifestDecryptorClassName = plan.ManifestDecryptorClassName,
+                    Compression = plan.Compression,
+                    FileNameStyle = plan.FileNameStyle,
+                    BundledCopyOption = plan.BundledCopyOption,
+                    BundledCopyParams = plan.BundledCopyParams,
+                });
+                string actualOutput = Path.GetFullPath(result.OutputPackageDirectory);
+                if (!string.Equals(actualOutput, plan.OutputPath, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"领域构建输出与冻结计划不一致：expected={plan.OutputPath}, actual={actualOutput}。");
+                }
+                BuildActionCommon.CallbackExecutionReceipt callbackExecution = await callbackScope.CompleteAsync(plan.OutputPath, plan.PackageName, plan.Version, plan.Writes, context.CancellationToken);
+                if (callbackExecution != null && !callbackExecution.complete) throw new InvalidOperationException("正常构建回调未满足生成/标签合同：" + callbackExecution.error);
+                BuildActionCommon.ArtifactReceipt receipt = BuildActionCommon.CaptureArtifact(
+                    new BuildActionCommon.ArtifactReceipt
+                    {
+                        target = plan.Target.ToString(),
+                        outputPath = plan.OutputPath,
+                        manifestPath = plan.ManifestPath,
+                        packageName = plan.PackageName,
+                        packageVersion = plan.Version,
+                        bundleWrites = plan.Writes,
+                        bundleInputs = plan.Inputs,
+                        callbackExecution = callbackExecution,
+                        bundledOutputPath = plan.BundledCopyOption == EBundledCopyOption.None
+                            ? null
+                            : BuildActionCommon.ResolveBundledPackageRoot(plan.PackageName),
+                    },
+                    "Succeeded",
+                    context.CancellationToken);
+                AgentActionResult actionResult = AgentActionResult.Create(null, "success", "AssetBundle 构建完成，产物与 manifest 已生成。");
+                actionResult.ReceiptJson = BuildArtifactReceiptCodec.Encode(receipt);
+                actionResult.DataJson = Util.Json.Serialize(receipt);
+                actionResult.EvidenceKinds = AgentActionEvidence.Artifact;
+                actionResult.Artifacts.Add(plan.OutputPath);
+                actionResult.Artifacts.Add(plan.ManifestPath);
+                if (!string.IsNullOrWhiteSpace(receipt.bundledOutputPath))
+                {
+                    actionResult.Artifacts.Add(receipt.bundledOutputPath);
+                }
+                actionResult.Evidence.Add("已核对输出目录、manifest 与 SHA-256；不代表运行时加载验证。" );
+                return actionResult;
             }
-            actionResult.Evidence.Add("已核对输出目录、manifest 与 SHA-256；不代表运行时加载验证。" );
-            return Task.FromResult(actionResult);
+            catch (Exception exception)
+            {
+                AgentActionResult failed = AgentActionResult.Create(null, "partial", "AssetBundle 已进入构建，后续未完成：" + exception.Message);
+                var recovery = new BuildActionCommon.ArtifactReceipt
+                {
+                    finalized = false, target = plan.Target.ToString(), outputPath = plan.OutputPath,
+                    manifestPath = plan.ManifestPath, packageName = plan.PackageName, packageVersion = plan.Version,
+                    bundleWrites = plan.Writes,
+                    bundleInputs = plan.Inputs,
+                    callbackExecution = callbackScope.Complete(CancellationToken.None),
+                    bundledOutputPath = plan.BundledCopyOption == EBundledCopyOption.None ? null : BuildActionCommon.ResolveBundledPackageRoot(plan.PackageName),
+                };
+                BuildActionCommon.RecordPreservedSceneState(recovery, CancellationToken.None);
+                // 编码失败不重复抛出；Core 保留写前完整恢复凭据，失败产物仍明确列出。
+                if (BuildArtifactReceiptCodec.TryEncode(recovery, out string failedPayload, out string receiptError))
+                    failed.ReceiptJson = failedPayload;
+                else failed.Warnings.Add("执行后的完整恢复回执未能保存：" + receiptError);
+                failed.DataJson = Util.Json.Serialize(recovery);
+                failed.Artifacts.Add(plan.OutputPath);
+                failed.Artifacts.AddRange(BuildActionCommon.GetBundleSharedWriteSet(plan.Writes));
+                failed.Warnings.Add("保留可能已写入的输出、共享缓存与临时残留供归属核查；不会自动重跑、删除已有缓存或生成成功凭据。");
+                if (recovery.preservedSceneInputsUnchanged == false) failed.Warnings.Add("执行前源资产或场景 setup 未保持：" + recovery.preservedSceneInputError);
+                return failed;
+            }
         }
 
+        /// <summary>兼容旧明文与新有界压缩回执，只读核对完整产物和回调证据，不重放构建。</summary>
         public override Task<AgentActionResult> VerifyAsync(string receiptJson, AgentActionExecutionContext context)
         {
             return Task.FromResult(BuildActionCommon.VerifyArtifact(receiptJson, "AssetBundle", context.CancellationToken));

@@ -73,6 +73,26 @@ namespace NovaFramework.Editor
                 throw new System.InvalidOperationException($"[CustomAndroidManifest] {path} 缺少 <application> 节点");
         }
 
+        /// <summary>从已冻结自有字节构造同一领域XML树；不二次打开源文件，禁DTD/外部实体，不创建或保存文件。</summary>
+        /// <param name="frozenXml">完整原始XML字节，调用方负责有界读取与SHA绑定。</param>
+        /// <param name="logicalPath">仅供错误诊断及原Save路径绑定；预测调用方使用MemoryStream保存。</param>
+        internal CustomAndroidManifest(byte[] frozenXml, string logicalPath)
+        {
+            if (frozenXml == null) throw new System.ArgumentNullException(nameof(frozenXml));
+            m_Path = logicalPath;
+            using (var stream = new System.IO.MemoryStream(frozenXml, false))
+            using (var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null }))
+            {
+                reader.Read(); Load(reader);
+            }
+            m_NameSpaceManager = new XmlNamespaceManager(NameTable);
+            m_NameSpaceManager.AddNamespace("android", c_AndroidXmlNamespace);
+            m_ManifestElement = SelectSingleNode("/manifest") as XmlElement;
+            if (m_ManifestElement == null) throw new System.InvalidOperationException("冻结Manifest缺少根manifest节点。");
+            m_ApplicationElement = SelectSingleNode("/manifest/application") as XmlElement;
+            if (m_ApplicationElement == null) throw new System.InvalidOperationException("冻结Manifest缺少application节点。");
+        }
+
         /// <summary>
         /// 将当前 XML 内容保存回原始路径，使用 UTF-8 无 BOM 编码。
         /// </summary>

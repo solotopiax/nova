@@ -192,3 +192,11 @@ m_Drawer = null;
 - [Definitions/ISDKPlugin.md](../../../Runtime/Modules/SDK/Definitions/ISDKPlugin.md) — Plugin 基接口
 - [Definitions/SDKPluginBase.md](../../../Runtime/Modules/SDK/Definitions/SDKPluginBase.md) — `RequiredConfigType` 映射来源
 - [EditorUtil.Config.WorkspaceActive.md](../../EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) — active ConfigMaster 获取与保存事件
+
+## 同步、输入与执行边界
+
+分组绘制对八组分别执行接口 predicate，同一多接口 Plugin 可能在多行出现并共享同一个 Enabled；首次追加时的优先归组判断不能解释为始终只有一个显示族。普通埋点排除变现/投放/归因；账号允许多选；云服务把 Push 与 RemoteConfig 合作一个单选组，选择一项可能关闭另一项。单选只在用户改变选择时归一当前可见组，已有多个 Enabled 不会无交互自动修正。
+
+扫描只接受非抽象、非接口且有 public 无参构造元数据的类型，不为了显示构造插件；首次默认项取 TypeCache 扫描顺序，没有额外排序或 Priority 控件。缓存签名由 Master 资产路径与排序后的 EnabledSDKs 文本组成，不包含程序集版本或加载状态；扫描前已经记录签名，扫描异常可能导致同签名不立即重试，ForceRefresh 只令下一次同步重扫。
+
+SyncEntries 在 OnEnable、绘制与配置保存回调都会运行，Play 禁止用户控件交互不阻止自动追加/Apply。Missing 标记只对非空但 Type.GetType 不能解析的名称成立；空条目可能不显示警告，但清理会删除空名称与真正缺失项，inactive 可解析项保留。账号菜单回调捕获数组索引，没有冻结类型名/数组顺序，展开后重排可能改变目标；类型解析异常也不统一吞掉。Dispose 只放弃 GUIStyle 引用，不清类型缓存或代替宿主退订事件。

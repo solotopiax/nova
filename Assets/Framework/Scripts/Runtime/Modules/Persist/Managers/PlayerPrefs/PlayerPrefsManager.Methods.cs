@@ -15,7 +15,7 @@ namespace NovaFramework.Runtime
     internal sealed partial class PlayerPrefsManager : PersistManagerBase<PlayerPrefsManagerConfig>, IPlayerPrefsManager
     {
         /// <summary>
-        /// 校验分类名：不得为空、不得包含 "::" 或 ","。
+        /// 校验分类名：拒绝 null/空字符串及 "::"、","；纯空白没有被拒绝。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <exception cref="System.ArgumentException">分类名不合法时抛出。</exception>
@@ -56,7 +56,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 校验 classify 和 item 名称：不得包含分隔符 "::" 或 ","，item 不得等于保留名 "__items__"。
+        /// 校验 classify 和 item：拒绝 null/空字符串及 "::"、","，item 不得等于 "__items__"；纯空白可通过。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <param name="item">条目名。</param>
@@ -102,7 +102,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 写入值到 PlayerPrefs（内存）并标记脏。
+        /// 先注册内存索引，再按配置加密并写入平台，成功后才标脏；写入失败不回滚已注册索引。
         /// </summary>
         /// <param name="classify">分类名。</param>
         /// <param name="item">条目名。</param>
@@ -125,7 +125,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从 PlayerPrefs 恢复全部分类索引到内存。
+        /// 按逗号拆分并恢复分类/条目索引，过滤空片段；不校验名称合法性或原始值键是否存在。
         /// </summary>
         private void LoadItemNameGroups()
         {
@@ -170,7 +170,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 将指定分类的条目名列表写回 PlayerPrefs 索引键。
+        /// 将存在分类的条目名列表写回平台索引键；分类已移除时不删除旧索引键。
         /// </summary>
         /// <param name="classify">分类名。</param>
         private void RefreshItemNameListToSave(string classify)

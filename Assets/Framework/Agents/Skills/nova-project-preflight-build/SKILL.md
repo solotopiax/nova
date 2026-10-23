@@ -9,7 +9,7 @@ description: Use when Nova 项目组要在实际构建 Player 前，只读检查
 
 ## 渐进式披露
 
-先读取 `references/contract.json`。仅在解释规则或确认构建边界时，才按需读取 `Docs/Onboarding/VALIDATION.md`、`Docs/Editor/EditorUtil/EditorUtil.ProjectGuard.md` 与 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md`；不要预先加载 Bundle、HybridCLR、SDK 或平台的全部文档。Action Schema 只从运行中的 `nova.project.build.inspect-readiness` Descriptor 获取，不在 Skill 中复制字段定义。
+先读取 `references/contract.json`。仅在解释规则或确认构建边界时，才按需读取 `Docs/Onboarding/VALIDATION.md`、`Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md` 与 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md`；不要预先加载 Bundle、HybridCLR、SDK 或平台的全部文档。Action Schema 只从运行中的 `nova.project.build.inspect-readiness` Descriptor 获取，不在 Skill 中复制字段定义。
 
 ## 范围与冻结输入
 

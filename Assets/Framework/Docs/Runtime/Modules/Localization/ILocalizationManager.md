@@ -96,3 +96,8 @@
 - [LocalizationRefreshEventData.md](LocalizationRefreshEventData.md)
 - [ILocalizationTextRow.md](ILocalizationTextRow.md)
 - [ILocalizationFontRow.md](ILocalizationFontRow.md)
+
+
+## 内置实现返回值边界
+
+接口声明不执行默认值、资源或状态校验。内置 LoadAsync 正常结束返回 true，仍可能跳过或未成功提交支持语言/字体；InitCurrentLanguage 返回解析候选，不是切换成功位。SetLanguageSync/Async 没有成功 bool，语言文本可能部分加载或提交失败；实际语义与快照、并发、持久化边界见 [LocalizationManager](LocalizationManager.md)。字符串短表名按 Type.Name 匹配，泛型按精确 typeof(T)，两者不自动加载。

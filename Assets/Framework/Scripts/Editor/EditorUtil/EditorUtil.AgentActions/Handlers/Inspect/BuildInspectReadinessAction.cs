@@ -57,8 +57,8 @@ namespace NovaFramework.Editor
         public override Task<AgentActionHandlerPlan> PlanAsync(Request request, AgentActionExecutionContext context)
         {
             GenerateActionCommon.TryParseActiveBuildTarget(request.target, out BuildTarget target, out _);
-            EditorUtil.ProjectGuard.BuildReadinessReport report =
-                EditorUtil.ProjectGuard.InspectBuildReadiness(target, request.packageName);
+            EditorUtil.Build.BuildReadinessReport report =
+                EditorUtil.Build.InspectBuildReadiness(target, request.packageName);
             string payload = Util.Json.Serialize(request);
             return Task.FromResult(new AgentActionHandlerPlan
             {
@@ -116,8 +116,8 @@ namespace NovaFramework.Editor
                 return Task.FromResult(AgentActionResult.Create(null, "blocked", "构建就绪 Receipt 无效：" + error));
             }
 
-            EditorUtil.ProjectGuard.BuildReadinessReport report =
-                EditorUtil.ProjectGuard.InspectBuildReadiness(target, request.packageName);
+            EditorUtil.Build.BuildReadinessReport report =
+                EditorUtil.Build.InspectBuildReadiness(target, request.packageName);
             AgentActionResult result = AgentActionResult.Create(null, "success", report.ready
                 ? "构建前置规则已完成且未发现错误。"
                 : $"构建前置规则已完成：{report.errorCount} 个错误、{report.warningCount} 个警告。");

@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [10.0.6] - 2026-10-23
+
+### Fixed
+
+- 仅在宏列表实际变化时回写编译宏，避免 Editor 每次域重载重复写入同一份 PlayerSettings。
+
 ## [10.0.5] - 2026-06-18
 
 ### Changed

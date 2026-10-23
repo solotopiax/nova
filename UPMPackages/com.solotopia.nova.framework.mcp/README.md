@@ -2,7 +2,7 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.4`
+> 当前版本：`0.1.5`
 >
 > 当前默认 Provider：`com.coplaydev.unity-mcp@10.2.0`
 
@@ -37,7 +37,11 @@ Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `no
 
 ready Plan 会在项目 `Library/Nova/AgentActions/Operations/` 写最小恢复元数据；domain reload 后只允许 Verify，不恢复或重放 Execute。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` Action 同样开放，但必须保留强类型 Schema、一次性确认、锁、Receipt、结果脱敏和 Verify，不能借开放策略绕过执行协议。
 
-当前 Registry 的 20 个 Action 已全部进入显式白名单，包含 UPM 卸载、EDM4U、HybridCLR Generate、Bundle、Player 与异步 Pipify Batch。实际列表与 Schema 仍以运行中的 `describe` 为准。
+当前 Registry 的 37 个 Action 已全部进入显式白名单，包含配置批量编辑、UI 导出、UPM 卸载、EDM4U、HybridCLR Generate、Bundle、Player、异步 Pipify Batch 与 IAP 商品目录一次提交。实际列表与 Schema 仍以运行中的 `describe` 为准。`nova.project.iap.upload-product-catalog` 仍走原四阶段网关、精确外部授权与一次性计划；HTTP 2xx 当前最高只为 `partial`，不证明后台目录应用、支付或发货，失败和重载不自动重发。
+
+长计划可在同一 `operation=plan` 内用 `plan_mode=start/status/forget` 登记、读取或释放传输记录；调用方保留同一 `request_id` 取回结果，不自动重跑。同步 `plan` 与原一次性执行协议保持兼容；完整状态与失效边界见下方包内文档。 较慢的只读核验可同样使用 `operation=verify` 的 `verify_mode=start/status/forget` 与独立 `request_id`，取回同一次核验的完整脱敏响应；省略模式保持同步 Verify，原 partial 不因收件完成升级。
+
+若服务端仍缓存旧 Tool Schema，单独新建客户端会话未必刷新。Unity custom-tools 已核实新参数时，可通过现有 `execute_custom_tool(tool_name="nova_project_action", parameters=请求对象)` 转交同一网关；当前 Provider 无该入口时，保留阻碍并按正式方式刷新服务，不修改服务器配置。
 
 完整协议、开放边界与排障入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 

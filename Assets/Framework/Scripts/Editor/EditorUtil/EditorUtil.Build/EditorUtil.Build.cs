@@ -19,8 +19,8 @@ namespace NovaFramework.Editor
     public static partial class EditorUtil
     {
         /// <summary>
-        /// Unity Player 打包封装。
-        /// 仅做 BuildPipeline.BuildPlayer 的薄封装 + 必要输入校验；不处理签名 / 上传 / 通知等外围逻辑。
+        /// Unity Player 构建与只读前置检查。
+        /// 构建入口薄封装 BuildPipeline.BuildPlayer 并校验必要输入；不处理签名 / 上传 / 通知等外围逻辑。
         /// </summary>
         public static partial class Build
         {

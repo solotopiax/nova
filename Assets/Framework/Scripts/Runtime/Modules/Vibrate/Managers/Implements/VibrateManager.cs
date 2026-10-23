@@ -51,7 +51,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 关闭并清理管理器。
+        /// 取消播放等待并清理数据引用，不调用设备 Stop，也不取消在途数据加载；显式停止设备使用 StopAll。
         /// </summary>
         public override void Shutdown()
         {
@@ -223,7 +223,7 @@ namespace NovaFramework.Runtime
         /// <param name="amplitude">振幅（0~1）。</param>
         /// <param name="frequency">频率（0~1）。</param>
         /// <param name="preDuration">前置等待时长（秒）。</param>
-        /// <param name="interval">振动间隔时长（秒）。</param>
+        /// <param name="interval">仅校验非负，当前数值重载不使用它等待或调用插件；表行 Interval 的语义独立。</param>
         public override void PlayEmphasis(float amplitude, float frequency, float preDuration, float interval)
         {
             if (!Enable) return;

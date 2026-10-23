@@ -72,14 +72,16 @@ public static class RuntimeDebugger
     /// </summary>
     public static Func<FieldInfo, string> LogTagDescriptionResolver { get; private set; }
 
+    /// <summary>
+    /// 按需取得调试服务，可能构造依赖和 UI；不以 IsInitialized 或 Settings.IsEnabled 作为就绪门。
+    /// </summary>
     public static IDebugService Instance
     {
         get { return DebugServiceRegistry.GetService<IDebugService>(); }
     }
 
     /// <summary>
-    /// Action to be invoked whenever the user selects "copy" in the console window.
-    /// If null, copy/paste will not be available.
+    /// 控制台复制回调，接收完整日志对象；为 null 时隐藏复制能力，不自动脱敏。
     /// </summary>
     public static Action<ConsoleEntry> CopyConsoleItemCallback = GetDefaultCopyConsoleItemCallback();
 
@@ -90,7 +92,8 @@ public static class RuntimeDebugger
     public static Action<string> UploadLogCallback;
 
     /// <summary>
-    /// 携带初始化选项启动 RuntimeDebugger，所有配置通过 options 一次性传入。
+    /// 应用初始化选项并取得 Console/Debug 服务；正容量与非 null 上传回调才覆盖已有值。
+    /// 标记先于服务创建设置，没有重复调用或失败回滚保证，IsInitialized 不代表所有依赖就绪。
     /// </summary>
     /// <param name="options">初始化选项，为 null 时使用全部默认值。</param>
     public static void Init(InitOptions options = null)
@@ -121,6 +124,10 @@ public static class RuntimeDebugger
 #endif
     }
 
+    /// <summary>
+    /// 写入设置中的日志容量，不校验正值、不重建已有缓冲；后续构造缓冲时才消费。
+    /// </summary>
+    /// <param name="count">期望容量，应为正数。</param>
     public static void SetMaximumConsoleEntries(int count)
     {
         Settings.Instance.MaximumConsoleEntries = count;

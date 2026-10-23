@@ -14,7 +14,7 @@ using UnityEngine;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 隐私运行时配置；承载框架本地 AES 默认密钥及 iOS 构建期隐私声明。
+    /// 隐私运行时配置；承载框架本地 AES 默认密钥、可选扩展配置及 iOS 构建期隐私声明。
     /// </summary>
     [Serializable]
     public sealed class PrivacyConfigs
@@ -40,6 +40,12 @@ namespace NovaFramework.Runtime
         /// </summary>
         [Tooltip("Util.Encrypt.AES 默认 IV；按 UTF-8 编码后必须为 16 字节。")]
         public string AESIV;
+
+        /// <summary>
+        /// 可选框架包的隐私扩展 JSON；根对象以包标识为键，主框架只透传并保留未知扩展。
+        /// </summary>
+        [Tooltip("可选框架包的隐私配置；由已安装包的配置面板维护，导出时完整保留。")]
+        public string ExtensionConfigsJson = "{}";
 
         /// <summary>
         /// iOS Required Reason API 声明：JSON 对象的键为 API 类别，值为理由码字符串数组。

@@ -45,6 +45,8 @@ public class UIUnitSetting : DataTableUnitSettingBase
 
 `DataFormat` 同时控制 Luban 代码/数据生成与运行时接收器：JSON 使用 `.json`，Binary 使用 `.bytes`。切换格式后，Inspector 只改写标准后缀；正式导出会事务删除同名反格式产物及其 `.meta`。
 
+IDataTableSettings.Units 是原 UIUnitsSettings 的只读接口视图，不复制列表或 Unit，序列化值也可能为 null；SourceDirPath 仅 Editor 存在，getter 不校验目录。固定 Map/Name 只声明导表策略，不证明源表已有 Name 或所有行已进入运行时注册表。
+
 ---
 
 ## §11 使用示例

@@ -2,13 +2,35 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-23
+
 ### Added
+
+- 新增 Editor 商品目录快照和上传入口：按 Debug/Release 选择固定测试/正式地址，确定性生成明文 head 及含 catalog_hash、product_count、完整 products 的 AES body；SKU Excel 工具栏手动按钮与 Pipify“导出IAP数据到服务器”共用实现。
+
+- 新增固定目录 Action 桥，复用投影、规范 Hash、App AES 和单次 HTTP；Prepared 原子消费，共享发送门拒并发、不重试，仅返回有限脱敏响应，保持 Inspector/Pipify 的精确版本冲突兼容。
 
 ### Changed
 
+- 目录上传 head 的 develop_mode 使用 Debug/Release，body 使用当前 ConfigRuntimeSO 的 AppAesKey/AppAesIV。
+
+- IAPDemo ThirdPay Panel 仅展示消耗品，首充和额外赠送奖励使用独立测试卡，普通支付不默认携带奖励。
+
+- 最低依赖对齐至Nova Framework 0.7.0，与本轮发布的框架及 SDK 接口配套。
+
 ### Fixed
 
+- 修复 IAPDemo 关闭重开后旧登录、查询、支付、恢复和钱包任务回写，保留核心交易；校正初始化失败说明，补齐可选商店接入、配置引用和自然语言入口。
+
+- 修正 JCS 对 U+0085/U+2028/U+2029 的额外转义，避免 catalog_hash 不一致；仅 HTTP 409 且业务码 CATALOG_VERSION_CONFLICT 时报警告并允许 Pipify 继续，其他上传失败仍中断。
+
 ### Breaking
+
+- 最低支持 Unity 6000.6.7f1，与 Nova Framework 基线一致。
+
+### Important
+
+新增支付商品目录上传，可从配置窗口或打包流水线中，将已导出的商品配置提交后台，并区分测试与正式环境，减少手工录入商品信息的工作。
 
 ## [0.1.18] - 2026-10-10
 

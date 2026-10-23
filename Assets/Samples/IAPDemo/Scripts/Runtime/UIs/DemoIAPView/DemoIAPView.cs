@@ -37,6 +37,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
+            m_IsOpen = true;
             EnsureIAPBridge();
             InitializeStoreModules();
             SetAuthenticatedContentActive(m_LoggedIn);
@@ -48,14 +49,16 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 关闭 View 时取消异步任务并清理全部已发现商店模块的运行时内容。
+        /// 关闭 View 时先使页面会话失效并取消 Bridge 任务，再清理全部商店模块的运行时内容。
         /// </summary>
         /// <param name="isShutdown">是否因视图系统关闭而触发。</param>
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
-            ClearStoreModules();
+            // 先使会话失效并取消任务；取消回调仍持有本次 Bridge，不读取已清空的模块字段。
+            m_IsOpen = false;
             m_IapBridge?.Dispose();
+            ClearStoreModules();
             m_IapBridge = null;
             m_LoggedIn = false;
             m_LoginInProgress = false;

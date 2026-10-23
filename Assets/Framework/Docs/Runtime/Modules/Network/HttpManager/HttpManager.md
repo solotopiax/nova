@@ -19,9 +19,11 @@ HTTP 短连接管理器，固定以 UnityWebRequest 和系统 DNS 执行 GET、P
 
 ## 公开 API
 
-公开签名见 [IHttpManager.md](IHttpManager.md)。所有 requestTimeout 参数传 -1 时使用默认 60 秒；HTTP 只提供请求总超时参数。
+公开签名、请求体/表单/头与失败输入规则见 [IHttpManager.md](IHttpManager.md)。所有 requestTimeout 参数传负数时使用初始化的默认值（初始 60 秒）；HTTP 只提供请求总超时参数。
 
 GetAsync 禁用不可控的本地缓存复用。DownloadBinaryAsync 与 DownloadTextAsync 的 idleTimeout 传 -1 时使用默认请求超时；只要持续收到新字节，下载不会因总耗时而被空闲超时中断。
+
+普通 HTTP 的四个令牌末位重载经 `ICancellableHttpManager` 提供物理取消。内置管理器在发送前处理预取消，再把同一令牌传入 `ExecuteTrackedSingleRequestAsync` 和 `IHttpTransport`；字符串 POST 与 Raw POST 共用字节传输，multipart 仍用原字段/文件编码。进行中取消在 `Update` 轮询后 Abort，返回失败 `HttpResponse`，调用方继续负责唯一归池。旧无令牌签名和自定义实现保持兼容；新门面遇到不支持该能力的实现发送前拒绝。详见 [IHttpManager.md](IHttpManager.md#可选物理取消能力)。
 
 ## HostKey + NetCmd 主备链
 
@@ -43,11 +45,23 @@ GetAsync 禁用不可控的本地缓存复用。DownloadBinaryAsync 与 Download
 
 若某次失败无法确认请求是否到达服务器，最终 HttpResponse.DeliveryState 会标记为 Unknown；可明确归因于域名解析、TLS、证书或建连失败的请求标记为 NotReachedServer。有副作用的业务接口仍应由既有协议保证重复请求安全。
 
+该分类使用错误文本关键词推断，不能替代服务器接收记录。耗尽候选时，只要任一次尝试可能到达服务器，最终交付状态保持 Unknown；不会因为最后一次失败在 DNS 阶段就掩盖前次不确定性。整链复用传入请求体/头，`PostBusinessRawDataAsync()` 不自行深拷贝数组，冻结责任在调用层。
+
+空候选直接返回 NotReachedServer 失败响应，不创建发送埋点链。routeKey 为空白时回退为按输入顺序拼接 endpoint ID 的键；稳定 HostKey 能提供更明确的偏好隔离。切换候选会归还旧失败响应，最终响应仍归调用方。取消停止继续候选；已取得正式响应时保留该响应，不能推断取消已撤销服务端操作。
+
 该主备链仅属于 HostKey + NetCmd 业务协议。普通 Nova.Network HTTP 调用、文件上传和调用方自行提供的单 URL 下载不会被框架自动扩展为主备请求；App 与 Asset 的更新路径各自维护配置和失败分类，但共同复用 Core 的候选计划、完整轮次、完整重试周期与最近成功偏好机制。Asset 的每个文件独立冻结计划，不再由并发 Bundle 共享一个包级推进游标；YooAsset 仍负责触发物理下载和重试回调。
 
 ## UWR 埋点
 
 启用 `EnableUWRTracks` 后，每条逻辑请求严格上报 `1 uwr_request_start → 0～N uwr_request_error → 1 uwr_request_end`。业务主备、多轮和重试仍属于同一条逻辑链；`uwr_retry_index`、`uwr_round_index`、`uwr_candidate_index` 与 `uwr_send_index` 可还原每次物理发送。三个事件通过 `uwr_chain_id` 关联，schema 版本固定为 1；完整字段定义见 `Assets/Framework/Tracks/Tracks.xlsx`。
+
+普通 HTTP 令牌末位重载的预取消没有发送事件；在飞请求取消且未取得正式服务器响应时，沿上述集中归属上报一次 error，end 的 `uwr_result=aborted`、`uwr_error_type=cancelled`；正式服务器响应仍优先保留其结果语义。下载的预取消边界见 [IDownloadService.md](IDownloadService.md#内置下载的边界)。
+
+普通 4xx/5xx 以 end 表达 HTTP 结果，不额外生成 error；数据处理错误、无正式响应失败、异常或取消按失败分类产生 error。分类基于 UWR 状态和错误关键词，不是已实测的 DNS/TLS 阶段。已下载字节可上报，只有 `TotalBytesIsKnown` 为 true 且非负才上报总字节；上传字节虽保存在内部响应中，当前 AddTransferProperties 不上报它。
+
+`UwrNetworkTelemetry` 负责构造、缓存和分发事件，不持久化：SDK 未初始化时最多缓冲 128 条，满时丢最旧，SDK 就绪后逐条发送；SubsystemRegistration 重置会清空队列。每个 TrackPlugin 收到新的属性字典，单插件异常记录后继续，但字典内值仅浅复制；没有插件或分发失败不证明事件已交付。正常编排保持 start/error/end 数量，辅助方法本身不去重，也不为工厂创建、埋点构造或分发异常提供事务保证。
+
+URL 埋点仅取 scheme/host/port/path，不保留 query/fragment/userinfo；文本净化在第一个 `?` 后截断并限制 256 字符，不能移除 path 内的业务标识。Asset 的 start/error/end 适配器复用相同 schema，依赖调用方提供下载信息，不自行测量 UWR。当前 routeRole 参数未写入属性，不能把它当作已经上报的字段。
 
 ## 使用示例
 
@@ -74,6 +88,7 @@ finally
 | HTTP 状态码 | 4xx/5xx 是正式服务器响应，会终止业务主备链。 |
 | 超时 | RequestTimeout 由每次物理请求完整使用；不存在自动推导的候选链总超时。 |
 | 响应对象 | HttpResponse 是池化对象；所有取得它的调用方负责归还。 |
+| 普通请求取消 | 新令牌末位重载驱动物理Abort并返回失败响应；旧入口无进行中取消。Shutdown不会自动中断在飞请求。 |
 | 下载进度 | 中间 HttpResponse 仅在当次回调内有效，由框架自动归还；回调异常会被隔离并停止后续进度回调，不中止下载。 |
 
 ## 关联文档

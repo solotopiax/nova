@@ -40,7 +40,7 @@ Sheet 同时满足以下条件才会进入结果：
 3. Sheet 内容不为 `null`。
 4. 行数不少于调用方传入的 `minHeaderRowCount`。
 
-Table Profile 传入 4，其他内置 Profile 默认传入 5。扫描器不拼接 `Tb` 前缀；`LubanSchemaManifestBuilder` 负责把值类型投影为 manifest 中的 `tables[].name` 和 `tables[].valueType`。
+当前九个内置 Profile 的 `MinHeaderRowCount` 均默认 5；目录中没有 Table Profile。该参数检查 Sheet 总行数，不验证表头结构。扫描器不拼接 `Tb` 前缀；`LubanSchemaManifestBuilder` 负责把值类型投影为 manifest 中的 `tables[].name` 和 `tables[].valueType`。
 
 ---
 

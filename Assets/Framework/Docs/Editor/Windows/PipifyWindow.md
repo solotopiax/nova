@@ -53,7 +53,7 @@ public static void Open()
 | ObjectField (`PipifySettingsSO`) | 显示"编辑器存档文件："标签；值变化时调用 `RebindSettings(newSettings)`；有脏数据则先弹 `ConfirmDiscardDirty` |
 | 创建按钮 (`OnClickCreate`) | 弹 `SaveFilePanelInProject` → `EditorUtil.Asset.Operator.CreateAt<PipifySettingsSO>` → 选中资产 → `RebindSettings` |
 | 选择按钮 (`OnClickPick`) | 弹 `OpenFilePanel` → `FileUtil.GetProjectRelativePath` → `EditorUtil.Asset.Operator.LoadAt<PipifySettingsSO>` → `RebindSettings`；路径不在项目或类型不匹配时弹错提示 |
-| 保存按钮 (`OnClickSave`) | `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets` + `m_IsDirty = false`；无脏数据时按钮禁用 |
+| 保存按钮 (`OnClickSave`) | `ConfigurationEditing.SaveTarget` → `SaveAssetIfDirty` 仅保存当前Settings + `m_IsDirty = false` + 干净窗口刷新；无脏数据时按钮禁用 |
 | 打开文件夹 (`OnClickRevealInFinder`) | `EditorUtility.RevealInFinder(AssetDatabase.GetAssetPath(m_Settings))`；未绑定时静默返回 |
 
 **存档绑定恢复：** `OnEnable` 与 `Single sceneOpened` 都先调用 `WorkspaceActive.ReconcileScene`，随后只读取 Globals 中与当前 ConfigMaster 成对保存的 `PipifySettingsSO`。进入 Sample 会写入 Sample Pipify 并保存业务 Pipify，返回业务 Scene 后成对恢复。未绑定或旧工程存在多个候选时窗口保持空状态，不再通过 `FindAssets` 取第一份。
@@ -216,3 +216,19 @@ PipifyWindow.Open();
 
 - [Editor.md](../Editor.md)
 - [PipifySettingsSO.md](../EditorUtil/EditorUtil.Pipify/PipifySettingsSO.md)
+
+## Batch 自动化共享服务
+
+具名Batch创建/复制、新Step默认值、字段支持/显隐/只读/下拉/动态占位和签名风险判断已复用 `EditorUtil.Pipify.ConfigurationEditing`，窗口保留交互与缓存收敛职责。保存按钮及保存后切换只保存目标Settings，不隐式保存其它脏资产。
+
+窗口向共享服务注册草稿guard，包括 `m_IsDirty`、未提交SerializedProperty以及等待下一帧create/rename/delete模态交互的计数；受控Action不得覆盖这些状态。保存通知只刷新无草稿窗口的参数缓存、展开态和ReorderableList，保持当前Batch选择。
+
+通过 `nova.project.pipify.inspect-settings` 查阅脱敏参数Schema，`nova.project.pipify.configure-batch` 创建/克隆/重命名/增删排序/配置并保存，实际执行仍复用 `nova.project.pipify.run-batch`。配置默认不运行；三个入口各自遵循Plan/Execute/Verify。详细值token、冻结、只读与尚未支持的复杂参数边界见[Batch配置自动化](../EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md)。
+
+## 编辑状态与真实执行输入
+
+窗口直接修改真实 Settings 对象，以本地 dirty 标记延后保存；OnDisable 只退订，不恢复对象或保存。Discard 的 SO.Update 不能回滚普通对象直接赋值。创建资产先于 Rebind 草稿确认，取消/Globals失败可留新资产。改名实时写，不全是失焦提交；部分延迟菜单按索引重核范围，删除 Step 另捕获原 Settings/Batch/Item 身份，不能把所有延迟操作当同一安全模型。
+
+参数缓存按索引，增删重排须清；坏 JSON 窗口可回默认，而 Runner 会失败。高度计算/展开就可能构造 Package 参数或读工作区；动态下拉未知旧值可能返回首项，动态 placeholder 则不保存。保存会序列化整个有效参数缓存，界面候选不等于实际已存默认。签名提示只在首次进入 Android Development+AAB 组合，不核真实签名。
+
+运行按钮只做当前 UI 门禁，点击后延迟执行，未冻结点击时参数；运行中仍可能编辑或切工作区，Runner 另核 GUID。模态输入框共享静态结果，嵌套/重入不能当独立会话；复制 Step 使用窗口内存快照，不是系统剪贴板。窗口进度、通知或旧缓存不证明产物、编译与远端结果，Action 的冻结/草稿门才是独立受控合同。

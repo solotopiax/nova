@@ -11,6 +11,7 @@
 | IAP 核心及 Mobile、ThirdPay、Voucher 的事件 | `com.solotopia.nova.framework.sdk.iap/Nova/Tracks/Tracks.xlsx` |
 | TGA 的既有固定用户、公共属性 | Framework 既有说明页，不另建 TGA 表 |
 | 独立业务模块（Login、Bind、Firebase、WeChatMiniGame 等） | 所属包的 `Nova/Tracks/Tracks.xlsx` |
+| MemoryProtection 独立核心扩展 | `com.solotopia.nova.framework.memory.protection/Nova/Tracks/Tracks.xlsx`，仅 `打点表-MemoryProtection`；从 Framework 原表迁出，事件、属性和目标不变 |
 
 新增、修改或删除实际埋点调用时，同步维护既有归属的表。源码位于独立子包不表示必须独立建表；禁止为了补漏把广告渠道、支付子包或 TGA 的既有定义拆出。只有接口转发、没有自有固定事件或属性的适配包不需要空表。
 
@@ -64,7 +65,7 @@
 
 ## 汇总与交付检查
 
-SDK Inspector 的“打开打点表”按钮调用 `EditorUtil.TrackRegistry.Generate`，生成 `Library/Nova/Tracks/Tracks.generated.xlsx`；生成表是本地派生产物，不手工维护、不入 Git，不在 Editor 启动或重载时自动生成。来源顺序和有效包解析见 [TrackRegistry 文档](Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md)。
+SDK Inspector 的“打开打点表”按钮和受控 `nova.project.tracks.generate-registry` Action 共用 `EditorUtil.TrackRegistry.Generate`，生成 `Library/Nova/Tracks/Tracks.generated.xlsx`；Action 冻结全登记源并核验实际输出。生成表是本地派生产物，不手工维护、不入 Git，不在 Editor 启动或重载时自动生成。来源顺序和有效包解析见 [TrackRegistry 文档](Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md)。
 
 每次修改完成后检查：
 
@@ -75,6 +76,16 @@ SDK Inspector 的“打开打点表”按钮调用 `EditorUtil.TrackRegistry.Gen
 5. 没有源码注释标签、已撤回子表引用、伪造字段或未经证据支持的服务端说明。
 6. 修改生成器时编译并验证实际输出，不把源表检查当作生成器已验证。
 7. 清理本轮临时脚本、日志和验证产物，保留用户原有改动及正式产物；说明未覆盖的 Unity 界面和后台接收验证。
+
+## 自然语言能力与结构事务
+
+日常埋点维护复用 `nova-project-onboard-sdk-kit/references/tracks-maintenance.md`；同领域 Operation 覆盖调用接入、已有文字、新增事件/属性/事件页、定向目标与事件页样式，不新增逐事件、字段或渠道 Skill。已有文字复用 `Agents/Tools/nova_table_source.py`；事件页结构复用 `Agents/Tools/nova_tracks_source.py` 的固定 `inspect/plan/execute/verify/recover`，权威源限当前真实登记的自有工作区，已安装缓存或厂商包只读。
+
+结构 Plan 冻结全登记源/meta、manifest/lock、package.json、Unity 已解析 package 元数据、代码证据与完整草稿，不写源或汇总。草稿仅新增事件、追加属性、新事件页、定向文字/目标和单色样式；原事件/属性/顺序/归属保留，目标修改需精确原值与目的地证据。只改被授权页与必须的 OOXML 部件，不保存重建整本工作簿；说明页、删除、重命名、移表和不支持扩展关系明确阻断。全书公式/图表/计算链、数据验证、条件样式和打印/自定义定义名等坐标绑定保持只读；唯一支持的内置 `_xlnm._FilterDatabase` 按精确页序同步到本次 `A1:I<lastRow>` 筛选范围。
+
+`nova.project.tracks.generate-registry` 提供全源只读快照与受控 `Plan → Execute → Verify` 汇总；Plan 的 `DataJson.registry` 可直接供结构 CLI 使用。源编辑后需重新 Plan 汇总，校验全页内容、顺序、Network 单色样式及实际生成文件 SHA-256。此入口扩展显式 Agent 调用，不改变 Editor 启动/重载不自动汇总的约定。
+
+源 Execute 先消费一次性计划、持久备份及 Receipt，再原子替换；提交开始后取消/失败返回 `partial`，只读 Verify，不重放。源编辑的快照、请求、计划、原字节备份、Receipt 和共享写锁统一放本地 `Library/Nova/AgentActions/TableSource/`，不入 Git；路径和事务边界见上述 Skill reference。恢复先从真实备份和严格原草稿重算 after SHA/部件写集/动作摘要，仅允许该次 before/after 整源摘要，第三种摘要视为后续用户编辑并拒绝覆盖；不盲删任何页、源或备份。汇总替换已有输出时同样在 Plan 列出备份路径并保留 Receipt。源码、登记源、本地汇总和厂商接收分别验收，备份/Receipt 在完成验收前保留。
 
 ## 关联
 

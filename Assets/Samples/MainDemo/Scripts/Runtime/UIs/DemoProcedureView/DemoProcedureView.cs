@@ -5,8 +5,8 @@
  * filename:  DemoProcedureView.cs
  * author:    taoye
  * created:   2026/05/23
- * descrip:   Modules 2.10 — Procedure 模块演示视图（只读快照型）。
- *            展示已注册流程列表与当前活跃流程。
+ * descrip:   Modules 2.10 — Procedure 注册快照与业务重预加载演示。
+ *            展示已注册流程列表与当前流程，并从现有主流程请求重预加载。
  *            API：Nova.Procedure.GetProcedure<T>() / HasProcedure<T>()
  ***************************************************************/
 
@@ -20,7 +20,7 @@ namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
     /// Procedure 模块演示视图，展示已注册流程列表及当前流程快照。
-    /// 继承 BaseDemoView 三段式骨架，提供刷新按钮以重新读取流程状态。
+    /// 继承 BaseDemoView 三段式骨架，提供刷新与请求重新预加载入口。
     /// </summary>
     public sealed class DemoProcedureView : BaseDemoView
     {
@@ -35,6 +35,11 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
 
         [SerializeField] private Button m_RefreshButton;
+
+        /// <summary>
+        /// 请求当前主流程重新预加载的按钮；请求接受后只关闭本页。
+        /// </summary>
+        [SerializeField] private Button m_RestartPreloadButton;
 
         /// <summary>
         /// 流程列表容器（每行 1 个 TextMeshProUGUI）。
@@ -54,7 +59,7 @@ namespace NovaFramework.Samples.Runtime
         private readonly List<TextMeshProUGUI> m_ProcedureItems = new List<TextMeshProUGUI>();
 
         /// <summary>
-        /// 视图初始化：注册按钮事件，设置标题与 API 副标题。
+        /// 视图初始化：注册刷新与重预加载按钮，设置标题及准确业务 API 提示。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         protected override void OnInit(object userData)
@@ -72,6 +77,12 @@ namespace NovaFramework.Samples.Runtime
             {
                 m_RefreshButton.onClick.AddListener(OnRefreshButtonClick);
                 SetButtonApiHint(m_RefreshButton, "Nova.Procedure.GetProcedure<T>() / HasProcedure<T>()");
+            }
+
+            if (m_RestartPreloadButton != null)
+            {
+                m_RestartPreloadButton.onClick.AddListener(OnRestartPreloadClick);
+                SetButtonApiHint(m_RestartPreloadButton, "ProcedurePlaying.RequestPreloadRestart()");
             }
         }
 
@@ -94,7 +105,29 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 刷新流程快照：通过 Util.Assembly 枚举 ProcedureBase 子类，调用 HasProcedure 检查。
+        /// 从当前已注册主流程请求重预加载；成功后关闭本入口，拒绝时保留反馈。
+        /// </summary>
+        private void OnRestartPreloadClick()
+        {
+            if (Nova.Procedure == null)
+            {
+                AppendFeedback("Nova.Procedure 不可用，无法重新预加载", FeedbackLevel.Error);
+                return;
+            }
+
+            ProcedurePlaying playing = Nova.Procedure.GetProcedure<ProcedurePlaying>() as ProcedurePlaying;
+            if (playing == null || !playing.RequestPreloadRestart())
+            {
+                AppendFeedback("重新预加载未接受：当前不在 ProcedurePlaying 或已有待处理请求", FeedbackLevel.Warn);
+                return;
+            }
+
+            AppendFeedback("重新预加载已请求，将返回 ProcedurePreload 后重新进入 ProcedurePlaying", FeedbackLevel.Success);
+            Close();
+        }
+
+        /// <summary>
+        /// 刷新流程快照：合并框架与已加载业务程序集中的流程类型，查询注册状态与当前类型。
         /// </summary>
         private void RefreshSnapshot()
         {
@@ -106,22 +139,33 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            string currentName = Nova.Procedure.CurrentProcedure?.GetType().Name ?? "（无）";
+            System.Type currentType = Nova.Procedure.CurrentProcedure?.GetType();
+            string currentName = currentType?.Name ?? "（无）";
 
             if (m_CurrentProcedureText != null)
             {
                 m_CurrentProcedureText.text = "当前流程：" + currentName;
             }
 
-            string[] typeNames = Util.Assembly.GetTypeNames(typeof(ProcedureBase), typeof(ProcedureBase).Assembly);
-
-            if (typeNames == null || typeNames.Length == 0)
+            System.Reflection.Assembly frameworkAssembly = typeof(ProcedureBase).Assembly;
+            List<string> typeNames = new List<string>(Util.Assembly.GetTypeNames(typeof(ProcedureBase), frameworkAssembly));
+            if (Nova.Config != null && !string.IsNullOrWhiteSpace(Nova.Config.Namespace))
             {
-                AppendFeedback("Nova.Procedure -> 0 procedures（MainDemo 无 Procedure）", FeedbackLevel.Warn);
+                System.Reflection.Assembly businessAssembly = Util.Assembly.GetAssembly(Nova.Config.Namespace);
+                if (businessAssembly != null && businessAssembly != frameworkAssembly)
+                {
+                    typeNames.AddRange(Util.Assembly.GetTypeNames(typeof(ProcedureBase), businessAssembly));
+                }
+            }
+            typeNames.Sort(System.StringComparer.Ordinal);
+
+            if (typeNames.Count == 0)
+            {
+                AppendFeedback("Nova.Procedure -> 当前框架与已加载业务程序集未发现流程类型", FeedbackLevel.Warn);
                 return;
             }
 
-            for (int i = 0; i < typeNames.Length; i++)
+            for (int i = 0; i < typeNames.Count; i++)
             {
                 string typeName = typeNames[i];
                 System.Type t = Util.Assembly.GetType(typeName);
@@ -132,11 +176,11 @@ namespace NovaFramework.Samples.Runtime
 
                 ProcedureBase proc = Nova.Procedure.GetProcedure(t);
                 bool exists = proc != null;
-                bool isCurrent = exists && proc.GetType().Name == currentName;
+                bool isCurrent = exists && proc.GetType() == currentType;
                 AddProcedureItem(t.Name, isCurrent, exists);
             }
 
-            AppendFeedback($"Nova.Procedure.GetProcedure<T>() -> {typeNames.Length} types / Current={currentName}", FeedbackLevel.Success);
+            AppendFeedback($"Nova.Procedure.GetProcedure<T>() -> {typeNames.Count} types / Current={currentName}", FeedbackLevel.Success);
         }
 
         /// <summary>

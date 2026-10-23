@@ -32,7 +32,7 @@ public interface IBannerControl
     /// 通过枚举更新 Banner 停靠位置。
     void UpdateBannerPosition(BannerPosition position);
 
-    /// 通过像素坐标更新 Banner 位置（逻辑像素）。
+    /// 更新 Banner 原生视图坐标；单位由渠道实现约定。
     void UpdateBannerPosition(Vector2 position);
 
     /// 开启 Banner 自动刷新（仅 MAX 有效）。
@@ -41,10 +41,10 @@ public interface IBannerControl
     /// 停止 Banner 自动刷新（仅 MAX 有效）。
     void StopBannerAutoRefresh();
 
-    /// 设置 Banner 宽度（逻辑像素，仅 MAX 有效）。
+    /// 设置 Banner 原生宽度（MAX：Android dp / iOS points）。
     void SetBannerWidth(float width);
 
-    /// 获取 Banner 自适应高度（逻辑像素，仅 MAX 有效）；不支持时返回 -1。
+    /// 获取原生自适应高度（MAX：Android dp / iOS points）；不支持时返回 -1。
     float GetAdaptiveBannerHeight(float width = -1f);
 
     /// 设置 Banner 背景色（仅 MAX 有效）。
@@ -52,7 +52,9 @@ public interface IBannerControl
 }
 ```
 
-> 调用前须先 `IAdPlugin.RequestAsync(AdFormat.Banner)` 完成预加载，否则各方法行为由渠道 SDK 定义（通常为无操作或 Log.Warning）。
+> 调用前须先 `IAdPlugin.RequestAsync(AdFormat.Banner)` 完成预加载，且加载结果为 `Success=true`，使聚合层选出活跃 Banner 渠道。未选出渠道时聚合控制方法为空操作，自适应高度为 -1；`DestroyBanner` 后清除活跃渠道，需要再次预加载才能通过聚合层显示。所有控制方法由 Unity 主线程调用。
+
+当前 MAX 的坐标与宽度直接转成整数传给原厂，Android 使用 dp，iOS 使用 points；高度 helper 也没有密度换算。`GetAdaptiveBannerHeight()` 的默认宽度直接取 Unity `Screen.width`，不能据此认为返回值是 Canvas 像素。需要指定宽度时传入原生单位，并在布局端核对转换。
 
 ---
 
@@ -64,8 +66,9 @@ var ad = Nova.SDK.Get<IAdPlugin>();
 
 async UniTask ShowBanner(CancellationToken ct)
 {
-    // 无需 Supports 检查；业务层直接预加载，未注册 Banner 的渠道 fail-soft 返回 default
-    await ad.RequestAsync(AdFormat.Banner, ct: ct);
+    // 未注册或加载失败返回 Success=false；仅成功后操作 Banner。
+    var loaded = await ad.RequestAsync(AdFormat.Banner, ct: ct);
+    if (!loaded.Success) return;
 
     // 设置位置后展示
     ad.UpdateBannerPosition(BannerPosition.Bottom);
@@ -76,8 +79,8 @@ async UniTask ShowBanner(CancellationToken ct)
 void HideBanner() => ad.HideBanner();
 void DestroyBanner() => ad.DestroyBanner();
 
-// 自适应高度（用于布局计算）
-float height = ad.GetAdaptiveBannerHeight(Screen.width);
+// 查询原生自适应高度；布局使用时按目标平台与 Canvas 进行单位换算。
+float nativeHeight = ad.GetAdaptiveBannerHeight();
 ```
 
 ---

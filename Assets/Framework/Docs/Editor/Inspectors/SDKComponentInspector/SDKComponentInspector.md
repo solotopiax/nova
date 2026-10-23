@@ -95,3 +95,9 @@ OnDisable
 - [Definitions/SDKPluginEntry.md](../../../Runtime/Modules/SDK/Definitions/SDKPluginEntry.md)
 - [Managers/Interfaces/ISDKManager.md](../../../Runtime/Modules/SDK/Managers/Interfaces/ISDKManager.md)
 - [EditorUtil.Config.WorkspaceActive.md](../../EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md)
+
+## 同步、输入与执行边界
+
+“打开打点表”在 Play 也可使用，每次先调用 TrackRegistry 重新生成当前汇总，再检查文件存在并打开；不是自动发送任何埋点。无异常返回只表示本次生成调用结束，不独立证明全部字段或实际 SDK 上报有效。
+
+源 Tracks 只登记事件、属性类型和触发约定，不驱动登录、绑定、广告、支付、FCM 或微信业务。广告渠道字段集中在广告聚合表，IAP 的 Mobile/ThirdPay/Voucher 集中在 IAP 表；登录/绑定的用户关联、Unix 秒级时间与非负毫秒耗时各保持自身含义，配置价格、可信实付与服务端约定不可互换。汇总不改变各包真实调用链、上报目标或外部验收边界。

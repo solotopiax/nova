@@ -1,12 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.sdk.max",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "8.6.4",
   "displayName": "Nova Framework - SDK - MAX",
   "description": "MAX 广告聚合插件，提供广告展示服务",
   "category": "Runtime",
-  "unity": "2021.3",
+  "unity": "6000.6",
+  "unityRelease": "7f1",
   "keywords": [
     "nova",
     "sdk",
@@ -18,8 +19,8 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.ad": "1.1.16",
-    "com.solotopia.nova.framework": "0.6.38",
+    "com.solotopia.nova.framework.sdk.ad": "1.2.0",
+    "com.solotopia.nova.framework": "0.7.0",
     "com.applovin.mediation.ads": "8.6.4",
     "com.applovin.mediation.adapters.bidmachine.android": "3070000.0.0",
     "com.applovin.mediation.adapters.bidmachine.ios": "307000000.0.0",
@@ -43,12 +44,12 @@
     "com.applovin.mediation.adapters.mintegral.ios": "801040000.0.0",
     "com.applovin.mediation.adapters.moloco.android": "4110000.0.0",
     "com.applovin.mediation.adapters.moloco.ios": "4090000.0.0",
-    "com.applovin.mediation.adapters.unityads.android": "4200000.0.0",
-    "com.applovin.mediation.adapters.unityads.ios": "4200000.0.0",
+    "com.applovin.mediation.adapters.unityads.android": "4200101.0.0",
+    "com.applovin.mediation.adapters.unityads.ios": "4200001.0.0",
     "com.applovin.mediation.adapters.vungle.android": "7070200.0.0",
     "com.applovin.mediation.adapters.vungle.ios": "7070200.0.0",
     "com.applovin.mediation.adapters.yandex.android": "8010000.0.0",
-    "com.applovin.mediation.adapters.line.ios": "3010101.0.0",
+    "com.applovin.mediation.adapters.line.ios": "3010102.0.0",
     "com.applovin.mediation.adapters.line.android": "300001010.0.0"
   },
   "nova": {

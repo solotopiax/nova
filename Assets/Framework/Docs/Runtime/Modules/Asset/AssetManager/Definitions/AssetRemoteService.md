@@ -22,7 +22,7 @@ YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据
 | `m_HostServerUrl` | `string` | 主下载地址配置值 |
 | `m_HostServerUrlFallback` | `string` | 备用下载地址配置值 |
 | `m_MetadataRootUrl` / `m_MetadataRootUrlFallback` | `string` | 白名单设备的版本元数据主备根地址 |
-| `m_Platform` | `PlatformType` | Player 编译宏对应的运行平台枚举，构造器内通过 `ResolvePlatform()` 缓存 |
+| `m_Platform` | `PlatformType` | Player 编译宏对应的运行平台枚举，构造器内通过 `Util.UrlTemplate.ResolveRuntimePlatform()` 缓存 |
 | `m_Channel` | `ChannelType` | Config 导出时同步到场景的启动期渠道快照 |
 | `m_Package` | `string` | 包名，构造器缓存 |
 | `m_Version` | `string` | 应用版本号，构造器内读取 `Application.version` |
@@ -51,7 +51,7 @@ public IReadOnlyList<string> GetRemoteUrls(string fileName)
 
 `BuildRemoteUrlCache()`：先解析主/备配置值，解析顺序为：
 
-1. 若配置值本身就是完整 URL，则直接使用
+1. 若配置值以 http/https 开头，则替换模板后去掉尾部斜杠
 2. 为空或不是 URL，则该地址视为不可用
 
 `GetRemoteUrls(fileName)`：
@@ -79,3 +79,11 @@ var remoteService = new AssetRemoteService(
 ## 关联文档
 
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 地址输入与快照
+
+构造时冻结平台、渠道、包名、Application.version 和地址数组；之后修改源配置不会刷新该实例。配置只按 http/https 前缀识别，再替换模板、去掉尾部 `/`，不 Trim 前导空白，也不完整校验 host、query 或 fragment；没有常规地址时记 Error 而不抛异常。`GetRemoteUrls` 因而可能返回空列表，不保证至少一项，也不编码 fileName。
+
+主备根地址与 `BaseUrls` 合集按 OrdinalIgnoreCase 去重，可能合并仅路径大小写不同的根；拼接后的完整 URL 列表则按字符串精确去重。`BaseUrls` 暴露内部数组为 IReadOnlyList，并非深拷贝；调用方不应强转修改。临时首包根不进入该合集，Begin/End 仅替换一个字段，没有嵌套作用域或请求取消功能。
+
+元数据识别使用当前 YooAsset 配置得到的精确 package version 文件名；hash/bytes 还要求匹配包前缀且中间版本非空，大小写敏感。不将任意 `.bytes` 当作白名单元数据；它与下载策略仅按扩展名分类的用途不同。

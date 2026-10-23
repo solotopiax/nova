@@ -144,6 +144,8 @@ else // "existing"
 - **原子身份提交**：Bind 成功保留操作开始时的当前 UID 并与目标 OpenID 成对写入；Resolve 成功将 `FinalUid/OpenID` 成对写入。
 - **生成属性硬切换**：三个 Proto Body 的 C# 属性由 `OpenId` 改为 `Openid`，字段号和 wire 类型不变。
 - **裁决后的身份同步**：`ResolveAsync` 以业务响应 `FinalUid` 与目标 OpenID 覆盖进程内身份；响应 Header 只是请求身份回显。
+- **裁决参数与失败边界**：`choice`、`verifyCode` 由请求构造链透传，客户端不在 `ResolveAsync` 中校验 `choice` 白名单；业务界面应提供明确选项，最终合法性由服务端裁决。成功但 `Data` 为空时不提交身份；`Data.FinalUid` 为 null 时按空串提交，不回退到旧 UID。缺配置及网络异常在记录对应异常事件后继续抛出，不统一转换为业务失败响应。
+- **字符串与统计采用**：请求字符串只将 null 归为空串，不自动 Trim；provider 原值转成协议整数，不由埋点映射替代参数校验。统计中的 `choice` 仅精确保留 `guest/existing`，其他值为 `unknown`；验证码只记录是否非空，不记录正文。耗时毫秒限制在 `0..int.MaxValue`，不是网络超时。逐个埋点插件隔离异常；同一插件的用户属性设置失败时，该插件本次后续事件可能跳过，尝试上报不代表后台接收。
 - **仅进程内缓存**：Bind 不写 PlayerPrefs、FileFragment 或 SQLite；进程重启后 OpenID 为空。
 - **`BindAsync` 冲突信号**：`ErrBindConflict`(10402) 响应仅带 `ExistingUid`（轻量），不带摘要；摘要需另调 `QueryConflictAsync` 获取。
 - **`ResolveAsync` 不碰存档**：裁决返回账号归属（`FinalUid` / `AbandonedUid`）并更新进程内身份；存档覆盖仍由业务层显式编排。
@@ -155,7 +157,15 @@ else // "existing"
 
 ---
 
-## 6. 关联
+## GameBindDemo 的操作范围
+
+示例界面的“先登录”等提示不是运行时强制门禁，空 OpenID 输入也不代表完成第三方认证。Bind 固定演示 Google provider，冲突查询只展示摘要；Resolve 成功后的云端/本地覆盖仍需业务明确选择和执行。全量上传按钮会真实写远端存档，指定 UID 查询的权限由服务端控制，不能从 Demo 可填 UID 推断可读取其他玩家数据。
+
+当前页面的 Kit 调用没有随 UIView 关闭取消，也没有统一的异常收口；关闭后已发网络操作与页面反馈可能继续。自动化执行绑定裁决或覆盖存档前，应冻结实际账号、选择和载荷，不能沿用示例输入作为生产目标。
 
 - 同包：[BindErrorCode.md](./BindErrorCode.md) — 账号绑定业务段错误码
+## 6. 关联
+
 - 同包：[BindKitConfig.md](./BindKitConfig.md) — 账号绑定 Kit 配置
+
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

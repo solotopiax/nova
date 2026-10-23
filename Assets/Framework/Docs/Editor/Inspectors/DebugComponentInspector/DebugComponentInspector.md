@@ -77,6 +77,10 @@ Android 构建辅助配置不会序列化到组件，而是写入：
 
 ## 关联文档
 
+本机配置 `Library/Nova/DebugConfig.json` 包含明文签名参数；打开 Inspector 时读取，不存在或损坏可重置并尝试覆盖。写入失败只记日志，不回滚内存值，也不向字段编辑者返回保存成功标志。工具选择只检查路径存在/后缀，不验证可执行性或版本。
+
+构建按钮会改变全局 `buildAppBundle` 和 Android 签名 PlayerSettings，结束后不恢复；构建结果不能代替 Config、Bundle、AOT 就绪预检或设备验收。安装方法返回的 bool 仅表示 Python 进程启动接受，没有等待安装退出码；设备 serial、包名、版本及启动必须另验。签名密码进入子进程参数，参数中的引号也没有完整转义。运行调试器宏只同步当前目标组，由当前组件策略驱动，多个组件可能互相覆盖项目全局宏。
+
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [DebugComponent.md](../../../Runtime/Modules/Debug/DebugComponent.md)
 - [EditorUtil.ProcessRunner.md](../../EditorUtil/EditorUtil.ProcessRunner/EditorUtil.ProcessRunner.md)

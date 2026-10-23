@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nova User Task Execution Coverage",
+  "description": "当前任务导航与执行要求；安全契约复用既有 Skill，具体结果只在当次执行验收，不保存历史 evidence 或 expectedContext。",
+  "type": "object",
+  "properties": {
+    "userTasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "taskScope": {
+            "enum": [
+              "consumer",
+              "developer",
+              "internal"
+            ]
+          },
+          "taskRefs": {
+            "$ref": "#/$defs/strings"
+          },
+          "nonUserReason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "developerReferences": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^\\.agents/skills/(?!nova-project-)[^/]+/SKILL\\.md$"
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "taskScope": {
+                  "const": "consumer"
+                }
+              },
+              "required": [
+                "taskScope"
+              ]
+            },
+            "then": {
+              "required": [
+                "taskRefs"
+              ],
+              "properties": {
+                "taskRefs": {
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "taskScope": {
+                  "const": "developer"
+                }
+              },
+              "required": [
+                "taskScope"
+              ]
+            },
+            "then": {
+              "required": [
+                "developerReferences"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "taskScope": {
+                  "const": "internal"
+                }
+              },
+              "required": [
+                "taskScope"
+              ]
+            },
+            "then": {
+              "required": [
+                "nonUserReason"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "strings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidenceKind": {
+      "enum": [
+        "static",
+        "artifact",
+        "compile",
+        "play",
+        "bundle-build",
+        "player-build",
+        "apk-set-build",
+        "device",
+        "external"
+      ]
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "goal",
+        "skill",
+        "reference",
+        "functions",
+        "execution",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "只引用Skill contract.taskProfiles中的权威分支；任务不得重写最低证据、安全契约或分支允许的direct入口。"
+        },
+        "skill": {
+          "type": "string",
+          "pattern": "^nova-project-[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "functions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[^#]+#.+$"
+          }
+        },
+        "execution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "adapters",
+            "conditions",
+            "gaps"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "controlled",
+                "business-integration",
+                "read-only",
+                "external-host",
+                "manual",
+                "unimplemented"
+              ]
+            },
+            "conditions": {
+              "$ref": "#/$defs/strings"
+            },
+            "gaps": {
+              "$ref": "#/$defs/strings"
+            },
+            "adapters": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "entry",
+                  "relation"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "agent-action",
+                      "agent-action-blocked",
+                      "csharp-api",
+                      "cli",
+                      "pipify",
+                      "unity-editor-api",
+                      "unity-editor-automation",
+                      "unity-menu",
+                      "workspace-edit",
+                      "workspace-inspection"
+                    ]
+                  },
+                  "entry": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "relation": {
+                    "enum": [
+                      "direct",
+                      "prerequisite",
+                      "verify"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "additionalRequired"
+          ],
+          "properties": {
+            "additionalRequired": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/evidenceKind"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

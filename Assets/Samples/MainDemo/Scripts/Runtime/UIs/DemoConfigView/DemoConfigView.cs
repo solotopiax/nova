@@ -10,6 +10,7 @@
  *            以及 Common 字段（AppID/AppAesKey）和 EnabledSDKs 列表。
  ***************************************************************/
 
+using System;
 using System.Text;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -77,7 +78,10 @@ namespace NovaFramework.Samples.Runtime
         /// <summary>
         /// 视图已关闭标志，防止异步拉取完成后写入已关闭页面。
         /// </summary>
-        private bool m_IsClosed;
+        private bool m_IsClosed = true;
+
+        /// <summary>页面打开身份；全局配置刷新不会因关闭页面而取消或回滚。</summary>
+        private int m_ViewGeneration;
 
         /// <summary>
         /// 视图初始化钩子，注册刷新按钮事件，设置标题与 API 副标题。
@@ -109,6 +113,7 @@ namespace NovaFramework.Samples.Runtime
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
+            m_ViewGeneration++;
             m_IsClosed = false;
             RefreshSnapshot();
         }
@@ -121,7 +126,21 @@ namespace NovaFramework.Samples.Runtime
         public override void OnClose(bool isShutdown, object userData)
         {
             m_IsClosed = true;
+            m_ViewGeneration++;
             base.OnClose(isShutdown, userData);
+        }
+
+        /// <summary>销毁后只使页面反馈失效，不中断全局配置刷新。</summary>
+        private void OnDestroy()
+        {
+            m_IsClosed = true;
+            m_ViewGeneration++;
+        }
+
+        /// <summary>检查反馈是否仍属于发起操作的这次打开。</summary>
+        private bool IsCurrentView(int generation)
+        {
+            return this != null && Available && !m_IsClosed && generation == m_ViewGeneration;
         }
 
         /// <summary>
@@ -129,6 +148,7 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private void OnRefreshButtonClick()
         {
+            if (!Available || m_IsClosed) return;
             ClearFeedback();
             RefreshSnapshot();
         }
@@ -147,7 +167,10 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private async UniTaskVoid ExecuteAppConfigRefreshAsync()
         {
-            if (Nova.Config == null)
+            if (!Available || m_IsClosed) return;
+            int generation = m_ViewGeneration;
+            ConfigComponent config = Nova.Config;
+            if (config == null)
             {
                 AppendFeedback("Nova.Config 不可用", FeedbackLevel.Error);
                 return;
@@ -155,20 +178,25 @@ namespace NovaFramework.Samples.Runtime
 
             ClearFeedback();
             AppendFeedback("Nova.Config.RefreshAppConfigAsync() -> 拉取中...", FeedbackLevel.Info);
-            bool succeeded = await Nova.Config.RefreshAppConfigAsync();
-            if (this == null || m_IsClosed)
+            try
             {
-                return;
-            }
+                bool succeeded = await config.RefreshAppConfigAsync();
+                if (!IsCurrentView(generation) || config == null || config != Nova.Config) return;
 
-            CustomConfig custom = Nova.Config.Custom;
-            bool thirdIapOpen = custom?.GetBool("ThirdIAPOpen", false) ?? false;
-            string iosCountries = custom?.GetString("ThirdIAPIOSOpenCountry", "[]") ?? "[]";
-            AppendFeedback(
-                succeeded ? "Nova.Config.RefreshAppConfigAsync() -> 成功" : "Nova.Config.RefreshAppConfigAsync() -> 失败，已保留当前值",
-                succeeded ? FeedbackLevel.Success : FeedbackLevel.Error);
-            AppendFeedback($"Nova.Config.Custom.GetBool(\"ThirdIAPOpen\") -> {thirdIapOpen}", FeedbackLevel.Info);
-            AppendFeedback($"Nova.Config.Custom.GetString(\"ThirdIAPIOSOpenCountry\") -> {iosCountries}", FeedbackLevel.Info);
+                CustomConfig custom = config.Custom;
+                bool thirdIapOpen = custom?.GetBool("ThirdIAPOpen", false) ?? false;
+                string iosCountries = custom?.GetString("ThirdIAPIOSOpenCountry", "[]") ?? "[]";
+                AppendFeedback(
+                    succeeded ? "Nova.Config.RefreshAppConfigAsync() -> 成功" : "Nova.Config.RefreshAppConfigAsync() -> 失败，已保留当前值",
+                    succeeded ? FeedbackLevel.Success : FeedbackLevel.Error);
+                AppendFeedback($"Nova.Config.Custom.GetBool(\"ThirdIAPOpen\") -> {thirdIapOpen}", FeedbackLevel.Info);
+                AppendFeedback($"Nova.Config.Custom.GetString(\"ThirdIAPIOSOpenCountry\") -> {iosCountries}", FeedbackLevel.Info);
+            }
+            catch (Exception exception)
+            {
+                if (IsCurrentView(generation))
+                    AppendFeedback("Nova.Config.RefreshAppConfigAsync() -> " + exception.Message, FeedbackLevel.Error);
+            }
         }
 
         /// <summary>
@@ -220,6 +248,11 @@ namespace NovaFramework.Samples.Runtime
             StringBuilder sbSdk = new StringBuilder();
             foreach (ISDKPluginConfig cfg in Nova.Config.AllPluginConfigs)
             {
+                if (cfg == null)
+                {
+                    AppendFeedback("Nova.Config.AllPluginConfigs -> 跳过空配置项", FeedbackLevel.Warn);
+                    continue;
+                }
                 sbSdk.AppendLine("- " + cfg.GetType().Name);
                 sdkCount++;
             }
@@ -229,7 +262,7 @@ namespace NovaFramework.Samples.Runtime
                 m_SdkListText.text = sdkCount > 0 ? sbSdk.ToString().TrimEnd() : "EnabledSDKs: (无)";
             }
 
-            AppendFeedback("Nova.Config.ConfigManager.Namespace -> \"" + ns + "\"", FeedbackLevel.Success);
+            AppendFeedback("Nova.Config.Namespace -> \"" + ns + "\"（当前快照）", FeedbackLevel.Info);
         }
     }
 }

@@ -180,6 +180,7 @@ namespace NovaFramework.Runtime
         /// <param name="parser">响应 Proto 消息解析器。</param>
         /// <param name="cancellationToken">取消令牌。</param>
         /// <returns>包含业务响应数据或错误信息的 NetResponse。</returns>
+        /// <remarks>HTTP 失败、解密失败及协议解析失败分别映射既有错误码；底层 POST 抛异常仍向上传播。取得的 HttpResponse 在 finally 唯一归池；业务错误响应体解析失败保留原错误码，仅省略 data。</remarks>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
             INetworkCmdRow cmdRow,

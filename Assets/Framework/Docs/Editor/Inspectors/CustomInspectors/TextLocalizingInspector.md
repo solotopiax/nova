@@ -120,9 +120,11 @@ OnEnable()
 
 Inspector 面板在选中挂载了 `TextLocalizing` 的 GameObject 时自动显示。
 
-**编辑器模式预览**：填写 Key 后，面板自动从已导出的 JSON 文件中查找译文并显示预览。需要场景中存在 `LocalizationComponent` 且已导出文本 JSON。
+**编辑器模式预览**：现有加载代码仍通过旧序列化字段 `m_TextJsonExportFolderPath` 寻找 JSON；当前 `LocalizationComponent` 已没有该字段，因此通常不能取得预览数据。该分支只支持 JSON，不支持 Binary；不能把场景组件存在且已经导出当作预览可用的充分条件。运行态预览另走 `Nova.Localization`。
 
 **字体标记下拉**：当字体 JSON 已导出且包含有效数据时，字体标记字段显示为 Popup 下拉选择，而非纯文本输入。
+
+字体选项的读取同样依赖旧字段；未得到选项时回退普通文本。可用选项存在而当前 FontMark 不在其中时，绘制前会将序列化值归一为首项，再由本轮 `FinalRefreshInspectorGUI` Apply；该归一在 Play 禁用控件之前，多选时不能仅按第一目标预览推断其它目标保持不变。编辑预览只在 Key 改变时刷新，既不监听导出文件或语言变化，也不能区分缺 Key 与合法空译文。
 
 ```
 绘制效果示意：
@@ -142,7 +144,7 @@ Inspector 面板在选中挂载了 `TextLocalizing` 的 GameObject 时自动显�
 | 事项 | 说明 |
 |------|------|
 | CanEditMultipleObjects | 支持多选编辑，但预览区仅展示第一个目标的数据 |
-| 预览数据依赖 LocalizationComponent | 场景中需存在 `LocalizationComponent` 且已导出 JSON，否则预览区无数据 |
+| 预览数据依赖旧字段 | 当前加载器仍读取组件上已移除的 JSON 路径字段，通常无编辑预览数据；不从成功导出推断可用 |
 | 字体标记自动修正 | 当当前值不在选项列表中时（如手动改为不存在的值），自动修正为排序后的第一个选项 |
 | 运行时预览 | `isPlaying` 时直接从 `Nova.Localization` 获取实时数据，不依赖 JSON 文件 |
 | EditorGUILayout.Popup | `DrawFontMarkField` 中使用了 `EditorGUILayout.Popup` 而非 `EditorUtil.Draw`，因为 `EditorUtil.Draw` 未封装 Popup 控件 |

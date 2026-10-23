@@ -38,7 +38,7 @@ EditorUtil (static partial)
 | `c_ButtonWidthSmall` | `const float` | `60f` | 小按钮宽度（选择、打开、导出） |
 | `c_ButtonWidthMedium` | `const float` | `100f` | 中按钮宽度（打开文件夹） |
 | `c_ButtonWidthLarge` | `const float` | `163f` | 大按钮宽度（打开文件夹） |
-| `c_IndentPixelsPerLevel` | `const float` | `15f` | Unity 每层缩进的像素宽度 |
+| `c_IndentPixelsPerLevel` | `const float` | `11f` | Unity 每层缩进的像素宽度 |
 | `ContentStyle` | `static GUIStyle` | `null` | 导出区域内容行标签样式（延迟初始化） |
 | `ContentFieldStyle` | `static GUIStyle` | `null` | 导出区域输入框样式（延迟初始化） |
 | `SourceFileNameStyle` | `static GUIStyle` | `null` | 数据源文件名样式（延迟初始化） |
@@ -244,3 +244,9 @@ private void DrawExportSourceFiles()
 - [FileFolderTree.md](../../Definitions/FileFolderTree.md)
 - [EditorUtil.Luban.ExportHelper.md](../EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md)
 - [EditorUtil.Luban.DataTypeNameHelper.md](../EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md)
+
+## 绘制本身可能改变配置
+
+minHeaderRowCount 当前保留但未使用，不验证表头。扫描为空或 filter 结果为空时直接返回，不删孤儿；非空过滤结果反而成为清理权威集合，会删除仍在磁盘但被过滤的配置，调用者不能把纯展示过滤当完整文件集。GetOrCreateDetailSettingsForFile 精确匹配 SourcePath，不规范化、不去重；新增数组项只写 SourcePath，其他字段可能克隆旧值，不自动 Apply/Undo。ConfigFieldAssetList 同样只补新项名字/描述，不更新已有描述或清旧项。
+
+默认文件行的导出回调为空，所以按钮本身不生成产物；自定义导出点击时按捕获相对路径重新取得 detail 和当前输出路径，但不冻结目标身份。路径红框只看文件名/目录形状，合法带点目录也可误红，不阻止点击或证明文件存在、可写及加载地址有效。数组补删及 GUI 退出后的提交由 Inspector 负责，嵌套缩进恢复并非全部在 finally。

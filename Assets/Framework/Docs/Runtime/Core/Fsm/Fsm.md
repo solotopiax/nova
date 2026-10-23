@@ -82,10 +82,10 @@ void Shutdown()
 
 ### AddStates 流程（运行时动态追加，热更场景使用）
 
-三步原子操作，任一校验失败则不写入任何内容：
+分三步执行，任一参数校验失败则不写入；登记成功后的回调失败不回滚：
 
 1. **全量校验**：检查 `m_IsDestroyed`、`m_IsChangingState`、states 非空、每项非 null、本次批次内无重复、与现有 `m_States` 无重复
-2. **正式写入**：调用 `AddStateInternal` 逐个写入 `m_States`（此阶段不再抛异常）
+2. **正式写入**：调用 `AddStateInternal` 逐个写入 `m_States`（本阶段不再重复业务校验，字典分配等底层异常仍可能传播）
 3. **OnInit 回调**：遍历所有新增状态调用 `OnInit(this)`
 
 **守卫说明**：`m_IsChangingState` 在 `ChangeStateInternal` 的 `OnLeave`→`OnEnter` 区间内为 `true`，此时调用 `AddStates` 会抛 `InvalidOperationException`。`ProcedureLoadDll` 在 `OnEnter` 内通过 `await UniTask.Yield()` 主动脱离调用栈，确保 `m_IsChangingState` 已回落后再执行注册。
@@ -107,6 +107,14 @@ void Shutdown()
 3. 遍历所有 state 调用 `OnDestroy(this)`
 4. 清空 `m_States` 和 `m_Blackboard`
 5. `m_CurrentState = null`
+
+### 回调失败与黑板所有权
+
+`Create` 完成登记后才逐项 `OnInit`，构造或初始化回调失败不会自动销毁已经初始化的状态；`AddStates` 同样可能已登记全部状态但只执行了部分 `OnInit`。首次 `Start` 先设置当前状态再调用 `OnEnter`，没有切换期间的重入守卫；不要把 `ChangeState` 的守卫推及第一次进入。普通切换中旧状态 `OnLeave` 失败会保留旧状态，新状态 `OnEnter` 失败会保留新状态，`finally` 只复位切换标志。
+
+`Shutdown` 的 `OnLeave(true)` 失败会跳过销毁阶段；某个 `OnDestroy` 失败会跳过其余回调和字典清理。因此 `IsDestroyed=true` 不证明清理全部完成，异常时当前状态也可能仍保留。正常关闭仍保留 `Owner` 引用；`HasState`/`GetState` 不单独检查销毁标志，正常清表后分别为 `false`/抛缺失异常。
+
+黑板键拒绝 `null` 和空字符串，允许空白字符串。`SetData` 原样保留对象引用并允许 `null`，但 `GetData<TData>` 对已存的 `null` 或不匹配类型抛 `InvalidCastException`；仅键不存在返回类型默认值。覆盖、移除和清空黑板不会释放其中对象的资源，拥有者必须自行管理。`FsmState` 五个默认回调均为空，切换辅助方法只转发传入 `IFsm`；接口声明和空基类不替派生状态完成注销、释放或异常恢复。
 
 ---
 

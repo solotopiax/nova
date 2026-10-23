@@ -101,3 +101,7 @@ string code = $"namespace {ns}\n{{\n    [Serializable]\n    public class HeroDat
 ## 关联文档
 
 - [EditorUtil.md](../EditorUtil.md)（工具集概览）
+
+## 调用与失败边界
+
+此工具推导的是生成代码的命名空间候选，不是精确程序集身份。rootNamespace 为空回退 name，不验证结果为合法 C# 标识符；同目录多份 asmdef 取枚举第一份，没有排序或歧义拒绝。项目根只以祖先存在 Assets 子目录判断，工程外包路径未必符合；读取/路径错误可直接传播，JSON 解析错误和缺字段才由当前解析层包装。调用者仍需确认输出代码真正所属 asmdef 与编译依赖。

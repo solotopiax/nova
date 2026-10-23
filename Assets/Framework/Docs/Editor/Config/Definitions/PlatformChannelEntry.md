@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public sealed class PlatformChannelEntry`
 **命名空间**：`NovaFramework.Editor`
 
-Platform × Channel 矩阵的一行；SDK 配置与 Kit 配置均按 DevelopMode 分组存储。由 `ConfigMasterSO` 通过 `[SerializeField] List<PlatformChannelEntry>` 持久化。
+Platform × Channel 矩阵的一行；App、Privacy、SDK 与 Kit 配置均按 DevelopMode 分组存储。由 `ConfigMasterSO` 的序列化列表持久化。
 
 ---
 
@@ -11,7 +11,7 @@ Platform × Channel 矩阵的一行；SDK 配置与 Kit 配置均按 DevelopMode
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/PlatformChannelEntry.cs` | `PlatformChannelEntry` | 数据结构定义；内嵌 `DevelopModeCommonEntry`、`DevelopModeSDKEntry`、`DevelopModeKitEntry` |
+| `Editor/Config/Definitions/PlatformChannelEntry.cs` | `PlatformChannelEntry` | 同文件另定义 `DevelopModeAppConfigsEntry`、`DevelopModePrivacyConfigsEntry`、`DevelopModeSDKEntry`、`DevelopModeKitEntry`；它们不是 `PlatformChannelEntry` 的嵌套类型 |
 
 ---
 
@@ -23,41 +23,31 @@ public sealed class PlatformChannelEntry
 {
     public PlatformType Platform;
     public ChannelType Channel;
-    public List<DevelopModeCommonEntry> AppConfigsByMode = new();
+    public List<DevelopModeAppConfigsEntry> AppConfigsByMode = new();
+    public List<DevelopModePrivacyConfigsEntry> PrivacyConfigsByMode = new();
     public List<DevelopModeSDKEntry> SDKConfigsByMode = new();
     public List<DevelopModeKitEntry> KitConfigsByMode = new();
 
-    // 无参构造器；自动预置 Debug 与 Publish 两份空条目（AppConfigsByMode / SDKConfigsByMode / KitConfigsByMode）
+    // 无参构造器；四类列表分别预置 Debug 与 Release 两份配置条目
     public PlatformChannelEntry();
 
-    // 按指定 DevelopMode 获取 AppConfigs；不存在时自动追加，永不返回 null
+    // 按指定 DevelopMode 获取 AppConfigs；不存在时追加默认条目
     public AppConfigs GetAppConfigs(DevelopMode mode);
 
-    // 按指定 DevelopMode 获取 SDK Plugin 配置列表；不存在时自动追加，永不返回 null
+    // 按指定 DevelopMode 获取 PrivacyConfigs；外层列表为 null 时先新建，缺模式时追加默认条目
+    public PrivacyConfigs GetPrivacyConfigs(DevelopMode mode);
+
+    // 按指定 DevelopMode 获取 SDK Plugin 配置列表；不存在时追加默认条目
     public List<ISDKPluginConfig> GetSDKConfigs(DevelopMode mode);
 
-    // 按指定 DevelopMode 获取 Kit 配置列表；不存在时自动追加，永不返回 null
+    // 按指定 DevelopMode 获取 Kit 配置列表；不存在时追加默认条目
     public List<IKitConfig> GetKitConfigs(DevelopMode mode);
 }
-
-[Serializable]
-public sealed class DevelopModeSDKEntry
-{
-    public DevelopMode Mode = DevelopMode.Debug;
-
-    [SerializeReference]
-    public List<ISDKPluginConfig> SDKConfigs = new();
-}
-
-[Serializable]
-public sealed class DevelopModeKitEntry
-{
-    public DevelopMode Mode = DevelopMode.Debug;
-
-    [SerializeReference]
-    public List<IKitConfig> KitConfigs = new();
-}
 ```
+
+`DevelopModeAppConfigsEntry.Config` 与 `DevelopModePrivacyConfigsEntry.Config` 分别保存 `AppConfigs`、`PrivacyConfigs`；SDK/Kit 包装项分别以 `[SerializeReference]` 列表保存多态配置。
+
+这些 Getter 返回可变配置或列表，不是只读查询，也不自动保存资产。已有条目中的 `Config` / 配置列表若为 null，不会在命中时自动修复，不能把返回值一概视为非 null。模式参数也不在本类校验；实际坐标合法性与保存校验见 [ConfigMasterSO](../ConfigMasterSO.md)。
 
 ---
 

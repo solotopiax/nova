@@ -57,7 +57,13 @@ HTTP Foldout 按顺序展示“启用 UWR 网络埋点”、“业务请求优�
 
 HostKey / NetCmd 区共享数据格式选项。导出时由 NetworkExporter 使用暂存目录完成数据与 C# 验证，再经 OutputApplier 发布正式产物；切换标准 JSON / Binary 格式会同步单元后缀并清理同名反格式产物。
 
-Proto 文件树仅在 Layout 事件预建 ProtoUnitSetting，避免 Repaint 阶段修改 SerializedProperty。点击全量导出后，ProtoExporter 统一完成协议到 C# 的编译并刷新 AssetDatabase。
+Proto 文件树在 Layout 事件预建 ProtoUnitSetting，但行绘制仍调用可按需追加的 `GetOrCreateProtoUnitSetting`，后者没有 Layout 门，不能保证 Repaint 分支完全无序列化修改。新增元素只赋 SourcePath，没有统一清空继承的 CSharpExportPath；单文件 `CompileSingle` 返回值也没有在该按钮处检查，随后仍会 Refresh。全量导出则委托 ProtoExporter。
+
+HostKey/NetCmd 的 watcher 只在 OnEnable 按当时路径注册；修改目录或首次导出才创建 `_configs` 不自动重新绑定，删除通知也会把“配置存在”标志设为 true。OnDisable 顺序注销两路 watcher，没有 finally 保证第一路失败后仍清第二路；不能把标志或按钮返回当作 watcher 与产物均有效的证据。
+
+单文件数据/代码导出的非空路径参数只作按钮门禁，正式输出位置仍从当前 NetworkSettings 中按 SourcePath 匹配的 Unit 读取，不会以按钮参数覆盖目标。区域名称仅接受 HostKeySettings/NetCmdSettings，实际为直接属性读取；HTTP/WS 参数编辑不重新注入已经启动的 Manager。目录可选、参数可编辑和 HelpBox 不验证超时范围、协议编译器、Collector 或运行连接。
+
+HostKey 模板的 `-Debug / -Release` 只表示开发模式配对，主 Value 必须是 HTTP(S) 主域名，FallbackValue 可空且旧表可缺该列。NetCmd 的 Name/Way/HostKey/Path 组成指令路由，非空 Path 须以 `/` 开头；模板中的占位名、重复样例和 GameLogin 行不证明业务 HostKey、协议或接口真实存在。
 
 ## Inspector 布局
 

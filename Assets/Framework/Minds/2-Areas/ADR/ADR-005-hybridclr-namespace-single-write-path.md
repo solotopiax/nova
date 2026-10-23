@@ -49,8 +49,8 @@ Nova × HybridCLR 改造引入双层程序集：
 `ConfigRuntimeSO.Namespace` 字段（原 `ProcedureLoadDllSettings.m_BusinessAssemblyName`）的写入路径**唯一**：
 
 ```
-ConfigWindow（用户改 Namespace）
-   └→ 写入 ConfigMasterSO.Namespace（编辑器主配置）
+ConfigWindow 或受控固定字段 Action（用户明确修改 Namespace）
+   └→ 工作副本 → 共享设计态保存 → ConfigMasterSO（编辑器主配置）
         └→ 导出流程 → 写入 ConfigRuntimeSO.Namespace（运行时配置）
               └→ 运行时读取（Util.HybridCLR.LoadGameAssemblyAsync）
 ```
@@ -62,7 +62,9 @@ ConfigWindow（用户改 Namespace）
 - 通过反射或 AssetDatabase 直接修改 SO 文件
 
 
-> **ADR-058 扩展注**（2026-06-02）：本决策描述的写入路径在 ADR-058 per-panel 维度化后有**部分扩展**：Namespace 仍只能通过 ConfigWindow 写入，但写入目标从顶层单字段 `ConfigMasterSO.Namespace` 扩展为"顶层字段（全局默认值）+ `NamespaceOverrides` 列表（维度差异值）"。两层合并后经 `DimensionalResolver.ResolveNamespace` 解析出最终值再写入 `ConfigRuntimeSO.Namespace`。原有禁止直接修改 `ConfigRuntimeSO.Namespace` 的约束不变。详见 [[ADR-058-per-panel-dimension-mask|ADR-058]]。
+> **ADR-058 扩展注**（2026-06-02）：写入目标从顶层单字段 `ConfigMasterSO.Namespace` 扩展为“顶层默认值 + `NamespaceOverrides` 维度差异值”。两层经 `DimensionalResolver.ResolveNamespace` 解析后再写入 `ConfigRuntimeSO.Namespace`。当时的编辑入口为 ConfigWindow；当前受控入口扩展见下方，禁止直接修改 Runtime 的约束不变。详见 [[ADR-058-per-panel-dimension-mask|ADR-058]]。
+
+> **共享设计态入口扩展**（2026-10-12）：为降低项目组自然语言配置成本，`nova.project.config.patch-coordinate` 与 ConfigWindow 共用 `EditorUtil.Config.DesignTimeEditing`。Action 只编辑固定字段，在工作副本预演并冻结逻辑组和真实序列化叶子写集，保护未保存草稿；不直接修改 Runtime、不开放反射或任意字段路径，不修改 asmdef，也不替代程序集一致性检查。当前不允许借字段请求新增 Namespace Override 或修复其他结构。唯一真源仍为 Master，Exporter 仍是 Runtime 快照生成入口。源码依据为 `EditorUtil.Config.DesignTimeEditing.cs`、`EditorUtil.Config.CoordinatePatchService.cs`、`ConfigPatchCoordinateAction.cs`；执行与测试证据以当前 Docs/函数审查记录为准，不能从入口扩展推断热更运行已验收。
 
 ### 3. Assembly.Load / LoadMetadataForAOTAssembly 单一调用点
 
@@ -84,13 +86,13 @@ ConfigWindow（用户改 Namespace）
 ### 正面
 
 - 反射加载类型时 `Type.GetType($"{namespace}.{type}, {assemblyName}")` 直接拼接成功，namespace == asmdef 是反射定位的稳定前提。
-- Namespace 单一写入路径使 ConfigWindow 成为唯一来源，减少三方配置不同步事故。
+- Namespace 经共享设计态保存进入 Master 唯一真源，再由 Exporter 生成 Runtime，避免多个入口各自维护配置副本。
 - `Util.HybridCLR.LoadGameAssemblyAsync` / `LoadAotMetadataAsync` 作为唯一通道，热更日志、超时处理、加密解密都集中维护。
 - HybridCLR 版本升级有明确清单（AOT 元数据 DLL + link.xml），降低盲区。
 
 ### 负面
 
-- 业务方修改 Namespace 必须经 ConfigWindow，没有"快速覆盖"通道（设计上是优点，使用上是负担）。
+- 业务方可经 ConfigWindow 或固定字段受控 Action 修改 Namespace；新增结构与其他字段仍需对应编辑流程，不开放运行态快速覆盖。
 - `Util.HybridCLR` 工具类成为热更关键路径单点，重构需谨慎。
 - AOT 元数据 DLL 列表维护在配置 SO 内，需要 HybridCLR 升级时编辑器手动同步。
 

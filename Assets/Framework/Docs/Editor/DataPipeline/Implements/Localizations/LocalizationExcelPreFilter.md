@@ -54,3 +54,7 @@ CSV 的 Luban 标记结构为：
 - [EditorUtil.Localization.TextExporter.md](../../../EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md)
 - [LocalizationSettings.md](../../../../Runtime/Modules/Localization/LocalizationSettings.md)
 - [EditorUtil.Luban.Pipeline.md](../../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
+
+## 模型和投影限制
+
+Load 按配置源只读一次，但 SourceModel、行列表和 Unit 仍是引用，不深冻结；原根本身的符号链接未被逐段子路径检查覆盖。表头在第2行，Name/Desc 重复时取最后一个，未强制检查 ##var/##type 标记；Key Trim、空/#Key 跳过，翻译原文保留不 Trim。路径碰撞忽略大小写，输出不强制位于 Unity 项目。独立递归语言发现只看语言列，不验证 Name、有效数据、跨 Sheet 一致性或 Unit 清单，备份源仍可贡献语言。

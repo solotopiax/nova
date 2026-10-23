@@ -30,13 +30,15 @@ public class PersistManagerConfigBase
 ## §11 使用示例
 
 ```csharp
-// 子类通过继承获得公共字段，PersistComponent.Start() 统一构造
+// 子类通过继承获得公共字段，PersistComponent.RunLoadAsync() 统一构造
 var config = new PlayerPrefsManagerConfig
 {
     UseAESEncrypt    = true,
     AutoSaveInterval = 60f,
 };
 ```
+
+DTO 直接创建时默认 `UseAESEncrypt=false`、`AutoSaveInterval=0`，自动属性不校验取值。场景中的实际配置由 `PersistComponent` 序列化字段注入，不能用 DTO 默认值推断现有资产值。Manager 初始化时读取这些值，后续修改 DTO 不会更新已初始化实例；启用 AES 也不会由这个 DTO 生成或注入密钥。
 
 ---
 

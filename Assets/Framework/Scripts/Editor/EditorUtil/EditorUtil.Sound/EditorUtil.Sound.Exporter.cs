@@ -184,6 +184,7 @@ namespace NovaFramework.Editor
                         operations);
                 }
 
+                /// <summary>在成功取得工作区租约后暂存并发布本批次；清理和刷新结束后才释放租约。</summary>
                 private static bool Execute(
                     string sourceDirPath,
                     SoundSettings settings,
@@ -195,9 +196,10 @@ namespace NovaFramework.Editor
                 {
                     operations ??= new ExportOperations();
                     string tempRoot = IOPath.GetFullPath(IOPath.Combine(sourceDirPath, "_temp"));
+                    IDisposable workspace = null;
                     try
                     {
-                        using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                        workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
                         DeleteTempRoot(tempRoot);
                         using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
                         string stagedCodeDir = IOPath.Combine(applier.StagingRoot, "code~");
@@ -257,7 +259,15 @@ namespace NovaFramework.Editor
                     }
                     finally
                     {
-                        Cleanup(tempRoot, operations);
+                        try
+                        {
+                            // 获取失败不拥有临时目录；成功后清场与刷新仍在同一租约内。
+                            if (workspace != null) Cleanup(tempRoot, operations);
+                        }
+                        finally
+                        {
+                            workspace?.Dispose();
+                        }
                     }
                 }
 

@@ -17,7 +17,7 @@
 - `PersistManagerBase<FileFragmentManagerConfig>`
 - `FileFragmentItemGroup`
 - `Path.Persist.FileFragment.FolderFullPath`
-- 文件系统读写与 JSON 序列化
+- 文件系统读写与二进制序列化；对象值在公共扩展接口中先转成 JSON 字符串
 
 ### 它对外负责什么
 
@@ -90,6 +90,17 @@ WebGL 下文件先写入浏览器内存中的虚拟文件系统；正式文件�
 
 真正删文件发生在下一次 `Save()`。
 删除时会同时清理正式文件、`.bak` 和残留 `.tmp`，避免后续启动从备份恢复已经明确删除的数据；删除失败的分类会保留在队列中等待下次保存重试。
+
+## 输入与中间状态
+
+- 默认根目录在初始化时确定；内部带路径构造器也允许显式覆盖根目录，但只拒绝 null/空路径。`classify` 只接受基础非 null/非空校验，随后直接拼成 `Util.SysIO.Path.Combine(root, classify + ".dat")`；当前实现没有路径穿越或绝对路径隔离校验，应由可信业务提供固定分类名。
+- `SetString(..., null)` 保存为空串；已存空串会被 `GetString()` 原样返回。数值、字节和对象的默认值与解析边界见 [PersistManagerBase.md](PersistManagerBase.md#扩展类型默认实现)。
+- `Count()` 返回该分类内存条目数；`GetAllClassifyNames()` 只复制当前已注册的缓存分类，不重新扫描磁盘。条目数组来自排序字典，列表重载追加、不清空；这些条目查询可能先触发磁盘加载与恢复。
+- `RemoveAll()` 或删除最后一个条目后，该分类从缓存和已加载集合移除，但磁盘删除仍在队列中。此时再 Get/Set 同名分类可能重新加载旧文件，且写入不会取消原待删记录。需要完成删除边界时先检查无参 `Save()` 成功，再进行后续访问；`Save(classify)` 不处理删除队列。
+- `Save(classify)` 仅保存已缓存分类，不存在返回 false，序列化异常直接抛出；无参 Save 按分类隔离序列化异常并汇总 false，成功分类清脏、失败分类保留。删除阶段的文件操作异常仍可能直接传播。
+- `Shutdown()` 尝试保存并记录抛出的异常，finally 会清空缓存、脏集合和删除队列；Save 返回 false 不会阻止清理，因此关闭后不能依赖原内存状态继续重试。
+
+目录加载的重入 false 不表示共享正在进行的任务。坏内容可恢复为空容器，内部 `DeserializeFragment` 的成功标记仍为 true；Load 成功不等于原有每个分类均无损。文件访问异常与损坏内容的区别见 [FileFragmentItemGroup.md](FileFragmentItemGroup.md)。
 
 ## 适合它的场景
 

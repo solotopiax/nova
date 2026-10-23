@@ -69,6 +69,10 @@ namespace NovaFramework.Editor
 
 默认包名 `GetDefaultPackageName()`：从 `Assets/Framework/Prefabs/Nova.prefab` 的 `AssetComponent.m_DefaultPackageName` 读取，为空时回退 `m_Packages[0]`，仍读不到返回空字符串（此时只打开到上一级已存在目录）。
 
+这里读取的是固定开发路径的 Prefab 序列化值，既不表示当前场景绑定，也不保证消费项目已把包资源放在相同路径。Bundle 目录平台来自 Unity Active BuildTarget；YooAsset 目录名来自当前 `YooAssetConfiguration`，都不是 ConfigWindow 尚未保存的编辑选择。打开了回退父目录不证明 Bundle、版本目录或热更缓存存在。
+
+Unity persistent、temporary、StreamingAssets 和 `Caching.currentCacheForWriting.path` 各自保持原身份，当前 Editor 路径不能作为设备文件位置的证明。所有打开目录菜单只启动系统浏览；清理缓存由独立菜单处理，`OpenIdeProject` 则委托当前 Unity CodeEditor，不自行寻找工程文件。
+
 ---
 
 ## §11 使用示例

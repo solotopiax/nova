@@ -465,15 +465,17 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="isExternalBrowser">是否使用外部浏览器打开。</param>
         /// <param name="showBackButton">是否要求支付页显示返回按钮。</param>
         /// <param name="isCustomTab">是否由 Auth Tab 或 Custom Tabs 承载。</param>
+        /// <param name="firstRechargeReward">仅供支付网页使用的首充奖励。</param>
+        /// <param name="extraBonusReward">仅供支付网页使用的额外赠送奖励。</param>
         /// <returns>包含加密支付参数的完整支付 URL。</returns>
-        private string BuildPaymentUrl(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, string googleToken, bool isExternalBrowser, bool showBackButton = false, bool isCustomTab = false)
+        private string BuildPaymentUrl(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, string googleToken, bool isExternalBrowser, bool showBackButton = false, bool isCustomTab = false, IAPThirdPayRewardItem firstRechargeReward = null, IAPThirdPayRewardItem extraBonusReward = null)
         {
             if (m_Hub.CheckoutCoordinator == null)
             {
                 throw new InvalidOperationException("第三方支付主流程协调器尚未初始化。");
             }
 
-            return m_Hub.CheckoutCoordinator.BuildPaymentUrl(order, paymentConfig, googleToken, isExternalBrowser, showBackButton, isCustomTab);
+            return m_Hub.CheckoutCoordinator.BuildPaymentUrl(order, paymentConfig, googleToken, isExternalBrowser, showBackButton, isCustomTab, firstRechargeReward, extraBonusReward);
         }
 
         /// <summary>

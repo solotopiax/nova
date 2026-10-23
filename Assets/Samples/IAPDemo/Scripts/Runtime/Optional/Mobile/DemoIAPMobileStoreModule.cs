@@ -77,11 +77,13 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 刷新移动商店能力和平台商品价格。
+        /// 刷新移动商店能力和平台商品价格；使用启动时的 Bridge 与取消令牌，失效页面不回写缓存或控件。
         /// </summary>
         /// <returns>异步任务。</returns>
         public async UniTask RefreshAsync()
         {
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge)) return;
             bool available = TryGetQueryCapability(out IIAPMobileQueryCapable capability);
             m_Panel?.SetStatus(GetRuntimeStoreName(), available, available ? "同步中" : "能力不可用");
             if (!available)
@@ -89,13 +91,14 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 m_Bridge?.AppendFeedback("当前 IAP Store 未暴露移动端商品查询能力。", FeedbackLevel.Warn);
                 return;
             }
+            var cancellationToken = bridge.CancellationToken;
 
             var productIds = new List<string>();
             var productIdToTableId = new Dictionary<string, long>();
             for (int i = 0; i < DemoIAPProductCatalog.AllProductIds.Length; i++)
             {
                 long tableId = DemoIAPProductCatalog.AllProductIds[i];
-                IAPProductEntry entry = m_Bridge.FindProductEntry(tableId);
+                IAPProductEntry entry = bridge.FindProductEntry(tableId);
                 if (entry == null || string.IsNullOrEmpty(entry.ProductID)
                     || productIdToTableId.ContainsKey(entry.ProductID))
                 {
@@ -114,7 +117,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
             try
             {
-                IReadOnlyList<ProductInfo> infos = await capability.QueryProductsAsync(productIds, m_Bridge.CancellationToken);
+                IReadOnlyList<ProductInfo> infos = await capability.QueryProductsAsync(productIds, cancellationToken);
+                if (!IsCurrentBridge(bridge)) return;
                 if (infos != null)
                 {
                     for (int i = 0; i < infos.Count; i++)
@@ -131,16 +135,20 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
                 int count = infos != null ? infos.Count : 0;
                 m_Panel?.SetStatus(GetRuntimeStoreName(), true, "已同步 " + count + " 个");
-                m_Bridge.AppendFeedback("移动端商品信息刷新完成：" + count, FeedbackLevel.Success);
+                bridge.AppendFeedback("移动端商品信息刷新完成：" + count, FeedbackLevel.Success);
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("移动端商品信息刷新已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("移动端商品信息刷新已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Panel?.SetStatus(GetRuntimeStoreName(), true, "同步失败");
-                m_Bridge.AppendFeedback("移动端商品信息刷新失败：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge))
+                {
+                    m_Panel?.SetStatus(GetRuntimeStoreName(), true, "同步失败");
+                    bridge.AppendFeedback("移动端商品信息刷新失败：" + exception.Message, FeedbackLevel.Error);
+                }
+                else Debug.LogException(exception);
             }
         }
 
@@ -183,19 +191,22 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 使用指定 ReceiptParam 发起移动官方商店支付。
+        /// 使用指定 ReceiptParam 发起移动官方商店支付；页面关闭停止本次页面回写，交易处理仍由核心负责。
         /// </summary>
         /// <param name="tableId">商品表行 ID。</param>
         /// <param name="receiptParam">票据透传参数。</param>
         /// <returns>异步任务。</returns>
         private async UniTask PayAsync(long tableId, string receiptParam)
         {
-            if (m_Bridge == null || !m_Bridge.TryInitialize())
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge) || !bridge.TryInitialize())
             {
                 return;
             }
 
-            m_Bridge.SetPayInteractable(false);
+            var cancellationToken = bridge.CancellationToken;
+            IAPPlugin iap = bridge.IAP;
+            bridge.SetPayInteractable(false);
             try
             {
                 var request = new IAPMobileRequest
@@ -204,50 +215,66 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                     ReceiptParam = receiptParam,
                     CustomData = DemoIAPBridge.BuildCustomData(tableId),
                 };
-                IAPResult result = await m_Bridge.IAP.PayAsync<IAPResult>(request, m_Bridge.CancellationToken);
-                m_Bridge.AppendFeedback("移动支付结果：" + DemoIAPBridge.FormatResult(result),
-                    result != null && result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
+                IAPResult result = await iap.PayAsync<IAPResult>(request, cancellationToken);
+                if (IsCurrentBridge(bridge))
+                    bridge.AppendFeedback("移动支付结果：" + DemoIAPBridge.FormatResult(result),
+                        result != null && result.IsSuccess ? FeedbackLevel.Success : FeedbackLevel.Error);
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("移动支付已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("移动支付已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("移动支付调用失败：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("移动支付调用失败：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
             }
             finally
             {
-                m_Bridge.SetPayInteractable(!m_Bridge.IsDisposed);
+                if (IsCurrentBridge(bridge)) bridge.SetPayInteractable(true);
             }
         }
 
         /// <summary>
-        /// 恢复移动商店历史订阅和非消耗品购买。
+        /// 恢复移动商店历史订阅和非消耗品购买；持有本次会话令牌，关闭后的结果不再写页面。
         /// </summary>
         /// <returns>异步任务。</returns>
         private async UniTask RestorePurchasesAsync()
         {
-            if (m_Bridge == null || !m_Bridge.TryInitialize())
+            DemoIAPBridge bridge = m_Bridge;
+            if (!IsCurrentBridge(bridge) || !bridge.TryInitialize())
             {
                 return;
             }
 
             try
             {
-                IReadOnlyList<IAPResult> results = await m_Bridge.IAP.RestorePurchasesAsync<IAPResult>(m_Bridge.CancellationToken);
+                var cancellationToken = bridge.CancellationToken;
+                IReadOnlyList<IAPResult> results = await bridge.IAP.RestorePurchasesAsync<IAPResult>(cancellationToken);
+                if (!IsCurrentBridge(bridge)) return;
                 int count = results != null ? results.Count : 0;
-                m_Bridge.AppendFeedback(count > 0 ? "恢复购买完成：" + count : "恢复购买完成，未找到可恢复订单。",
+                bridge.AppendFeedback(count > 0 ? "恢复购买完成：" + count : "恢复购买完成，未找到可恢复订单。",
                     count > 0 ? FeedbackLevel.Success : FeedbackLevel.Info);
             }
             catch (OperationCanceledException)
             {
-                m_Bridge.AppendFeedback("恢复购买已取消。", FeedbackLevel.Warn);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("恢复购买已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("恢复购买失败：" + exception.Message, FeedbackLevel.Error);
+                if (IsCurrentBridge(bridge)) bridge.AppendFeedback("恢复购买失败：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
             }
+        }
+
+        /// <summary>
+        /// 只允许当前未释放模块会话回写商品缓存、按钮与反馈，旧 Bridge 的交易结果仍由核心处理。
+        /// </summary>
+        /// <param name="bridge">操作开始时保存的 Bridge。</param>
+        /// <returns>模块仍持有同一未释放 Bridge 时返回 true。</returns>
+        private bool IsCurrentBridge(DemoIAPBridge bridge)
+        {
+            return bridge != null && !bridge.IsDisposed && ReferenceEquals(m_Bridge, bridge);
         }
 
         /// <summary>

@@ -64,11 +64,14 @@ string headerJson = NetBuilder.BuildHeaderInfos(appId, Nova.Config.AppConfigs.Ap
 - **整类 `[EditorBrowsable(Never)]`**：类级别标注，业务侧 Visual Studio / Rider 补全中不显示任何成员。
 - **`Encrypt` 委托框架层**：加密逻辑委托 `Util.Encrypt.AES.EncryptBytes`，`NetBuilder` 只做职责归属封装，不实现加密算法。
 - **固定 AES 配置来源**：`NetService` 固定将 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 传入 `Encrypt` 与 `BuildHeaderInfos`；业务请求一律构建 AES Header 并加密 Body。
-- **`Platform` 映射范围**：仅 iOS / Android / WebGL 有明确映射，其余平台（含 Editor / Standalone）返回 `PbNetPlatform.Unspecified`；这是有意设计，非遗漏。
+- **`Platform` 映射范围**：仅 iOS / Android / WebGL 有明确映射；Editor 跟随当前 Build Target，不使用宿主运行平台，其余目标返回 `PbNetPlatform.Unspecified`。
 - **`Channel` 只表示游戏运营渠道**：`BuildHeader()` 通过私有 `InferChannel()` 将 `Nova.Config.Channel` 的 `ChannelType` 同名映射为 `PbNetChannel`。`Official / Google / Apple / WeChat / TikTok / Alipay` 均有对应值，`None` 或未知值返回 `PbNetChannel.Unspecified`；该字段与第三方登录提供方无关。
 - **当前身份与目标身份分离**：Header UID/OpenID 只能声明此前已由服务端确认的身份；Login/Bind 的候选或目标身份只放业务 Body。
 - **字段硬改名**：Proto `app_id/device_id` 已改为 `appid/devid`，生成属性对应为 `Appid/Devid`；字段号和 wire 类型不变，但 JSON/descriptor 名称及 C# 属性名为破坏性变化。
-- **无状态**：所有方法均无副作用，线程安全；UID/OpenID 状态由 `NetService` 持有。
+- BuildHeader 不等待 Config/SDK/Localization 初始化；缺少入口或配置、设备 ID getter 异常仍可传播，不能把静态工具理解为任意线程安全。它每次构造新 Header，但不会自动写入任意业务 Body 的 Head 字段。
+- SerializeBody、Encrypt 与 Header JSON 编码不在本层统一捕获异常；IV 的 Base64 是 UTF-8 字节编码，不含密钥，也不是凭据有效性验证。`EditorBrowsable(Never)` 只影响 IDE 补全，不是 C# 访问控制。
+
+`pb_net_header.proto` 的请求字段号依次为 appid=1、uid=2、version=3、language=4、devid=5、platform=6、channel=7、openid=8；响应 timestamp=1 表达毫秒时间戳，响应身份不自动覆盖 NetService。`pb_net_base_response.proto` 的 code=1/message=2/data=3 由 NetParser 先解外壳，再交业务 parser。空解密字节返回协议失败，畸形 Proto 的 Parser 异常交调用层处理，合法外壳不证明服务端已部署同一协议。
 
 ---
 

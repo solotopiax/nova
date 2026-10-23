@@ -69,3 +69,9 @@
 - [LocalizationComponent.md](LocalizationComponent.md)
 - [LocalizationManagerConfig.md](LocalizationManagerConfig.md)
 - [LocalizationManager.md](LocalizationManager.md)
+
+## 导出与运行时边界
+
+IDataTableSettings 的 SourceDirPath/Units 只暴露文本源目录和 TextUnitsSettings 原列表；字体列表另有入口，不包含在该接口视图中。文本 GetLubanInputPath 取 SourcePath 的文件名拼 `_temp/`，不保留原目录；同名源文件的组织须由正式导出配置处理。这里的设置与 getter 不执行导出、加载或生成校验。
+
+正式链应分别核对文本/字体/SupportedLanguages 表源、导出格式及访问代码，再确认 Config.Namespace 中三个 Tables 或 Binary Binding 与运行时地址一致。数据表导出成功只证明配置数据，字体与可选材质还须作为有效资源部署，TMP 字体覆盖、RTL 字形、实际字号及显示仍需在目标 UI/Player 验证。

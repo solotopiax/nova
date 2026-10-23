@@ -20,15 +20,18 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 仅在自动整理无法安全完成时延迟提示；正常保存不弹整理确认，也不在 GUI 绘制栈打开模态窗口。
         /// </summary>
-        private void ScheduleSaveFailedDialog()
+        /// <param name="writeStarted">真实资产写入是否已经开始；开始后不能承诺资产未修改。</param>
+        private void ScheduleSaveFailedDialog(bool writeStarted)
         {
             ConfigMasterSO expectedMaster = m_Master;
             EditorApplication.delayCall += () =>
             {
                 if (!ReferenceEquals(expectedMaster, m_Master)) return;
                 EditorUtility.DisplayDialog(
-                    "配置未保存",
-                    "配置中存在无法自动处理的问题，本次没有保存，修改仍保留。请查看 Console 中的详细原因。",
+                    writeStarted ? "配置保存未完成" : "配置未保存",
+                    writeStarted
+                        ? "配置保存未完成，资产写入已经开始，窗口中的修改仍保留。请查看 Console 中的详细原因，并核对配置资产后再继续。"
+                        : "配置中存在无法自动处理的问题，本次没有保存，修改仍保留。请查看 Console 中的详细原因。",
                     "知道了");
             };
         }

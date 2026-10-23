@@ -2,13 +2,209 @@
 
 ## [Unreleased]
 
-### Added
+## [0.7.1] - 2026-10-23
 
 ### Changed
 
+- 补充 Agent 能力所需的 Nova Framework - MCP 安装说明。
+
+### Important
+
+Nova 新增 Agent 支持。项目组可以通过自然语言查阅框架用法，并让 Agent 协助调整配置、导出数据、构建游戏和排查问题，减少查阅文档和重复操作。
+
+使用这些能力需要安装 **Nova Framework - MCP**（`com.solotopia.nova.framework.mcp`）。它会随 Framework 的依赖自动安装，NovaSpark 也会将它列为默认安装项；已有项目缺少该包时，可打开 **Nova → Open PlugPals**，找到该包并安装。
+
+## [0.7.0] - 2026-10-23
+
+### Added
+
+- 新增函数、重载、访问器、参数和字段的只读能力查询，按平台条件与声明变体定位源码、XML、Docs 和执行契约，并核对 Excel、配置及依赖输入。
+
+- 新增 Config 面板维护与 nova.project.config.patch-coordinate：支持 Namespace、AppConfigs、维度编辑、Master 规范化及 IAP Store 引用补齐；渠道与开发模式使用互斥分支，仅保存选择字段。保护草稿和精确写集，兼容旧请求与回执，Runtime 仍单独导出编译。
+
+- 新增可复用 UI 导出 Action，冻结表源、配置和写集，按本次编译及脚本重载验证，现有 UI Skill 共用同一入口。
+
+- 新增 Pipify 配置检查及 Batch 创建、克隆、重命名、步骤排序和参数编辑；只保存配置，运行复用原入口。
+
+- 新增项目自有普通 SO、Prefab 组件字段检查与修改，冻结真实字段路径和写集，禁止旁路修改专用配置或存档加密字段。
+
+- 新增指定 NamedBuildTarget 完整脚本宏集合修改，支持空集合、无变化不写及编译重载后验证。
+
+- 新增 Editor 值 AES 检查、迁移与恢复：FileFragment 共享全集、PlayerPrefs 已索引字符串及显式全局 Save、SQLite 标准值同库事务分别受控并保留备份。persistence.inspect-data 默认仅查索引与固定文件元数据，不读玩家值或凭据、不保存建连；值迁移使用独立 scope 和计划，Cipher、Privacy 密钥轮换独立处理。
+
+- 新增已保存私有 Master 的资源密钥源码与 linker 生成 Action，预演精确文件变化并在编译后核验，不切换 Master 或平台。
+
+- 新增 Tracks 事件、属性、页签、文字、目标和统一样式维护 CLI，提供计划、验证与恢复；正式汇总 Action 复用 TrackRegistry，冻结登记来源及输出。
+
+- 新增已有 IAP、微信商品工作簿的只读转换 CLI，保存复用 Config 面板 Action。
+
+- 新增 xlsx/csv 非敏感标量表源编辑 CLI，按行键、字段和原值冻结修改；本地化专用分支可新增 Key 与已定义语言列，保留原内容、样式和合并。正式导出与运行验收复用原能力。
+
+- 新增已冻结 WebGL 导出的本机运行 CLI，提供 Wasm、Brotli/Gzip 响应头，拒绝目录越界和产物漂移。
+
+- AppManager 新增 Android APK HTTPS 主备下载、受限归档检查及同目录原子提交；失败或取消清理临时文件并保留旧产物，下载路径与安装结果分开返回。
+
+- 新增默认关闭的 Android 游戏内 APK 安装能力，串联受控下载、原生验签和系统安装确认，同步启动弹窗及中英文案。
+
+- 新增 NetworkComponent.SendProtoAsync 公开门面，业务 Service 复用现有 Header、AES、主备、重试、解析与取消链；不开放隐藏身份写入。
+
+- 现有存档 Action 新增 macOS Editor SQLite 非空 Cipher 同库轮换与 Privacy 默认 AES 三存储协调分支，支持自动生成或已有项目 opaque 凭据、封存备份及原 Operation 恢复；Privacy 经 Master 保存和 Runtime 正式导出闭环，未完成时阻断 Editor 启动与构建，设备及外部消费者另行验收。
+
+- MainDemo 新增全局暂停、恢复、速度、退出和显式存档保存入口，支持 Content 场景独立加载卸载，异步结果随页面清场。
+
+- MainDemo 新增 Table + UI 物品详情示例，正式注册导出 UIView，按编号读取已加载表，支持重复点击回焦、错误清空和池化重开刷新。
+
+- MainDemo 新增 FileFragment 业务进度迁移示例，保留旧档并同条目保存来源、版本及新版进度，支持重开读回、幂等更新和冲突拒写；提供隔离 Play 入口，真实玩家数据、其他存储及设备耐久性另验。
+
+- 已有 AAB 设备安装复用 Player Skill，分别核验 APK 集构建、签名、设备读回及清场；普通 Player 仍要求 Unity BuildReport。
+
+- Firebase Demo 新增消息分组输入及订阅、退订按钮，按页面生命周期接线，区分派发提示与 SDK 实际回执。
+
+- 新增升级后重要内容强制提示，汇总各包 CHANGELOG Important 的跨版本声明，区分单包和批量升级，按本地用户保存人工确认并在重载后补查；发版预检展示全文并询问修改或补充。
+
+- 新增可选 ProtectedInt/ProtectedLong 内存防护、ACTk 适配、异常隔离、分帧换钥及脱敏埋点；隐私配置贯通三维导出，未安装 ACTk 保持普通数值及存档兼容，并提供官方购买引导。能力随独立 MemoryProtection 包提供。
+
+- 新增 EditorUtil.Network.Http 默认 Head 与单次 JSON HTTP 门面，统一 app_id、platform、channel、develop_mode、version 及超时、取消响应语义。
+
+- 新增 nova.project.iap.upload-product-catalog，冻结已保存 Runtime、完整目录、版本和固定目标，通过可选包桥至多提交一次；发送前记录脱敏意图，只读核验原回执，缺后台实际应用证据时保持 partial。
+
+### Changed
+
+- ConfigWindow 保存下沉至共享设计态服务，保持保存范围和迁移收尾语义，保护窗口草稿，落盘后刷新失败仅报警告。
+
+- Agent 查询统一导航源码/XML、模块 Docs 与执行契约，涵盖 Sample、Skill 脚本和指定原生入口，按实际安装包及唯一 Sample 判断适用性；Library 仅存可重建缓存，脱敏副本生成便携索引。移除人工 Knowledge、历史验收档案及全库审查账本，对齐 Docs、Minds/OBS 和协作规则的过期入口；参数与生命周期说明按需读取，实际任务重新验收并清场。
+
+- 配置坐标检查补齐已有坐标、掩码轴、Namespace 和 App 字段发现；密钥与 IV 仅报告配置状态，来源、生效阶段和旧功能缺口明确保留。
+
+- PipifyWindow 与自动化共用参数和目标保存服务，保护窗口及延迟编辑草稿，仅刷新干净窗口。
+
+- 自然语言 inventory/describe 新增 summary 摘要模式，默认 full 保持兼容；Router 分页定位后再展开精确契约。游戏控制复用 Procedure Service 与 Nova.Self，UI 本地化按完整语言集合验收；SDK 指引明确实参、事件、生命周期及平台边界，区分接入、诊断和维护证据，维护任务不额外要求 Play。
+
+- 普通 HTTP GET、字符串 POST、原始数据和文件上传通过可选 ICancellableHttpManager 提供令牌末位取消重载，兼容旧调用及自定义管理器；MainDemo 页面关闭时取消请求、等待终态并唯一归还响应。
+
+- 现有 Skill 支持同契约任务分支及 Workflow Operation 子集，复用声音、振动、网络纯导出和 Tracks 维护入口；冻结父契约，继承写集、锁、幂等、确认和验收要求，Python 与 Unity 同步拒绝越权，完整接入和外部收件仍独立验收。
+
+- 受控 Player 构建声明原回调外部统计，冻结活动与请求目标的 SRP、Core/Probe 空资产及缓存；WebGL 接纳全 null 管线与空 VolumeProfile，Quality 只恢复原引用的官方完成态，对应 Analytics 回调仅接纳已关闭设置。保留 Adaptive Performance 空 provider、EDM 警告和 IAP 缺配置分支，未知状态阻断，归属不明残留保持 partial，不关闭设置或跳过厂商回调。
+
+- Player 构建支持慢计划登记、断线取回与终态清场，保持原四阶段及平台验收要求。
+
+- MainDemo WebSocket 演示新增独占连接、二进制回显确认、显式重连及关闭退订，不接管其他业务通道。
+
+- 持久化 Skill 增加隔离 schema 迁移与冲突、故障恢复示例，仅操作独立临时文件，不授权真实存档维护。
+
+- Android 构建检查复用 Manifest、ProGuard、AppsFlyer 和 Firebase 规则，冻结配置来源、处理器及上下文，按实际工程采集构造和前后处理阶段；缺失阶段、跨工程预测或观察异常不能算通过，未完成的原生接线及写入仍明确保留。
+
+- 调整 Config 隐私页分区和横线，将插件重新检查及状态置于说明上方，绿色表示已检测到、黄色表示未检测到。
+
+- 重要升级说明按包、版本及正文分层缩进，合并包名称与包名，版本按完整 SemVer 倒序；包间粗线、版本间细线、功能区横线及深色正文便于阅读，勾选和确认固定于底部独立区域。
+
+- 内存防护迁入可选 com.solotopia.nova.framework.memory.protection，主包仅保留通用隐私扩展数据与读取接口，移除防护实现、ACTk 适配及 MainDemo 1.10，改用独立 MemoryProtectionDemo。
+
+- 独立包可声明 requiredFrameworkApiVersion，发布器在打包前核对正式依赖下界及同批或目标 registry 的可用性，阻断新 API 与旧主框架组合。
+
+- EditorUtil.Network.Http 默认 Head 的 develop_mode 由 DevelopMode 枚举生成 Debug/Release 字符串，避免任意协议文本。
+
+- Framework Editor 新增 com.unity.scriptablebuildpipeline 3.0.3 直接依赖，显式配对 Unity.ScriptableBuildPipeline.Editor 的构建路径与回调接口；消费工程升级时需解析该构建依赖。
+
+- 主框架依赖配对 MCP 0.1.5 与 NiceVibrations 10.0.6，确保安装入口解析到本轮配套版本。
+
 ### Fixed
 
+- 校正 Skill/Docs 中的 Action、导出位置、配置来源和生命周期说明，包括 Excel Write 为 CSV、Table 注册失败、LanguageInfo 只读、ObjectPool 释放、Proto 导出跳过以及事件队列和两级引用池回收边界；区分已有事务恢复与真源缺失，修正导航而不放宽执行契约。
+
+- ConfigWindow 保存失败提示按真实写入阶段区分，写入开始后要求核对配置资产，避免误称未发生保存。
+
+- ConfigRuntime 导出直接拒绝 Channel=None；Collector 分开报告顶层配置与当前坐标的有效 Override 路径，保留其他 Generate Action 的坐标解析语义。
+
+- Android Manifest 模板仅复制 XML 正文，输出资产保持独立 GUID，避免复制 .meta 产生冲突。
+
+- 能力导航纳入微信引力平台边界与 MAX 自有 Pods 脚本，仅枚举真实 UPM 目录并拒绝符号链接越界；按变更影响核对当前来源和辅助输入，避免普通文件中断遍历或路径调整引发无关模块失效。
+
+- 数据导出严格解析组件 JSON，规范化 Table code/data 与 Network Proto/data 范围，冻结 Namespace、设置、表源、模板、工具和完整输出，拒绝漂移、损坏回执、缺项或路径类型替换；Table 保持自身 Luban 配置来源，其他代码结果绑定本次编译及所属类型，区分更新、无需更新和空编译，同令牌至多补一次清缓存编译。租约覆盖清场刷新，获取失败不删他人产物，写后失败保留 partial 且不重放；旧收据保留原证据边界。
+
+- 修复 WebSocket 初连、重连的认证、心跳和状态隔离，WebGL 按连接实例分派；握手支持取消和超时，关闭等待收发退出并清消息、回收池对象，Tcp/TcpPb 不再解包 Close 控制帧。
+
+- 修复 Luban union-key 模板重复生成 global::global::，恢复合法 Dictionary 类型。
+
+- 修复 MainDemo 资源、Prefab、HTTP、声音、广告及 App/Config/Native 页面的异步所有权，关闭重开后丢弃旧反馈，取消后迟到实例统一回收，响应和句柄唯一释放；UI 子页按所有权取消，保留关闭失败编号供重试，本地化补齐持久 Key 绑定。
+
+- 修复 MainDemo 对象池空 Target、名称不一致和重复取用覆盖引用；预加载退出、重入和重试各自持有异步任务，新增重新预加载入口，主流程仅回收自身导航并列出已注册业务流程。
+
+- 修正 MainDemo linker 的 GameLogin 程序集名称，已保存 Pipify 组合先导出配置及网络代码/数据，再验证、生成和编译 DLL，保留既有参数及其他批次。
+
+- TextLocalizing 在 Start 完成后成对订阅、刷新和注销；配置加载合并并发句柄请求，拒绝关闭后迟到回写及取消重入，失败完成全部等待者并可重试。本地化字体和语言成功后替换快照，失败保留原数据，避免重入累加。
+
+- 表源 XML 精确识别自闭合空白格，避免吞入相邻单元格并丢失新增行样式，保持标量和 Tracks 编辑行为。
+
+- 普通 config.patch-panels 保留各物理坐标已有 Privacy AES Key/IV，拒绝广播、合并、更换或清空覆盖，初配和同值仍可用；Config 导出仅在 YooAsset 解析字段变化或资产原已脏时保存，避免密钥轮换扩大写集。
+
+- 完善 FileFragment、值 AES、Cipher 与 Privacy 中断恢复，核对原 token、完整备份、受保护 Prefab 及 Master/Runtime 原或新状态和磁盘摘要；支持本操作保存失败的完整脏态、半写清理和 FileFragment 仅清 stage 重试。只清自建半写文件，跨崩溃 .restore 认证后隔离保留；旧日志缺保护材料时仅原计划全文仍匹配才可恢复，未知或额外修改继续阻断。
+
+- SQLite 维护以独占 CreateNew 建立自有备份，源库仍只打开既有文件；Privacy 恢复保留 ISO 时间原文，避免自动日期转换破坏来源认证，凭据封存和启动 marker 失败仍受保护。
+
+- ClearUnusedCacheAsync 在令牌已取消或 Manifest 未就绪时不启动，底层 Failed 抛出包名、状态和错误；开始后取消仅停止等待，不中断或回滚磁盘清理。
+
+- 脚本宏通过 Unity 原生单对象序列化保存 PlayerSettings，独立重读文件并在重载后核验完整状态与脏标志，拒绝未保存草稿及活动 Build Profile，避免只改内存或误写其他 Profile。
+
+- Persist.LoadAsync 共享初始化支持未完成时并发等待及完成后复用结果，修复原始 UniTask 重复等待，保留隐私维护门禁和原始失败。
+
+- Bundle 构建冻结已保存场景、Collector 依赖、OutputCache、SBP 输出/缓存及回调，阻断脏资产、混合 RawFile 和未知 SDK/Shader/ProBuilder 副作用；完整校验报告、辅助产物及恢复回执，兼容旧明文。Android 场景分支观察自然 Version Handler 收尾，初次快照后计十秒等待，以轻量探针让队列推进，超时或取消保持 partial，不推进或重放回调。
+
+- HybridCLR Generate 冻结平台、IL2CPP、Player 回调、PlayerSettings、StripAOT、工具链和临时选项，分别核验生成 link.xml 与 Master AOT 表并去重；拒绝未知副作用和旧 staging。Android 观察 SDK 阶段及 Gradle 输出，WebGL 用独占重载租约先保存结果再放行重载；慢计划可登记取回，失败或断线不重放，编译重载证据不足保持 partial。
+
+- 修复 HybridCLR Generate 场景对象重建、首次正式重载及 Unity DTO 延迟加载的误判，按保存场景完整身份双射及同一 SceneView 相机 HDR 恢复核验；字体零状态使用同次序列化结果，兼容 JsonUtility 的 null/空串往返，修复压缩快照重复封装。完整前后态无损保存且受大小限制，旧记录、后续重载或未知变化仍拒绝。
+
+- HybridCLR Generate 冻结输入或回调不匹配时，返回同次已有数据的有界脱敏差异，涵盖身份、顺序、重复及字体保护，并保留完整后态保存失败原因；缺失、歧义和超限明确报告，不放宽比较与准入。
+
+- Pipify Generate All 成功后补全现有 link.xml，避免覆盖配置要求的 AOT 保留条目，生成内部裁剪与最终 Player AOT 拷贝仍分别验收。
+
+- 签名包与公开同步从实际脱敏源码生成白名单便携导航，仅保存身份、位置、指纹及 Docs/契约引用，支持合法多级输入和产物路径；不分发 Knowledge、旧大索引、源码片段、原始配置或执行材料，核对来源摘要与函数区间，消费查询无需 Dotnet，生成成功不代表语义已审或运行通过。
+
+- Player 构建期 YooAssetSettings 用 FileUtil 仅复制正文并导入独立 GUID，避免 SaveAssets/CopyAsset 保存其他脏资产；清理失败或正文漂移时保留副本和所有权 marker 并报错。
+
+- Android Force Resolve 冻结目录、工具、模板、POM、EDM4U analytics/同意状态及完整刷新合同，仅执行一次正规解析；接纳已有模板和已安装旧配置迁移的自然无弹窗分支，拒绝首次初始化、未知参与者及 shadergraph/shadersubgraph 越界导入。按完整 POM 和产物验收，保护非目标状态，写后失败及缺新合同的旧回执保持 partial。
+
+- Android 依赖刷新以轻量探针异步等待 Editor update，保留十秒等待和完整前后验收；快照及回执使用有界无损表示并兼容旧数据。精确核对对象、场景、选择及文件，区分允许的 UI Toolkit/Atlas 派生资源，SpeedTree 使用全项目累计有界扫描；诊断给出有界真实路径及身份差异，不放宽用户资源保护。
+
+- Android Resolve 按实际加载模块、源码归属、SHA-256 和 MVID 核对刷新与 MCP Plan/Verify 调用链；编译身份移入既有 Skill reference，避免内嵌下游指纹产生重编译失效循环，未知编译结果仍拒绝，历史 partial 不升级。
+
+- Player HybridCLR AOT 重建拒绝输入、Bee 源及平台产物重叠，核验完整平铺 DLL 集和目录摘要，Windows 32/64 使用实际 Bee 路径；等待 ProjectAuditor 官方延迟报告完成并绑定本次 BuildReport，失败仅在归属明确且无待执行复制时恢复 LastClean，超时保留恢复材料。
+
+- 修复 Skill 同步与随包校验对 Workflow 子集、AAB 安装画像及消费工程 MCP 来源的识别，按本工程 lock 拒绝歧义；保留父子风险门、普通 Player 最低证据及依赖限制，补齐存档保存前置和 UPM 已提交操作的受控恢复说明。
+
+- 修复 Player WebGL 对 Assets/Framework 回调路径、FontAsset 类型转发、Facebook/Firebase iOS 空分支及源字体零缓存的误判；核对精确编译身份、SRP 和日志下游，记录官方 reset、TMP 清理及 Facebook Resources 自然绑定。观测不重新加载未加载字体，真实脏资产、未知同名类型或副作用仍阻断，不主动改写厂商计数。
+
+- HostKey 旧表缺少备用域名列时仍校验主域名，缺少 Value 列拒绝导出，模板补齐默认空的 FallbackValue。
+
+- MainDemo Asset 页支持指定 Package 缓存清理及取消等待，按 Owner/Package 防重复，终态不明不重放，区分操作返回与磁盘验收。
+
+- 正式 Verify 支持有界异步收件，核验仅执行一次，断线后可读完整脱敏结果；同步入口、partial 及 Receipt/Operation 语义保持。
+
+- 本地 Bundle、Player 和 HybridCLR 区分正式交付与附带构建统计证据，保留外发、凭据、确认及回调门；显式外部验收、上传等独立节点仍为必需。
+
+- AgentActions 文件摘要使用 64 KiB 临时缓冲降低批量分配，保持 SHA-256、只读共享及取消检查。
+
+- MCP 新 API 发布配对按 Framework → MCP 方向核对同批主框架基线和精确桥包版本，不再误要求反向依赖，保留普通 SDK/Kit 的正式依赖门。
+
+- 存档维护备份、日志和门禁迁至 Library/Nova/AgentActions/PersistenceMaintenance，表源计划、回执和锁迁至同级 TableSource，避免过程材料进入版本管理目录。
+
+- 适配 Unity 6000.6.7f1 编译：Debug 自定义布局使用五参数尺寸接口，IAPDemo 使用 TMP 文本换行模式。
+
+- 修复 DataReceiver 异步加载或释放失败后并发等待无法结束的问题：向本轮全部等待者传播失败并清除共享任务，允许后续重试；收到非 TextAsset 资源时返回失败并归还资源，避免通用数据读取链持续等待或遗留资源。
+
 ### Breaking
+
+- 使用 ProtectedInt、ProtectedLong、MemoryProtection 的项目须安装 Nova Framework - MemoryProtection，并在业务 asmdef 引用 NovaFramework.MemoryProtection.Runtime；公开命名空间仍为 NovaFramework.Runtime。隐私防护开关由独立包持有，旧值自动迁移，主框架不强制依赖防护包或 ACTk。
+
+- 能力查询改为声明当次验收要求，不再读取或输出历史验收记录、通过率与旧目标；依赖旧统计字段的脚本需适配。
+
+- 最低支持 Unity 6000.6.7f1；对象身份采用完整 EntityId，Debug 布局补齐 uGUI 2.6 的最大尺寸接口，消费 Skill 同步版本前置。
+
+- 移除 EditorUtil.ProjectGuard 全部公开 API/DTO、Project Guard 窗口菜单、自动 Play 检查及 Quick/Play/Build/Release profiles，同时移除 NOVA-SCENE/NOVA-RES 配置门策略；独立 NOVA-BUILD001～012 预检迁入 EditorUtil.Build，nova.project.build.inspect-readiness 与原 Skill 入口保留。依赖旧 API、DTO 或 profile 的调用方须迁移。
+
+### Important
+
+Nova 新增 Agent 支持。项目组可以通过自然语言查阅框架用法，并让 Agent 协助调整配置、导出数据、构建游戏和排查问题，减少查阅文档和重复操作。
 
 ## [0.6.39] - 2026-10-12
 

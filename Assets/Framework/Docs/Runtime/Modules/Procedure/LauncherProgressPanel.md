@@ -39,6 +39,10 @@
 - 百分比文本由组件内部自己生成，不来自 `LauncherLocalization`，但会按 `LauncherLocalization.Language` 应用 RTL/LTR 渲染方向。
 - `ShowProgress(stage)` 里的 `stage` 不是直接传给这个组件做文本映射的键。
 
+## 参数与生命周期边界
+
+Awake/OnEnable 只刷新已有条目，不初始化或重新选择 LauncherLanguage；数组 null 安全。SetProgress 仅展示 Clamp01 后数值及四舍五入整数百分比，空控件跳过，不是资源成功验收；文本通过独立 renderer 写入，不应再让正式 TextLocalizing 覆盖。
+
 ## 继续阅读
 
 关键源码：

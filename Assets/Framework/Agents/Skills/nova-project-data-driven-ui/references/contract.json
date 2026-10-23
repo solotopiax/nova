@@ -4,11 +4,12 @@
   "kind": "workflow",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [
     "nova-project-integrate-table",
-    "nova-project-ui-create-view"
+    "nova-project-ui-create-view",
+    "nova-project-update-ui-view"
   ],
   "actionAdapters": [
     {
@@ -37,9 +38,9 @@
       "when": "用户已确认 Unity 写入范围和入口行为时"
     },
     {
-      "kind": "unity-menu",
-      "entry": "confirmed project UI export entry",
-      "when": "当前项目已有且本次确需 UI 导出时"
+      "kind": "agent-action",
+      "entry": "nova.project.ui.export",
+      "when": "UI注册源和已保存UISettings已冻结；全量scope=all/code/data，单文件sourcePath仅code/data；使用Plan/Execute/编译后Verify"
     }
   ],
   "inputs": [
@@ -73,7 +74,8 @@
     },
     {
       "name": "viewName",
-      "required": true
+      "required": true,
+      "constraint": "先从实际项目发现View/Prefab/注册与入口；已有走nova-project-update-ui-view，只页面缺失且授权创建才走nova-project-ui-create-view，二选一执行，不重复注册。"
     },
     {
       "name": "namespaceAndAssembly",
@@ -94,6 +96,11 @@
     {
       "name": "entryPointAndReturnBehavior",
       "required": true
+    },
+    {
+      "name": "sourceCellEdits",
+      "required": false,
+      "constraint": "仅用户同时要求表源调整时传递：原标量为source/sourceHash/sourceRoots/generatedRoots及1至256个已有非敏感单元格/唯一rowKey/key/column/type/beforeValue/value；严格table-fields追加为唯一自描述xlsx/SchemaHash映射、全部原键、普通类型/注释及明确default或全键values，相邻空列最多8192新格。不插删行、不改外部Schema/行键/公式/宏/复杂类型；追加字段必须同描述scope=all和编译后再UI绑定；纯页面绑定或既有表复核不要求此分支。"
     }
   ],
   "effects": [
@@ -111,7 +118,10 @@
       "confirmed target Prefab",
       "confirmed UI registration source",
       "confirmed existing navigation source",
-      "generated UI output for this registration"
+      "generated UI output for this registration",
+      "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
+      "confirmed Luban schema through its dedicated editor; existing project-owned xlsx/csv non-sensitive scalar cells or strict table-fields append-only ordinary fields in self-described xlsx through shared nova_table_source.py",
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
     ],
     "deny": [
       "Nova Manager and UIManager implementation",
@@ -120,7 +130,11 @@
       "handwritten Prefab or Scene YAML",
       "manual edits to generated table or UI output",
       "unrelated Luban project, export description, table output or Config export",
-      "unrelated UI registration, navigation or generated output"
+      "unrelated UI registration, navigation or generated output",
+      "manual edits to generated UI output",
+      "manual edits to generated table output",
+      "unrelated Luban project, export description or output",
+      "macro/formula modification, row insertion/deletion, duplicate key cells, arbitrary source/generated boundaries or secret/identity field edits through the generic source CLI"
     ]
   },
   "locks": [
@@ -130,7 +144,9 @@
     "table-export-output",
     "active-scene",
     "ui-registration",
-    "selected-output-directory"
+    "selected-output-directory",
+    "ui-export",
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
   ],
   "idempotency": "orchestrate",
   "confirmation": {
@@ -141,7 +157,7 @@
       "replace non-generated asset",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "Workflow 权限等于子 Operation 权限并集，确认门取最高等级，不因编排扩大授权。"
+    "rule": "Workflow 权限等于子 Operation 权限并集，确认门取最高等级，不因编排扩大授权。 UI导出确认绑定Action PlanId及展示的共享配置、UITables和删除范围。 可选sourceCellEdits继承Table Operation现有标量或严格table-fields分支的精确源/Schema/生成边界、输入hash、一次性计划和文件锁；仅用户明确要求该表修改时执行，普通字段追加正式代码+数据导出/编译先于UI绑定，未经该分支授权不修改表源。 requires仅登记可能的复用闭包；当前View存在选择update，缺失且授权创建选择create，不执行未选分支。"
   },
   "minimumEvidence": "play",
   "resultStates": [

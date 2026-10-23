@@ -35,6 +35,15 @@ namespace NovaFramework.Editor
                 return;
             }
 
+            File.WriteAllText(outputPath, BuildContents(sdkRules), new UTF8Encoding(false));
+            Log.Debug(LogTag.Editor, $"[NovaProguardBootstrapper] ProGuard 规则已重建完成，输出路径：{outputPath}");
+        }
+
+        /// <summary>原Rebuild正文唯一纯生成器；调用方仍在文件不存在时先早退，不改变编码、换行或规则顺序。</summary>
+        /// <param name="sdkRules">原Context登记顺序，null与空集合保持原头部。</param>
+        /// <returns>按当前宿主Environment.NewLine生成的完整文本，尚未写文件。</returns>
+        internal static string BuildContents(IReadOnlyList<(string sdkName, string rules)> sdkRules)
+        {
             var sb = new StringBuilder();
             sb.AppendLine("# [Nova Framework - Auto Generated - Do not edit manually]");
 
@@ -49,8 +58,7 @@ namespace NovaFramework.Editor
                 }
             }
 
-            File.WriteAllText(outputPath, sb.ToString(), new UTF8Encoding(false));
-            Log.Debug(LogTag.Editor, $"[NovaProguardBootstrapper] ProGuard 规则已重建完成，输出路径：{outputPath}");
+            return sb.ToString();
         }
     }
 }

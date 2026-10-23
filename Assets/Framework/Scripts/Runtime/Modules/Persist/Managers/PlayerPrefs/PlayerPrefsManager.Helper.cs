@@ -137,7 +137,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 写入字符串到 PlayerPrefs（内存，不落盘）。
+        /// 原样写入当前平台；Unity 默认实现先写缓存，微信/支付宝调用同步 Storage，不在此维护索引或 AES。
         /// </summary>
         /// <param name="key">PlayerPrefs 键。</param>
         /// <param name="value">要写入的字符串值。</param>

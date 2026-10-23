@@ -44,7 +44,7 @@ protected internal virtual void OnDestroy(IFsm<T> fsm)
 
 // --- 状态切换 ---
 protected void ChangeState<TState>(IFsm<T> fsm) where TState : FsmState<T>
-protected void ChangeState(Type stateType, IFsm<T> fsm)
+protected void ChangeState(IFsm<T> fsm, Type stateType)
 ```
 
 ---

@@ -21,26 +21,28 @@
 | `Id` | `string` { get } | 稳定 Id，重命名 DisplayName 不影响存档；在整个工程中必须唯一 |
 | `DisplayName` | `string` { get } | UI 展示名 |
 | `Category` | `string` { get } | UI 分组名（如 "HybridCLR" / "导出" / "打包"） |
-| `ParamsType` | `Type` { get; set; } | 参数类型（[Serializable] class），null 表示无参；通过命名参数赋值 |
+| `ParamsType` | `Type` { get; set; } | 保留的可选声明属性；Registry 实际类型从方法第二参数取得，不以该值决定有参或无参 |
 | `PipifyStepAttribute(id, displayName, category)` | ctor | 构造标注特性 |
 
 ## §11 使用示例
 
 ```csharp
-// 无参 Step
-[PipifyStep("export.config", "导出配置", "导出")]
-public static async UniTask ExportConfigAsync(PipifyContext ctx)
+// 当前真实带参 Step 的声明；完整执行逻辑位于对应 PipifySteps 源码。
+[PipifyStep("export.config", "导出 Config 资源", "导出资源/Config", ParamsType = typeof(ConfigExportParams))]
+internal static UniTask RunExportConfig(PipifyContext ctx, ConfigExportParams parameters)
 {
     // ...
 }
 
-// 带参 Step
+// 当前 Bundle Step 同样以实际第二参数为准。
 [PipifyStep("bundlebuilder.build", "Bundles", "构建资源", ParamsType = typeof(AssetBundleBuildArgs))]
-public static async UniTask BuildBundlesAsync(PipifyContext ctx, AssetBundleBuildArgs p)
+internal static UniTask RunBuildAssetBundle(PipifyContext ctx, AssetBundleBuildArgs p)
 {
     // ...
 }
 ```
+
+Registry 的 `ValidateSignature` 只接受 static + UniTask + 首参 PipifyContext；无第二参时实际 `PipifyStepInfo.ParamsType=null`，有第二参时必须为 `[Serializable]` class。特性的 `ParamsType` 省略或与签名不同不会改变这个推导，不能仅扫描命名参数判断当前 Step 是否带参。示例声明与源码扫描不代替本次 Unity TypeCache 注册、配置保存或运行验证。
 
 ## §13 关联文档
 

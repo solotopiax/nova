@@ -179,6 +179,12 @@ MobileProductFetchState 重入规则：
 
 商品成功后的后续流程先由 RestoreService 标记拉取状态并调用 `FetchPurchases`。商店、商品或平台已有购买尚未就绪时，权益刷新只登记延后请求；成功回调先缓存 receipt / PendingOrder，再补跑权益刷新，避免 `FullyEntitled` 记录缺少验单凭据。`FetchPurchases` 失败时优先补跑已登记权益；没有延后请求时，已登录账号执行服务端、本地和权益兜底。`RefreshEntitlementsAsync` 返回 `UniTask<IReadOnlyList<IAPResult>>`；作为后台动作时使用 lambda 显式等待并丢弃返回列表。
 
+### 商品与已有购买回调诊断日志
+
+商品级回调注册时会区分 Controller 尚未挂载、已经注册和注册完成。若商品拉取协调器已经进入成功态，重复或迟到的成功回调会打印忽略原因和数量，不重复执行商品成功后置流程。
+
+`OnPurchasesFetched` 到达后，即使没有历史订单，也会打印已确认订单与待确认订单数量。结合回调注册、商品拉取结果和已有购买汇总日志，可以判断问题停留在回调注册、商品拉取还是平台已有购买拉取阶段。若出现"回到前台后已有购买仍在拉取，回调已被 Unity IAP 前台重拉覆盖"警告，说明 Unity IAP 回到前台的自身重拉覆盖了本模块回调，Mobile 已重新发起拉取。
+
 ### 初始化时序（三步序列）
 
 ```
@@ -272,6 +278,14 @@ m_Hub.RunBackgroundTask(async runtimeCt =>
 ```
 
 ---
+
+## §12 连接、等待和回调的实现边界
+
+`MobileRuntimeContext.IsReady` 要求状态 Ready 且 connected；`MobileInitService.IsReady` 是另一个在初始化成功时写入的属性。已 Ready 后断连只把 RuntimeContext 标记断连，不在该分支直接复位 InitService 的属性；Store 再组合该属性与 Controller 引用存在性，不能把这组本地标志当作平台实时连通性或每个 SKU 可购买的健康检查。初始化没有统一默认超时，取消附加到本地等待，不撤回已经发起的厂商 Connect。
+
+商品成功回调即使数量为 0 也会进入 Succeeded，部分成功只按失败数量小于请求数量推定；实际缺失 SKU 另查 Controller。成功后置流程在同一个协调器实例只触发一次，标志先写入再调用委托，委托异常不会自动补跑。`WaitForProductsFetchedAsync` 只等待当前一轮：超时返回当时状态（仍可能 Fetching），调用者取消可抛错；两者都不停止厂商 Fetch 或已排重试，非 Fetching 的提前返回也不额外检查 ct。
+
+重试配置合法时保留原列表引用，外部修改数组可改变后续排期；空列表不是关闭重试，而是回落默认值。重试延迟使用 DeltaTime/Update，受 timeScale 影响。同步 Fetch 委托抛错可能留下 Fetching 和未完成等待源；重试任务的某些提前退出/取消路径也可能保留 CTS 字段阻止再排期。Dispose 取消本地重试并解除当前商品等待，正常生产路由由 Init 的 RuntimeContext 非空门忽略释放后商品回调；直接复用内部协调器仍没有统一 disposed guard。事件、日志和取消回调异常可能在完成源或后续清理前中断，清状态不等厂商操作已经退场。
 
 ## §13 关联文档
 

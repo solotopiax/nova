@@ -90,6 +90,8 @@ namespace NovaFramework.Runtime
                 m_NetChannels.Add(channel);
             }
 
+            StopChannelCoroutines(channel);
+            channel.PrepareConnect();
             m_ConnectServerCoroutines[channel] = m_CoroutineRunner.StartCoroutine(ConnectServerCoroutine(channel));
         }
 
@@ -108,6 +110,7 @@ namespace NovaFramework.Runtime
             }
 
             StopChannelCoroutines(channel);
+            channel.PrepareConnect();
             m_ConnectServerCoroutines[channel] = m_CoroutineRunner.StartCoroutine(ConnectServerCoroutine(channel));
         }
 
@@ -249,28 +252,28 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步终结所有通道，停止所有协程，每个通道最多等待 3 秒。
+        /// 异步终结所有通道，等待真实异步循环退出，再排空本管理器的主线程收尾队列。
         /// </summary>
         private async UniTask OnTerminateAsync()
         {
             foreach (WebSocketScope.NetChannelBase channel in m_NetChannels)
             {
                 StopChannelCoroutines(channel);
-#if !UNITY_EDITOR && UNITY_WEBGL
-                m_CoroutineRunner.StartCoroutine(channel.CloseSocket(false));
-#else
                 try
                 {
-                    UniTask closeTask = channel.OnTerminate();
-                    await UniTask.WhenAny(closeTask, UniTask.Delay(3000));
+                    await channel.OnTerminate();
                 }
                 catch (Exception e)
                 {
                     Log.Warning(LogTag.WebSocket, "OnTerminateAsync 关闭通道超时或异常：{0}。", e.Message);
                 }
-#endif
             }
 
+            while (m_ActionQueueOnMultiThread.Count > 0 || m_ActionExecuteQueueOnMainThread.Count > 0)
+            {
+                try { MutexDataUpdate(); }
+                catch (Exception exception) { Log.Warning(LogTag.WebSocket, "终止时回调收尾异常：{0}。", exception.GetType().Name); }
+            }
             m_NetChannels.Clear();
         }
     }

@@ -63,6 +63,18 @@ public override void Shutdown();
 - 取消并释放 `m_DiskCheckCts`
 - 清空当前配置、配置列表和 `IEventManager` 引用
 
+## 平台、失败与事件边界
+
+平台配置按列表位置选择：WindowsEditor/OSXEditor 取第 0 项、Android 取第 1 项、IPhonePlayer 取第 2 项；不读取 PlatformName 匹配。列表不足三项、选中项为空或其他平台均不启循环。LinuxEditor、Standalone 与 WebGL 没有独立命中项。
+
+配置与列表直接保存引用，没有快照。初始化只检查阈值非空及两列表等长，不检查阈值升序、间隔为正或有限值；随后会原地把最后阈值写成总磁盘空间。重复 Initialize 在提前返回/禁用分支不会统一取消旧循环；只有成功进入启用分支才更换令牌。
+
+查询需 NOVA_SIMPLEDISKUTILS，当前宏分支支持 macOS、Windows 和 Android，未支持路径返回 -1；即使 iOS 可选中配置，空间查询也可能为 -1。Windows 从 persistentDataPath 截取根路径，Android 向插件传 true。Busy 查询保留但主循环不消费。
+
+循环按第一个 `availableSpace <= threshold` 命中，否则使用末项；-1 同样参与比较，不会被自动当作失败过滤。它先记日志、Fire 池化事件，再等待对应间隔。只捕获 Delay 的 OperationCanceledException；查询、并发改列表、Fire、TimeSpan 或其他 Delay 错误可中断 Forget 循环，Update 的空实现不会重启它。
+
+Shutdown 按顺序 Cancel/Dispose 并清引用，异常可阻止后续清理；不关闭 RuntimeDebugger UI、清 Console 或提交报告。调试 UI 和磁盘循环是两条独立生命周期。
+
 ## 旧实现边界
 
 当前源码里已经没有 `IDebugWindow`、`IDebugWindowGroup`、`ConsoleWindow`、`GMToolWindow`、`DebugWindowGroup` 那套运行时窗口树实现。相关页面如果仍然存在，只能视为退役说明，不能再当当前实现事实。

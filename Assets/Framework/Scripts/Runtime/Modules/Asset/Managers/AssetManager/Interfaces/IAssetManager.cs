@@ -267,10 +267,12 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 清理磁盘缓存中未被当前清单引用的冗余 Bundle 文件，释放磁盘空间。
-        /// 调用前须已完成 LoadManifestAsync（需要清单对比才能判定"未使用"）。
+        /// 调用前须已完成 LoadManifestAsync；内置实现检查实际清单及底层操作失败，正常返回仍须按需核验磁盘结果。
         /// </summary>
-        /// <param name="package">包名，null 走默认包。</param>
-        /// <param name="ct">取消令牌。</param>
+        /// <param name="package">包名，null 或空串走默认包。</param>
+        /// <param name="ct">取消令牌；开始前取消不调度，开始后仅停止等待，不中止或回滚底层清理。</param>
+        /// <exception cref="System.InvalidOperationException">内置实现的目标包未注册、实际清单未就绪或底层清理操作报告失败。</exception>
+        /// <exception cref="System.OperationCanceledException">调用前或等待过程中取消；已开始的底层清理可能继续。</exception>
         UniTask ClearUnusedCacheAsync(string package = null, CancellationToken ct = default);
     }
 

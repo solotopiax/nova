@@ -31,6 +31,18 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         private bool m_IsExistingPurchasesFetchInProgress;
 
+        // [UnityIAP-FocusRefetch-Workaround]
+        /// <summary>
+        /// 已有购买拉取期间回到前台后，是否已安排延迟重新拉取；Pause 与 Focus 同时恢复时只安排一次。
+        /// </summary>
+        private bool m_IsForegroundRefetchScheduled;
+
+        // [UnityIAP-FocusRefetch-Workaround]
+        /// <summary>
+        /// 回到前台后重新拉取平台已有购买的延迟（毫秒），确保晚于 Unity IAP 自身的前台重拉。
+        /// </summary>
+        private const int c_ForegroundRefetchDelayMs = 3000;
+
         /// <summary>
         /// Restore 操作完成信号，所有验单结果收集完成后触发。
         /// </summary>

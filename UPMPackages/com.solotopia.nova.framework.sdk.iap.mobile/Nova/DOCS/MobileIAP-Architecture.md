@@ -103,7 +103,7 @@ MobileStore.InitializeAsync
 商品拉取与补单的边界如下：
 
 - `MobileProductFetchCoordinator.CancelRetry` 可以在成功、部分成功、成功态迟到失败、初始化失败和 Dispose 路径被多次调用；它是幂等清理，不会清空业务订单或触发补单。
-- `FetchPurchases` 在商品链路首次进入成功态时自动触发；拉取期间权益刷新只登记延后请求，不生成无票据恢复记录。成功回调先合并平台票据，再补跑延后权益或触发完整补单；失败回调优先补跑延后权益，没有延后请求时再执行完整补单兜底。订阅倒计时也复用该顺序。`RestoreTransactions` 不在启动期或订阅倒计时触发，只保留给用户主动恢复购买。
+- `FetchPurchases` 在商品链路首次进入成功态时自动触发；拉取期间权益刷新只登记延后请求，不生成无票据恢复记录。成功回调先合并平台票据，再补跑延后权益或触发完整补单；失败回调优先补跑延后权益，没有延后请求时再执行完整补单兜底。订阅倒计时也复用该顺序。Unity IAP 只保留最后一次 `FetchPurchases` 的回调，Google 平台回到前台时其内部 `OnFocusChanged` 重拉会覆盖本模块回调；因此 `MobileStore` 实现 `IIAPStorePauseListener` / `IIAPStoreFocusListener`，Android 下拉取期间回到前台时由 `MobileRestoreService.OnAppForegroundChanged` 延迟 3 秒重新发起一次（代码标记 `[UnityIAP-FocusRefetch-Workaround]`，官方修复后删除）。`RestoreTransactions` 不在启动期或订阅倒计时触发，只保留给用户主动恢复购买。
 - `m_UnavailableSkus` 是 `HashSet<string>`，重复写同一缺失 SKU 不会无限增长；写入前仍会检查 `StoreController.GetProductById`，避免已成功商品被失败列表污染。
 - 查询、购买和 Restore 权益刷新都会尊重不可用 SKU 拦截；真实缺失 SKU 会被阻断，已进入 Controller 的商品继续可买可查。
 - 商店连接、后台补单扫描、权益刷新、订阅倒计时和支付验单桥接都经 Hub 后台任务入口启动；Dispose 会先取消这些任务，再释放服务，避免释放后回调继续访问旧 Hub。支付验单桥接被取消时返回 `StoreNotAvailable` 失败结果，不向业务层抛取消异常。
@@ -141,6 +141,8 @@ StoreController 事件
 ```
 
 `MobileStoreService` 不做业务判断，业务处理集中在目标服务中。
+
+回调链诊断由实际持有状态的服务输出：`MobileExtendedService` 记录商品级回调注册被跳过或完成，`MobileProductFetchCoordinator` 记录商品首次成功、失败、重试以及成功态重复回调，`MobileRestoreService` 在 `OnPurchasesFetched` 后汇总 ConfirmedOrder 与 PendingOrder 数量。`MobileStoreService` 保持纯路由职责，不为 `OnProductsFetched` 追加独立日志。看到“商品级回调注册完成”但没有商品成功或失败日志，说明回调尚未进入商品拉取协调器；看到商品成功但没有已有购买汇总或失败日志，说明 `FetchPurchases` 回调尚未收口。
 
 ## 7. StoreController 收口
 
@@ -215,3 +217,19 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 - [MobileInitService.md](./MobileInitService.md)
 - [MobileUtils.md](./MobileUtils.md)
 - 父包架构：[IAP-Architecture.md](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md)
+
+## 13. 队列、验单与恢复的失败语义
+
+`MobileValidationQueueCoordinator` 只提供当前运行期订单键去重和单处理器标志，不是线程锁。已有处理器时再次 Process 立即返回，不等待同一任务完成；每批先把当前队列全部 drain 为处理中键，再 await 批委托，finally 释放处理中集合。异常或取消不会把已 drain 的键重新入队，后续需由订单扫描重新收集；Clear 不取消、等待既有委托。扫描器把具备凭据的 Purchasing 改为 PendingValidate，把候选标成补单，并删除 null/LocalPayFailed；这些内存变化本身不保存，由外层 Save 后入队，失败不回滚。
+
+Mobile 验单把普通商品组和订阅组串行发送；存在重复非零 tableId 时拆成单笔，响应按 tableId 首个匹配项选择，单项响应兜底可接受唯一项而不再次核对其 tableId。当前协议不使用 transaction id 做响应关联。主动订单按 `attempt=0..RetryValidateMaxNum` 尝试，纯补单组只尝试一次；此循环没有重试 Delay，负重试配置没有在该层夹紧。取消只在每轮前检查，`MobileIapNetService` 的查单和验单接口没有 ct，不能据上层取消断定已发 HTTP 已中止。
+
+协议源 `Nova/Protos/pb_net_mobile_pay.proto` 的 protobuf `package` 是 `NovaFramework.IAP.Mobile.Runtime`，`csharp_namespace` 才是 `NovaFramework.SDK.IAP.Mobile.Runtime`，两者都不能用来推定实际加载的程序集。Google 验单项发送 `product_id/token/float price`，Apple 发送 `order_id/float price`，均不发送完整 receipt；订阅各有独立请求类型与命令，复用对应平台订单项。响应 `expire_time` / `purchase_type` 是 optional 字段，缺失与显式 0 的 presence 不能仅按数值混同。当前网络包装器读取调用时的标准 Header 与命令路由；Protobuf 字符串不接受 null，批次空列表返回失败而空元素可抛错，包装器不提供统一 SKU/token 格式、去重或服务端真实性校验。
+
+凭据策略分平台：Android 缺 token 保留，iOS 缺空白检查后的 order id 可删除并保存；恢复时只回填缺失凭据。服务端查单先捕获当前存档并可能合并结果，队列与后续保存又会读取当前 Store，当前实现没有账号 generation 校验。已存在的 AwaitingConfirm 记录通常由 ack 路径处理，但服务端 pending 合并可重新设为 PendingValidate，不能把本地状态字段当作不可逆锁。业务成功派发按运行期业务键去重，字段标记先于事件，不提供跨进程发货幂等。
+
+验单成功先更新订阅/非消耗品权益和本地订单终态，再按场景发事件并完成结果；有 PendingOrder 时先保存 AwaitingConfirm，再取出运行期 PendingOrder 引用发 ConfirmPurchase。Confirm 抛错时该引用已移除，需重新 FetchPurchases 才能重确认；无 PendingOrder 的历史/token 补单直接删单。保存、事件、确认与 TCS 完成不共享事务，抛错可能保留部分内存/磁盘进展，不能只看某一回调是否到达推断整条链已完成。
+
+Restore 计数器按订阅/非消耗品两路完成数量收口，不内建订单级去重或 generation。FinishRestore 先摘完成源并清本轮状态，再派两路恢复事件、最后完成结果；监听异常可打断最后一步。`FullyEntitled`、客户端到期缓存和已恢复通知分别是平台状态、存档状态与通知，只有验单结果和 `CanDeliver` 决定本次能否发货。
+
+订阅服务整个实例只有一个 `m_CountdownCts`：任意 tableId 启动新倒计时都会替换上一次，写入非正到期值只保存 0，不主动取消已经存在的计时。延迟由 UTC 到期差额加 30 秒计算，已过期按 1 秒等待；实际 `UniTask.Delay(TimeSpan, cancellationToken)` 使用默认缩放时间，30 秒只是客户端缓冲，不保证固定墙钟期限或服务端已更新。它与 Android 前台重拉的 `3000ms Realtime` 延迟属于不同时间域。

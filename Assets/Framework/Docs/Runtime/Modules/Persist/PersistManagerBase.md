@@ -105,7 +105,9 @@ InitializeBase(config)
 
 子类在 `Update()` 中调用，统一接入自动保存机制：
 - `m_AutoSaveInterval <= 0`：直接返回，自动保存已禁用。
-- 递减 `m_AutoSaveTimer`，归零时调用 `Save()` 并重置计时器为 `m_AutoSaveInterval`。
+- 使用子类传入的非缩放帧间隔递减计时器；归零时先重置计时器，再调用 `Save()`，每次 Tick 最多保存一次。返回的 bool 不被检查，异常继续传播；保存失败不会立即补一次重试。
+
+公共配置在 `InitializeBase()` 中读取并保存在 Manager 字段里；之后修改 DTO 不会自动更新 Manager。此处不检查 null 配置或浮点有限性，也不初始化 AES Key/IV。分类与条目基础校验只拒绝 null/空字符串，纯空白可通过；各存储实现的附加限制见对应文档。
 
 ### 扩展类型默认实现
 
@@ -116,8 +118,27 @@ InitializeBase(config)
 - `GetObject<T>`：`Util.Json.Deserialize<T>(GetString(...))`；异常时 `Log.Warning` 并返回 defaultValue
 - `SetLong`：`SetString(..., value.ToString())`
 - `SetDouble`：`SetString(..., value.ToString(InvariantCulture))`
-- `SetBytes`：`SetString(..., Convert.ToBase64String(value))`
+- `SetBytes`：非 null 转 Base64，null 转空串，再调用 `SetString`；不会删除条目
 - `SetObject<T>`：`SetString(..., Util.Json.Serialize(value))`
+
+`defaultValue` 只控制返回结果，不会自动写入或创建条目。`GetBytes` 和 `GetObject<T>` 的 try/catch 仅包住解码/反序列化；此前的 `GetString`、IO、AES 解密与名称校验异常继续传播。合法 JSON 若反序列化为 null，会原样返回 null，不替换为自定义默认对象。`SetObject<T>` 序列化失败直接抛出。
+
+空串由具体存储实现决定：FileFragment/SQLite 的已存空串会原样返回，Base64 解码得到空数组；PlayerPrefs 会先把空原始值当作缺项。布尔值统一存为 `"1"`/`"0"`，有值时只有 `"1"` 为 true，其他非空内容为 false；这与数值解析失败返回默认值不同。
+
+### IPersistManager 的共同调用面与实现差异
+
+`IPersistManager` 声明加载、保存、增删、枚举及八类值的读写接口；具体默认行为来自三种存储实现，不能由相同签名推导相同持久化边界。
+
+| 操作 | PlayerPrefs | FileFragment | SQLite（非 WebGL） |
+|---|---|---|---|
+| `Load()` | 重建平台分类/条目索引 | 扫描并恢复现有分片；加载中重入返回 false | 仅判断连接非 null，不预加载表 |
+| `HasItem / GetXxx / Count / GetAllItemNames` | 索引查询或平台值读取 | 可能懒加载、恢复并隔离磁盘文件 | 可能创建表、SELECT 并解密 |
+| `GetAllClassifyNames()` | 内存分类索引 | 当前已注册内存分类 | 数据库表名 |
+| `Save()` | 刷新全部脏索引后平台全局 Save | 处理待删文件，再逐脏分片保存 | 逐脏表各自事务提交 |
+| `Save(classify)` | 只刷新该类索引，底层仍全局 Save | 已缓存分类才保存，不处理待删队列 | 已缓存表才提交 |
+| `RemoveItem / RemoveAll` | 平台删键；整类删除立即 Save | 内存删除并排队，需无参 Save 完成物理删除 | 条目删除进缓冲；整类删除仅对已缓存表执行 DROP |
+
+数组枚举返回副本，列表重载追加而不清空；没有跨实现统一的条目顺序承诺。多分类保存不构成跨分类事务。SQLite 在 WebGL 下读值返回传入默认值，枚举为空，写入/删除无操作，Load/Save 返回 false。
 
 ---
 
@@ -127,7 +148,7 @@ InitializeBase(config)
 |------|---------|
 | Priority=0 是最高优先级，会最先 Update | Priority=0 确保 Update 最先执行（值越小越先），但 Shutdown 最后执行（值越小越后），有意保证持久化 Manager 最晚关闭 |
 | 直接继承 PersistManagerBase 作为 Manager | 当前三个 Manager 直接继承本类；旧文档提到的 XxxManagerBase 中间层已被移除，改由本类统一承载公共逻辑 |
-| GetBytes/GetObject 异常会抛出 | 已改为 Log.Warning 并返回 defaultValue，不会中断调用方逻辑 |
+| GetBytes/GetObject 会吞掉所有错误 | 仅解码/反序列化异常记 Warning 并返回默认值；底层读取、解密和参数校验错误仍可能抛出 |
 
 ---
 

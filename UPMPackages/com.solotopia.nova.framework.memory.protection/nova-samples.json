@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "MemoryProtectionDemo",
+      "description": "Nova Framework - MemoryProtection 的独立钱包演示：存档加载、受保护读写、显式保存和 Editor 故障隔离诊断",
+      "sampleName": "MemoryProtectionDemo",
+      "sourceDir": "Assets/Samples/MemoryProtectionDemo",
+      "expectedNamespace": "NovaFramework.Memory.Protection.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/MemoryProtectionDemo"
+    }
+  ]
+}

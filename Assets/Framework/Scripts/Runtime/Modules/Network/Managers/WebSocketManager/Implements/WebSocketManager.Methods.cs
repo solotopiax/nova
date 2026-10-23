@@ -26,7 +26,9 @@ namespace NovaFramework.Runtime
         /// <param name="channel">通道实例。</param>
         private IEnumerator ConnectServerCoroutine(WebSocketScope.NetChannelBase channel)
         {
+            int connectionVersion = channel.ConnectionVersion;
             yield return null;
+            if (connectionVersion != channel.ConnectionVersion || channel.IsDisconnectedSubjectively) yield break;
 
 #if !UNITY_EDITOR && UNITY_WEBGL
             yield return InnerConnectServerCoroutine(channel);
@@ -34,13 +36,12 @@ namespace NovaFramework.Runtime
             yield return InnerConnectServerCoroutineAsync(channel).ToCoroutine();
 #endif
 
-            if (!channel.IsConnected)
+            if (!channel.IsConnected || channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
             {
                 yield break;
             }
 
-            m_AutoAuthenticateCoroutines[channel] = m_CoroutineRunner.StartCoroutine(AutoAuthenticateCoroutine(channel));
-            m_AutoHeartBeatCoroutines[channel]    = m_CoroutineRunner.StartCoroutine(AutoHeartBeatCoroutine(channel));
+            StartAuthenticationAndHeartBeat(channel);
             if (m_EnableAutoReconnect && channel.AutoReconnect)
             {
                 m_AutoReconnectCoroutines[channel] = m_CoroutineRunner.StartCoroutine(AutoReconnectServerCoroutine(channel));
@@ -53,14 +54,15 @@ namespace NovaFramework.Runtime
         /// <param name="channel">通道实例。</param>
         private IEnumerator AutoAuthenticateCoroutine(WebSocketScope.NetChannelBase channel)
         {
+            int connectionVersion = channel.ConnectionVersion;
             while (true)
             {
-                if (channel.IsDisconnectedSubjectively)
+                if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
                 {
                     yield break;
                 }
 
-                if (!channel.IsConnected)
+                if (!channel.IsConnected || channel.IsClosing)
                 {
                     yield return null;
                     continue;
@@ -69,13 +71,25 @@ namespace NovaFramework.Runtime
                 if (channel.NeedAuthenticateRightNow && !channel.WaitingAuthenticate)
                 {
                     yield return new WaitForSeconds(0.1f);
+                    if (!channel.IsConnected || channel.IsClosing || channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion ||
+                        !channel.NeedAuthenticateRightNow || channel.WaitingAuthenticate)
+                    {
+                        continue;
+                    }
+
                     WebSocketScope.NetMessageBase authMsg = m_SpecialMessageCreator?.Invoke(channel.GetNetChannelType(), "authenticate");
+                    if (!channel.IsConnected || channel.IsClosing || channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
+                    {
+                        if (authMsg != null) RecycleMessage(authMsg);
+                        yield break;
+                    }
                     if (authMsg != null)
                     {
                         byte[] bytes = channel.PackageMessageToBytes(authMsg);
-                        channel.InjectBytesToBuffer(bytes, authMsg);
+                        channel.NeedAuthenticateRightNow = false;
                         channel.WaitingAuthenticate = true;
                         channel.AuthenticateSendTime = DateTime.Now;
+                        channel.InjectBytesToBuffer(bytes, authMsg);
                     }
                     else
                     {
@@ -92,6 +106,7 @@ namespace NovaFramework.Runtime
                     channel.CloseSocket(false).Forget();
 #endif
                     Log.Warning(LogTag.WebSocket, "{0} 身份认证超时，断开重连。", channel);
+                    yield break;
                 }
                 else if (!channel.NeedAuthenticateRightNow && !channel.WaitingAuthenticate)
                 {
@@ -111,9 +126,10 @@ namespace NovaFramework.Runtime
         /// <param name="channel">通道实例。</param>
         private IEnumerator AutoHeartBeatCoroutine(WebSocketScope.NetChannelBase channel)
         {
+            int connectionVersion = channel.ConnectionVersion;
             while (true)
             {
-                if (channel.IsDisconnectedSubjectively)
+                if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
                 {
                     yield break;
                 }
@@ -126,12 +142,17 @@ namespace NovaFramework.Runtime
 
                 yield return new WaitForSeconds(m_HeartBeatTimeInterval);
 
-                if (!channel.IsConnected || channel.IsDisconnectedSubjectively)
+                if (!channel.IsConnected || channel.IsClosing || channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
                 {
                     yield break;
                 }
 
                 WebSocketScope.NetMessageBase heartbeatMsg = m_SpecialMessageCreator?.Invoke(channel.GetNetChannelType(), "heartbeat");
+                if (!channel.IsConnected || channel.IsClosing || channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
+                {
+                    if (heartbeatMsg != null) RecycleMessage(heartbeatMsg);
+                    yield break;
+                }
                 if (heartbeatMsg != null)
                 {
                     byte[] bytes = channel.PackageMessageToBytes(heartbeatMsg);
@@ -164,10 +185,11 @@ namespace NovaFramework.Runtime
         /// <param name="channel">通道实例。</param>
         private IEnumerator AutoReconnectServerCoroutine(WebSocketScope.NetChannelBase channel)
         {
+            int connectionVersion = channel.ConnectionVersion;
             int counter = 0;
             while (true)
             {
-                if (channel.IsDisconnectedSubjectively)
+                if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
                 {
                     yield break;
                 }
@@ -189,12 +211,20 @@ namespace NovaFramework.Runtime
                 }
 
                 yield return new WaitForSeconds(m_AutoReconnectTimeInterval);
+                if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion)
+                {
+                    yield break;
+                }
 
 #if !UNITY_EDITOR && UNITY_WEBGL
                 yield return InnerConnectServerCoroutine(channel);
 #else
                 yield return InnerConnectServerCoroutineAsync(channel).ToCoroutine();
 #endif
+                if (channel.IsConnected && !channel.IsDisconnectedSubjectively && connectionVersion == channel.ConnectionVersion)
+                {
+                    StartAuthenticationAndHeartBeat(channel);
+                }
             }
         }
 
@@ -204,14 +234,18 @@ namespace NovaFramework.Runtime
         /// <param name="channel">通道实例。</param>
         private IEnumerator InnerConnectServerCoroutine(WebSocketScope.NetChannelBase channel)
         {
+            int connectionVersion = channel.ConnectionVersion;
             int channelIndex = FindNetChannelIndex(channel);
             OnBeginConnect?.Invoke(channelIndex, channel.ServerAddress);
+            if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) yield break;
 
 #if !UNITY_EDITOR && UNITY_WEBGL
             yield return channel.CloseSocket(false);
+            if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) yield break;
             yield return channel.CreateSocket();
 #endif
 
+            if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) yield break;
             if (channel.IsConnected)
             {
                 OnConnectSuccess?.Invoke(channelIndex, channel.ServerAddress);
@@ -230,12 +264,16 @@ namespace NovaFramework.Runtime
         /// <param name="channel">通道实例。</param>
         private async UniTask InnerConnectServerCoroutineAsync(WebSocketScope.NetChannelBase channel)
         {
+            int connectionVersion = channel.ConnectionVersion;
             int channelIndex = FindNetChannelIndex(channel);
             OnBeginConnect?.Invoke(channelIndex, channel.ServerAddress);
+            if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) return;
 
             await channel.CloseSocket(false);
+            if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) return;
             await channel.CreateSocket();
 
+            if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) return;
             if (channel.IsConnected)
             {
                 OnConnectSuccess?.Invoke(channelIndex, channel.ServerAddress);
@@ -244,6 +282,18 @@ namespace NovaFramework.Runtime
             {
                 OnConnectFail?.Invoke(channelIndex, channel.ServerAddress);
             }
+        }
+
+        /// <summary>每次实际连接成功后重新驱动认证与心跳，避免沿用上一连接已结束的协程。</summary>
+        private void StartAuthenticationAndHeartBeat(WebSocketScope.NetChannelBase channel)
+        {
+            if (m_AutoAuthenticateCoroutines.TryGetValue(channel, out Coroutine authentication) && authentication != null)
+                m_CoroutineRunner.StopCoroutine(authentication);
+            if (m_AutoHeartBeatCoroutines.TryGetValue(channel, out Coroutine heartbeat) && heartbeat != null)
+                m_CoroutineRunner.StopCoroutine(heartbeat);
+
+            m_AutoAuthenticateCoroutines[channel] = m_CoroutineRunner.StartCoroutine(AutoAuthenticateCoroutine(channel));
+            m_AutoHeartBeatCoroutines[channel] = m_CoroutineRunner.StartCoroutine(AutoHeartBeatCoroutine(channel));
         }
 
         /// <summary>

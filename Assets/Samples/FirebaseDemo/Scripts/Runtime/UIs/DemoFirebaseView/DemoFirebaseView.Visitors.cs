@@ -31,6 +31,21 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
         [SerializeField] private Button m_GetTokenButton;
 
         /// <summary>
+        /// 手动订阅或退订的完整 Topic 名称，首次打开默认为空。
+        /// </summary>
+        [SerializeField] private TMPro.TMP_InputField m_TopicInput;
+
+        /// <summary>
+        /// 点击后派发输入 Topic 的订阅请求。
+        /// </summary>
+        [SerializeField] private UnityEngine.UI.Button m_SubscribeTopicButton;
+
+        /// <summary>
+        /// 点击后派发输入 Topic 的退订请求。
+        /// </summary>
+        [SerializeField] private UnityEngine.UI.Button m_UnsubscribeTopicButton;
+
+        /// <summary>
         /// 待发送到 Firebase 的打点事件名输入框。
         /// </summary>
         [SerializeField] private TMP_InputField m_EventNameInput;

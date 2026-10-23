@@ -322,9 +322,12 @@ namespace NovaFramework.Runtime
             _visibleItemCount = _visibleRows.Count;
         }
 
+        /// <summary>
+        /// 以当前最小高度作为首选高度，不提供最大高度或弹性高度约束。
+        /// </summary>
         public override void CalculateLayoutInputVertical()
         {
-            SetLayoutInputForAxis(minHeight, minHeight, -1, 1);
+            SetLayoutInputForAxis(minHeight, -1f, minHeight, -1, 1);
         }
 
         public override void SetLayoutHorizontal()

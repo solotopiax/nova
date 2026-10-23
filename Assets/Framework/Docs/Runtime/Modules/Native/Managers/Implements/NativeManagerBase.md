@@ -7,7 +7,7 @@
 
 ## Priority
 
-`Priority` 为 `15`：Native 在 SDK（`16`）之前更新、在 SDK 之后关闭，使 SDK 清理阶段仍可访问原生桥接。
+`Priority` 为 `15`：Native 在 SDK（`16`）之前更新、在 SDK 之后关闭，使 SDK 的同步关闭入口先于 Native 被调用。此优先级不决定初始化先后；SDK 的异步释放若以 Forget 启动，单凭关闭调用顺序不保证异步工作已完成。
 
 ## 抽象成员
 

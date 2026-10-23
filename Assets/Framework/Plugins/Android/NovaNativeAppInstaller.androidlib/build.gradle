@@ -1,0 +1,23 @@
+apply plugin: 'com.android.library'
+
+dependencies {
+    // 官方纯 Java APK 密码学验证器；与构建主机 apksigner 工具不同，不将 SDK 工具 jar 打入 Player。
+    implementation 'com.android.tools.build:apksig:8.13.2'
+}
+
+android {
+    namespace 'com.solotopia.nova.nativeappinstaller'
+    compileSdkVersion 36
+    defaultConfig {
+        // 不抬高消费项目最低系统版本；运行时自身安装能力只支持 API 28+。
+        minSdkVersion 23
+        targetSdkVersion 36
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+        }
+    }
+}

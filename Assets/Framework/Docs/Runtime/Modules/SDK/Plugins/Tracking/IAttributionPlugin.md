@@ -57,6 +57,9 @@ public interface IAttributionPlugin : ISDKPlugin
 - 归因数据通常在安装后**首次启动**时由平台服务器异步返回，回调时间不确定（可能几秒到十几秒）
 - `GetAttributionAsync` 与 `OnAttributionResolved` 提供两种获取方式，可按需选择；两者均应在主线程处理结果
 - 使用 `CancellationToken` 控制超时策略，避免因网络异常导致无限等待
+- 接口未设默认超时；结果可来自缓存或晚到回调，字段允许缺失，不能推断平台服务器已完成归因。
+
+Tracking 各能力的 `SetUserId` 目的地、空 UID 处理和参数转换由具体包定义；同名方法不构成跨能力自动广播。TrackEvent 对象与 eventName/Dictionary 重载是调用合同，基础值类型、字段限制、平台门禁和是否收数须分别核对实现。可覆盖的 `SetUserProperty` 与只设置尚无值的 `IUserPropertyPlugin.UserSetOnce` 是独立能力，不通过反射把任意字典广播给所有插件。
 
 ---
 

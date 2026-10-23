@@ -79,7 +79,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 异步加载本地化基础数据（语言列表 + 字体配置）。
         /// </summary>
-        /// <returns>是否加载成功。</returns>
+        /// <returns>基础加载流程结果；内置实现正常结束返回 true，不保证支持语言和字体完整。</returns>
         public override async UniTask<bool> LoadAsync()
         {
             await LoadSupportedLanguagesAsync();
@@ -105,7 +105,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 根据优先级决定当前语言并同步加载对应文本数据。供 Procedure 调用完成语言初始化。
         /// </summary>
-        /// <returns>解析并设置后的语言。</returns>
+        /// <returns>解析得到的候选语言；切换可能被拒或加载失败，须另核实际 Language 与文本。</returns>
         public override Language InitCurrentLanguageSync()
         {
             Language resolved = ResolveLanguage();
@@ -116,7 +116,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 根据优先级决定当前语言并异步加载对应文本数据。供 Procedure 调用完成语言初始化。
         /// </summary>
-        /// <returns>解析并设置后的语言。</returns>
+        /// <returns>解析得到的候选语言；切换可能被拒或加载失败，须另核实际 Language 与文本。</returns>
         public override async UniTask<Language> InitCurrentLanguageAsync()
         {
             Language resolved = ResolveLanguage();
@@ -190,7 +190,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步切换语言。
+        /// 异步切换语言；仅通过前置校验的异步请求递增版本，同步切换及同当前语言请求不使旧请求过期。
         /// </summary>
         /// <param name="language">目标语言。</param>
         /// <returns>异步任务。</returns>

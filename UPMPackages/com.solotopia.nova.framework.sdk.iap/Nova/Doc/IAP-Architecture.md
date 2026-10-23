@@ -180,3 +180,21 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 ## 8. 文档边界
 
 本目录记录当前代码事实和使用方式。历史设计、废弃方案和长期决策应进入 `Assets/Framework/Minds/**` 或子包 `Nova/Doc/plans/**` 归档，不在活跃 API 文档中混写。
+
+## 9. 基类模板的实际责任边界
+
+`IAPStoreBase.InitializeAsync` 保存 Table/Context、复位支付 ID 和不可用 SKU、设置初始化标志并绑定默认 Loading；它不校验空依赖，也不代表平台连接成功。基类 `IsStoreReady` 默认 true，具体 Store 必须提供自己的门禁。`EnableAsync` 只在未初始化时委托初始化，启用标志由 `SetEnabled` 独立修改；基类 Restore 返回空列表、补单和订阅倒计时默认为空实现、订阅期限默认 0，需要渠道实现覆盖。
+
+`PayGuardAsync` 依次检查禁用、`IsStoreReady`、当前支付中和已配置商品；只有 Table 非空时才检查商品存在。模板不直接读取 ct，不自动设置支付中标志，也不保护 null request/payCore，取消、超时和平台调用由子类承担。失败时先补 StoreType，再发失败事件、按钩子打点，最后执行失败后置钩子；事件或打点异常会中断后续步骤，不能假定必然得到失败返回值。
+
+### Loading 的配对与所有权
+
+`IAPLoadingGuard` 的默认 `UseCommonLoading=true`、`GameStartShowCommonLoading=false`，交互标志决定当前 `ShouldShow`。每次成功 Push 先调用显示回调，再把**当时捕获**的隐藏回调排入队列；Pop 先出队再调用，不是按回调对象实时重新查找。重新 Bind 不改已排队隐藏回调，Clear 只丢弃队列而不逐个隐藏。显示回调抛错不会排入对应 Pop，隐藏回调抛错时该项已经出队；无参 Push/Pop 读取各自调用时的显示策略，调用者需保持策略与配对一致。
+
+默认 `IAPLoadingPanelPresenter` 在第一次 Show 时通过 Resources 懒加载、实例化并 DontDestroyOnLoad；Hide 只隐藏并保留实例，Dispose 才请求 Unity Destroy。缺 Prefab 只警告并返回，其它 Unity/UI 异常会传播；不能据入口调用推断面板已显示或对象已在当前帧销毁。此处使用 Unity 主线程与 Resources 生命周期，不是 YooAsset Handle。
+
+### 从内存到存档及日志
+
+存档键由当前 StoreType 和当前 UID 即时拼接；UID 为空或缺持久化管理器时 Load/Save 不读写匿名账号。`SetUserId` 忽略 null/空值，传空不是登出或清除旧 UID。Load 在反序列化异常时尝试创建空容器并 `EnsureInitialized`，可能在内存迁移集合；Save 先 `SetObject` 再 `Save(classify)`，并不提供设备级原子写、跨对象回滚或账号 generation 隔离。旧异步任务若读取当前 Hub/Store，可能看到切换后的 UID 与存档；接入方须按实际交易归属安排切号和退场。
+
+公共属性合并会覆盖同名已有键；价格打点按支付表 Price 的 InvariantCulture float 解析，失败回 0，该工具本身不拒负数、NaN 或 Infinity，也不读取平台实际结算价。Enum 转 int 未限制底层范围，超出 Int32 可抛错；追踪调用不保证远端接收、去重或重试。IAP 日志总开关会同时关闭 Debug、Warning、Error；存档、协议、票据和回调诊断可能包含原文，不自动脱敏，日志缺失也不能证明流程没有执行。

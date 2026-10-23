@@ -147,3 +147,11 @@ EditorUtil.FileWatcher.Unwatch(m_ExcelDirPath, null, callbackId: c_WatcherId);
 
 - [EditorUtil.md](../EditorUtil.md)
 - [EditorUtil.Luban.Pipeline.md](../EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
+
+## 注册、快照与失败边界
+
+`Watch` 只监控指定目录本层，不递归子目录；Changed、Created、Deleted、Renamed 合并为“该目录有变化”，到下一次 Editor update 才分发，不等待文件写稳。路径仅 Trim、统一斜杠并去掉尾斜杠，不解析相对路径、`..`、大小写或符号链接；注册与注销必须使用同一键。回调 ID 默认由方法名和目标对象哈希构造，显式空字符串也是有效 ID；`CallbackEntry` 只保存 ID/委托，不校验业务含义。
+
+回调先登记，再创建 watcher。创建失败只告警，已登记的同 ID 回调会使再次 Watch 提前返回，不能把重复调用当作重试；也没有 watcher Error 事件恢复。文件事件线程只登记待处理目录，主线程先清空待处理快照，再执行回调快照；单个回调异常被记录后继续，回调中取消订阅不会撤销当前快照中余下调用。
+
+`Unwatch` 在最后一个回调移除时释放 watcher；内部 `DisposeWatcher` 本身不清回调或待处理队列。程序集重载前 `DisposeAll` 停止并释放全部 watcher 后清集合，但一个 Dispose 异常可中断后续释放，迟到文件事件也可能重新入队。本工具没有自动扫描注册或退出重试。

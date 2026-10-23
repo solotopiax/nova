@@ -88,13 +88,18 @@ m_DebugManager.Initialize(new DebugManagerConfig
 
 `AlwaysDisable` 由 `DebugComponentInspector` 同步到脚本宏 `NOVA_DISABLE_RUNTIME_DEBUGGER`，用于编译期禁用 RuntimeDebugger 相关初始化。
 
+未知枚举返回 false；Development 判断使用 Unity 的 `isDebugBuild`，不读取 Nova Config 的 DevelopMode。RuntimeDebugger 另有按 Settings.IsEnabled 工作的 AutoInitialize 入口，不能只用本组件属性推导整体初始化结果，详见 [初始化与服务访问](Debugger/RuntimeDebugger.md#初始化与服务访问)。
+
 ## 对外可见属性
 
 ```csharp
 public DebuggerActiveType DebuggerActiveType { get; }
 public int MaximumConsoleEntries { get; }
 public string CurManagerTypeName { get; }
+public Font RuntimeDebuggerFont { get; }
 ```
+
+这些 getter 原样返回序列化字段，不检查类型、容量、字体或初始化是否成功。Awake 完成也不表示磁盘配置已初始化；该链在 Start 执行。Manager 创建为空时记录 Fatal 后返回，具体是否抛出取决于日志实现。
 
 ## 当前实现边界
 

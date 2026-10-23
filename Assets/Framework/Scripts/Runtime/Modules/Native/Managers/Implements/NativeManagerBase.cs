@@ -19,7 +19,7 @@ namespace NovaFramework.Runtime
     internal abstract class NativeManagerBase : FrameworkManager, INativeManager
     {
         /// <summary>
-        /// Native 在 SDK 之前更新、SDK 之后关闭，保证 SDK 清理阶段仍可访问原生桥接。
+        /// Native 在 SDK 之前更新、SDK 之后调用关闭入口；不决定初始化先后，也不等待 SDK 的异步清理。
         /// </summary>
         public override int Priority => 15;
 

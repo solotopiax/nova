@@ -52,6 +52,45 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
         }
 
         /// <summary>
+        /// 从当前 Topic 输入派发订阅请求，实际结果由 SDK 异步回执确认。
+        /// </summary>
+        private void OnSubscribeTopicButtonClick()
+        {
+            SetTopicSubscribedFromInput(true);
+        }
+
+        /// <summary>
+        /// 从当前 Topic 输入派发退订请求，实际结果由 SDK 异步回执确认。
+        /// </summary>
+        private void OnUnsubscribeTopicButtonClick()
+        {
+            SetTopicSubscribedFromInput(false);
+        }
+
+        /// <summary>
+        /// 校验并裁剪输入 Topic，复用已启用的 FirebasePlugin 派发操作；空输入只给普通提示。
+        /// 该公开 SDK 方法返回 void，页面反馈只表示请求已派发。
+        /// </summary>
+        /// <param name="subscribed">true 订阅输入 Topic，false 退订输入 Topic。</param>
+        private void SetTopicSubscribedFromInput(bool subscribed)
+        {
+            string topic = m_TopicInput != null ? m_TopicInput.text?.Trim() : string.Empty;
+            if (string.IsNullOrEmpty(topic))
+            {
+                AppendFeedback("请输入 Firebase Topic 名称。", FeedbackLevel.Info);
+                return;
+            }
+
+            if (!TryGetFirebasePlugin(out FirebasePlugin plugin))
+            {
+                return;
+            }
+
+            plugin.SetTopicSubscribed(topic, subscribed);
+            AppendFeedback($"Firebase Topic {(subscribed ? "订阅" : "退订")}请求已派发：{topic}；实际结果请查看 SDK 回执。", FeedbackLevel.Info);
+        }
+
+        /// <summary>
         /// 将输入框里的 key/value 写入当前待发送的打点参数。
         /// </summary>
         private void OnAddEventParamButtonClick()
@@ -109,8 +148,9 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
         }
 
         /// <summary>
-        /// 登录流程。
+        /// 通过 GameLogin 完成账号登录；Kit 已通知 SDK，本页面只更新 Push Task 按钮和反馈。
         /// </summary>
+        /// <returns>登录与页面反馈异步任务。</returns>
         private async UniTaskVoid LoginAsync()
         {
             string openId = string.Empty;
@@ -135,7 +175,7 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
                     }
                     else
                     {
-                        Nova.SDK.Login(uid);
+                        // GameLogin 的成功路径已交付本次注册或登录，避免重复触发 SDK 账号通知。
                         m_HasLoggedIn = true;
                         SetPushTaskSendButtonInteractable(true);
                         AppendFeedback("登录成功，Push Task 发送按钮已启用。", FeedbackLevel.Info);

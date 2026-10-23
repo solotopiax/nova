@@ -1,4 +1,4 @@
 interface:
   display_name: "Nova 项目更新界面"
-  short_description: "定向更新既有 UIView、Prefab 和注册内容，并保留最小验证边界"
-  default_prompt: "使用 $nova-project-update-ui-view 定向更新当前项目中一个已注册的 Nova 业务界面。"
+  short_description: "定向更新既有 UIView、Prefab 或批量本地化绑定并验证"
+  default_prompt: "使用 $nova-project-update-ui-view 更新指定业务页面或批量本地化绑定，复用现有配置与工具并完成相应验收。"

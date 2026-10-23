@@ -6,8 +6,8 @@
  * author:    taoye
  * created:   2026/05/23
  * descrip:   Modules 2.2 — Asset 同步/异步/取消三态演示 View（交互型）
- *            职责：演示 Nova.Asset.LoadAsync<Sprite> 和 Nova.Asset.Release，
- *            支持 Async/Cancel/Release 三种资源生命周期操作，结果用 Image 展示。
+ *            职责：演示 Nova.Asset.LoadAsync<Sprite> 和 IAssetHandle.Release，
+ *            支持 Async/Cancel/Release，并通过动态控件演示指定包磁盘缓存清理与取消等待。
  ***************************************************************/
 
 using System.Threading;
@@ -20,7 +20,7 @@ namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
     /// Modules 2.2 Asset 演示 View（交互型）。
-    /// 演示 Nova.Asset.LoadAsync（Sprite）的异步加载、取消，以及 Release 资源释放。
+    /// 演示资源加载/释放及既有 Package 的公开缓存清理；清理返回不等同磁盘删除验收。
     /// </summary>
     public sealed partial class DemoAssetView : BaseDemoView
     {
@@ -43,7 +43,7 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private Button m_CancelButton;
 
         /// <summary>
-        /// 释放资源按钮，调用 Nova.Asset.Release。
+        /// 释放资源按钮，调用当前 IAssetHandle 的 Release。
         /// </summary>
 
         [SerializeField] private Button m_ReleaseButton;
@@ -64,8 +64,14 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private CancellationTokenSource m_LoadCts;
 
+        /// <summary>每次取消或替换加载递增，旧任务不能接管新任务的句柄与 UI。</summary>
+        private int m_LoadGeneration;
+
+        /// <summary>视图关闭后只回收异步结果，不再更新 UI。</summary>
+        private bool m_IsClosed = true;
+
         /// <summary>
-        /// 视图初始化钩子，注册按钮事件，设置标题与 API 副标题。
+        /// 视图初始化钩子，注册原加载按钮并创建本View拥有的清理控件。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
         protected override void OnInit(object userData)
@@ -92,15 +98,18 @@ namespace NovaFramework.Samples.Runtime
                 SetButtonApiHint(m_ReleaseButton, "IAssetHandle.Release()");
             }
 
+            InitializeCacheClearControls();
         }
 
         /// <summary>
-        /// 视图打开钩子，初始化输入框默认值并清空图片展示区。
+        /// 视图打开后允许本次加载/清理等待更新UI，刷新控件和原加载展示区。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
+            m_IsClosed = false;
+            RefreshCacheClearControls();
 
             if (m_LocationInput != null && string.IsNullOrEmpty(m_LocationInput.text))
             {
@@ -115,12 +124,14 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 视图关闭钩子，取消进行中的加载并释放已加载资源。
+        /// 关闭时取消本页清理等待和加载，再释放当前资源；实际清理请求继续保持占用。
         /// </summary>
         /// <param name="isShutdown">是否因视图管理器关闭而触发。</param>
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
+            m_IsClosed = true;
+            CancelCacheWait();
             CancelLoad();
             ReleaseCurrentAsset();
             base.OnClose(isShutdown, userData);

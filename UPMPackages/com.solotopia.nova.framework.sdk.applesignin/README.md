@@ -1,5 +1,7 @@
 # Nova Framework - SDK - Apple Sign-In
 
-> 当前版本：`0.0.21`
+完整文档入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
+
+> 当前版本：`0.1.0`
 
 Nova Apple Sign-In SDK package.

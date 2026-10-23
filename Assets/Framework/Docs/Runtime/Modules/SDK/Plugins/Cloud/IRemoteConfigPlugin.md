@@ -6,6 +6,8 @@
 
 远程配置接口，抽象 Firebase Remote Config 等平台的 Key-Value 下发能力。
 
+当前仓内没有自有 `IRemoteConfigPlugin` 实现；下列缓存、异常和事件描述是接口要求，文档示例不代表已启用可执行插件。实际键大小写、默认值、取消和平台缓存行为须由安装的实现兑现，不能从接口或 Inspector 分类推断。`TryGetBool` 返回 false 与“成功读取到布尔 false”应按方法返回值区分。
+
 ---
 
 ## §1 文件头
@@ -72,9 +74,9 @@ public interface IRemoteConfigPlugin : ISDKPlugin
 
 ## §12 注意事项
 
-- 必须先 `FetchAsync` 才能读取到有效值；首次 FetchAsync 前 `TryGet*` 返回平台内置默认值（通常为空/0/false）
-- `FetchAsync` 网络异常时不抛异常（激活上一次缓存），调用方无需 try/catch；但可通过 `OnConfigActivated` 事件是否触发来判断是否有新数据
-- 键名大小写由平台决定（Firebase Remote Config 大小写敏感），实现层不做统一转换
+- 使用前先确认存在可用实现，再依据该实现决定初始读取与 Fetch 时序。
+- `cacheExpiration = null` 表达使用平台默认值，不是框架统一超时；接口没有提供默认等待时限。
+- `OnConfigActivated` 表达激活通知，不能独立证明网络已获取新配置或服务端数据已经改变。
 
 ---
 

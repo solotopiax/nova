@@ -1,7 +1,7 @@
 # AssetManager
 
 `AssetManager` 是 Nova 资源系统的真实运行核心，也是 YooAsset 的框架封装层。  
-它负责三类事情：
+它负责：
 
 - 启动资源系统并注册包
 - 管理清单、补丁检查与下载器创建
@@ -47,7 +47,7 @@
 
 ### 1. Initialize：只缓存配置，不触底层资源系统
 
-`Initialize(config)` 只做两件事：
+`Initialize(config)` 做以下轻初始化：
 
 1. 记录 `m_Config`
 2. 新建 `m_Cts`
@@ -95,7 +95,7 @@ WebGL 初始化时还把 `BundleLoadingMaxConcurrency` 设为 `MaxDownloadConcur
 
 `EnableUWRTracks` 开启时，YooAsset URL/重试适配层按文件上报统一的 `uwr_request_start/error/end`，并附带 `uwr_download_operation_id`、`uwr_package` 与 `uwr_file_type`。非 WebGL HostPlayMode 的缓存下载成功回调发生在文件校验完成后；WebGL HostPlayMode 的 WebNetwork 内存 Bundle 路径由 YooAsset 在内容校验前回调 HTTP 成功，因此发生校验重试时会以同一 download operation 下的新 UWR 链继续，不能伪造为已经取得最终内容校验成功。
 
-每个文件冻结自己的候选计划，并发下载互不推进。成功域名会作为后续新文件的优先起点；完整失败保留已有成功偏好，只有候选配置已不再包含该域名或 Manager 关闭时清除。普通按需加载仍保持开启；同步加载行为不变。
+每个文件冻结自己的候选计划；同一规范 URL 的回调仍按 FIFO 关联，详见 AssetDownloadUrlPolicy。成功域名会作为后续新文件的优先起点；完整失败保留已有成功偏好，只有候选配置已不再包含该域名或 Manager 关闭时清除。普通按需加载仍保持开启；同步加载行为不变。
 
 启动诊断统一使用 `Log.Debug`：输出功能门控状态、白名单文件主备请求结果、命中/未命中结果，以及命中后 `.version` / `.hash` / `.bytes` 的实际请求成功或失败（包含文件名和完整 URL）。命中日志会输出完整 DeviceID，便于现场核对白名单内容；Bundle 请求不会进入这组元数据日志。
 
@@ -104,7 +104,7 @@ HostPlayMode 下，如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifes
 非 WebGL 平台按 `TryRecoverManifestAsync` 编排的**三级回退链**逐级尝试：
 
 1. **沿用当前已激活清单**：若包已加载过清单（`PackageValid`，如 `RefreshManifestAsync` 弱网场景），并且按当前 `LaunchHotfixTags` 复核启动范围完整，才直接复用；不完整则继续降级。
-2. **本地可启动版本离线加载**（`TryFallbackToLocalBootableManifestAsync`）：读回本地记录的资源版本与 `PackageFilePrefix`。跨 App 版本覆盖安装时，先把旧前缀对应的缓存 Manifest/hash 原子映射为当前前缀文件，再由当前 Host 包加载并按 `LaunchHotfixTags` 复核启动范围。旧版纯版本号记录会扫描缓存中的同版本文件对；候选内容冲突时拒绝猜测并继续降级。
+2. **本地可启动版本离线加载**（`TryFallbackToLocalBootableManifestAsync`）：读回本地记录的资源版本与 `PackageFilePrefix`。跨 App 版本覆盖安装时，先把旧前缀对应的缓存 Manifest/hash 逐文件映射为当前前缀文件，再由当前 Host 包加载并按 `LaunchHotfixTags` 复核启动范围。旧版纯版本号记录会扫描缓存中的同版本文件对；候选 hash 文本冲突时拒绝猜测并继续降级。
 3. **随包内置清单回退**（`TryFallbackToBuiltinManifestAsync`）：临时用 `OfflinePlayMode` 读取内置资源版本，然后恢复 `HostPlayMode`；恢复时把当前内置 Manifest/hash 复制到 Sandbox 并从 Sandbox 激活。最终运行态仍保留 Builtin + Sandbox，未随包资源不会失去文件系统归属。
 
 整体优先级是：远端最新清单 → 已激活清单 → 本地可启动版本清单 → 随包内置清单 → 抛出原始远端错误。
@@ -133,7 +133,9 @@ WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 Web
 
 三级离线回退路径一律不写，避免 builtin 首包覆盖此前可启动版本。旧 `Persist/Asset/CachedVersion` 记录不会读取或自动迁移，因为它只能证明 Manifest 曾激活，不能证明启动范围完整。
 
-**跨平台可达性**：该路径走 `Application.persistentDataPath`（iOS app 沙盒 / Android `files` 目录，各平台官方可写持久区），配 `System.IO.File/Directory` + 绝对路径（`NormalizeSeparator` 统一 `/`），iOS/Android 一致可读写；首次无目录时 `Directory.CreateDirectory` 递归创建。它与 YooAsset 自身沙盒缓存（`GetMobileCacheRoot()` 同样返回 `persistentDataPath`）属同一套读写机制——YooAsset 缓存能读写，本记录文件必然也能，且回退要命中的缓存清单本就在同一 persistentDataPath 根下。注意它**不在 StreamingAssets**（后者在 Android 打进 apk、不能 `File.ReadAllText` 直读，那是内置回退读首包版本时才会遇到的约束），故纯 File API 即可。
+**路径与写入边界**：记录走 `Application.persistentDataPath` 下的普通 File/Directory API，首次创建目录；不放在 StreamingAssets。该根目录可写不保证每次记录写入成功，磁盘空间、权限、损坏和并发仍需单独处理。`SaveLocalBootableVersion` 以 UTF-8 无 BOM 整体覆盖，非原子写；异常告警且 void 不报告成功。只在 Trim 前判断 null/空串，纯空白可能写成空版本，后续读回会拒绝。
+
+读取只接受 schema 2 JSON 中的非空白版本或旧纯文本版本，不验证版本号格式或 Bundle checksum。前缀迁移使用 YooAsset 默认 ManifestFiles 路径：Editor 在项目 Library，Windows/Linux Player 在 Application.dataPath，其他平台在 persistentDataPath；不替自定义文件系统推断路径。旧记录扫描成对 hash/bytes，只比较 hash 文本，多个一致候选优先当前前缀，否则取枚举首项，未比较 bytes 内容。每个目标文件通过固定 `.nova.tmp` Copy→Replace/Move，各文件独立完成；两文件不构成事务，失败可留下其中一个新文件。存在配对文件也不等于已通过内容校验，仍须后续 YooAsset 加载和启动范围检查。
 
 ### 4. HasPatchAsync / HasPatchByTagsAsync：没加载过清单时会自动补前置步骤
 
@@ -242,7 +244,10 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 - Editor 下用 Host/Offline PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。
 - `CreateDownloaderByLocations()` 对空数组会直接抛异常；“整包下载”应该用 `CreateDownloader()`。
 - `CreateDownloaderByLocations()` 遇到无效 location 会跳过并记 warning，不会整体失败。
-- `ClearUnusedCacheAsync()` 需要当前 Manifest 已可用，否则“未使用”没有判定基准。
+- 内置 `ClearUnusedCacheAsync()` 在调度前检查目标 Package 的实际 Manifest 是否可用；未就绪时抛 `InvalidOperationException`，不会开始清理，也不会自动加载或刷新清单。
+- 清理操作结束后，内置实现只接受 `EOperationStatus.Succeeded`；其他终态抛出带包名、状态和底层错误的 `InvalidOperationException`。原先底层 `Failed` 也可能正常返回，外部调用方现在应处理这个失败异常。
+- 已取消的 `ct` 在调度前抛 `OperationCanceledException`；操作开始后的取消只停止等待，不中止或回滚底层清理。取消后不能立即按“已经停止删除”继续操作同一缓存。
+- 当前 YooAsset 沙盒删除个别文件失败时会记录 Error，但该删除结果未必进入清理操作的失败状态。因此正常返回只证明操作报告成功；需要确认释放空间或清理范围时，仍须核对清理前后实际文件，并确认当前 Manifest 引用的 Bundle 保留。
 - `CreateWarmup*()` 同样要求目标 Package 已加载 Manifest；不要把它当作自动 Bootstrap 或自动 Manifest 加载 API。
 - 标准未加密 AssetBundle 的 WebGL 请求可使用 Unity Web Cache；加密 AssetBundle、RawBundle、ArchiveBundle 走字节内存装载，Warmup 后不应承诺仍留在 Web Cache。
 - `Shutdown()` 会 `YooAssets.Destroy()`；这是全局级清理，不能把它当成局部无害重置。
@@ -276,3 +281,19 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 ## 资源解密初始化
 
 Offline、Host 及内置回退路径按精确包裹名绑定解密器。原生 AssetBundle 自动识别 Nova 文件头并使用解密流及内存备用；WebGL、RawBundle、ArchiveBundle 使用内存解密；Manifest 独立解密且兼容普通明文清单。密钥由启动期 IResourceKeyProvider 提供，不读取尚未加载的 ConfigRuntimeSO。详见 [资源加解密](../../ResourceEncryption.md)。
+
+## 输入、重入与取消边界
+
+Initialize 保存 config 引用；再次调用会新建 CTS 而不先释放旧 CTS。Bootstrap 不消费其 ct，也不校验显式默认包一定包含在 Packages 中；ResolvePackageName 只将 null/空串替换为默认包，不 Trim 包名。必须由调用方保证配置与默认包有效。
+
+LoadManifest 与 RequestLatest 按包 SemaphoreSlim 串行，等待或初始化取消不会主动中止 YooAsset operation。Refresh 在进入 gate 前移除 loaded 标记，失败不会恢复；已标记离线恢复的包，RequestLatest 返回 null，HasPatch 返回 false，不是远端没有新版本。各包的 URL policy 首次构造后保留到 Shutdown，修改 config 不主动重建策略。原生内置回退在 finally 中不带 ct 地恢复 Host 初始化，取消后仍可能等待该步骤；恢复失败返回 false，成功后也不在该分支再次复核启动范围。
+
+白名单解析接受 `List<string>`，Trim 条目并按 Ordinal 去重，空列表是合法“未命中”；空正文、解析错误或 null 列表失败。成功物理请求还须正文非空白、JSON 有效并命中 DeviceID，才切换元数据。物理 HTTP 扩展使用请求总超时；自定义 IHttpManager 回退 DownloadTextAsync 时使用该实现的下载超时语义。HttpResponse 在 finally 归池。白名单检查的外层只有 finally，没有兜住所有异常：跳过、失败、取消或异常都会将包标记为已检查，本实例不再自动重试；真实外部取消继续传播。
+
+LoadScene 的默认 mode 为 Single，会替换现有场景；需要并存的 Content 应显式选 Additive，并管理 UnloadAsync。普通 Load/LoadAll/LoadSubs 等待 IsDone 后并未额外检查 Status，返回 handle 不保证 Asset 非 null；catch 尝试释放底层句柄与已取得 adapter。其 ct 来自调用方，未链接 Manager CTS。LoadRaw 另行检查 Succeeded 与 RawFileObject；Ensure 返回失败时仅 FilePath 为 null，Ensure 自身抛出或等待取消仍会失败并释放。LoadScene 等待同样不检查 Status，等待失败时尝试 UnloadAsync；取 adapter/Bind 发生于异步 try 外，卸载异常也可能遮盖最初异常；同步场景路径没有同步卸载兜底。
+
+下载器创建和 Tag 查询不会替代 Bootstrap/Manifest。CreateDownloaderByTags 的 null/空数组为整包，其余 Tag 不按 Warmup 的规则 Trim/去重；ByLocations 全部地址无效仍可得到空下载器，RunAsync true 不能代替目标存在校验。GetLocationsByTag 只投影 AssetInfo.Address，不额外过滤空项或重复地址。并发参数默认 10，与组件 Inspector 默认 5 不同，不会自动取组件配置。
+
+CleanupAsync 只等待运行时 UnloadUnusedAssets 操作 IsDone，不再检查 Status；它与核查失败终态的 ClearUnusedCacheAsync 不同。Shutdown 逐步 Cancel/Dispose、释放 Warmup、全局 Destroy、清缓存，没有 finally；某一步异常可能中断后续。多数 Load 不使用 Manager CTS，不能将 Shutdown 的 Cancel 表述为取消全部在飞任务。Editor shader 修复会修改共享 Material/TMP 材质引用，Shader.Find 未找到时保留原值，不能据此保证 Player 渲染。
+
+WebGL 布局探测在本实例缓存结果；有效布局未列包视作没有 Catalog，旧版探测以 HTTP 成功记存在，不认证 Catalog 内容。HTTP 失败或布局格式错误走 legacy 探测，已完成全局解析后不自动重取布局。`AssetWebPreloadRegistry.Register` 覆盖单个静态工厂，null 注销，没有自动 SubsystemReset 或锁；TryConfigure 每次调用工厂，将非 null object 注入参数，不自行验证类型或包隔离，工厂异常直接传播。平台实现负责每包独立策略与真正预下载验收。

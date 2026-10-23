@@ -44,7 +44,8 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步加载场景并返回场景句柄，取消或异常时自动调用 UnloadAsync。
+        /// 异步加载场景并返回句柄；等待阶段取消或异常时尝试 UnloadAsync，卸载异常可继续传播。
+        /// 取得适配器与 Bind 在等待 try 外；完成只检查 IsDone，不另检查底层成功状态。
         /// 调用方负责在适当时机调用 UnloadAsync 卸载场景并归还引用计数。
         /// </summary>
         /// <param name="location">场景 Asset 地址。</param>

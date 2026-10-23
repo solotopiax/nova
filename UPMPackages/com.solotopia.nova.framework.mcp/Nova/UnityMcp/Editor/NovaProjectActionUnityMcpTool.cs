@@ -39,6 +39,18 @@ namespace NovaFramework.Mcp.UnityMcp.Editor
             [ToolParameter("plan 的强类型 Action 请求对象。", Required = false)]
             public object request { get; set; }
 
+            /// <summary>登记、读取或释放同一 Plan 的传输记录；省略保持同步计划。</summary>
+            [ToolParameter("plan 的可选传输子模式：start 登记、status 读取、forget 释放终态记录；省略保持同步计划。", Required = false)]
+            public string plan_mode { get; set; }
+
+            /// <summary>登记、读取或释放同一 Verify 的传输记录；省略保持同步核验。</summary>
+            [ToolParameter("verify 的可选传输子模式：start 登记、status 读取、forget 释放终态记录；省略保持同步核验。", Required = false)]
+            public string verify_mode { get; set; }
+
+            /// <summary>将同一请求的断线重试绑定到调用方预先生成的精确 GUID。</summary>
+            [ToolParameter("plan/verify 各自传输记录的调用方 N 格式 GUID；重试复用同号同请求，forget 后不复用。", Required = false)]
+            public string request_id { get; set; }
+
             [ToolParameter("execute 的一次性计划 ID。", Required = false)]
             public string plan_id { get; set; }
 

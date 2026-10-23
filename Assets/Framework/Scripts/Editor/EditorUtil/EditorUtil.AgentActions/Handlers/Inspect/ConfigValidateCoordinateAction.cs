@@ -59,6 +59,32 @@ namespace NovaFramework.Editor
             public int errorCount;
             public int warningCount;
             public IssueView[] issues;
+            public CoordinateStateView coordinateState;
+        }
+
+        [Serializable]
+        private sealed class CoordinateStateView
+        {
+            public string currentPlatform;
+            public string currentChannel;
+            public string currentDevelopMode;
+            public string[] availableCoordinates;
+            public string[] namespaceAxes;
+            public string[] appAxes;
+            public bool namespaceReadable;
+            public string resolvedNamespace;
+            public string namespaceReadIssue;
+            public bool appConfigReadable;
+            public FieldValueView[] fields;
+        }
+
+        [Serializable]
+        private sealed class FieldValueView
+        {
+            public string path;
+            public bool hasValue;
+            public bool valueHidden;
+            public string value;
         }
 
         private sealed class State
@@ -198,8 +224,78 @@ namespace NovaFramework.Editor
                 errorCount = errors,
                 warningCount = warnings,
                 issues = issues.ToArray(),
+                coordinateState = ReadCoordinateState(master, platform, channel, mode),
             };
             return true;
+        }
+
+        /// <summary>直接读取已有序列化槽和掩码，不补结构；敏感字段只报告是否已配置。</summary>
+        private static CoordinateStateView ReadCoordinateState(
+            ConfigMasterSO master, PlatformType platform, ChannelType channel, DevelopMode mode)
+        {
+            var coordinates = new List<string>();
+            foreach (PlatformChannelEntry row in master.EditorEntries ?? new List<PlatformChannelEntry>())
+            {
+                if (row == null || row.AppConfigsByMode == null) continue;
+                foreach (DevelopModeAppConfigsEntry slot in row.AppConfigsByMode)
+                    if (slot != null)
+                        coordinates.Add($"{row.Platform}/{row.Channel}/{slot.Mode}");
+            }
+            var result = new CoordinateStateView
+            {
+                currentPlatform = master.CurrentPlatform.ToString(),
+                currentChannel = master.CurrentChannel.ToString(),
+                currentDevelopMode = master.CurrentDevelopMode.ToString(),
+                availableCoordinates = coordinates.Distinct().OrderBy(value => value, StringComparer.Ordinal).ToArray(),
+                namespaceAxes = ReadAxes(master.NamespaceMask),
+                appAxes = ReadAxes(master.AppConfigsMask),
+                fields = Array.Empty<FieldValueView>(),
+            };
+            try
+            {
+                result.resolvedNamespace = EditorUtil.Config.DimensionalResolver.ResolveNamespace(master, platform, channel, mode);
+                result.namespaceReadable = true;
+            }
+            catch
+            {
+                result.namespaceReadIssue = "Namespace 掩码或 Override 结构不可读取；未修复或回落猜值。";
+            }
+            if (master.TryGetEntry(platform, channel, out PlatformChannelEntry entry))
+            {
+                AppConfigs app = entry.AppConfigsByMode?.FirstOrDefault(slot => slot != null && slot.Mode == mode)?.Config;
+                result.appConfigReadable = app != null;
+                if (app != null)
+                    result.fields = new[]
+                    {
+                        ReadField("AppConfigs.AppID", app.AppID),
+                        ReadField("AppConfigs.AppAesKey", app.AppAesKey, true),
+                        ReadField("AppConfigs.AppAesIV", app.AppAesIV, true),
+                        ReadField("AppConfigs.CustomConfigCmdName", app.CustomConfigCmdName),
+                        ReadField("AppConfigs.CustomName", app.CustomName),
+                    };
+            }
+            return result;
+        }
+
+        /// <summary>列出勾选的维度轴；null 不是全局掩码，保留不可读取标记。</summary>
+        private static string[] ReadAxes(PanelDimensionMask mask)
+        {
+            if (mask == null) return new[] { "unavailable" };
+            var axes = new List<string>();
+            if (mask.ByPlatform) axes.Add("Platform");
+            if (mask.ByChannel) axes.Add("Channel");
+            if (mask.ByDevelopMode) axes.Add("DevelopMode");
+            return axes.ToArray();
+        }
+
+        /// <summary>只读值视图；密钥与 IV 不输出原值、长度或逐字段摘要。</summary>
+        private static FieldValueView ReadField(string path, string value, bool hideValue = false)
+        {
+            return new FieldValueView
+            {
+                path = path, hasValue = !string.IsNullOrEmpty(value),
+                valueHidden = hideValue, value = hideValue ? null : value,
+            };
         }
 
         /// <summary>
@@ -220,8 +316,8 @@ namespace NovaFramework.Editor
             }
             DevelopModeSDKEntry sdkSlot = entry.SDKConfigsByMode?.FirstOrDefault(item => item != null && item.Mode == mode);
             DevelopModeKitEntry kitSlot = entry.KitConfigsByMode?.FirstOrDefault(item => item != null && item.Mode == mode);
-            if (entry.AppConfigsByMode == null || !entry.AppConfigsByMode.Any(item => item != null && item.Mode == mode) ||
-                entry.PrivacyConfigsByMode == null || !entry.PrivacyConfigsByMode.Any(item => item != null && item.Mode == mode) ||
+            if (entry.AppConfigsByMode == null || !entry.AppConfigsByMode.Any(item => item != null && item.Mode == mode && item.Config != null) ||
+                entry.PrivacyConfigsByMode == null || !entry.PrivacyConfigsByMode.Any(item => item != null && item.Mode == mode && item.Config != null) ||
                 sdkSlot?.SDKConfigs == null || kitSlot?.KitConfigs == null)
             {
                 error = "目标坐标的 App/Privacy/SDK/Kit mode 包装项不完整；只读 Action 不会自动补齐。";

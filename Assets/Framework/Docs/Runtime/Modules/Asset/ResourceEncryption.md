@@ -97,7 +97,7 @@ RawBundle 与 ArchiveBundle 都不是 Unity AssetBundle，也不是不同加密�
 
 正常发布的 Sample 默认不启用资源加密，也不携带资源密钥；需要演示加密时，由项目组在自己的 Config 中配置并生成。npm 与 GitHub 共用的公开脱敏器只处理临时包副本或公开副仓：清空 `ResourceEncryption.Packages`、`ClientCodeOutputDirectory`、`GeneratedCodeAssetPath`，不写 `YOUR_*` 占位密钥，不回写消费项目的私有配置，也不删除框架加解密能力。
 
-公开副本中，文件起始带 `// 项目生成的资源密钥：` 且完整匹配当前生成格式的提供器及其 `.meta` 会被移除，不依赖文件名或导出目录。带 `<!-- Nova ResourceKeys -->` 标记且仅包含对应 `ResourceKeys` 类型保留声明的工具 `link.xml` 及其 `.meta` 一并清理；手写文件保留，混合源码、混合 linker 或未知生成格式会阻断公开链路。strict 还检查整个副本的非空 `KeyBase64`、资源密钥字面量及已知密钥材料残留，拒绝仍选择 Nova AES/XOR 有密钥构建方案的序列化配置，只报告路径或字段。dry-run 只报告计划，检查失败不应用清理。具体约束见[发布与公开同步规则](../../../../../../.nova/rules/RELEASE.md)。
+公开副本中，文件起始带 `// 项目生成的资源密钥：` 且完整匹配当前生成格式的提供器及其 `.meta` 会被移除，不依赖文件名或导出目录。带 `<!-- Nova ResourceKeys -->` 标记且仅包含对应 `ResourceKeys` 类型保留声明的工具 `link.xml` 及其 `.meta` 一并清理；手写文件保留，混合源码、混合 linker 或未知生成格式会阻断公开链路。strict 还检查整个副本的非空 `KeyBase64`、资源密钥字面量及已知密钥材料残留，拒绝仍选择 Nova AES/XOR 有密钥构建方案的序列化配置，只报告路径或字段。dry-run 只报告计划，检查失败不应用清理。上述是框架发布副本的处理边界；消费项目继续保留自己的私有配置和生成文件，不依赖开发仓的发布规则文件执行日常配置、生成或构建。
 
 缺少包名、编号或合法密钥时明确失败，不试其他密钥。AES 完整性认证不等于发行方数字签名；本功能未实现数字签名、远端密钥发放、反回滚或防逆向。
 
@@ -109,6 +109,8 @@ RawBundle 与 ArchiveBundle 都不是 Unity AssetBundle，也不是不同加密�
 
 ## API 与验证
 
+项目组可通过 `nova.project.config.generate-resource-keys` 独立生成指定已保存私有 Master 的源码，无需先激活该 Master 或创建 Pipify Batch。请求仅包含 `masterGuid` 与明确的 `platform/channel/developMode`；`platform` 必须对应 Unity 当前 Active BuildTarget，渠道不能为 `None`，输出目录和密钥来自保存配置。Plan 只读冻结完整配置和 meta、目标源码/link、旧工具产物迁移、必要新目录及实际 Player 编译图；Execute 单次调用现有生成器，只保存该 Master 的生成路径状态；本次编译及脚本重载后 Verify 核对完整状态、源码/link、删除结果、唯一 provider 与真实程序集。它不导出 ConfigRuntime，不切换 Master 或 Unity 平台，也不返回密钥或生成正文。空密钥且无生成历史返回 `not_applicable`；脏资产/窗口草稿、非私有输出、手写冲突、多个 provider 或计划漂移均阻断。精确旧工具 asmdef 的删除会改变程序集归属时，独立 Action 的只读计划阻断该旧格式分支，先用 ConfigWindow 顶部导出完成一次迁移，再重新计划。执行开始后的失败不会重放，使用 Receipt 只读验收；源码验收不替代实际 Bundle/Player/真机加载。
+
 - `ResourceEncryptionCodec.Encrypt/Decrypt/OpenDecryptionStream/GetOffset`：四种文件模式。
 - `NovaFramework.Runtime.ResourceManifestDecryptor`：统一客户端清单解密，支持包名构造和显式密钥提供器注入。
 - `NovaFramework.Editor.ResourceManifestAesDecryptor / ResourceManifestXorDecryptor`：对应 AES/XOR 的构建清单解密。
@@ -116,7 +118,22 @@ RawBundle 与 ArchiveBundle 都不是 Unity AssetBundle，也不是不同加密�
 - `ResourceKeyStore.Load/Validate/GetActiveKey`：Editor 构建与 CI 从激活 ConfigMaster 同源读取；旧 Save 调用明确拒绝绕过全局保存。
 - `ResourceKeyCodeGenerator.Generate/GenerateForCI/ValidateGenerated`：生成与构建一致性门禁。
 - [ResourceEncryptionTests](../../../../../Tests/Editor/ResourceEncryptionTests.cs)：四模式、AES 错密钥/缺密钥/篡改、跨文件换块、Seek/EOF/Dispose、密钥模型校验，以及清单解密的密钥来源隔离、包名、明文/null 契约、构建错误配对和候选筛选。
+- [ConfigGenerateResourceKeysActionTests](../../../../../Tests/Editor/AgentActions/ConfigGenerateResourceKeysActionTests.cs)：强类型请求、只读预演、私有输出、精确旧产物迁移、手写/唯一 provider 冲突、完整文件漂移、脱敏载荷与未激活已保存 Master 的计划边界。
 
 编辑器测试不替代 Android/iOS IL2CPP 真机的密码学兼容、加载峰值、前后台恢复及性能验证。
 
 相关入口：[ConfigWindow](../../../Editor/Windows/ConfigWindow.md)、[Pipify 构建字段](../../../Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)、[BundleBuilder](../../../Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)。
+
+## Runtime 格式与读取边界
+
+`ResourceEncryptionCodec` 只接受 Nova 格式，明文不经过该编码器；`ResourceManifestDecryptor` 才提供“没有完整 `NOVARES1` 标识则原数组返回”的兼容入口，null 仍抛异常。完整标识存在但版本、模式、包名、长度、密钥或认证不合法时严格失败，不再按普通清单回退。
+
+文件头固定部分为 42 字节，版本为 1，模式为 1～4，随后是严格 UTF-8 的包名和 keyId。标识长度上限各为 4096 字节；包名不得为空白，写入的非 Offset keyId 也不得为空白，均不自动 Trim。读取按 Ordinal 校验预期包名，拒绝负明文长度；只有 AES stream 的 chunk 字段为 65536，其余为 0。`HasMagic` 只比较八字节标识，不验证其余头部。`GetPackageName/GetMode/GetKeyId` 解析成功不代表 AES 认证通过。
+
+Offset 不使用密钥；XOR 只要求非空密钥；AES 主密钥必须恰好 32 字节。加解密不修改调用方传入的资源与密钥数组。运行时先克隆提供器返回的密钥，再派生 AES/HMAC 密钥并清零克隆；不尝试其他 keyId。`ResourceKeyRegistry.Provider` 以 Volatile 读写替换，null 可注销；不会释放旧 provider 或在 SubsystemRegistration 自动清空，provider 自身须支持并发。`ResourceKeyRegistry.GetKey` 只拒绝空密钥并返回副本，AES 长度约束在编码器校验；已创建流冻结的副本不随 provider 替换而变化。
+
+AES stream 构造时认证头部并校验精确物理长度，每次只认证、解密并缓存被读取的块，尚未读取的块尚未验证。块记录由 IV、CBC/PKCS7 密文和 HMAC 构成；认证绑定原始头部、块索引、明文长度、IV 和密文，验证通过后才解密。跨块 `Read` 不是事务：后一块失败前，先前有效块可能已复制到调用方 buffer 并推进 Position；不会返回失败块的明文。内存 `Decrypt` 对大于 `int.MaxValue` 的明文拒绝分配；AES memory 与 XOR 的 `OpenDecryptionStream` 仍会整包读取、解密，再返回内存流，不能据返回 Stream 推断内存峰值降低。
+
+两种只读流均以明文相对位置 Seek，允许越过 EOF，负位置抛 IOException，算术溢出抛异常，定位不触发预读；EOF 读取返回 0。`CanRead/CanSeek` 仅反映 wrapper 尚未释放，不重新检查底层能力。Read 先检查 buffer/范围，再检查释放状态。AES 流遇认证或 I/O 异常立即清零密钥和缓存、关闭底层流；Offset 流遇 I/O 异常关闭底层流。Write/SetLength 始终不支持。Dispose 取得锁后先标记释放再关闭输入；内存回退同时清零其明文数组。底层 Dispose 抛出时不会回滚释放标记；终结器只提供延迟兜底。
+
+`GetOffset` 仅接受包名匹配、长度精确的 Offset 文件。内存 Bundle 解密优先使用 `BundleDecryptArgs.FileData`，没有数据才读 FilePath；自动/流解密器使用 FilePath，读取缓冲建议为 64 KiB。显式注入的清单 provider 固定在该实例，客户端包名构造的实例每次读取当前 registry；显式包名 null 才表示从头部取包名，空串不会代替 null。

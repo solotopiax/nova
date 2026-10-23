@@ -83,6 +83,8 @@
 
 真正的时序、幂等、异常和句柄语义都由 `AssetManager` 决定。
 
+使用内置 Manager 时，`ClearUnusedCacheAsync()` 会在清理前检查目标包实际 Manifest；未就绪或底层操作报告失败会抛异常，组件门面原样透传。已经取消的令牌不会启动清理；清理开始后的取消只停止等待，不代表磁盘删除已停止。正常返回仍需结合实际文件前后结果确认清理范围和释放空间。
+
 ## 高价值配置面
 
 ### 1. 运行模式
@@ -174,3 +176,9 @@ WebGL 构建可在 Pipify 中选择 `None`、`ClearAndCopyByTags` 或 `ClearAndC
 - [IAssetDownloader.md](AssetManager/Interfaces/IAssetDownloader.md)
 - [IAssetWarmupGroup.md](AssetManager/Interfaces/IAssetWarmupGroup.md)
 - [WebGLAssetStrategies.md](WebGLAssetStrategies.md)
+
+## 配置引用与代理行为
+
+Awake 通过配置的精确类型名创建 IAssetManager；失败会抛异常。Start 一次构造 AssetManagerConfig，Packages 与 LaunchHotfixTags 传原 List 引用，Manager 也保存 config 引用，不是深拷贝快照。运行时修改组件标量字段不会重新注入，而修改这些共享 List 可能影响后续读取。访问器 RetryDownloadCount/FallbackRoundCount 分别做至少 0/1 的裁剪，但 Start 直接传原字段，实际约束以消费分支为准。
+
+组件的 Load、下载器、Warmup、Manifest、清理等 API 原样转发，没有额外 null、状态或范围校验，Manager 不可用时可空引用；异常、取消和 handle 所有权按内置实现处理。`QuitOnFailedOrCancel` 在 UNITY_WEBGL 编译分支固定 false；其他读取字段。`EnableUWRTracks` 只控制记录，`EnableHotfix` 不会在 getter 中改写运行模式。所有源码默认值均不代表当前 Prefab 已保存值。

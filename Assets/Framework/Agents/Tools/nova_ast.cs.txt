@@ -1,0 +1,293 @@
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+// C# 编译器语法树索引工具；只读取声明及调用文本，不执行目标代码。
+static class NovaAst
+{
+    /// <summary>压缩声明中的空白，保持身份和展示签名稳定。</summary>
+    static string Compact(string text) => Regex.Replace(text, @"\s+", " ").Trim();
+    /// <summary>计算原始正文的 SHA256，不执行目标代码。</summary>
+    static string Hash(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
+    /// <summary>取得属性、索引器或事件的名称，保留显式接口归属以避免身份碰撞。</summary>
+    static string PropertyName(BasePropertyDeclarationSyntax n) => n switch {
+        PropertyDeclarationSyntax p => (p.ExplicitInterfaceSpecifier?.ToString() ?? "") + p.Identifier.Text,
+        IndexerDeclarationSyntax i => (i.ExplicitInterfaceSpecifier?.ToString() ?? "") + "this" + i.ParameterList.ToString(),
+        EventDeclarationSyntax e => (e.ExplicitInterfaceSpecifier?.ToString() ?? "") + e.Identifier.Text,
+        _ => "accessor"};
+    /// <summary>取得声明名称，保留泛型及显式接口归属。</summary>
+    static string Name(SyntaxNode n) => n switch {
+        BaseTypeDeclarationSyntax t => t.Identifier.Text + (t is TypeDeclarationSyntax td ? td.TypeParameterList?.ToString() : ""),
+        BaseNamespaceDeclarationSyntax ns => ns.Name.ToString(),
+        MethodDeclarationSyntax m => (m.ExplicitInterfaceSpecifier?.ToString() ?? "") + m.Identifier.Text + m.TypeParameterList?.ToString(),
+        ConstructorDeclarationSyntax c => c.Identifier.Text,
+        DestructorDeclarationSyntax d => "~" + d.Identifier.Text,
+        OperatorDeclarationSyntax o => "operator " + o.OperatorToken.Text,
+        ConversionOperatorDeclarationSyntax o => o.ImplicitOrExplicitKeyword.Text + " operator " + o.Type.ToString(),
+        LocalFunctionStatementSyntax f => f.Identifier.Text + f.TypeParameterList?.ToString(),
+        AccessorDeclarationSyntax a => (a.Parent?.Parent is BasePropertyDeclarationSyntax p ? PropertyName(p) : "accessor") + "." + a.Keyword.Text,
+        PropertyDeclarationSyntax p => PropertyName(p) + ".get",
+        IndexerDeclarationSyntax i => PropertyName(i) + ".get",
+        _ => "unknown"};
+    /// <summary>区分函数、局部函数和属性访问器。</summary>
+    static string Kind(SyntaxNode n) => n switch {
+        MethodDeclarationSyntax => "method_declaration", ConstructorDeclarationSyntax => "constructor_declaration",
+        DestructorDeclarationSyntax => "destructor_declaration", OperatorDeclarationSyntax => "operator_declaration",
+        ConversionOperatorDeclarationSyntax => "conversion_operator_declaration", AccessorDeclarationSyntax => "accessor_declaration",
+        LocalFunctionStatementSyntax => "local_function_statement", _ => "expression_accessor"};
+    /// <summary>取得显式函数参数；属性索引参数由调用方补齐。</summary>
+    static ParameterListSyntax? Parameters(SyntaxNode n) => n switch {
+        BaseMethodDeclarationSyntax m => m.ParameterList,
+        LocalFunctionStatementSyntax f => f.ParameterList, _ => null};
+    /// <summary>读取声明修饰符，访问器未单独指定时使用父声明。</summary>
+    static SyntaxTokenList Modifiers(SyntaxNode n) => n switch {
+        BaseMethodDeclarationSyntax m => m.Modifiers, LocalFunctionStatementSyntax f => f.Modifiers,
+        AccessorDeclarationSyntax a => a.Modifiers.Count > 0 ? a.Modifiers : (a.Parent?.Parent is BasePropertyDeclarationSyntax p ? p.Modifiers : default),
+        BasePropertyDeclarationSyntax p => p.Modifiers, _ => default};
+    /// <summary>取得函数体或表达式体，不把声明误当作执行内容。</summary>
+    static SyntaxNode? Body(SyntaxNode n) => n switch {
+        BaseMethodDeclarationSyntax m => (SyntaxNode?)m.Body ?? m.ExpressionBody,
+        LocalFunctionStatementSyntax f => (SyntaxNode?)f.Body ?? f.ExpressionBody,
+        AccessorDeclarationSyntax a => (SyntaxNode?)a.Body ?? a.ExpressionBody,
+        PropertyDeclarationSyntax p => p.ExpressionBody, IndexerDeclarationSyntax i => i.ExpressionBody, _ => null};
+    /// <summary>取得返回声明，setter、init 和事件写访问器返回 void。</summary>
+    static string Returns(SyntaxNode n) => n switch {
+        MethodDeclarationSyntax m => m.ReturnType.ToString(), OperatorDeclarationSyntax o => o.ReturnType.ToString(),
+        ConversionOperatorDeclarationSyntax o => o.Type.ToString(), LocalFunctionStatementSyntax f => f.ReturnType.ToString(),
+        PropertyDeclarationSyntax p => p.Type.ToString(), IndexerDeclarationSyntax i => i.Type.ToString(),
+        AccessorDeclarationSyntax a => a.Keyword.Text is "set" or "init" or "add" or "remove" ? "void" : (a.Parent?.Parent is BasePropertyDeclarationSyntax p ? p.Type.ToString() : ""),
+        ConstructorDeclarationSyntax => "instance", _ => "void"};
+
+    /// <summary>枚举语法树中的条件指令，包含非激活分支的指令。</summary>
+    static IEnumerable<DirectiveTriviaSyntax> Directives(SyntaxTree tree) => tree.GetRoot()
+        .DescendantTrivia(descendIntoTrivia: true).Select(t => t.GetStructure()).OfType<DirectiveTriviaSyntax>();
+
+    /// <summary>按三值逻辑计算条件；-1 表示尚有未赋值符号。</summary>
+    static int Evaluate(ExpressionSyntax expression, IReadOnlyDictionary<string, bool> values)
+    {
+        if (expression is ParenthesizedExpressionSyntax parent) return Evaluate(parent.Expression, values);
+        if (expression is IdentifierNameSyntax name) return values.TryGetValue(name.Identifier.ValueText, out bool value) ? (value ? 1 : 0) : -1;
+        if (expression.IsKind(SyntaxKind.TrueLiteralExpression)) return 1;
+        if (expression.IsKind(SyntaxKind.FalseLiteralExpression)) return 0;
+        if (expression is PrefixUnaryExpressionSyntax unary && unary.IsKind(SyntaxKind.LogicalNotExpression))
+        {
+            int inner = Evaluate(unary.Operand, values);
+            return inner < 0 ? -1 : 1 - inner;
+        }
+        if (expression is BinaryExpressionSyntax binary)
+        {
+            int left = Evaluate(binary.Left, values), right = Evaluate(binary.Right, values);
+            if (binary.IsKind(SyntaxKind.LogicalAndExpression)) return left == 0 || right == 0 ? 0 : left == 1 && right == 1 ? 1 : -1;
+            if (binary.IsKind(SyntaxKind.LogicalOrExpression)) return left == 1 || right == 1 ? 1 : left == 0 && right == 0 ? 0 : -1;
+            if (left < 0 || right < 0) return -1;
+            if (binary.IsKind(SyntaxKind.EqualsExpression)) return left == right ? 1 : 0;
+            if (binary.IsKind(SyntaxKind.NotEqualsExpression)) return left != right ? 1 : 0;
+        }
+        throw new InvalidOperationException("无法求解条件语法：" + expression);
+    }
+
+    /// <summary>在共享预算内寻找使分支生效的符号集；返回 1/0/-1 分别代表可达、不可达、未完成。</summary>
+    static int SolveGuard(ExpressionSyntax expression, ref int budget, out string[] symbols)
+    {
+        string[] names = expression.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+            .Select(n => n.Identifier.ValueText).Distinct().OrderBy(n => n).ToArray();
+        var values = new Dictionary<string, bool>();
+        string[]? solution = null;
+        int remaining = budget;
+        /// <summary>按部分赋值剪枝搜索；预算耗尽时不得宣称分支已覆盖。</summary>
+        int Search(int index)
+        {
+            if (--remaining < 0) return -1;
+            int value = Evaluate(expression, values);
+            if (value == 0) return 0;
+            if (value == 1)
+            {
+                solution = values.Where(pair => pair.Value).Select(pair => pair.Key).ToArray();
+                return 1;
+            }
+            if (index >= names.Length) return 0;
+            string name = names[index];
+            values[name] = false;
+            int result = Search(index + 1);
+            if (result != 0) return result;
+            values[name] = true;
+            result = Search(index + 1);
+            values.Remove(name);
+            return result;
+        }
+        int state = Search(0);
+        budget = remaining;
+        symbols = solution ?? [];
+        return state;
+    }
+
+    /// <summary>还原每个 if/elif/else 分支的完整嵌套 guard；分支位置用于核验真实覆盖。</summary>
+    static List<(int Position, int Line, ExpressionSyntax Guard)> BranchGuards(SyntaxTree tree)
+    {
+        var result = new List<(int, int, ExpressionSyntax)>();
+        var stack = new Stack<(string Parent, string Previous)>();
+        string active = "true";
+        foreach (var directive in Directives(tree))
+        {
+            if (directive is IfDirectiveTriviaSyntax first)
+            {
+                stack.Push((active, first.Condition.ToString()));
+                active = "(" + active + ") && (" + first.Condition + ")";
+            }
+            else if (directive is ElifDirectiveTriviaSyntax next && stack.TryPop(out var elifState))
+            {
+                active = "(" + elifState.Parent + ") && !(" + elifState.Previous + ") && (" + next.Condition + ")";
+                stack.Push((elifState.Parent, "(" + elifState.Previous + ") || (" + next.Condition + ")"));
+            }
+            else if (directive is ElseDirectiveTriviaSyntax && stack.TryPop(out var elseState))
+            {
+                active = "(" + elseState.Parent + ") && !(" + elseState.Previous + ")";
+                stack.Push(elseState);
+            }
+            else if (directive is EndIfDirectiveTriviaSyntax && stack.TryPop(out var endState))
+            {
+                active = endState.Parent;
+                continue;
+            }
+            else continue;
+            result.Add((directive.SpanStart, tree.GetLineSpan(directive.Span).StartLinePosition.Line + 1, SyntaxFactory.ParseExpression(active)));
+        }
+        return result;
+    }
+
+    /// <summary>取得本次配置实际激活的分支位置，不以求解器的预测替代 Roslyn 的条件状态。</summary>
+    static IEnumerable<int> TakenBranches(SyntaxTree tree) => Directives(tree).Where(d => d switch {
+        IfDirectiveTriviaSyntax first => first.BranchTaken,
+        ElifDirectiveTriviaSyntax next => next.BranchTaken,
+        ElseDirectiveTriviaSyntax fallback => fallback.BranchTaken,
+        _ => false }).Select(d => d.SpanStart);
+
+    /// <summary>选择全分支树或逐配置语法树；未证明覆盖或解析失败时记录明确问题。</summary>
+    static List<SyntaxTree> ParseVariants(string path, string original, List<object> issues)
+    {
+        string allBranches = Regex.Replace(original, @"(?m)^[ \t]*#(?:if|elif|else|endif|define|undef|region|endregion|pragma|line|nullable|warning|error)\b[^\r\n]*", m => new string(' ',m.Length));
+        var merged = CSharpSyntaxTree.ParseText(allBranches, new CSharpParseOptions(LanguageVersion.Preview));
+        var baseline = CSharpSyntaxTree.ParseText(original, new CSharpParseOptions(LanguageVersion.Preview));
+        int[] branchPositions = Directives(baseline).Where(d => d is IfDirectiveTriviaSyntax or ElifDirectiveTriviaSyntax or ElseDirectiveTriviaSyntax)
+            .Select(d => d.SpanStart).ToArray();
+        bool conditionalDeclaration = merged.GetRoot().DescendantNodes().Any(n =>
+            n is BaseMethodDeclarationSyntax or LocalFunctionStatementSyntax or BasePropertyDeclarationSyntax or FieldDeclarationSyntax &&
+            branchPositions.Any(position => position >= n.SpanStart && position < (Body(n)?.SpanStart ?? (n is BasePropertyDeclarationSyntax p ? p.AccessorList?.SpanStart : null) ?? n.Span.End)));
+        if (!conditionalDeclaration && !merged.GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error)) return [merged];
+        var guards = BranchGuards(baseline);
+        string[] names = guards.SelectMany(g => g.Guard.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
+            .Select(n => n.Identifier.ValueText).Distinct().OrderBy(n => n).ToArray();
+        var configurations = new List<string[]>();
+        var reachable = new HashSet<int>();
+        if (names.Length <= 10)
+        {
+            for (int mask = 0; mask < (1 << names.Length); mask++)
+                configurations.Add(names.Where((name, bit) => (mask & (1 << bit)) != 0).ToArray());
+        }
+        else
+        {
+            if (conditionalDeclaration)
+                issues.Add(new { source = path, line = 1, message = "声明头包含大规模条件组合；逐 guard 覆盖不等于全部参数/返回/字段契约组合已穷举" });
+            if (Directives(baseline).Any(d => d is DefineDirectiveTriviaSyntax or UndefDirectiveTriviaSyntax))
+                issues.Add(new { source = path, line = 1, message = "大规模条件包含 define/undef；外部 guard 求解不能证明全部本地符号状态已覆盖" });
+            int budget = 100000;
+            foreach (var guard in guards)
+            {
+                try
+                {
+                    int state = SolveGuard(guard.Guard, ref budget, out string[] symbols);
+                    if (state > 0) { configurations.Add(symbols); reachable.Add(guard.Position); }
+                    else if (state < 0) issues.Add(new { source = path, line = guard.Line, message = "条件求解预算耗尽；分支覆盖尚未证明：" + guard.Guard });
+                }
+                catch (InvalidOperationException error)
+                {
+                    issues.Add(new { source = path, line = guard.Line, message = error.Message });
+                }
+            }
+        }
+        var trees = new List<SyntaxTree>();
+        var covered = new HashSet<int>();
+        var seenConfigurations = new HashSet<string>();
+        var seenErrors = new HashSet<string>();
+        foreach (string[] symbols in configurations)
+        {
+            if (!seenConfigurations.Add(string.Join("\n", symbols.OrderBy(s => s)))) continue;
+            var tree = CSharpSyntaxTree.ParseText(original, new CSharpParseOptions(LanguageVersion.Preview, preprocessorSymbols: symbols));
+            var errors = tree.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+            if (errors.Length == 0) { trees.Add(tree); covered.UnionWith(TakenBranches(tree)); }
+            else foreach (var diagnostic in errors)
+            {
+                if (!seenErrors.Add(diagnostic.Location.SourceSpan + ":" + diagnostic.Id)) continue;
+                issues.Add(new { source = path, line = diagnostic.Location.GetLineSpan().StartLinePosition.Line + 1, message = diagnostic.GetMessage() });
+            }
+        }
+        foreach (var guard in guards.Where(g => reachable.Contains(g.Position) && !covered.Contains(g.Position)))
+            issues.Add(new { source = path, line = guard.Line, message = "可达条件分支未获得有效语法树：" + guard.Guard });
+        return trees;
+    }
+
+    /// <summary>读取源码列表并输出结构索引；不执行源码，解析和覆盖问题独立报告。</summary>
+    public static int Main(string[] args)
+    {
+        var paths = JsonSerializer.Deserialize<string[]>(Console.In.ReadToEnd())!;
+        var functions = new List<object>(); var fields = new List<object>(); var issues = new List<object>();
+        foreach (string path in paths)
+        {
+            string original = File.ReadAllText(path);
+            var trees = ParseVariants(path, original, issues);
+            var seenFunctions=new HashSet<string>(); var seenFields=new HashSet<string>();
+            foreach(var currentTree in trees)
+            {
+            var root = currentTree.GetRoot();
+            foreach (var n in root.DescendantNodes().Where(n => n is BaseMethodDeclarationSyntax or LocalFunctionStatementSyntax or AccessorDeclarationSyntax || n is PropertyDeclarationSyntax {ExpressionBody:not null} || n is IndexerDeclarationSyntax {ExpressionBody:not null}))
+            {
+                var ancestors = n.Ancestors().Reverse().ToArray();
+                string ns = string.Join(".",ancestors.OfType<BaseNamespaceDeclarationSyntax>().Select(x=>x.Name.ToString()));
+                string type = string.Join(".",ancestors.OfType<BaseTypeDeclarationSyntax>().Select(Name));
+                string owners = string.Join(".",ancestors.Where(x=>x is BaseMethodDeclarationSyntax or LocalFunctionStatementSyntax).Select(Name));
+                string name = Name(n); var ps=Parameters(n);
+                var parentProperty=n is AccessorDeclarationSyntax ? n.Parent?.Parent as BasePropertyDeclarationSyntax : n as BasePropertyDeclarationSyntax;
+                var declaredParameters=ps?.Parameters.ToArray() ?? (parentProperty is IndexerDeclarationSyntax indexer ? indexer.ParameterList.Parameters.ToArray() : Array.Empty<ParameterSyntax>());
+                var parameters = declaredParameters.Select(p=>new {name=p.Identifier.Text,type=p.Type?.ToString() ?? "",@default=p.Default?.Value.ToString(),modifiers=p.Modifiers.Select(x=>x.Text).ToArray()}).ToList();
+                if(n is AccessorDeclarationSyntax setter && setter.Keyword.Text is "set" or "init" or "add" or "remove")
+                    parameters.Add(new {name="value",type=parentProperty?.Type.ToString() ?? "",@default=(string?)null,modifiers=new[]{"implicit"}});
+                string signatureTypes=string.Join(",",ps?.Parameters.Select(p=>Compact(string.Join(" ",p.Modifiers.Select(x=>x.Text).Append(p.Type?.ToString() ?? "")))) ?? []);
+                string qualified=string.Join(".",new[]{ns,type,owners,name}.Where(x=>x.Length>0));
+                var span=n.Span; var body=Body(n); string actual=original.Substring(span.Start,span.Length);
+                string signature=Compact(original.Substring(span.Start,(body?.SpanStart ?? span.End)-span.Start).TrimEnd(';'));
+                string[] mods=Modifiers(n).Select(x=>x.Text).ToArray();
+                var attributes=n.ChildNodes().OfType<AttributeListSyntax>().Select(x=>x.ToString()).Concat(parentProperty?.AttributeLists.Select(x=>x.ToString()) ?? []).Distinct().ToArray();
+                if(n is AccessorDeclarationSyntax && parentProperty is not null)
+                    signature=Compact(parentProperty.Modifiers.ToString()+" "+parentProperty.Type.ToString()+" "+PropertyName(parentProperty)+" "+signature);
+                string variantHash=Hash(qualified+"\n"+Returns(n)+"\n"+JsonSerializer.Serialize(parameters)+"\n"+string.Join(" ",n.DescendantTokens().Select(token=>token.Text))+"\n"+string.Join("\n",attributes));
+                if(!seenFunctions.Add(span.Start+":"+span.End+":"+variantHash))continue;
+                var lineSpan=currentTree.GetLineSpan(span);
+                functions.Add(new {id=path+"#"+qualified+"("+signatureTypes+")",source=path,line=lineSpan.StartLinePosition.Line+1,endLine=lineSpan.EndLinePosition.Line+1,
+                    kind=Kind(n),hasBody=body is not null,@namespace=ns,type,name,signature,parameters,returns=Returns(n),
+                    visibility=mods.FirstOrDefault(x=>x is "public" or "private" or "internal" or "protected") ?? "implicit",attributes,
+                    sourceHash=Hash(actual),sourceFileHash=Hash(original),variantHash,xml=(parentProperty?.GetLeadingTrivia().ToFullString() ?? "")+n.GetLeadingTrivia().ToFullString().Trim(),
+                    calls=(body?.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>().Select(x=>x.Expression.ToString()).Distinct().OrderBy(x=>x).ToArray()) ?? [],
+                    throws=(body?.DescendantNodesAndSelf().Where(x=>x is ThrowStatementSyntax or ThrowExpressionSyntax).Select(x=>Compact(x.ToString())).Distinct().OrderBy(x=>x).ToArray()) ?? [],
+                    startChar=span.Start,endChar=span.End});
+            }
+            foreach(var n in root.DescendantNodes().OfType<FieldDeclarationSyntax>())
+            {
+                string owner=string.Join(".",n.Ancestors().Reverse().OfType<BaseTypeDeclarationSyntax>().Select(Name));
+                string[] attrs=n.AttributeLists.Select(x=>x.ToString()).ToArray();
+                foreach(var v in n.Declaration.Variables)
+                {
+                    if(!seenFields.Add(n.SpanStart+":"+owner+":"+v.Identifier.Text+":"+n.Declaration.Type+":"+v.Initializer?.Value+":"+string.Join("\n",attrs)))continue;
+                    fields.Add(new {source=path,line=currentTree.GetLineSpan(n.Span).StartLinePosition.Line+1,owner,name=v.Identifier.Text,type=n.Declaration.Type.ToString(),
+                        initializer=v.Initializer?.Value.ToString(),attributes=attrs,serialized=attrs.Any(x=>Regex.IsMatch(x,@"\bSerializeField\b")),evidence="source-declaration; effective asset value unknown"});
+                }
+            }
+            }
+        }
+        Console.Write(JsonSerializer.Serialize(new {functions,fields,parseIssues=issues}));
+        return 0;
+    }
+}

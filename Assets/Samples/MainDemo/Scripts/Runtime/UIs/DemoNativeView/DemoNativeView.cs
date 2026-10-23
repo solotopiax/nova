@@ -36,6 +36,9 @@ namespace NovaFramework.Samples.Runtime
 
         private CancellationTokenSource m_Cts;
 
+        /// <summary>打开身份使旧系统请求的迟到结果无法回写重开的页面。</summary>
+        private int m_ViewGeneration;
+
         /// <summary>
         /// 注册七个显式操作按钮，并就近显示对应公开 API。
         /// </summary>
@@ -108,6 +111,7 @@ namespace NovaFramework.Samples.Runtime
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
+            m_ViewGeneration++;
             ResetCancellationSource();
             SetStatusText("未查询");
             SetInAppReviewStatusText("未请求");
@@ -121,10 +125,22 @@ namespace NovaFramework.Samples.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
-            m_Cts?.Cancel();
-            m_Cts?.Dispose();
-            m_Cts = null;
-            base.OnClose(isShutdown, userData);
+            m_ViewGeneration++;
+            try
+            {
+                CancelRequests();
+            }
+            finally
+            {
+                base.OnClose(isShutdown, userData);
+            }
+        }
+
+        /// <summary>销毁只结束本页等待，不撤回已交给系统的请求。</summary>
+        private void OnDestroy()
+        {
+            m_ViewGeneration++;
+            CancelRequests();
         }
 
         private void OnQueryButtonClick()
@@ -177,11 +193,13 @@ namespace NovaFramework.Samples.Runtime
             {
                 return;
             }
+            int generation = m_ViewGeneration;
 
             try
             {
                 NotificationPermissionStatus status =
                     await Nova.Native.GetNotificationPermissionStatusAsync(token);
+                if (!IsCurrentView(token, generation)) return;
                 SetStatusText(status.ToString());
                 AppendFeedback(
                     "Nova.Native.GetNotificationPermissionStatusAsync() -> status=" + status,
@@ -193,7 +211,8 @@ namespace NovaFramework.Samples.Runtime
             }
             catch (Exception exception)
             {
-                AppendException("Nova.Native.GetNotificationPermissionStatusAsync()", exception);
+                if (IsCurrentView(token, generation))
+                    AppendException("Nova.Native.GetNotificationPermissionStatusAsync()", exception);
             }
         }
 
@@ -230,11 +249,13 @@ namespace NovaFramework.Samples.Runtime
             {
                 return;
             }
+            int generation = m_ViewGeneration;
 
             try
             {
                 NotificationPermissionResult result =
                     await Nova.Native.RequestNotificationPermissionAsync(options, token);
+                if (!IsCurrentView(token, generation)) return;
                 SetStatusText(result.Status.ToString());
 
                 FeedbackLevel level = result.IsOperationSuccessful
@@ -255,9 +276,10 @@ namespace NovaFramework.Samples.Runtime
             }
             catch (Exception exception)
             {
-                AppendException(
-                    "Nova.Native.RequestNotificationPermissionAsync(" + optionsText + ")",
-                    exception);
+                if (IsCurrentView(token, generation))
+                    AppendException(
+                        "Nova.Native.RequestNotificationPermissionAsync(" + optionsText + ")",
+                        exception);
             }
         }
 
@@ -266,14 +288,16 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private async UniTaskVoid OpenAppSettingsAsync()
         {
-            if (!TryGetNative(out _))
+            if (!TryGetNative(out CancellationToken token))
             {
                 return;
             }
+            int generation = m_ViewGeneration;
 
             try
             {
                 bool opened = await Nova.Native.OpenAppSettingsAsync();
+                if (!IsCurrentView(token, generation)) return;
                 AppendFeedback(
                     "Nova.Native.OpenAppSettingsAsync() -> opened=" + opened +
                     "（仅表示已发起当前应用设置根页跳转，不代表权限已修改）",
@@ -281,7 +305,8 @@ namespace NovaFramework.Samples.Runtime
             }
             catch (Exception exception)
             {
-                AppendException("Nova.Native.OpenAppSettingsAsync()", exception);
+                if (IsCurrentView(token, generation))
+                    AppendException("Nova.Native.OpenAppSettingsAsync()", exception);
             }
         }
 
@@ -290,14 +315,16 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private async UniTaskVoid OpenNotificationSettingsAsync()
         {
-            if (!TryGetNative(out _))
+            if (!TryGetNative(out CancellationToken token))
             {
                 return;
             }
+            int generation = m_ViewGeneration;
 
             try
             {
                 bool opened = await Nova.Native.OpenNotificationSettingsAsync();
+                if (!IsCurrentView(token, generation)) return;
                 AppendFeedback(
                     "Nova.Native.OpenNotificationSettingsAsync() -> opened=" + opened +
                     "（true 仅表示已发起精准通知设置跳转；false 表示不支持或启动失败，且不会回退到应用设置）",
@@ -305,7 +332,8 @@ namespace NovaFramework.Samples.Runtime
             }
             catch (Exception exception)
             {
-                AppendException("Nova.Native.OpenNotificationSettingsAsync()", exception);
+                if (IsCurrentView(token, generation))
+                    AppendException("Nova.Native.OpenNotificationSettingsAsync()", exception);
             }
         }
 
@@ -319,10 +347,12 @@ namespace NovaFramework.Samples.Runtime
             {
                 return;
             }
+            int generation = m_ViewGeneration;
 
             try
             {
                 InAppReviewRequestResult result = await Nova.Native.RequestInAppReviewAsync(token);
+                if (!IsCurrentView(token, generation)) return;
                 SetInAppReviewStatusText(result.Status.ToString());
                 AppendFeedback(
                     "Nova.Native.RequestInAppReviewAsync() [" + platformLabel + "]" +
@@ -338,13 +368,16 @@ namespace NovaFramework.Samples.Runtime
             }
             catch (Exception exception)
             {
-                AppendException("Nova.Native.RequestInAppReviewAsync()", exception);
+                if (IsCurrentView(token, generation))
+                    AppendException("Nova.Native.RequestInAppReviewAsync()", exception);
             }
         }
 
         private bool TryGetNative(out CancellationToken token)
         {
-            token = m_Cts?.Token ?? default;
+            token = default;
+            if (!Available || m_Cts == null) return false;
+            token = m_Cts.Token;
             if (Nova.Native != null)
             {
                 return true;
@@ -356,9 +389,31 @@ namespace NovaFramework.Samples.Runtime
 
         private void ResetCancellationSource()
         {
-            m_Cts?.Cancel();
-            m_Cts?.Dispose();
+            CancelRequests();
             m_Cts = new CancellationTokenSource();
+        }
+
+        /// <summary>先断开本页引用；取消回调异常时也必须释放令牌源。</summary>
+        private void CancelRequests()
+        {
+            CancellationTokenSource cancellation = m_Cts;
+            m_Cts = null;
+            if (cancellation == null) return;
+            try
+            {
+                cancellation.Cancel();
+            }
+            finally
+            {
+                cancellation.Dispose();
+            }
+        }
+
+        /// <summary>设置跳转不可取消，但其反馈同样受本次打开身份约束。</summary>
+        private bool IsCurrentView(CancellationToken token, int generation)
+        {
+            return this != null && Available && m_Cts != null &&
+                   !token.IsCancellationRequested && generation == m_ViewGeneration;
         }
 
         private void SetStatusText(string status)

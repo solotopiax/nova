@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -19,14 +19,19 @@
       "when": "Windows 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 包与随包 Docs 时"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.ProjectGuard.ValidateQuick / ValidatePlay",
-      "when": "需要当前 Scene 或 Play 门禁的只读结构与配置报告"
+      "kind": "workspace-inspection",
+      "entry": "consumer project source, configuration, Console, Editor.log, existing WebGL index/loader/layout plus Console/Network/HAR/response logs",
+      "when": "定位编译、初始化与启动链的最早直接失败证据"
     },
     {
-      "kind": "workspace-inspection",
-      "entry": "consumer project source, configuration, Console and Editor.log",
-      "when": "定位编译、初始化与启动链的最早直接失败证据"
+      "kind": "unity-editor-automation",
+      "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
+      "when": "Unity 已连接且允许读取当前场景层级、组件、绑定和既有Console时；不保存、不进入Play，不以任意代码补入口"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "current host read-only existing browser tab Console, Network, page and response inspection",
+      "when": "仅WebGL已打开目标页且当前宿主Browser Schema实际提供只读检查时；冻结URL/产物/时间窗，先loader→Wasm/data→Unity实例→Nova定位。不新建或刷新页、不自动serve/cache清理/浏览器状态写入，缺能力保partial。"
     }
   ],
   "inputs": [
@@ -40,7 +45,8 @@
     },
     {
       "name": "reproductionEntry",
-      "required": true
+      "required": true,
+      "constraint": "Editor分支为当前已确认Scene/入口；WebGL分支为已有tab/URL及本次导出index/loader/layout身份、既有Console/Network/HAR/响应证据，不在诊断默认新建浏览器或服务。"
     },
     {
       "name": "targetPlatformChannelAndDevelopMode",
@@ -49,6 +55,11 @@
     {
       "name": "unityEvidenceAllowed",
       "required": false
+    },
+    {
+      "name": "existingWebglBrowserTargetAndEvidenceWindow",
+      "required": false,
+      "constraint": "仅WebGL浏览器分支必需：已有tab/URL、失败时间窗、本次build身份与当前只读browser能力；目标或构建关联未知不得归因Nova。重新访问/复现或网络请求不是默认只读步骤。"
     }
   ],
   "effects": [
@@ -60,7 +71,8 @@
       "all project source, configuration and generated output",
       "Scene, Prefab and Build Settings",
       "Packages and Library/PackageCache",
-      "Library, cache and build output deletion"
+      "Library, cache and build output deletion",
+      "creating or reloading browser tabs, automatic local WebGL server/start/build/deploy, browser cache/storage mutation during read-only diagnosis"
     ]
   },
   "locks": [],
@@ -83,7 +95,8 @@
   "evidence": [
     "实际解析的 Framework 与目标运行上下文",
     "可复现入口和最早失败阶段",
-    "文件、ProjectGuard 规则 ID 或日志位置",
-    "已验证事实、推断与未验证项的分级"
+    "文件、场景对象路径或日志位置",
+    "已验证事实、推断与未验证项的分级",
+    "WebGL current page/build identity and earliest loader→Wasm/data→Unity→Nova failure; existing Console/Network/response MIME/encoding/thread-isolation evidence and missing host browser capability separate"
   ]
 }

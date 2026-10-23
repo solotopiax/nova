@@ -28,3 +28,5 @@
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
 - `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+
+Editor 域重载时，已存在的宏列表若与补齐结果完全相同则不再回写 PlayerSettings；缺失宏仍按原顺序补齐并写入。

@@ -1,23 +1,25 @@
 {
   "name": "com.solotopia.nova.framework",
-  "version": "0.6.39",
+  "version": "0.7.1",
   "license": "MIT",
   "displayName": "Nova Framework",
   "description": "基于 Unity 引擎深度定制的游戏客户端通用解决方案",
-  "unity": "6000.4",
+  "unity": "6000.6",
+  "unityRelease": "7f1",
   "dependencies": {
     "com.unity.textmeshpro": "3.0.9",
     "com.unity.nuget.newtonsoft-json": "3.2.2",
     "com.unity.inputsystem": "1.19.0",
+    "com.unity.scriptablebuildpipeline": "3.0.3",
     "com.solotopia.hybridclr": "10.1.0",
     "com.solotopia.unitask": "10.0.6",
     "com.solotopia.sqlcipher4unity3d": "10.0.5",
     "com.solotopia.simplediskutils": "1.0.7",
     "com.solotopia.excelio": "1.0.6",
-    "com.solotopia.nicevibrations": "10.0.5",
+    "com.solotopia.nicevibrations": "10.0.6",
     "com.solotopia.luban": "10.1.0",
     "com.solotopia.yooasset": "1.2.0",
-    "com.solotopia.nova.framework.mcp": "0.1.4"
+    "com.solotopia.nova.framework.mcp": "0.1.5"
   },
   "samples": [
     {

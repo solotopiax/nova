@@ -125,7 +125,8 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 在 YooAsset 包初始化前执行一次可选启动白名单检查。
-        /// 任意配置、缓存、网络或协议异常均按未命中降级，不阻断现有热更新链路。
+        /// 已处理的配置、缓存、网络和协议失败按未命中继续；外部取消及未捕获异常可传播。
+        /// 无论跳过、失败或取消，finally 都将本包标记为已检查，本实例不自动重试。
         /// </summary>
         private async UniTask CheckStartupWhitelistAsync(string package, CancellationToken ct)
         {

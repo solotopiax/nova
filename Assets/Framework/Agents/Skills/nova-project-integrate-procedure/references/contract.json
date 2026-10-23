@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -16,7 +16,17 @@
     {
       "kind": "workspace-edit",
       "entry": "confirmed business Procedure source, existing business call site and local Play probe",
-      "when": "只修改已冻结的业务 Procedure、必要的既有调用点与探针，并绑定 Procedure CancellationToken"
+      "when": "只编辑冻结的项目业务Procedure、已确认入口或授权新调用胶水与探针，绑定Procedure CancellationToken，复用既有注册/加载Owner"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed project-owned game business service, control entry and existing Procedure/FSM flow",
+      "when": "仅在游戏控制业务分支中实现已确认Service输入/结果/错误、局/账号/操作身份、重复触发、状态转换与退出；复用已有框架流程与匹配Operation，不新建Framework Manager或注册器、不臆造Nova.Game"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "ProcedureBase.CancellationToken + FsmState<IProcedureManager>.ChangeState + IFsm<IProcedureManager>.SetData / GetData<T> / RemoveData + Nova.Procedure.CurrentProcedure / HasProcedure<T> / GetProcedure",
+      "when": "仅在已授权业务source接现有Service/Procedure流时复用真实生命周期、状态和黑板；ChangeState同步进入下一状态后停止旧逻辑，OnLeave只Cancel，GetData默认值不表示成功，公开调用不等于MCP Action"
     },
     {
       "kind": "unity-editor-automation",
@@ -35,7 +45,8 @@
     },
     {
       "name": "targetProcedureTypesAndSourceFiles",
-      "required": true
+      "required": false,
+      "description": "Procedure变更分支必需；游戏Service只调用既有流程时读取其实际拥有者，不强行创建目标类型"
     },
     {
       "name": "enterAndLeaveResponsibilities",
@@ -43,11 +54,13 @@
     },
     {
       "name": "nextProcedureAndTransitionCondition",
-      "required": true
+      "required": false,
+      "description": "涉及Procedure跳转时必需；只修改既有Service行为且不切流程时明确不适用，不新增伪下一状态"
     },
     {
       "name": "existingBusinessCallSite",
-      "required": true
+      "required": true,
+      "description": "准确业务入口从项目读取；缺现成调用点时，在已授权项目业务源码补必要胶水，不创造第二注册链，跨配置/绑定/DLL步骤复用已授权Operation"
     },
     {
       "name": "asyncWorkAndCancellationExpectation",
@@ -60,6 +73,20 @@
     {
       "name": "allowedWriteSet",
       "required": true
+    },
+    {
+      "name": "procedureOrGameBusinessFlowIntent",
+      "required": true
+    },
+    {
+      "name": "businessServiceControlEntryInputOutputAndErrorContract",
+      "required": false,
+      "description": "游戏控制分支必需；由项目读出现有Service/source/入口，冻结合法状态、输入结果错误与明确目标，不臆造Framework门面"
+    },
+    {
+      "name": "businessSessionOperationIdentityRepeatedTriggerAndDependencyOwnership",
+      "required": false,
+      "description": "游戏控制分支必需；明确局/账号/操作身份、重复并发/幂等、暂停/重开数据、资源/事件/持久化与退出取消；仅条件复用命中Operation"
     }
   ],
   "effects": [
@@ -68,14 +95,16 @@
   "writeScope": {
     "allow": [
       "confirmed business Procedure C# source in the frozen business assembly and namespace",
-      "confirmed existing business call site required to reach or leave the target Procedure",
-      "confirmed local C# Play probe used to observe enter, leave, cancellation and next-state transition"
+      "confirmed project-owned business call site, existing or minimally added within current authorization, required to reach or leave the target Procedure",
+      "confirmed local C# Play probe used to observe enter, leave, cancellation and next-state transition",
+      "explicitly authorized project-owned business service and existing game control entry, input/output/error, session identity and lifecycle implementation through the existing Procedure/FSM"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
       "Assets/Framework/Scripts/Runtime/** built-in Procedure or registration implementation",
       "ProcedureComponent, ProcedureLoadDll or a second Procedure registrar",
+      "invented Nova.Game/GameService facade, duplicate Framework Manager, Service Locator or global FSM implementation",
       "entry Scene, ConfigMasterSO, ConfigRuntimeSO, Nova.prefab or serialized Unity YAML",
       "business asmdef, namespace, DLL loading map or generated hotfix DLL unless separately and explicitly confirmed",
       "unconfirmed Procedure, call site, lifecycle responsibility, next state or test probe",
@@ -89,17 +118,19 @@
     "business-procedure-source-set",
     "business-procedure-call-site",
     "business-assembly-and-namespace",
-    "procedure-play-probe-session"
+    "procedure-play-probe-session",
+    "game-business-service-session-and-operation-state"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
       "ambiguous project root, target Procedure, source file, assembly, namespace, hotfix DLL ownership, lifecycle responsibility, next state, transition condition, call site, cancellation expectation or Play probe",
-      "create or replace a business Procedure, change an existing business call site, public contract, enter/leave responsibility or next-state behavior",
+      "ambiguous game Service/control entry, legal state, input/result/error, pause/restart data scope, session/operation identity, repeat/exit or dependency ownership",
+      "create or replace a business Procedure/Service, change an existing business call site, public contract, enter/leave responsibility or next-state behavior beyond existing exact authorization",
       "move a type, change assembly or namespace, alter asmdef/DLL mapping, create a new registration path, or modify entry Scene, Config, Nova Prefab or Framework",
       "delete, build Bundle or Player, install to device, external write, credential use, Git commit or push"
     ],
-    "rule": "确认唯一业务程序集、命名空间、热更 DLL 归属、目标类型、进入/离开职责、下一状态与条件、既有调用点、异步取消预期、Play 探针和最小写入集；任一输入、运行坐标或范围变化后旧确认失效。"
+    "rule": "确认唯一业务程序集、命名空间、DLL归属、Procedure或现有Service控制入口、输入/结果/错误、合法状态/下一状态、局/账号/操作身份、重复/幂等、取消退出、依赖拥有者、Play探针与source写集；可读事实由Agent取得，既有精确授权持续有效，语义或目标变化重新冻结。序列化、外部请求、构建与发布按对应独立Operation权限，不因业务flow扩大本workspace-only effects。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -114,6 +145,9 @@
     "Unity 编译无本次新增错误",
     "Play Mode 中目标 Procedure 已注册并从冻结调用点进入的证据",
     "Play Mode 中离开职责、Procedure CancellationToken 取消和异步副作用停止的证据",
-    "Play Mode 中跳转到精确下一 Procedure 的证据"
+    "Play Mode 中跳转到精确下一 Procedure 的证据",
+    "游戏控制分支时真实可达入口、现有Service公开调用、输入/结果/错误、合法状态、局/账号/操作身份、重复/取消、数据及资源/事件拥有者源码证据",
+    "游戏控制分支编译与原入口Play实际行为，不以API存在、Ready或Mock证明外部服务；必要Unity绑定/生成/持久化链由选中Operation独立验证",
+    "本轮探针/runner/meta/日志/测试态数据清场、必要Refresh与原入口/场景及目标写集核对"
   ]
 }

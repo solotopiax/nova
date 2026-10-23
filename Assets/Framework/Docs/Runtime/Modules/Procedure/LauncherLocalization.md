@@ -80,6 +80,10 @@
 - 老用户首次升级时还没有启动镜像，当次启动会按系统语言与回退策略选择；正式语言初始化成功后会补写镜像，后续冷启动即可命中。
 - 启动镜像对应的精简 JSON 不存在时，该语言会被视为启动期不可用并继续回退。
 
+## 参数与生命周期边界
+
+Initialize 在语言解析/加载前即置 initialized=true，因此模板格式化、Resources 检查等 catch 外异常可能留下已初始化但未完成的状态，重复初始化不修复。默认模板 BuiltIn/Jsons/LocalizationTexts_{0}，null/empty 使用默认；路径格式化和 Resources.Load 不在 JSON parse catch 内。JSON 必须有 Launcher_Localization 数组，Name 非空才入字典、缺 Value 为 empty、重复 Name 后项覆盖。GetText 不自动初始化，miss 原样返回 key，非空结果不证明翻译成功；加载 TextAsset 没有显式 Unload。Editor SubsystemRegistration 重置字典/语言/模板，Player 不编译此 reset。
+
 ## 继续阅读
 
 关键源码：

@@ -35,8 +35,10 @@ void Clear();
 bool Contains(T t);
 
 // 枚举
-IEnumerator<T> GetEnumerator();
+Enumerator GetEnumerator();
 ```
+
+比较器只决定字典键的唯一性，传 null 使用默认比较器。Add 重复值返回 false，Remove 缺失返回 false；引用类型空键及比较器错误沿字典传播。Add 先写链表再写字典，后者失败不会回滚链表；Clear/Remove 不释放元素资源。枚举保持成功插入顺序但不是快照，无自动并发保护；底层链表变更的版本异常向外传播，接口枚举可能装箱。显式 Reset 只复位底层结构体的装箱副本，不回写当前字段。
 
 ## 关联文档
 

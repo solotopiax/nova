@@ -20,11 +20,66 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
     {
 #if NOVA_APPLOVIN_MAX
         /// <summary>
+        /// 在厂商回调返回前复制所需字符串和数值；主线程队列不持有 MAX 响应对象。
+        /// </summary>
+        private sealed class MaxAdInfoSnapshot
+        {
+            /// <summary>
+            /// 复制加载、展示和收益属性，缺失响应时使用空字段与零收益。
+            /// </summary>
+            /// <param name="info">当前 MAX 回调拥有的广告响应。</param>
+            internal MaxAdInfoSnapshot(MaxSdkBase.AdInfo info)
+            {
+                AdUnitIdentifier = info?.AdUnitIdentifier;
+                NetworkName = info?.NetworkName;
+                NetworkPlacement = info?.NetworkPlacement;
+                Placement = info?.Placement;
+                CreativeIdentifier = info?.CreativeIdentifier;
+                Revenue = info?.Revenue ?? 0d;
+                RevenuePrecision = info?.RevenuePrecision;
+                WaterfallName = info?.WaterfallInfo?.Name;
+            }
+
+            /// <summary>
+            /// MAX 返回的真实广告单元 ID。
+            /// </summary>
+            internal readonly string AdUnitIdentifier;
+            /// <summary>
+            /// 本次广告所属的投放网络名称。
+            /// </summary>
+            internal readonly string NetworkName;
+            /// <summary>
+            /// 投放网络侧的广告位标识。
+            /// </summary>
+            internal readonly string NetworkPlacement;
+            /// <summary>
+            /// MAX 返回的业务展示位置标识。
+            /// </summary>
+            internal readonly string Placement;
+            /// <summary>
+            /// 本次广告的素材标识。
+            /// </summary>
+            internal readonly string CreativeIdentifier;
+            /// <summary>
+            /// MAX 返回的单次广告收益，单位为美元；缺失响应时为零。
+            /// </summary>
+            internal readonly double Revenue;
+            /// <summary>
+            /// MAX 返回的收益精度标识，保留原始字符串。
+            /// </summary>
+            internal readonly string RevenuePrecision;
+            /// <summary>
+            /// MAX 原厂调解瀑布流名称，与 Nova 广告组无关。
+            /// </summary>
+            internal readonly string WaterfallName;
+        }
+
+        /// <summary>
         /// 构建 MAX 加载成功特有属性；这些属性通过 AdLoadResult.CustomProps 合并进 nova_ad_fill。
         /// </summary>
         /// <param name="adInfo">MAX 广告信息，包含收益、广告网络与瀑布流位置等字段。</param>
         /// <returns>用于补充 nova_ad_fill 的 MAX 特有属性字典。</returns>
-        private static Dictionary<string, object> BuildMaxLoadProps(MaxSdkBase.AdInfo adInfo)
+        private static Dictionary<string, object> BuildMaxLoadProps(MaxAdInfoSnapshot adInfo)
         {
             return new Dictionary<string, object>
             {
@@ -116,7 +171,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adUnitId">MAX 广告位标识。</param>
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性。</param>
-        private void TrackMaxRevenue(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, Dictionary<string, object> correlationProps)
+        private void TrackMaxRevenue(AdFormat format, string adUnitId, MaxAdInfoSnapshot adInfo, Dictionary<string, object> correlationProps)
         {
             decimal revenue = (decimal)adInfo.Revenue;
             TrackMaxAdIlrd(format, adUnitId, adInfo, revenue, correlationProps);
@@ -128,7 +183,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         /// <param name="adUnitId">MAX Banner 广告位标识。</param>
         /// <param name="adInfo">MAX Banner 收益回调携带的广告信息。</param>
-        private void TrackMaxBannerIlrdAggregated(string adUnitId, MaxSdkBase.AdInfo adInfo)
+        private void TrackMaxBannerIlrdAggregated(string adUnitId, MaxAdInfoSnapshot adInfo)
         {
             TrackBannerIlrdAggregated(adInfo.Revenue, revenue => TrackMaxAdIlrd(AdFormat.Banner, adUnitId, adInfo, revenue));
         }
@@ -142,7 +197,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="revenue">本次上报使用的收益；Banner 为累计收益，非 Banner 为单次收益。</param>
         /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性；Banner 或无法关联时可为 null。</param>
         /// <returns>至少向一个插件尝试派发时返回 true；全部不可用时返回 false，不代表后台接收成功。</returns>
-        private bool TrackMaxAdIlrd(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, decimal revenue, Dictionary<string, object> correlationProps = null)
+        private bool TrackMaxAdIlrd(AdFormat format, string adUnitId, MaxAdInfoSnapshot adInfo, decimal revenue, Dictionary<string, object> correlationProps = null)
         {
             string revenueText = FormatRevenue(revenue);
             double revenueValue = (double)revenue;
@@ -161,7 +216,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 { "network_placement_id", adInfo.Placement },
                 { "value", revenueValue },
                 { "currency", "USD" },
-                { "waterfall_name", adInfo.WaterfallInfo?.Name },
+                { "waterfall_name", adInfo.WaterfallName },
             };
 
             MergeCorrelationProps(ilrdProps, correlationProps);
@@ -177,7 +232,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性；Banner 或无法关联时可为 null。</param>
         /// <returns>至少向一个插件尝试派发时返回 true；全部不可用时返回 false，不代表后台接收成功。</returns>
-        private bool TrackMaxAdImpression(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, Dictionary<string, object> correlationProps = null)
+        private bool TrackMaxAdImpression(AdFormat format, string adUnitId, MaxAdInfoSnapshot adInfo, Dictionary<string, object> correlationProps = null)
         {
             var impressionProps = new Dictionary<string, object>
             {

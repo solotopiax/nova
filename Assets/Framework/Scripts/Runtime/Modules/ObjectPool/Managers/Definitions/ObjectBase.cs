@@ -16,7 +16,7 @@ ObjectBase : IReference
   |-- m_Name                对象在池内的检索名
   |-- m_Target              真实的"被池化物体"（如 GameObject、Texture 等）
   |-- m_Locked              锁定保护，防止被自动回收
-  |-- m_Priority            驱逐优先级（越小越优先保留）
+  |-- m_Priority            默认释放排序优先级（越小越先释放）
   |-- m_LastUseTime         最后使用时刻，用于过期判断
   |-- CustomCanReleaseFlag  业务自定义"此时我能否被释放"
   |-- OnGet() / OnPut()     取用/归还时的业务回调

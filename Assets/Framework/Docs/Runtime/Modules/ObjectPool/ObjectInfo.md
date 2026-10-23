@@ -32,6 +32,10 @@
 public ObjectInfo(string name, bool locked, bool customCanReleaseFlag, int priority, DateTime lastUseTime, int refCount)
 ```
 
+## 参数与所有权边界
+
+构造只保存传入元数据，不校验 null 名称、负 RefCount 或时间；IsInUse 仅按 >0 判断。快照不含 Target，也不 Get/Put 或保活资源；默认 struct 及旧快照不代表当前池状态。Priority 表示对象默认释放排序，小值先释放，不是全池 Priority。
+
 ## 关联文档
 
 - [ObjectPoolBase](ObjectPoolBase.md) -- `GetAllObjectInfos()` 返回该结构体数组

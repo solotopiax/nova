@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -48,7 +48,8 @@
   "writeScope": {
     "allow": [
       "Packages/manifest.json direct dependency and scoped registry changes described by the confirmed plan",
-      "Packages/packages-lock.json updates produced only by Unity Package Manager Resolve"
+      "Packages/packages-lock.json updates produced only by Unity Package Manager Resolve",
+      "Library/Nova/ImportantUpdates/<local-user-hash>/State.json automatic upgrade-scope bookkeeping and explicit human acknowledgement; never edited directly by the Agent"
     ],
     "deny": [
       "com.solotopia.nova.framework self install, upgrade or uninstall",
@@ -56,7 +57,8 @@
       "fixed historical version, downgrade, arbitrary registry, git/file/registry source switch or batch upgrade",
       "ProjectSettings/Nova/PlugPalsRegistries.json changes",
       "manual packages-lock edits, cache deletion or automatic replay after failure",
-      "SDK or Kit enablement, ConfigMaster, Samples, business source, Bundle, Player, UPM publish or Git operations"
+      "SDK or Kit enablement, ConfigMaster, Samples, business source, Bundle, Player, UPM publish or Git operations",
+      "automatic Important acknowledgement, UI confirmation simulation, reflection or direct edits to local acknowledgement markers"
     ]
   },
   "locks": [
@@ -88,6 +90,7 @@
     "用户针对一次性 planId 的明确确认",
     "Execute 返回的 partial receipt，且没有自动重放",
     "Unity 稳定后 manifest 与 packages-lock 的精确版本和 registry 来源，或卸载后的双重消失证据",
-    "未执行 SDK/Kit 启用、Sample、业务改动、构建、发布或 Git 操作的边界说明"
+    "未执行 SDK/Kit 启用、Sample、业务改动、构建、发布或 Git 操作的边界说明",
+    "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。"
   ]
 }

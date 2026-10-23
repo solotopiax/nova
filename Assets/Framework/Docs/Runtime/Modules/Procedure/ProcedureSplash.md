@@ -77,6 +77,10 @@
 - `ProcedureSplash` 不再关心 `EnableHotfix`；大版本检测是否执行不受热更开关影响。
 - 正常离开流程时不销毁 Splash 是刻意设计，不是遗留资源泄漏。
 
+## 参数与生命周期边界
+
+OnInit 从组件注册表缓存 ProcedureComponent，缺失时后续 OnEnter 可能失败；OnEnter 重置计时并 Initialize LauncherUI。累计 Time.deltaTime 为受 timeScale 影响的秒数，GameSpeed=0 可持续等待；SplashDuration getter 不作范围 clamp，普通离开保留 Splash，仅 Shutdown 离开销毁，由业务入口负责最终回收。
+
 ## 继续阅读
 
 关键源码：

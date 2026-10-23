@@ -4,7 +4,8 @@
     "references": [
         "GUID:a884044100d52a64193cc16ab428fd19",
         "GUID:261d4fd0d318de940ad629c842a4426d",
-        "GUID:c383f449023b7fd42adcb2698d5622e0"
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "UniTask"
     ],
     "includePlatforms": [
         "Editor"

@@ -51,6 +51,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
 
         /// <summary>
         /// 合并同一账号 generation 内重叠的钱包刷新请求。
+        /// 共享完成源支持刷新尚未完成时的多个等待者；完成后的下一次调用仍发起新刷新。
         /// </summary>
         /// <param name="refresh">执行单次钱包刷新的异步方法。</param>
         /// <returns>当前 generation 共享的钱包刷新任务。</returns>
@@ -65,16 +66,16 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
             lock (m_Gate)
             {
                 ThrowIfDisposed();
-                if (m_HasRefreshTask && m_RefreshGeneration == m_Generation && !m_RefreshTask.Status.IsCompleted())
+                if (m_HasRefreshTask && m_RefreshGeneration == m_Generation && !m_RefreshTask.Task.Status.IsCompleted())
                 {
-                    return m_RefreshTask;
+                    return m_RefreshTask.Task;
                 }
 
                 var scope = new VoucherSessionScope(m_Current.AccountId, m_Generation, m_AccountCancellation.Token);
                 m_RefreshGeneration = m_Generation;
-                m_RefreshTask = refresh(scope).Preserve();
+                m_RefreshTask = refresh(scope).ToAsyncLazy();
                 m_HasRefreshTask = true;
-                return m_RefreshTask;
+                return m_RefreshTask.Task;
             }
         }
 

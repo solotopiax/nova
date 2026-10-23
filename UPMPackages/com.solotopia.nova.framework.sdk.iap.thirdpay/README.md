@@ -1,7 +1,7 @@
 # Nova Framework - SDK - IAP - ThirdPay
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.thirdpay`
-> 当前版本：`0.0.1`
+> 当前版本：`0.1.0`
 
 Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar InAppAuto 的加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 通过 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient` 完成 Google 外链政策流程。
 
@@ -12,7 +12,7 @@ Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.0.1"
+    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.0"
   }
 }
 ```
@@ -30,8 +30,12 @@ Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar
 - 本地订单以 `clientOrderId` 为键，同一商品可保留多笔待处理订单。
 - 第三方支付可用性、商品、`payment_customer_ids` 和 HTTPS 支付页地址由 `ThirdGetPaymentConfig` 一次返回；客户端额外发送登录后锁定的国家码，白名单、黑名单和国家策略由服务端统一判断。国家码为空或无效时客户端不会发送该协议，协议层也会返回 `PARAM_ERROR` 作为最终保护。
 - 统一配置按账号、国家和 NetCmd 缓存，同上下文并发请求合并，账号或国家变化时旧响应不会覆盖当前快照；商品通过 `IAPProductEntry.ThirdProductID` 与服务端 `product_id` 匹配。
-- `IAPThirdPayRequest.ReceiptParam` 不限客户端长度；发起支付时封装到 URL 内层 `custom_param` 的 `receipt_param` 字段，验单后由服务端 `receipt_param` 回填 `IAPResult.ReceiptParam`。
+- `IAPThirdPayRequest.ReceiptParam` 不限客户端长度；发起支付时写入 URL 内层顶层 `receipt_param` 字段，验单后由服务端 `receipt_param` 回填 `IAPResult.ReceiptParam`。
+- 支付 URL 内层 JSON 的 `platform` 与 `channel` 直接使用标准请求 Header 的枚举整数值，不发送枚举名称字符串。
+- `IAPThirdPayRequest.FirstRechargeReward` 与 `ExtraBonusReward` 是可选网页奖励参数；每项通过 `IAPThirdPayRewardItem` 声明，构造参数 `itemId` 与 `quantity` 必须为正数，存在时分别写入加密 JSON 的 `first_recharge_reward` 与 `extra_bonus_reward`，缺失时省略节点。奖励不写入订单存档、不参与验单，也不回填支付结果；旧 `CustomParam` 已移除。
 - `ThirdIapNetService` 负责统一支付配置、支付成功未校验订单和批量验单三条 Protobuf 协议；路径与命名统一采用 `/third_pay/*`、`query_pending_order` 和 `verify_iap`。
 - Runtime 使用 `Services/Config/ThirdPayPaymentConfigService` 集中处理统一配置的请求、校验、缓存、并发合并和旧响应隔离；Store 只编排支付流程并消费固定快照。
 
 详细接入方式见 [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)。
+
+接入时先在 `IAPPluginConfig` 中登记 `ThirdPayStoreConfig` 和带 `ThirdProductID` 的商品，保存 ConfigMaster 并导出当前平台的 Runtime 配置；再核对 `ThirdGetPaymentConfig`、`ThirdQueryPendingOrder`、`ThirdVerifyIap` 三条 NetCmd 的实际路由与后端实现。登录后须取得有效国家码，服务端统一配置须允许支付并提供目标商品及 HTTPS 支付页地址，才能发起新支付。完整步骤与验证边界见 [ThirdPayStore.md](./Nova/Doc/ThirdPayStore.md#接入与验收顺序)。

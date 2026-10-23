@@ -8,7 +8,7 @@
  * descrip:   Modules 2.8 UI 演示 View — 私有方法
  ***************************************************************/
 
-using NovaFramework.Runtime;
+using System;
 
 namespace NovaFramework.Samples.Runtime
 {
@@ -22,13 +22,14 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private void OnOpenToastButtonClick()
         {
-            if (Nova.UI == null)
+            if (m_IsClosed || !Available) return;
+            if (m_OwnerUI == null)
             {
                 AppendFeedback("Nova.UI.OpenUIViewAsync -> UIComponent 未初始化", FeedbackLevel.Error);
                 return;
             }
 
-            int serialID = Nova.UI.OpenUIViewAsync<DemoToastView>("Demo Toast from DemoUIView");
+            int serialID = m_OwnerUI.OpenUIViewAsync<DemoToastView>("Demo Toast from DemoUIView");
             TrackOpenedView(serialID, "DemoToastView");
         }
 
@@ -37,23 +38,25 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private void OnOpenDialogButtonClick()
         {
-            if (Nova.UI == null)
+            if (m_IsClosed || !Available) return;
+            if (m_OwnerUI == null)
             {
                 AppendFeedback("Nova.UI.OpenUIViewAsync -> UIComponent 未初始化", FeedbackLevel.Error);
                 return;
             }
 
+            int generation = m_ViewGeneration;
             DemoDialogView.DemoDialogData dialogData = new DemoDialogView.DemoDialogData
             {
                 Title = "Demo 确认",
                 Message = "这是一个 DemoDialogView 演示对话框。",
                 ConfirmLabel = "确认",
                 CancelLabel = "取消",
-                OnConfirm = OnDialogConfirm,
-                OnCancel = OnDialogCancel
+                OnConfirm = () => { if (!m_IsClosed && generation == m_ViewGeneration) OnDialogConfirm(); },
+                OnCancel = () => { if (!m_IsClosed && generation == m_ViewGeneration) OnDialogCancel(); }
             };
 
-            int serialID = Nova.UI.OpenUIViewAsync<DemoDialogView>(dialogData);
+            int serialID = m_OwnerUI.OpenUIViewAsync<DemoDialogView>(dialogData);
             TrackOpenedView(serialID, "DemoDialogView");
         }
 
@@ -62,10 +65,14 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private void OnCloseAllButtonClick()
         {
+            if (!Available) return;
             int count = m_OpenedSerialIDs.Count;
             CloseAllOpenedViews();
-            AppendFeedback("Nova.UI.CloseUIView × " + count + " -> 全部关闭", FeedbackLevel.Success);
+            AppendFeedback("Nova.UI.CloseUIView -> 已处理 " + (count - m_OpenedSerialIDs.Count) +
+                " 个子页面（已打开的关闭，加载中的取消打开），剩余=" + m_OpenedSerialIDs.Count,
+                m_OpenedSerialIDs.Count == 0 ? FeedbackLevel.Info : FeedbackLevel.Error);
             AppendActiveSerialsToFeedback();
+            if (m_IsClosed && m_OpenedSerialIDs.Count == 0) OnOpen(null);
         }
 
         /// <summary>
@@ -75,8 +82,22 @@ namespace NovaFramework.Samples.Runtime
         /// <param name="viewName">View 类名，用于反馈日志显示。</param>
         private void TrackOpenedView(int serialID, string viewName)
         {
-            m_OpenedSerialIDs.Add(serialID);
-            AppendFeedback("Nova.UI.OpenUIViewAsync<" + viewName + ">() -> SerialID=" + serialID, FeedbackLevel.Success);
+            if (serialID < 0)
+            {
+                AppendFeedback("Nova.UI.OpenUIViewAsync<" + viewName + ">() -> 请求被拒绝，SerialID=" + serialID, FeedbackLevel.Error);
+                return;
+            }
+            if (m_OwnerUI == null ||
+                (!m_OwnerUI.HasUIView(serialID) && !m_OwnerUI.IsLoadingUIView(serialID)))
+            {
+                AppendFeedback("Nova.UI.OpenUIViewAsync<" + viewName + ">() -> 请求已结束或页面已关闭，SerialID=" + serialID, FeedbackLevel.Warn);
+                return;
+            }
+            if (!m_OpenedSerialIDs.Contains(serialID)) m_OpenedSerialIDs.Add(serialID);
+            bool opened = m_OwnerUI.HasUIView(serialID);
+            AppendFeedback("Nova.UI.OpenUIViewAsync<" + viewName + ">() -> SerialID=" + serialID +
+                (opened ? "（已打开）" : "（已提交请求，正在加载）"),
+                opened ? FeedbackLevel.Success : FeedbackLevel.Info);
             AppendActiveSerialsToFeedback();
         }
 
@@ -85,22 +106,42 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
         private void CloseAllOpenedViews()
         {
-            if (Nova.UI == null)
+            if (m_OwnerUI == null)
             {
-                m_OpenedSerialIDs.Clear();
+                if (m_OpenedSerialIDs.Count > 0)
+                    AppendFeedback("Nova.UI.CloseUIView -> UIComponent 不可用，无法确认子页面已关闭", FeedbackLevel.Error);
                 return;
             }
 
-            for (int i = 0; i < m_OpenedSerialIDs.Count; i++)
+            int[] serialIDs = m_OpenedSerialIDs.ToArray();
+            foreach (int serialID in serialIDs)
             {
-                int serialID = m_OpenedSerialIDs[i];
-                if (Nova.UI.HasUIView(serialID))
+                try
                 {
-                    Nova.UI.CloseUIView(serialID);
+                    if (m_OwnerUI.HasUIView(serialID) || m_OwnerUI.IsLoadingUIView(serialID))
+                        m_OwnerUI.CloseUIView(serialID);
+                    m_OpenedSerialIDs.Remove(serialID);
+                }
+                catch (Exception exception)
+                {
+                    AppendFeedback("Nova.UI.CloseUIView(" + serialID + ") -> " + exception.Message, FeedbackLevel.Error);
                 }
             }
+        }
 
-            m_OpenedSerialIDs.Clear();
+        /// <summary>只处理本页面仍拥有的异步打开失败。</summary>
+        private void OnOpenChildViewFail(int serialID, string assetLocation, string errorMessage)
+        {
+            if (m_IsClosed || !m_OpenedSerialIDs.Remove(serialID)) return;
+            AppendFeedback("Nova.UI.OpenUIViewAsync -> SerialID=" + serialID +
+                ", address=" + assetLocation + ", 加载失败：" + errorMessage, FeedbackLevel.Error);
+            AppendActiveSerialsToFeedback();
+        }
+
+        /// <summary>取消订阅时保留门面引用，随后用于清理旧子页面。</summary>
+        private void DetachOpenFailureHandler()
+        {
+            if (m_OwnerUI != null) m_OwnerUI.OnOpenUIViewFail -= OnOpenChildViewFail;
         }
 
         /// <summary>

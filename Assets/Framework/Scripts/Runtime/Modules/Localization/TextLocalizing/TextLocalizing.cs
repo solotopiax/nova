@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
     public sealed partial class TextLocalizing : MonoBehaviour
     {
         /// <summary>
-        /// 获取文本组件引用并缓存管理器引用。
+        /// 获取文本组件引用并接管文本预处理器；跨模块依赖在启动完成后取得。
         /// </summary>
         private void Awake()
         {
@@ -37,13 +37,18 @@ namespace NovaFramework.Runtime
             m_PreviousTextPreprocessor = m_TextMeshProUGUI.textPreprocessor;
             m_TextPreprocessor = new LocalizationTextPreprocessor(m_PreviousTextPreprocessor);
             m_TextMeshProUGUI.textPreprocessor = m_TextPreprocessor;
-            m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-            m_LocalizationManager = FrameworkManagersGroup.GetManager<ILocalizationManager>();
-            m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
         }
 
         /// <summary>
-        /// 启用时订阅事件并刷新文本和字体。
+        /// 首次启动时等待本轮所有组件的 Start 完成，避免订阅被事件池初始化清空。
+        /// </summary>
+        private void Start()
+        {
+            InitializeAfterStartAsync().Forget();
+        }
+
+        /// <summary>
+        /// 已完成首次启动的实例在启用时恢复唯一订阅并刷新；首次启用由启动等待负责。
         /// </summary>
         private void OnEnable()
         {
@@ -58,14 +63,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            if (m_EventManager != null)
-            {
-                m_EventManager.Subscribe<LocalizationRefreshEventData>(OnLocalizationRefresh);
-                m_IsSubscribed = true;
-            }
-
-            RefreshText();
-            RefreshFont();
+            SubscribeAndRefresh();
         }
 
         /// <summary>
@@ -75,11 +73,7 @@ namespace NovaFramework.Runtime
         {
             m_FontRefreshVersion++;
 
-            if (m_IsSubscribed && m_EventManager != null)
-            {
-                m_EventManager.Unsubscribe<LocalizationRefreshEventData>(OnLocalizationRefresh);
-                m_IsSubscribed = false;
-            }
+            UnsubscribeRefresh();
 
             m_LoadedFontHandle?.Release();
             m_LoadedFontHandle = null;
@@ -88,10 +82,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 销毁时恢复 TextLocalizing 接管前的 TMP 文本预处理器。
+        /// 销毁时安全注销真实事件订阅，并恢复 TextLocalizing 接管前的 TMP 文本预处理器。
         /// </summary>
         private void OnDestroy()
         {
+            UnsubscribeRefresh();
+
             if (m_TextMeshProUGUI != null && ReferenceEquals(m_TextMeshProUGUI.textPreprocessor, m_TextPreprocessor))
             {
                 m_TextMeshProUGUI.textPreprocessor = m_PreviousTextPreprocessor;

@@ -75,7 +75,7 @@ namespace NovaFramework.Samples.Runtime
         private readonly List<Language> m_SupportedLanguages = new List<Language>();
 
         /// <summary>
-        /// 当前语言切换任务的取消令牌源，View 关闭时取消。
+        /// 本次视图打开周期的取消令牌源，仅控制语言切换后的视图刷新，不取消全局语言切换。
         /// </summary>
         private CancellationTokenSource m_Cts;
 
@@ -97,7 +97,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 视图打开钩子，填充语言下拉框并刷新 Demo key 展示区。
+        /// 视图打开钩子，重建本次打开周期的取消令牌源，填充语言下拉框并刷新 Demo key 展示区。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
         public override void OnOpen(object userData)
@@ -114,7 +114,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 视图关闭钩子，取消进行中的语言切换任务。
+        /// 视图关闭钩子，取消旧打开周期请求的后续视图刷新；全局语言切换仍由本地化 Manager 完成。
         /// </summary>
         /// <param name="isShutdown">是否因视图管理器关闭而触发。</param>
         /// <param name="userData">用户自定义数据。</param>
@@ -135,10 +135,24 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 异步切换语言，成功后刷新 Demo key 展示区并写入反馈。
+        /// 异步切换全局语言，仅在请求所属的视图打开周期仍有效时刷新 Demo key 展示区并写入反馈。
+        /// 关闭视图只抑制此方法后续的视图刷新，不取消或回滚本地化 Manager 的全局语言切换。
         /// </summary>
+        /// <returns>按钮触发的异步操作。</returns>
         private async UniTaskVoid SwitchLanguageAsync()
         {
+            CancellationTokenSource viewCts = m_Cts;
+            if (viewCts == null)
+            {
+                return;
+            }
+
+            CancellationToken viewToken = viewCts.Token;
+            if (viewToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             if (Nova.Localization == null)
             {
                 AppendFeedback("Nova.Localization.SetLanguageAsync -> LocalizationComponent 未初始化", FeedbackLevel.Error);
@@ -159,9 +173,10 @@ namespace NovaFramework.Samples.Runtime
             }
 
             Language target = m_SupportedLanguages[selectedIndex];
+            // 公开 API 不接收视图 Token；固定旧周期归属，避免关闭并重开后旧请求刷新新视图。
             await Nova.Localization.SetLanguageAsync(target);
 
-            if (m_Cts == null || m_Cts.IsCancellationRequested)
+            if (viewToken.IsCancellationRequested || !ReferenceEquals(m_Cts, viewCts))
             {
                 return;
             }
@@ -204,7 +219,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 调用 Nova.Localization.GetText 刷新所有 Demo 本地化 key 展示文本。
+        /// 刷新 Demo 文本展示区：已绑定的文本由 TextLocalizing 刷新，未绑定的文本走 GetText 回退。
         /// </summary>
         private void RefreshDemoTexts()
         {
@@ -221,13 +236,20 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 向指定文本组件设置本地化 key 对应的文本值；key 不存在时展示 key 本身加提示。
+        /// 未绑定 TextLocalizing.KeyName 时手动设置译文；非空绑定由组件刷新，不覆盖其配置或译文。
+        /// 手动回退的 key 不存在时展示 key 本身加提示，不以预期 key 掩盖错误的非空组件绑定。
         /// </summary>
         /// <param name="label">目标文本组件。</param>
         /// <param name="key">本地化 key 名称。</param>
         private void SetTextIfNotNull(TextMeshProUGUI label, string key)
         {
             if (label == null)
+            {
+                return;
+            }
+
+            TextLocalizing localizing = label.GetComponent<TextLocalizing>();
+            if (localizing != null && !string.IsNullOrEmpty(localizing.KeyName))
             {
                 return;
             }

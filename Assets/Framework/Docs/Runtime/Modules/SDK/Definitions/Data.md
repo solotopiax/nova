@@ -19,13 +19,16 @@
 |---|---|---|
 | `AdLoadResult` | `Plugins/Ad/AdLoadEvent.cs` | 广告加载统一结果，成功/失败由 `Success` 区分 |
 
+## 已迁出 Framework 的广告类型
+
+`AdEventType`、`AdResult`、`AdEvent` 仍然存在，当前归属广告聚合包 `com.solotopia.nova.framework.sdk.ad` 的 `Nova/Scripts/Runtime/Types/`，命名空间为 `NovaFramework.SDK.AdPlugin.Runtime`。它们由该包的事件文档维护，不属于 Framework 的 `Definitions/Data/`。
+
+`AdFormat`、`BannerPosition` 和 `AdLoadResult` 继续归属 `NovaFramework.Runtime`；`AdLoadResult` 的文件名仍为 `Plugins/Ad/AdLoadEvent.cs`。
+
 ## 已移除的旧类型
 
-以下条目不再是当前框架代码事实，不应继续作为实现依据：
+以下旧类型没有当前同名实现；迁出类型不能按删除处理：
 
-- `AdEventType`
-- `AdResult`
-- `AdEvent`
 - `AdLoadEvent`
 - `AdLoadFailEvent`
 - `PurchaseResult`

@@ -108,8 +108,8 @@ Recheck()
 1. 调用 `EditorUtil.Luban.CliRunner.GetLubanDllPath()` 检查 Luban.dll，不因 dotnet 异常跳过
 2. 调用 `EditorUtil.Luban.CliRunner.ResolveDotnetPath()` 获取 dotnet 可执行路径
 3. 调用 `EditorUtil.ProcessRunner.RunSync(dotnetPath, "--version")` 获取并解析版本
-4. 验证版本是否落在建议区间；越界仅作为 `DotnetIssue` 警告状态
-5. 合并两项结果：版本越界且 DLL 存在时允许 Pipeline 警告后继续；DLL 缺失始终阻断
+4. 验证版本是否落在建议区间；越界使 IsReady=false 并保存独立 DotnetIssue
+5. 合并两项结果：DLL 缺失优先主 Issue，但保留 DotnetIssue；是否对版本越界告警继续由 Pipeline 决定
 
 ---
 

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-configure-pipeline",
+  "kind": "operation",
+  "compatibility": { "framework": ">=0.6.10", "unity": ">=6000.6.7f1" },
+  "requires": [],
+  "actionAdapters": [
+    { "kind": "agent-action", "entry": "nova.project.pipify.inspect-settings", "when": "读取真实Batch和注册Steps的脱敏参数Schema" },
+    { "kind": "agent-action", "entry": "nova.project.pipify.configure-batch", "when": "已冻结具名Batch的创建、克隆、目标顺序与真实基础字段编辑时，只保存目标Settings" },
+    { "kind": "agent-action", "entry": "nova.project.pipify.run-batch", "when": "用户明确要求运行已保存Batch，实际Steps副作用与完整运行范围已获授权时；配置任务默认不运行" }
+  ],
+  "inputs": [
+    { "name": "projectRoot", "required": true, "constraint": "从当前消费项目读取并冻结，不要求新手重复抄写可读取事实" },
+    { "name": "pipifySettings", "required": true, "constraint": "读取Assets内现存真实Settings GUID、路径及窗口草稿；两个配置Action用settingsGuid，run-batch用pipifySettingsGuid" },
+    { "name": "batchChangeSet", "required": true, "constraint": "明确create/clone/edit与目标名称；完整steps列表按编辑前sourceIndex保留复制排序，未列条目移除；edits仅真实基础字段和严格JSON token" },
+    { "name": "runRequest", "required": false, "constraint": "默认只保存；运行另按真实Steps冻结副作用、平台、凭据、写集和产物证据，不因配置授权自动运行" }
+  ],
+  "effects": ["workspace-write", "unity-write", "credential"],
+  "writeScope": {
+    "allow": ["confirmed target PipifySettingsSO Batch name/description/ordered Steps and exact editable public parameter fields", "explicitly requested saved Batch execution only within separately confirmed Step write sets"],
+    "deny": ["unrelated Batch or Settings assets", "Framework/package sources and handwritten Unity YAML", "read-only, hidden or unsupported Array/List/object/property fields", "arbitrary ParamsJson, Type.Method or C# execution", "automatic pipeline execution, external write, deployment, Git or UPM publication from configuration authorization"]
+  },
+  "locks": ["unity-editor", "pipify-batch", "pipify-settings-assets"],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": ["Batch creation, cloning, renaming or saved changes", "step removal or complete list replacement", "credential field changes", "Android DevelopmentBuild AAB signing risk", "explicitly requested Batch execution and its destructive/external/credential steps"],
+    "rule": "已有授权持续有效；展示具体Settings、目标Batch、完整Steps顺序、字段地址与风险，值尤其凭据不回显。确认绑定当前PlanId；输入、资产、Registry或构建环境漂移后重新Plan，重载只Verify不重放。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": ["success", "partial", "blocked", "not_applicable"],
+  "evidence": ["live Registry StepIds and exact parameter field Schema", "confirmed target Settings GUID/path and full target Batch/Steps change set", "configure-batch complete file/state verification and no-op preservation", "credential redaction, untouched fields and draft protection", "optional requested execution Job final state plus actual Step artifacts/evidence without treating saved configuration as runtime proof", "temporary verification cleanup and retained formal Batch"]
+}

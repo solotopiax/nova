@@ -45,8 +45,8 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Step：执行 HybridCLR 一键 Generate All（PrebuildCommand.GenerateAll）。
-        /// 对应菜单 HybridCLR/Generate/All。
+        /// Step：执行 HybridCLR 一键 Generate All，成功后按当前激活配置补全 AOT 保留记录。
+        /// 生成阶段对应菜单 HybridCLR/Generate/All；失败原样传播，不后补或重放 Generate。
         /// </summary>
         /// <param name="ctx">Runner 下发的运行时上下文。</param>
         /// <returns>完成的 UniTask。</returns>
@@ -54,6 +54,7 @@ namespace NovaFramework.Editor
         internal static UniTask RunGenerateAll(PipifyContext ctx)
         {
             EditorUtil.HybridCLR.GenerateAll();
+            EditorUtil.HybridCLR.ValidateLinkXml();
             return UniTask.CompletedTask;
         }
 

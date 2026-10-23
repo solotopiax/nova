@@ -1,8 +1,8 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.6.39`
-> Unity：`6000.4`
+> 当前版本：`0.7.1`
+> Unity：`6000.6.7f1` 及以上
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
 
@@ -14,9 +14,11 @@ Android 构建可在 Pipify 的 `build.package` 后添加 `googleplay.upload_aab
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.6.39"
+  "com.solotopia.nova.framework": "0.7.1"
 }
 ```
+
+Agent 能力需要 **Nova Framework - MCP**（`com.solotopia.nova.framework.mcp`），会随 Framework 的依赖自动安装；NovaSpark 也会将它列为默认安装项。已有项目缺少该包时，可通过 **Nova → Open PlugPals** 找到并安装。
 
 ## 静态访问器（Nova.*）
 
@@ -36,7 +38,7 @@ Android 构建可在 Pipify 的 `build.package` 后添加 `googleplay.upload_aab
 | `Nova.Persist` | `PersistComponent` | PlayerPrefs / FileFragment / SQLite 三种存储实现 |
 | `Nova.Sound` | `SoundComponent` | 音频播放与音轨管理 |
 | `Nova.Vibrate` | `VibrateComponent` | NiceVibrations 接入 |
-| `Nova.Native` | `NativeComponent` | 通知权限、系统设置跳转与应用内评价 |
+| `Nova.Native` | `NativeComponent` | 通知权限、系统设置跳转、应用内评价与默认关闭的显式自身 APK 安装 |
 | `Nova.SDK` | `SDKComponent` | 第三方 SDK 接入 |
 | `Nova.Debug` | `DebugComponent` | 运行时调试悬浮窗 |
 
@@ -51,15 +53,20 @@ Android 构建可在 Pipify 的 `build.package` 后添加 `googleplay.upload_aab
 | com.unity.textmeshpro | 3.0.9 |
 | com.unity.nuget.newtonsoft-json | 3.2.2 |
 | com.unity.inputsystem | 1.19.0 |
+| com.unity.scriptablebuildpipeline | 3.0.3 |
 | com.solotopia.hybridclr | 10.1.0 |
 | com.solotopia.unitask | 10.0.6 |
 | com.solotopia.sqlcipher4unity3d | 10.0.5 |
 | com.solotopia.simplediskutils | 1.0.7 |
 | com.solotopia.excelio | 1.0.6 |
-| com.solotopia.nicevibrations | 10.0.5 |
+| com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.0 |
-| com.solotopia.nova.framework.mcp | 0.1.4 |
+| com.solotopia.nova.framework.mcp | 0.1.5 |
+
+## 可选核心扩展
+
+内存数值防护独立为 `com.solotopia.nova.framework.memory.protection`，主包无此功能的代码或强制依赖。需要 `ProtectedInt` / `ProtectedLong` 的项目请安装该包，并在业务 asmdef 显式引用 `NovaFramework.MemoryProtection.Runtime`；命名空间保持 `NovaFramework.Runtime`。用法见 [MemoryProtection 包文档](../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/INDEX.md)，示例从该包导入 `MemoryProtectionDemo`。
 
 ## Samples
 

@@ -42,15 +42,19 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 向 m_TrackPlugins 中所有变现打点插件上报一条自定义事件。
-        /// m_TrackPlugins 为空时静默跳过。
+        /// 缓存为空时静默跳过；单插件异常隔离，不能截断广告组或业务批次。
         /// </summary>
         /// <param name="eventName">事件名称。</param>
         /// <param name="props">事件属性字典。</param>
         private void TrackEvent(string eventName, Dictionary<string, object> props)
         {
-            if (m_TrackPlugins == null || m_TrackPlugins.Count == 0) return;
-            for (int i = 0; i < m_TrackPlugins.Count; i++)
-                m_TrackPlugins[i].TrackEvent(eventName, props);
+            var plugins = m_TrackPlugins;
+            if (m_IsDisposed || plugins == null || plugins.Count == 0) return;
+            for (int i = 0; i < plugins.Count; i++)
+            {
+                try { plugins[i].TrackEvent(eventName, props); }
+                catch (Exception ex) { Log.Error(LogTag.AD, $"[{Name}] 广告事件 {eventName} 上报失败：{ex}"); }
+            }
         }
 
         /// <summary>
@@ -124,6 +128,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <param name="trackAction">累计收益上传回调。</param>
         private void TrackBannerIlrdState(string countKey, string revenueKey, double revenue, Func<decimal, bool> trackAction)
         {
+            if (m_IsDisposed) return;
             if (!PlayerLoopHelper.IsMainThread)
             {
                 PostAdCallbackToMainThread(() => TrackBannerIlrdState(countKey, revenueKey, revenue, trackAction));
@@ -257,169 +262,161 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 触发 OnAdRevenuePaid 事件，并推进收益状态。
-        /// 执行顺序：先状态机推进（MarkRevenue）→ 再事件扇出 → 再打点。
-        /// 派生类在广告展示产生收入的 SDK 回调中调用；只有 OnAdRevenuePaid 事件会切回主线程。
+        /// 收益状态与业务事件在主线程更新，纯收益打点仍由即时入口在原厂线程执行。
         /// </summary>
-        /// <param name="e">广告变现埋点事件载荷。</param>
+        /// <param name="e">收益载荷，将复制后排队。</param>
         protected void RaiseRevenue(AdEvent e)
         {
-            MarkRevenue(e.PlacementId, e.Revenue);
-            var revenueUnit = FindAdUnit(e.PlacementId);
-            if (revenueUnit != null) revenueUnit.RewardGranted = true;
-            PostAdCallbackToMainThread(() => OnAdRevenuePaid?.Invoke(e));
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            var snapshot = SnapshotRevenueEvent(e);
+            DispatchAdStateCallback(() =>
+            {
+                var unit = FindAdUnit(snapshot.PlacementId);
+                if (unit != null && unit.Format == snapshot.Format)
+                {
+                    MarkRevenue(snapshot.PlacementId, snapshot.Revenue);
+                    unit.RewardGranted = true;
+                }
+                OnAdRevenuePaid?.Invoke(snapshot);
+            });
         }
 
         /// <summary>
-        /// 触发 OnAdLoaded 事件，并驱动打点扇出和批次完成通知。
-        /// 执行顺序：先状态机推进（MarkLoaded）→ 再批次通知 → 再打点（合并 RequestCustomProps）→ 再把事件扇出排入主线程。
-        /// 派生类在广告加载成功的 SDK 回调中调用；只有 OnAdLoaded 事件会切回主线程。
+        /// 冻结loaded载荷并进入主线程组状态门；重复或未知回调不结算业务轮。
         /// </summary>
-        /// <param name="e">加载成功事件载荷。</param>
+        /// <param name="e">原厂加载成功载荷。</param>
         protected void RaiseAdLoaded(AdLoadResult e)
         {
-            e.Success = true;
-            MarkLoaded(e.PlacementId, e.Revenue);
-            NotifyBatchLoaded(e);
-            var unit = FindAdUnit(e.PlacementId);
-            var props = new Dictionary<string, object>
-            {
-                { "nova_ad_channel", Name },
-                { "nova_ad_format", (int)e.Format },
-                { "nova_ad_id", e.PlacementId ?? string.Empty },
-                { "nova_ad_result", 1 },
-                { "nova_ad_network", e.Network ?? string.Empty },
-            };
-            MergeCustom(props, unit?.RequestCustomProps);
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            var snapshot = SnapshotLoadResult(e);
+            snapshot.Success = true;
+            DispatchAdStateCallback(() => ProcessAdLoaded(snapshot));
+        }
+
+        /// <summary>
+        /// 上报已接受的真实可播fill，保留现有schema和轮内自定义属性。
+        /// </summary>
+        /// <param name="unit">成功槽位。</param>
+        /// <param name="e">原厂结果快照。</param>
+        private void TrackLoadedResult(AdUnit unit, AdLoadResult e)
+        {
+            var props = BuildBaseProps(e.Format, e.PlacementId);
+            props["nova_ad_result"] = 1;
+            props["nova_ad_network"] = e.Network ?? string.Empty;
+            MergeCustom(props, unit.RequestCustomProps);
             MergeCustom(props, e.CustomProps);
             TrackEvent("nova_ad_fill", props);
-            PostAdCallbackToMainThread(() => OnAdLoaded?.Invoke(e));
         }
 
         /// <summary>
-        /// 遍历 m_PendingBatches，通知所有包含该广告位的批次加载成功；TrySetResult 成功的批次立即移除。
-        /// 倒序遍历确保删除安全。
+        /// 冻结failed载荷并进入主线程组状态门；当前项失败事件不等于整轮业务失败。
         /// </summary>
-        /// <param name="e">加载成功事件载荷。</param>
-        private void NotifyBatchLoaded(AdLoadResult e)
-        {
-            for (int i = m_PendingBatches.Count - 1; i >= 0; i--)
-            {
-                var batch = m_PendingBatches[i];
-                if (!batch.PendingPlacementIds.Contains(e.PlacementId)) continue;
-                if (batch.Tcs.TrySetResult(e))
-                {
-                    batch.Registration.Dispose();
-                    m_PendingBatches.RemoveAt(i);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 触发 OnAdLoadFailed 事件，并驱动打点扇出和批次失败通知。
-        /// 执行顺序：先状态机推进（MarkLoadFailed，含自动重试调度）→ 再批次通知 → 再打点（合并 RequestCustomProps）→ 再把事件扇出排入主线程。
-        /// 派生类在广告加载失败的 SDK 回调中调用；只有 OnAdLoadFailed 事件会切回主线程。
-        /// </summary>
-        /// <param name="e">加载失败事件载荷。</param>
+        /// <param name="e">原厂加载失败载荷。</param>
         protected void RaiseAdLoadFailed(AdLoadResult e)
         {
-            e.Success = false;
-            var unit = FindAdUnit(e.PlacementId);
-            MarkLoadFailed(e.PlacementId, e.ErrorMessage);
-            NotifyBatchFailed(e);
-            var props = new Dictionary<string, object>
-            {
-                { "nova_ad_channel", Name },
-                { "nova_ad_format", (int)e.Format },
-                { "nova_ad_id", e.PlacementId ?? string.Empty },
-                { "nova_ad_result", 0 },
-                { "nova_ad_errorcode", e.ErrorCode },
-                { "nova_ad_error_message", e.ErrorMessage ?? string.Empty },
-            };
-            MergeCustom(props, unit?.RequestCustomProps);
-            TrackEvent("nova_ad_fill_fail", props);
-            PostAdCallbackToMainThread(() => OnAdLoadFailed?.Invoke(e));
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            var snapshot = SnapshotLoadResult(e);
+            snapshot.Success = false;
+            DispatchAdStateCallback(() => ProcessAdLoadFailed(snapshot));
         }
 
         /// <summary>
-        /// 遍历 m_PendingBatches，从含有该广告位的批次中移除对应 ID。
-        /// solar 重试语义下不存在失败终止态，每次 RaiseAdLoadFailed 都通知调用方"本批已失败"，
-        /// 底层 ImmediateRetry / DelayedRetry 仍会持续重试，下一轮成功时通过 RaiseAdLoaded 触发新的 RequestAsync 链路。
-        /// 某批次 PendingPlacementIds 清空后，以最近一次失败结果结束该批次。
+        /// 记录已接受的单次加载失败，保留原厂码及当前轮属性。
         /// </summary>
-        /// <param name="e">加载失败结果。</param>
-        private void NotifyBatchFailed(AdLoadResult e)
+        /// <param name="unit">失败槽位。</param>
+        /// <param name="e">失败快照。</param>
+        private void TrackFailedResult(AdUnit unit, AdLoadResult e)
         {
-            for (int i = m_PendingBatches.Count - 1; i >= 0; i--)
-            {
-                var batch = m_PendingBatches[i];
-                if (!batch.PendingPlacementIds.Remove(e.PlacementId)) continue;
-                batch.LastFailure = e;
-                if (batch.PendingPlacementIds.Count > 0) continue;
-                batch.Registration.Dispose();
-                batch.Tcs.TrySetResult(batch.LastFailure);
-                m_PendingBatches.RemoveAt(i);
-            }
+            var props = BuildBaseProps(e.Format, e.PlacementId);
+            props["nova_ad_result"] = 0;
+            props["nova_ad_errorcode"] = e.ErrorCode;
+            props["nova_ad_error_message"] = e.ErrorMessage ?? string.Empty;
+            MergeCustom(props, unit.RequestCustomProps);
+            TrackEvent("nova_ad_fill_fail", props);
         }
 
         /// <summary>
-        /// 触发 OnInitResult 事件，并上报 nova_ad_init 打点。
+        /// 初始化结果打点及事件均串行进入主线程；成功门由具体SDK渠道管理。
         /// </summary>
-        /// <param name="success">初始化是否成功。</param>
+        /// <param name="success">原厂真实初始化结果。</param>
         protected void RaiseInitResult(bool success)
         {
-            TrackEvent("nova_ad_init", new Dictionary<string, object>
+            DispatchAdStateCallback(() =>
             {
-                { "nova_success", success },
-                { "nova_ad_channel", Name },
+                TrackEvent("nova_ad_init", new Dictionary<string, object> { { "nova_success", success }, { "nova_ad_channel", Name } });
+                OnInitResult?.Invoke(success);
             });
-            PostAdCallbackToMainThread(() => OnInitResult?.Invoke(success));
         }
 
         /// <summary>
-        /// 上报 nova_ad_show_result 成功打点，再将 OnShowCompleted 事件排入主线程。
-        /// 展示成功不是展示生命周期结束点，不推进 MarkShown，避免 displayed 与 hidden 各触发一次续杯。
+        /// 保留单参数displayed入口；成功展示不消费槽位或触发续杯。
         /// </summary>
-        /// <param name="result">广告展示成功结果。</param>
-        protected void RaiseShowCompleted(AdResult result)
-            => RaiseShowCompleted(result, null);
+        /// <param name="result">displayed结果。</param>
+        protected void RaiseShowCompleted(AdResult result) => RaiseShowCompleted(result, null);
 
         /// <summary>
-        /// 上报带渠道附加属性的展示成功结果，再将 OnShowCompleted 事件排入主线程；不结束展示生命周期。
+        /// 匹配当前展示后一次派发displayed，保留原奖励字段与渠道曝光属性。
         /// </summary>
-        /// <param name="result">广告展示成功结果。</param>
-        /// <param name="extraProps">本次展示的渠道关联属性，可为 null；不覆盖基础字段或业务属性。</param>
+        /// <param name="result">displayed结果。</param>
+        /// <param name="extraProps">可空曝光属性，复制字典结构。</param>
         protected void RaiseShowCompleted(AdResult result, Dictionary<string, object> extraProps)
         {
-            TrackAdShowResult(result, true, FindAdUnit(result.PlacementId)?.ShowCustomProps, extraProps);
-            PostAdCallbackToMainThread(() => OnShowCompleted?.Invoke(result));
+            if (result == null) throw new ArgumentNullException(nameof(result));
+            var snapshot = SnapshotShowResult(result);
+            var extra = SnapshotAdProps(extraProps);
+            DispatchAdStateCallback(() =>
+            {
+                var unit = GetActiveShowUnit(snapshot);
+                if (unit == null || snapshot.Format == AdFormat.Banner)
+                {
+                    return;
+                }
+                if (m_ActiveAdShow != null)
+                {
+                    if (m_ActiveAdShow.Displayed)
+                    {
+                        return;
+                    }
+                    m_ActiveAdShow.Displayed = true;
+                }
+                TrackAdShowResult(snapshot, true, unit.ShowCustomProps, extra);
+                OnShowCompleted?.Invoke(snapshot);
+            });
         }
 
         /// <summary>
-        /// 触发 OnShowFailed 事件，并上报 nova_ad_show_result（失败）打点。
-        /// 执行顺序：先保存展示属性，再推进状态机并打点，最后将业务事件排入主线程。
+        /// 保留单参数displayFailed入口，匹配终态后一次收口。
         /// </summary>
-        /// <param name="result">广告播放失败结果。</param>
-        protected void RaiseShowFailed(AdResult result)
-            => RaiseShowFailed(result, null);
+        /// <param name="result">原厂展示失败结果。</param>
+        protected void RaiseShowFailed(AdResult result) => RaiseShowFailed(result, null);
 
         /// <summary>
-        /// 保存本次展示属性，推进失败收尾与续杯，再上报带渠道关联属性的失败结果并派发业务事件。
+        /// 先结束匹配展示占用再记录失败与普通续杯，重复终态不能再补载。
         /// </summary>
-        /// <param name="result">广告展示失败结果。</param>
-        /// <param name="extraProps">清理渠道上下文前保存的关联属性，可为 null；不覆盖基础字段或业务属性。</param>
+        /// <param name="result">展示失败结果。</param>
+        /// <param name="extraProps">原厂上下文清理前取得的曝光属性。</param>
         protected void RaiseShowFailed(AdResult result, Dictionary<string, object> extraProps)
         {
-            var unit = FindAdUnit(result.PlacementId);
-            var showCustomProps = unit?.ShowCustomProps;
-            MarkShown(result.PlacementId);
-            TrackAdShowResult(result, false, showCustomProps, extraProps);
-            PostAdCallbackToMainThread(() => OnShowFailed?.Invoke(result));
+            if (result == null) throw new ArgumentNullException(nameof(result));
+            var snapshot = SnapshotShowResult(result);
+            var extra = SnapshotAdProps(extraProps);
+            DispatchAdStateCallback(() =>
+            {
+                var unit = FinishActiveShow(snapshot);
+                if (unit == null)
+                {
+                    return;
+                }
+                var custom = unit.ShowCustomProps;
+                TrackAdShowResult(snapshot, false, custom, extra);
+                RefillAfterShow(unit);
+                if (!m_IsDisposed) OnShowFailed?.Invoke(snapshot);
+            });
         }
 
         /// <summary>
         /// 统一上报展示结果：成功为 1，失败为 0；合并本次展示属性和渠道关联属性。
-        /// 失败调用方须在 MarkShown 清理属性前保存 showCustomProps，避免自动续杯导致属性丢失。
+        /// 失败调用方在消费组清理前保存showCustomProps，避免普通续杯导致属性丢失。
         /// </summary>
         /// <param name="result">本次展示结果，提供广告格式与广告位。</param>
         /// <param name="success">是否收到展示成功回调；与关闭、奖励结果无关。</param>
@@ -435,32 +432,38 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 触发 OnAdClosed 事件，并在基类内部上报 nova_ad_hidden 打点。
-        /// 执行顺序：保存展示属性 → MarkShown（含非 Banner 续杯）→ 关闭打点 → 将业务通知排入主线程。
+        /// 保留旧hidden入口，rewarded只写埋点不推导业务奖励字段。
         /// </summary>
-        /// <param name="result">广告关闭结果。</param>
-        /// <param name="rewarded">写入 nova_can_get_reward 的渠道奖励判定；不改写 result.RewardGranted。</param>
-        protected void RaiseAdClosed(AdResult result, bool rewarded = false)
-            => RaiseAdClosed(result, rewarded, null);
+        /// <param name="result">关闭结果。</param>
+        /// <param name="rewarded">写入nova_can_get_reward的渠道奖励判定。</param>
+        protected void RaiseAdClosed(AdResult result, bool rewarded = false) => RaiseAdClosed(result, rewarded, null);
 
         /// <summary>
-        /// 结束展示并上报带渠道附加属性的 nova_ad_hidden，再将关闭业务事件排入主线程。
-        /// 先保存业务属性再触发续杯；渠道属性不覆盖基础字段和业务属性。
+        /// 匹配hidden一次收尾并补充所有组，展示属性在消费前保存。
         /// </summary>
-        /// <param name="result">广告关闭结果。</param>
-        /// <param name="rewarded">写入 nova_can_get_reward 的渠道奖励判定；MAX 插屏为 true，激励取官方奖励状态，开屏为 false。</param>
-        /// <param name="extraProps">关闭前取得的渠道关联属性，可为 null。</param>
+        /// <param name="result">原厂关闭结果。</param>
+        /// <param name="rewarded">关闭埋点奖励判定，不改result.RewardGranted。</param>
+        /// <param name="extraProps">曝光关联属性，字典结构将复制。</param>
         protected void RaiseAdClosed(AdResult result, bool rewarded, Dictionary<string, object> extraProps)
         {
-            var closedUnit = FindAdUnit(result.PlacementId);
-            var showCustomProps = closedUnit?.ShowCustomProps;
-            MarkShown(result.PlacementId);
-            var props = BuildBaseProps(result.Format, result.PlacementId);
-            props["nova_can_get_reward"] = rewarded;
-            MergeCustom(props, showCustomProps);
-            MergeCustom(props, extraProps);
-            TrackEvent("nova_ad_hidden", props);
-            PostAdCallbackToMainThread(() => OnAdClosed?.Invoke(result));
+            if (result == null) throw new ArgumentNullException(nameof(result));
+            var snapshot = SnapshotShowResult(result);
+            var extra = SnapshotAdProps(extraProps);
+            DispatchAdStateCallback(() =>
+            {
+                var unit = FinishActiveShow(snapshot);
+                if (unit == null)
+                {
+                    return;
+                }
+                var props = BuildBaseProps(snapshot.Format, snapshot.PlacementId);
+                props["nova_can_get_reward"] = rewarded;
+                MergeCustom(props, unit.ShowCustomProps);
+                MergeCustom(props, extra);
+                TrackEvent("nova_ad_hidden", props);
+                RefillAfterShow(unit);
+                if (!m_IsDisposed) OnAdClosed?.Invoke(snapshot);
+            });
         }
 
         /// <summary>
@@ -496,10 +499,14 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <param name="placementId">广告位唯一标识。</param>
         protected void TrackAdClick(AdFormat format, string placementId)
         {
-            var unit = FindAdUnit(placementId);
-            var props = BuildBaseProps(format, placementId);
-            MergeCustom(props, unit?.ShowCustomProps);
-            TrackEvent("nova_ad_click", props);
+            DispatchAdStateCallback(() =>
+            {
+                var unit = FindAdUnit(placementId);
+                if (unit == null || unit.Format != format) return;
+                var props = BuildBaseProps(format, placementId);
+                MergeCustom(props, unit.ShowCustomProps);
+                TrackEvent("nova_ad_click", props);
+            });
         }
     }
 }

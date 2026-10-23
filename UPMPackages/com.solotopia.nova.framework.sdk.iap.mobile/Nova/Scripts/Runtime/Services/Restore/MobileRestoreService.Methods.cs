@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 using NovaFramework.Runtime;
@@ -18,6 +19,31 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
     internal sealed partial class MobileRestoreService
     {
+        // [UnityIAP-FocusRefetch-Workaround] Unity IAP 5.3.0~5.4.4 Google 回到前台重拉会覆盖 FetchPurchases 回调，官方修复后删除。
+        /// <summary>
+        /// 回到前台延迟后，若已有购买仍在拉取（回调已被 Unity IAP 前台重拉覆盖），重新发起 FetchPurchases。
+        /// </summary>
+        /// <param name="ct">运行期后台任务取消令牌。</param>
+        private async UniTask RefetchExistingPurchasesAfterForegroundAsync(CancellationToken ct)
+        {
+            try
+            {
+                await UniTask.Delay(c_ForegroundRefetchDelayMs, DelayType.Realtime, PlayerLoopTiming.Update, ct);
+            }
+            finally
+            {
+                m_IsForegroundRefetchScheduled = false;
+            }
+
+            if (!m_IsExistingPurchasesFetchInProgress || m_Hub.ExtendedService?.IsAttached != true)
+            {
+                return;
+            }
+
+            LogWarning("回到前台后已有购买仍在拉取，回调已被 Unity IAP 前台重拉覆盖，重新发起拉取。");
+            m_Hub.ExtendedService.FetchPurchases();
+        }
+
         /// <summary>
         /// 清空 CheckEntitlement 字典，遍历商品表中的订阅和非消耗品，逐个调用 Controller.CheckEntitlement 发起权益查询。
         /// 无需查询的商品时直接跳过进入 ProcessAllEntitlementsCompleted。

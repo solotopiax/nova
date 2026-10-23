@@ -96,6 +96,9 @@ namespace NovaFramework.Runtime
         internal const string ResourcesName = "Settings";
         private static Settings _instance;
 
+        /// <summary>
+        /// 缓存读取 Resources 设置，缺资源时创建默认内存对象；也可能迁移旧快捷键，不是无副作用的字段查询。
+        /// </summary>
         public static Settings Instance
         {
             get

@@ -46,3 +46,7 @@ UniTask<bool> OpenNotificationSettingsAsync();
 - [NativeComponent.md](../../NativeComponent.md)
 - [NativeManagerBase.md](../Implements/NativeManagerBase.md)
 - [NativeManager.md](../Implements/NativeManager.md)
+
+## 可选自身 APK 安装扩展
+
+内置 `NativeManager` 另实现 [INativeAppInstaller](INativeAppInstaller.md)。旧 `INativeManager` 的成员不增加，已有自定义实现保持兼容；没有实现该扩展时 `NativeComponent.InstallApkAsync` 返回 `Unsupported`，查询和设置入口返回 `false`。APK 下载仍属于 App，安装只能显式发起。

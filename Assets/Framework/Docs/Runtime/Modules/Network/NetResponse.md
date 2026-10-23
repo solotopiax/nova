@@ -1,4 +1,4 @@
-# NetResponse&lt;T&gt;
+# `NetResponse<T>`
 
 ## 1. 简介
 
@@ -19,7 +19,7 @@
 | `public bool IsSuccess { get; }` | 请求是否成功 |
 | `public int ErrorCode { get; }` | 错误码；成功时为 `NetErrorCode.SUCCESS`（0） |
 | `public string ErrorMessage { get; }` | 错误描述；成功时为空字符串 |
-| `public T Data { get; }` | 业务响应 Proto 数据；失败时为 `default`（通常为 `null`） |
+| `public T Data { get; }` | 业务响应 Proto 原引用；成功时也可为 null，失败时可携带已解析的错误业务体 |
 
 ### 静态工厂方法
 
@@ -27,6 +27,7 @@
 |---|---|
 | `public static NetResponse<T> Success(T data)` | 创建成功响应；`ErrorCode` 固定为 `NetErrorCode.SUCCESS`（0），`ErrorMessage` 为空串 |
 | `public static NetResponse<T> Fail(int errorCode, string errorMessage)` | 创建失败响应；`Data` 固定为 `default` |
+| `public static NetResponse<T> Fail(int errorCode, string errorMessage, T data)` | 创建失败响应并保留 data，例如绑定冲突附带的 existing_uid |
 
 > **构造函数为 `private`**，外部只能通过 `Success` / `Fail` 创建实例。
 
@@ -59,8 +60,9 @@ else
 
 ## 4. 内部约束
 
-- **不可变**：所有属性均为 `{ get; }` 无 setter，实例创建后状态固定。
-- **失败时 `Data` 为 default**：业务侧读取 `Data` 前必须先判断 `IsSuccess`，否则可能触发 NullReferenceException。
+- 包装属性只有 getter，但 Data 是原消息引用，消息内容仍可修改，不是深度不可变快照。
+- 成功/失败与 Data 是否为 null 分别检查；错误响应可有有效 Data，成功工厂也不保证非空。Fail 不验证错误码非零，也不把 null 描述归一化；IsSuccess 由工厂保存，不按 ErrorCode 动态计算。
+- 实例是普通托管对象，不归还 ReferencePool；内部 NetResult 同样保存业务 byte[] 原引用，不校验或克隆内容。
 - **泛型约束 `where T : IMessage<T>`**：确保 `T` 为 Protobuf 消息类型。
 
 ---

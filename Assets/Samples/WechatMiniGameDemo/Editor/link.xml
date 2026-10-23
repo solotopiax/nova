@@ -9,7 +9,8 @@
   <assembly fullname="Unity.TextMeshPro" preserve="all" />
   <assembly fullname="NovaFramework.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.WeChatMiniGame.Runtime" preserve="all" />
-  <assembly fullname="NovaFramework.SDK.WeChatMiniGame.GravityEngine.Runtime" preserve="all" />
+  <!-- 引力程序集仅支持 Editor/WebGL；原生目标不包含该程序集。 -->
+  <assembly fullname="NovaFramework.SDK.WeChatMiniGame.GravityEngine.Runtime" preserve="all" ignoreIfMissing="1" />
   <assembly fullname="NovaFramework.SDK.TGAPlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.AppsFlyerPlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.Kit.Network.GameLogin.Runtime" preserve="all" />

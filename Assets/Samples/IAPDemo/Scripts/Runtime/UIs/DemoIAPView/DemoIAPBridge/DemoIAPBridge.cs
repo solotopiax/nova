@@ -12,6 +12,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.IAP.Runtime;
+using UnityEngine;
 
 using FeedbackLevel = NovaFramework.Sdk.IAP.Samples.Runtime.BaseDemoView.FeedbackLevel;
 
@@ -65,7 +66,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 触发基础 IAP 本地补单扫描。
+        /// 触发基础 IAP 本地补单扫描；关闭后停止页面反馈，非取消异常仍保留在 Console。
         /// </summary>
         /// <returns>异步任务。</returns>
         internal async UniTask CheckLocalOrdersAsync()
@@ -86,7 +87,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
             catch (Exception exception)
             {
-                AppendFeedback("本地补单扫描失败：" + exception.Message, FeedbackLevel.Error);
+                if (!m_Disposed) AppendFeedback("本地补单扫描失败：" + exception.Message, FeedbackLevel.Error);
+                else Debug.LogException(exception);
             }
         }
 

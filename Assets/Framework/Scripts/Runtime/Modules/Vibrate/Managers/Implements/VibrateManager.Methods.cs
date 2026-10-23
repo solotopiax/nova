@@ -21,7 +21,7 @@ namespace NovaFramework.Runtime
     internal sealed partial class VibrateManager : VibrateManagerBase
     {
         /// <summary>
-        /// 构造振动数据加载所需的资源加载委托（异步路径）。
+        /// 构造异步数据委托；先取 TextAsset 并 Release 句柄再返回给解析器，后续 release 委托为空。
         /// </summary>
         /// <param name="loadFunc">输出的资源异步加载委托。</param>
         /// <param name="releaseFunc">输出的资源释放委托。</param>
@@ -39,7 +39,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造振动数据加载所需的资源加载委托（同步路径）。
+        /// 构造同步数据委托；先取 TextAsset 并 Release 句柄再返回给解析器，未复制资产数据。
         /// </summary>
         /// <param name="syncLoadFunc">输出的资源同步加载委托。</param>
         /// <param name="releaseFunc">输出的资源释放委托。</param>
@@ -148,7 +148,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 从单张 ITable 构建分组缓存。
-        /// 通过 ITable<T> 协变转型直接访问 DataList，完全消除反射开销。
+        /// 通过 <see cref="ITable{T}"/> 协变转型直接访问 DataList，完全消除反射开销。
         /// </summary>
         /// <typeparam name="T">数据行接口类型，须实现 IVibrateRow。</typeparam>
         /// <param name="table">目标 ITable 实例。</param>
@@ -343,7 +343,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 校验参数是否在 0~1 范围内。
+        /// 通过小于 0/大于 1 的比较校验范围；NaN 不会被这两个比较拒绝，不是有限数校验。
         /// </summary>
         /// <param name="value">待校验的值。</param>
         /// <param name="paramName">参数名称。</param>

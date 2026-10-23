@@ -134,6 +134,8 @@ MobileStore.InitializeAsync(table, config, ctx, ct)
 | 失败数量小于请求数量 | 视为至少有商品成功，置 `Succeeded` 并停止重试；仍缺失 SKU 继续保留拦截 |
 | 成功态迟到失败 | 只补记录 Controller 当前仍缺失的 SKU，不回退 `Failed`，不重试，不重复触发后续流程 |
 
+上述商品重试通过 `UniTask.Delay(..., DelayType.DeltaTime, ...)` 计时，默认间隔是游戏缩放时间，实际墙钟等待会受 `Time.timeScale` 影响，不能将 2/5/10 秒理解为固定实时期限。成功查询到商品元数据也不证明 `availableToPurchase`、平台权益或实际购买必然成功。
+
 `m_UnavailableSkus` 只应表达“当前 `StoreController` 查不到”的 SKU。购买和商品查询会通过该集合拦截不可用商品；因此失败回调不能无条件写入失败列表，否则 Unity IAP 的迟到失败会把已成功商品误标记为不可买。成功回调清理旧失败 SKU 后会立即根据当前 Controller 重建仍缺失 SKU，覆盖“14 个商品成功、1 个 SKU 找不到”的部分成功场景。
 
 ## 6. 支付流程
@@ -314,6 +316,7 @@ Mobile 在 `MobileStore.Track.cs` 中构造订单号、验单状态和失败原�
 | Unity IAP 商店连接 | 经 `MobileServiceHub.RunBackgroundTask` 启动，不阻塞游戏主 Loading；连接等待接入 Store 运行期取消令牌，连接成功前支付由 `IsStoreReady` 拦截 |
 | 验单队列处理 | 经 `MobileServiceHub.RunBackgroundTask` 启动，接入移动端官方内购商店运行期取消令牌 |
 | 商品成功后的权益刷新 | 先标记并发起 `FetchPurchases`；已有购买回调前只登记延后请求，成功缓存票据或失败收口后再经 `RunBackgroundTask` 补跑 |
+| 回到前台重新拉取已有购买 | `MobileStore` 实现 `IIAPStorePauseListener` / `IIAPStoreFocusListener`，Android 下拉取期间回到前台时经 `RunBackgroundTask` 延迟 3 秒重新 `FetchPurchases`，Pause 与 Focus 同时恢复只安排一次；用于规避 Unity IAP 前台重拉覆盖回调（`[UnityIAP-FocusRefetch-Workaround]`） |
 | 平台已有购买后的补单扫描 | 成功回调先缓存平台票据和 PendingOrder，再补跑延后权益或进入统一补单；失败回调优先补跑延后权益，没有延后请求时执行完整补单兜底 |
 | 订阅到期倒计时 | 自身 CTS 与 Hub 运行期取消令牌链接，Dispose 时统一取消；到期后经 RestoreService 发起 `FetchPurchases`，回调收口后继续权益刷新，不进入 `RestoreTransactions` |
 | 支付验单结果桥接 | 经 `RunBackgroundTask` 等待验单 TCS；Dispose 时取消等待，并以 `StoreNotAvailable` 失败结果解除支付 await，不向业务抛取消异常 |
@@ -399,3 +402,20 @@ Android 运行期的 `TransactionId` 承载 Google `OrderId`，服务端验单�
 
 **误区 7：认为 `EnableAlwaysPaySucceed` 可以在移动端正式包中生效。**
 该开关只用于 Editor 调试。移动端编译产物不包含 `MOCK_ORDER_MOBILE` 支付成功分支，发货必须以服务端验单结果为准。
+
+## 13. 接口、账号与异常边界
+
+| 入口 | 当前约束 |
+|---|---|
+| `QueryProductsAsync` | 同步遍历已有 Controller 商品缓存并立即返回 UniTask，不发 FetchProducts/HTTP；列表为 null 或未 Ready 时返回空，重复 ID 不去重，ct 当前未读取。Store 的转发没有 Hub 空保护，初始化前或 Dispose 后调用可能空引用；metadata 缺失及厂商查询异常会传播。 |
+| `GetProductInfo` | 要求 Init Ready 且 Controller attached，按 TableId→ProductID 查当前元数据，缺失回 null；本身不检查 `availableToPurchase`，不代表订阅或非消耗品权益。 |
+| `GetSubscriptionExpireTime` / `HasNonConsumeProduct` | 只读当前 UID 的存档；缺项分别为 0/false，不刷新平台或服务器，也不证明远端没有权益。 |
+| `SetSubscriptionReplaceMode` | 只保存整数；当前 Android 同组升级分支最终仍调用普通 `PurchaseProduct(product)`，没有把旧 SKU 或该模式传入此调用，不能据设置成功声称平台升降级策略已生效。 |
+| `PayAsync` | 入口检查 ct，但进入普通平台购买后等待的支付 TCS 没有绑定该调用令牌，也没有统一默认超时；Deferred 回调只记录，不完成支付等待。运行期释放取消验单桥接与平台交易撤销是不同动作。 |
+| `RestorePurchasesAsync` | 未 Ready、未登录或已有 Restore 时可返回空；取消通过 FinishRestore 返回已收集的部分结果，不代表全量完成或所有订单失败。平台恢复/权益回调没有统一默认期限或 generation；重复、迟到回调仍须结合当前状态判断。 |
+
+`SetUserId` 只有有效 UID 变化才清运行期打点缓存并加载新存档，同 UID 不重读，空 UID 不清旧账号。它不重建 Hub 取消源，不取消已经发送的 HTTP、支付 TCS、验单队列或登录前订单暂存；本地订单键只含正 `tableId + "|" + ReceiptParam.ToUpperInvariant()`，不含 UID，不 Trim。回调的当前支付匹配按 tableId 和归一化 ReceiptParam，不额外比较解码 UID 或 transaction id。切号时不能依赖存档路径分开就推断旧交易结果已经隔离；服务端仍需按真实账号和稳定订单号履约幂等。
+
+本地存档及事件不是一笔事务。旧订单迁移只修改内存，已有新键优先，迁移后需正常保存；保存失败可能留下已改内存。平台回调主要取购物车首商品，不能把当前单商品路径解释成多商品订单的完整支持。结束活跃状态、弹 Loading、派发事件和完成 TCS 有明确先后；事件、日志、打点或持久化抛错可能发生在 TCS 完成前，部分路径已清完成源引用后也不会自动补偿。`DisposeAsync` 逐服务释放且没有总体 finally/join，不能把取消通知视为所有厂商与网络操作已结束。
+
+打点的本地成功标记和验单成功去重键先写入，再构造属性/发送事件；发送或保存异常不回滚这些标记。空去重键不能有效去重，300 条容量淘汰后旧订单也可再次上报；它们用于客户端统计，不能提供服务端恰好一次投递或发货保障。`nova_iap_first_pay_order_validate` 表示当前主动订单的首次验单失败，不表示该账号历史首充。协议、票据、透传、UUID 和错误诊断可能记录原文，采集、分享前需按实际内容脱敏。

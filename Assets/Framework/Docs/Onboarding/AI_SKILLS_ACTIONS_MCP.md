@@ -37,6 +37,18 @@ flowchart TD
 
 一个 Workflow 可以组织多个 Operation，一个 Operation 可以调用多个 Action，同一个 Action 也可以被多个 Skill 复用。只读分析或工作区文件任务可能只使用读取、编辑或 CLI 工具，不经过 Unity MCP。
 
+“这个参数是什么意思”“哪里有对应功能”可以先用随包 `Agents/Tools/nova_capabilities.py` 的 `inventory` / `describe` 查询功能、源码参数声明、文档和现有工具入口，Router 再按结果选择任务。它展示的源码默认值不等于当前项目有效值，查询也不执行配置修改。
+
+Nova 按功能族维护这份映射，让一个 Skill、Action 或固定代码入口服务多个参数和任务。日常开发把参数与局部行为说明放在源码/XML，把跨方法流程放在已有 Docs，再同步能力导航、执行契约与验收要求；已有接口能完成的固定操作直接复用，新增顶层 Skill 需要新的独立用户任务和验收边界。
+
+## 参数和函数如何找到工具
+
+例如你说“调整请求超时”，Agent 先查对应字段或方法，再读旁边的 XML 注释和所属模块 Docs，理解单位、默认值、何时生效；随后读取当前对象或配置，确认项目实际值。功能导航再把它引到已有配置 Skill，由该 Skill 选择已开放的 Action 或 Unity 编辑工具。
+
+这里没有“每个函数必须绑定一个工具”的要求。多个字段和函数可以服务同一个任务，内部 helper 也无需直接暴露。工具参数始终从当前 live `describe` 获取，函数声明不是执行授权。
+
+索引由源码自动生成，用文件、类型、方法签名区分身份和重载。位置与指纹只是帮助工具找到并核实当前源码，不要求人工维护代码行号；源码变动导致位置过期时刷新索引，不靠旧行号接着读。注释只维护在代码里，Docs 说明流程；不再复制一套函数说明或历史验收档案。
+
 ## 第二件事：把选好的调用送进 Unity
 
 AI 在 Unity Editor 外部，Nova Action 在 Unity Editor 内部，需要连接把请求送进去。**Nova 当前复用 Unity MCP 的连接，并把自己的 `nova_project_action` 工具注册进去。**
@@ -105,9 +117,12 @@ AI 读取 `nova-project-onboard-sdk-kit` 这个 Workflow，组织包安装、配
 
 **Action 成功只证明它自己的操作完成。**“配置导出成功”不能直接当成“SDK 接入并运行成功”，后者还需要满足整个 Workflow 的验收要求。
 
+已有固定入口应直接复用：`nova.project.ui.export` 支持全部 Unit 的 all/code/data，以及指定 Excel 的 code/data；单文件 all 没有原子领域入口。ConfigMaster 面板检查、补引用、批量字段修改与归一化使用对应配置 Action；符合资产契约的自有普通 Prefab 组件或单对象 SO，使用 `nova.project.settings.inspect-target / patch-target` 检查并保存真实字段。场景、内置组件、Prefab 变体/嵌套和 UnityEvent 仍按同一配置 Skill 的共享 Unity MCP 分支处理，其冻结、收据和脱敏保证与 Nova Action 分开核实。Player Action 当前只支持 Standalone 桌面与 WebGL，Android/iOS 由已有平台专属分支交付。实际参数与开放范围以 live `describe` 为准；导出、字段保存或构建成功分别按对应任务验收。
+
 ## 继续阅读与实现依据
 
 - [Nova Project Skills](../../Agents/INDEX.md)：当前消费端能力清单、分发位置和执行契约。
+- [自然语言开发入口](NATURAL_LANGUAGE_DEVELOPMENT.md)：查询当前函数、参数与输入知识，并按本次任务验收。
 - [Agent 快速入口](../START_HERE.md)：自动发现、项目边界和日常任务入口。
 - [EditorUtil.AgentActions](../Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)：Action 的计划、执行、验证与恢复协议。
 - [Framework 到中立契约的适配实现](../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActionContractProvider.cs)：把请求转交 `EditorUtil.AgentActions`。

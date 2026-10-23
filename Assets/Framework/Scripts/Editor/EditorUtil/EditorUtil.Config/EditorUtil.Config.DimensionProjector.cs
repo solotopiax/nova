@@ -908,6 +908,7 @@ namespace NovaFramework.Editor
                     if (dst == null || value == null) return;
                     dst.AESKey = value.AESKey;
                     dst.AESIV = value.AESIV;
+                    dst.ExtensionConfigsJson = value.ExtensionConfigsJson;
                     dst.PrivacyInfoConfig = value.PrivacyInfoConfig;
                     dst.InfoPlistUsageDescriptions = value.InfoPlistUsageDescriptions;
                 }
@@ -1015,8 +1016,9 @@ namespace NovaFramework.Editor
                 /// <summary>
                 /// 深拷贝 SerializeReference 多态对象，产生与源完全独立的新实例（内存态独立，非仅 CopySerialized 存盘后独立）。
                 /// 经 JsonUtility round-trip 实现：FromJsonOverwrite 写入 Activator 新建的同类型实例，保留运行时多态类型 + 值字段一致 + 实例独立。
-                /// 约束：SDK/Kit 配置类必须是可被 JsonUtility 序列化的叶子数据（[Serializable] 简单值字段），
-                /// 禁止内嵌 [SerializeReference] 多态字段——JsonUtility 不保留嵌套多态，届时会丢失子引用类型。
+                /// 配置字段须符合当前 Unity 的序列化规则；Unity 6000.4.2f1 已对当前 AdPluginConfig/MaxAdChannelConfig
+                /// 与 IAPPluginConfig/Store 配置图验证多态类型、字段值及引用独立性，不能据此推定任意自定义对象图。
+                /// 新增配置形状仍须验证真实类型、值和引用独立性，不能直接复用源对象引用。
                 /// 替代历史方案：dstProp.boxedValue = srcProp.boxedValue 对 managed reference 在内存态共享同一引用（非深拷贝），
                 /// 会导致同组各格共享对象、跨格编辑互相污染，已废止。
                 /// </summary>
@@ -1065,6 +1067,7 @@ namespace NovaFramework.Editor
                     {
                         AESKey = src.AESKey,
                         AESIV = src.AESIV,
+                        ExtensionConfigsJson = src.ExtensionConfigsJson,
                         PrivacyInfoConfig = src.PrivacyInfoConfig,
                         InfoPlistUsageDescriptions = src.InfoPlistUsageDescriptions,
                     };

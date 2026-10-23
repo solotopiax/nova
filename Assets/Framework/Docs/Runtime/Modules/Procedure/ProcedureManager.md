@@ -103,6 +103,10 @@
 - `Shutdown()` 会主动销毁 Launcher UI；如果你把它当成“纯逻辑关闭”，会漏看 UI 副作用。
 - `CurrentProcedure` 在未初始化时是 `null`，不要把它当成入口流程一定已就绪。
 
+## 参数与生命周期边界
+
+Initialize 只浅复制数组，实例仍共享；config=null 在读取 Procedures 时失败，没有先关闭旧 FSM，重新初始化可能遗留旧流程状态。FSM Create/入口 OnEnter 的失败无整体回滚。Has/Get 在未初始化时抛，按准确 Type 查询，不隐式构造或加载 DLL；CurrentProcedure 的 null 也可能表示未启动。RegisterAdditionalProcedures 的 null/空数组均拒绝，其余校验和 OnInit 的部分失败边界见 Fsm.AddStates。Shutdown 任一步异常会中断后续步骤，FSM 字段可能仍保留；DestroyAll 发起的是 Unity 延后销毁。Priority=6 表示较早 Update、较晚 Shutdown，不规定 Start/Initialize 顺序。接口与 Base 抽象声明不执行这些动作。
+
 ## 继续阅读
 
 关键源码：

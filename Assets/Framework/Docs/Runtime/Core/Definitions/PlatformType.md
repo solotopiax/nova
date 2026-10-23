@@ -52,4 +52,4 @@ if (master.TryGetEntry(PlatformType.Android, ChannelType.Google, out var entry))
 ## §13 关联文档
 
 - [ChannelType.md](ChannelType.md)
-- [ConfigMasterSO.md](../../Modules/Config/ConfigMasterSO.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)

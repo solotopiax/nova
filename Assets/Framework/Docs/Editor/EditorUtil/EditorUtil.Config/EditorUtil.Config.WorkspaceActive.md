@@ -107,3 +107,9 @@ EditorUtil.Config.WorkspaceActive.Set(selectedMaster);
 - [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
 - [EditorUtil.Config.YooAssetInjector.md](EditorUtil.Config.YooAssetInjector.md)（在 WorkspaceActive.Get 成功后由 ConfigWindow 调用）
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)（主要消费方：启动期 Get / 切换 Namespace 时 Set）
+
+## 绑定、路由与只读入口
+
+GUID 是身份，pathHint 只作提示；Get/GetPipifySettings 可修 hint 并写 Globals，不根据场景自行换绑。TryGetPersisted 系列才只读精确核 GUID、hint 和实际资产，不修复。ReconcileScene 在构建时直接跳过；Sample 路由从场景目录向上找同 owner 的 Editor/ConfigMaster.asset 与 PipifySettings.asset，不跨目录拼对；离开 Sample 恢复业务备份，不全仓猜唯一配置。
+
+TrySet 可独立更换 Master，未同时校 Pipify 配对；TrySetExplicitWorkspace 才要求持久化与 Sample/业务配对。null Set 无成功回执，清窗口 Master 也不等于清持久绑定。Globals 版本不符/损坏拒绝，不自动升级；随机 tmp 原子替换失败返回 false，清理失败可留 tmp，没有跨进程 CAS 或断电持久保证。GetActiveRuntime 的布局回退只在 ExportTarget 未配置时使用，资产存在不证明坐标与当前 Master 一致。

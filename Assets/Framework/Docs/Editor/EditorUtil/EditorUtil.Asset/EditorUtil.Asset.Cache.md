@@ -34,3 +34,7 @@ string sandboxRoot = EditorUtil.Asset.Cache.GetEditorSandboxRootPath();
 
 - AssetComponent Inspector → 热更配置 → 启动期热更 Tag 提示框下方 → `清空本地热更资源缓存`；按钮下方 HelpBox 说明清理范围与 DeviceID 保留规则
 - Unity 菜单 → `Nova/Clean Hotfix Caches`
+
+## 调用与失败边界
+
+底层 ClearAllAtPaths 先删沙盒目录，再只删 Asset 目录顶层 *.version；沙盒不存在也继续版本文件清理，返回值只计版本文件数量。任一 IO 失败都不回滚此前删除。ResolveEditorSandboxRoot 要求 Library 严格子路径；ValidateDeleteTarget 是另一层词法保护，单独调用它并不强制所有目标都在 Library。路径相等/子目录判断不解析符号链接物理目标，不能据字符串检查推导任意外部删除授权。公开菜单仍有独立 EditMode 门和失败对话，不返回结构化成功 Receipt。

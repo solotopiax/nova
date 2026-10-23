@@ -21,12 +21,12 @@
 | `FullName` | `string` | 对象池完整名称（类型+名称） |
 | `ObjectType` | `Type` | 对象池对象类型 |
 | `Count` | `int` | 对象池中对象数量 |
-| `CanReleaseCount` | `int` | 可被释放的对象数量 |
+| `CanReleaseCount` | `int` | 未在用、未锁定且 `CustomCanReleaseFlag == true` 的对象数量，不要求已过期 |
 | `AllowMultiGet` | `bool` | 是否允许对象被多次获取 |
 | `AutoReleaseInterval` | `float` | 自动释放间隔秒数 |
 | `Capacity` | `int` | 对象池容量 |
 | `ExpireTime` | `float` | 对象过期秒数 |
-| `Priority` | `int` | 对象池优先级；默认释放策略下会先释放数值更小的对象 |
+| `Priority` | `int` | 池优先级；Manager 全局释放按该值升序遍历池。池内对象顺序由 `ObjectBase.Priority` 决定 |
 
 ## 公开 API
 
@@ -63,6 +63,12 @@ void Release(ReleaseObjectsFilter<T> releaseObjectsFilter)
 void Release(int toReleaseCount, ReleaseObjectsFilter<T> releaseObjectsFilter)
 void ReleaseAllUnused()
 ```
+
+各重载的参数、失败和生命周期契约见 [ObjectPool.md](ObjectPool.md#逐重载与参数语义)。无参 `CanGet()` / `Get()` 仅查空名称；`ReleaseAllUnused()` 跳过容量与过期筛选，仍保护在用、锁定及自定义禁止释放的对象。
+
+## 参数与所有权边界
+
+接口只声明强类型池能力，不继承 ObjectPoolBase 的运行状态或执行正文。默认实现的 Get/Put 引用计数、释放保护、重载默认名称和失败后的部分副作用，统一见 ObjectPool；名称/可用性查询不保留候选，引用本身也不保活 Target。
 
 ## 关联文档
 

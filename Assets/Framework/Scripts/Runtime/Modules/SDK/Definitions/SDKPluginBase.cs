@@ -17,7 +17,7 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// 为直接继承 SDKPluginBase 的插件声明配置类型，使 Manager 与 Inspector 无需构造实例即可完成启用过滤。
-    /// 新插件优先继承 PluginBase&lt;TConfig&gt;；仅在无法迁移基类时使用此兼容声明。
+    /// 新插件优先继承 <see cref="PluginBase{TConfig}"/>；仅在无法迁移基类时使用此兼容声明。
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class SDKPluginConfigTypeAttribute : Attribute
@@ -40,8 +40,9 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// SDK 插件通用抽象基类（纯 C#，非 MonoBehaviour）。
     /// 派生类只需重写 OnInitializeAsync / OnDisposeAsync，以及 Name / Priority 属性。
-    /// 需要配置的插件必须继承 PluginBase&lt;TConfig&gt;，或在具体类型上声明 SDKPluginConfigTypeAttribute。
-    /// IsAvailable 由基类管理：OnInitializeAsync 成功后置 true，抛出异常后保持 false。
+    /// 需要配置的插件必须继承 <see cref="PluginBase{TConfig}"/>，或在具体类型上声明 SDKPluginConfigTypeAttribute。
+    /// IsAvailable 由基类管理：OnInitializeAsync 完成且令牌未取消后置 true，释放时置 false。
+    /// 初始化入口不预先重置已有状态，也不提供重复或并发调用门禁。
     /// </summary>
     public abstract class SDKPluginBase : ISDKPlugin
     {
@@ -50,7 +51,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         private bool m_IsAvailable;
         /// <summary>
-        /// 当前插件是否可用（初始化成功后为 true，失败后永久为 false）。
+        /// 当前插件是否可用；初始化成功置 true，释放置 false，重复初始化失败不自动重置旧状态。
         /// </summary>
         public bool IsAvailable => m_IsAvailable;
 
@@ -85,7 +86,7 @@ namespace NovaFramework.Runtime
         /// 若派生类需要配置，返回具体 ISDKPluginConfig 子类型；
         /// 返回 null 表示无需配置（InitializeAsync 时 config 参数可为 null）。
         /// 构造后的 SDKManager 按此类型从 IConfigManager.GetSDKPluginConfig 自动拉取配置注入；取不到则跳过该插件初始化。
-        /// 构造前准入使用 PluginBase&lt;TConfig&gt; 或 SDKPluginConfigTypeAttribute 的静态类型元数据。
+        /// 构造前准入使用 <see cref="PluginBase{TConfig}"/> 或 SDKPluginConfigTypeAttribute 的静态类型元数据。
         /// </summary>
         protected virtual Type ConfigType => null;
 
@@ -96,7 +97,7 @@ namespace NovaFramework.Runtime
         public Type RequiredConfigType => ConfigType;
 
         /// <summary>
-        /// 在不创建插件实例的前提下，从 SDKPluginConfigTypeAttribute 或 PluginBase&lt;TConfig&gt; 继承链解析配置类型。
+        /// 在不创建插件实例的前提下，从 SDKPluginConfigTypeAttribute 或 <see cref="PluginBase{TConfig}"/> 继承链解析配置类型。
         /// 仅使用类型元数据，避免未启用插件的构造函数或字段初始化产生原生 SDK 副作用。
         /// </summary>
         /// <param name="pluginType">待检查的插件具体类型。</param>
@@ -154,6 +155,7 @@ namespace NovaFramework.Runtime
         /// <param name="config">由 SDKManager 按 RequiredConfigType 从 IConfigManager 拉取并注入的配置；无需 config 时为 null。</param>
         /// <param name="ct">取消令牌（由 Manager 串联）。</param>
         /// <returns>初始化完成的异步任务。</returns>
+        /// <remarks>不自动切换线程；派生实现须在完成前切回主线程。异常或取消不会把既有可用状态重置为 false。</remarks>
         public async UniTask InitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
             await OnInitializeAsync(config, ct);

@@ -25,7 +25,7 @@ namespace NovaFramework.Mcp.Editor
     /// 向独立第三方 Provider Adapter 提供的中立受控网关。
     /// 本类不注册任何特定 Provider Tool，也不包含任意 C# 执行入口。
     /// </summary>
-    public static class NovaProjectActionGateway
+    public static partial class NovaProjectActionGateway
     {
         private const int ProtocolVersion = 1;
         private const int MaxPayloadBytes = 64 * 1024;
@@ -40,6 +40,9 @@ namespace NovaFramework.Mcp.Editor
             "plan_id",
             "confirmation_token",
             "receipt",
+            "request_id",
+            "plan_mode",
+            "verify_mode",
         };
 
         /// <summary>
@@ -51,10 +54,16 @@ namespace NovaFramework.Mcp.Editor
             new ExposurePolicy("nova.project.upm.manage-latest"),
             new ExposurePolicy("nova.project.upm.uninstall-direct"),
             new ExposurePolicy("nova.project.config.validate-coordinate"),
+            new ExposurePolicy("nova.project.config.patch-coordinate"),
+            new ExposurePolicy("nova.project.config.inspect-panel"),
+            new ExposurePolicy("nova.project.config.patch-panels"),
+            new ExposurePolicy("nova.project.config.ensure-panel-references"),
+            new ExposurePolicy("nova.project.config.normalize-master"),
             new ExposurePolicy("nova.project.config.inspect-plugin-types"),
             new ExposurePolicy("nova.project.config.ensure-plugin-instances"),
             new ExposurePolicy("nova.project.config.inspect-bundle-collector"),
             new ExposurePolicy("nova.project.config.export-runtime"),
+            new ExposurePolicy("nova.project.config.generate-resource-keys"),
             new ExposurePolicy("nova.project.hotfix.refresh-game-dlls"),
             new ExposurePolicy("nova.project.hotfix.generate-artifacts"),
             new ExposurePolicy("nova.project.build.inspect-readiness"),
@@ -63,11 +72,22 @@ namespace NovaFramework.Mcp.Editor
             new ExposurePolicy("nova.project.player.build"),
             new ExposurePolicy("nova.project.android.resolve-dependencies"),
             new ExposurePolicy("nova.project.table.export"),
+            new ExposurePolicy("nova.project.tracks.generate-registry"),
+            new ExposurePolicy("nova.project.ui.export"),
             new ExposurePolicy("nova.project.network.export"),
             new ExposurePolicy("nova.project.sound.export"),
             new ExposurePolicy("nova.project.vibration.export"),
             new ExposurePolicy("nova.project.localization.export"),
             new ExposurePolicy("nova.project.pipify.run-batch"),
+            new ExposurePolicy("nova.project.iap.upload-product-catalog"),
+            new ExposurePolicy("nova.project.pipify.inspect-settings"),
+            new ExposurePolicy("nova.project.pipify.configure-batch"),
+            new ExposurePolicy("nova.project.settings.inspect-target"),
+            new ExposurePolicy("nova.project.settings.patch-target"),
+            new ExposurePolicy("nova.project.settings.patch-build-defines"),
+            new ExposurePolicy("nova.project.persistence.inspect-data"),
+            new ExposurePolicy("nova.project.persistence.migrate-encryption"),
+            new ExposurePolicy("nova.project.persistence.recover-maintenance"),
         };
 
         private static readonly SemaphoreSlim s_Gate = new SemaphoreSlim(1, 1);
@@ -95,12 +115,51 @@ namespace NovaFramework.Mcp.Editor
                 return Error(requestError.Code, requestError.Message);
             }
 
+            string requestedOperation = (string)parameters["operation"];
+            string planMode = parameters["plan_mode"]?.Type == JTokenType.String ? (string)parameters["plan_mode"] : null;
+            if (requestedOperation == "plan" && parameters["plan_mode"] != null)
+            {
+                if (planMode != "start" && planMode != "status" && planMode != "forget")
+                    return Error("invalid_plan_mode", "plan_mode 只允许 start、status 或 forget。");
+                if (planMode != "start")
+                {
+                    try { return HandlePlanJobControl(parameters, planMode == "forget"); }
+                    catch (Exception) { return Error("plan_store_unavailable", "长计划会话存储不可用；原数据保持，不会重跑。"); }
+                }
+            }
+
+            string verifyMode = parameters["verify_mode"]?.Type == JTokenType.String ? (string)parameters["verify_mode"] : null;
+            if (requestedOperation == "verify" && parameters["verify_mode"] != null)
+            {
+                if (verifyMode != "start" && verifyMode != "status" && verifyMode != "forget")
+                    return Error("invalid_verify_mode", "verify_mode 只允许 start、status 或 forget。");
+                if (verifyMode != "start")
+                {
+                    try { return HandleVerifyJobControl(parameters, verifyMode == "forget"); }
+                    catch (Exception) { return Error("verify_store_unavailable", "长核验会话存储不可用；原数据保持，不会重跑。"); }
+                }
+            }
+
             if (!TryGetExposedDescriptors(
                     out INovaProjectActionProvider provider,
                     out IReadOnlyDictionary<string, NovaProjectActionDescriptor> exposedActions,
                     out string policyError))
             {
                 return Error("action_registry_unavailable", policyError);
+            }
+
+            try
+            {
+                if (requestedOperation == "plan" && planMode == "start") return HandlePlanStart(parameters, exposedActions);
+                if (requestedOperation == "verify" && verifyMode == "start") return HandleVerifyStart(parameters, exposedActions);
+                if ((s_PlanJobs != null && s_PlanJobs.HasActive()) || (s_VerifyJobs != null && GetVerifyJobs().HasActive()))
+                    return Error("action_busy", "另一个长计划或长核验正在等待或运行；请先读取其状态。");
+            }
+            catch (Exception)
+            {
+                return requestedOperation == "verify"
+                    ? Error("verify_store_unavailable", "长核验会话存储不可用；原数据保持，不会重跑。")
+                    : Error("plan_store_unavailable", "长计划会话存储不可用；原数据保持，不会重跑。");
             }
 
             if (!await s_Gate.WaitAsync(0))
@@ -717,8 +776,59 @@ namespace NovaFramework.Mcp.Editor
                 requires_edit_mode = descriptor.RequiresEditMode,
                 locks = descriptor.Locks ?? Array.Empty<string>(),
                 verify_locks = descriptor.VerifyLocks ?? Array.Empty<string>(),
-                request_schema = ParseAndSanitizeJson(descriptor.RequestSchemaJson),
+                request_schema = ParseSchemaStructure(descriptor.RequestSchemaJson),
             };
+        }
+
+        /// <summary>保留请求字段名称与类型；移除示例和默认载荷，避免把 Schema 当敏感值整段遮蔽。</summary>
+        /// <param name="json">已注册 Handler 的请求 Schema，只用于描述参数结构。</param>
+        /// <returns>可发现的安全结构；解析失败时返回 null。</returns>
+        private static JToken ParseSchemaStructure(string json)
+        {
+            try
+            {
+                JToken token = JToken.Parse(json);
+                SanitizeSchemaStructure(token);
+                return token;
+            }
+            catch (JsonException) { return null; }
+        }
+
+        /// <summary>递归处理 Schema 关键字；properties 下的键是参数名，不能按密钥字段名打码。</summary>
+        /// <param name="token">一个 Schema 节点，不是请求或执行结果。</param>
+        private static void SanitizeSchemaStructure(JToken token)
+        {
+            if (token is JObject obj)
+            {
+                foreach (JProperty property in obj.Properties().ToArray())
+                {
+                    switch (property.Name)
+                    {
+                        case "default": case "example": case "examples": case "const": case "enum":
+                            property.Remove();
+                            break;
+                        case "description": case "title": case "$comment":
+                            property.Value = "[omitted]";
+                            break;
+                        case "properties": case "definitions": case "$defs": case "patternProperties":
+                            if (property.Value is JObject definitions)
+                                foreach (JProperty definition in definitions.Properties())
+                                    SanitizeSchemaStructure(definition.Value);
+                            break;
+                        default:
+                            SanitizeSchemaStructure(property.Value);
+                            break;
+                    }
+                }
+            }
+            else if (token is JArray array)
+            {
+                foreach (JToken child in array) SanitizeSchemaStructure(child);
+            }
+            else if (token is JValue value && value.Type == JTokenType.String)
+            {
+                value.Value = SanitizeText((string)value.Value);
+            }
         }
 
         /// <summary>

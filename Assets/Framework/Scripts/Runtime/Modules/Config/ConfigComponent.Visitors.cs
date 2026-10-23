@@ -55,6 +55,13 @@ namespace NovaFramework.Runtime
         public AppConfigs AppConfigs => m_ConfigManager?.AppConfigs;
 
         /// <summary>
+        /// 隐私运行时配置；自定义 Manager 未提供通用隐私能力或尚未加载时返回 null。
+        /// </summary>
+        public PrivacyConfigs PrivacyConfigs => m_ConfigManager is IPrivacyConfigProvider provider
+            ? provider.PrivacyConfigs
+            : null;
+
+        /// <summary>
         /// 当前解析后的 Namespace；LoadAsync 完成后可读。
         /// </summary>
         public string Namespace => m_ConfigManager?.Namespace;

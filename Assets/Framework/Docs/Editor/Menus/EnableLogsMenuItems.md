@@ -34,7 +34,7 @@ namespace NovaFramework.Editor
 |-----------|------|----------|
 | `c_MenuDisableAllLogs` | `private const string` | `"Nova/Enable Logs/Disable All Logs"` |
 | `c_MenuEnable*` | `private const string` | 各级别菜单路径（见代码） |
-| `c_Priority*` | `private const int` | `1042–1048` |
+| `c_Priority*` | `private const int` | `10000–10006` |
 | `c_EnableLog` | `private const string` | `"ENABLE_LOG"` — 总开关 |
 | `c_EnableDebugAndAboveLog` | `private const string` | `"ENABLE_DEBUG_AND_ABOVE_LOG"` |
 | `c_EnableInfoAndAboveLog` | `private const string` | `"ENABLE_INFO_AND_ABOVE_LOG"` |
@@ -69,6 +69,10 @@ public static void SetSpecifyLogSymbols(string[] specifyLogSymbols)
 **互斥切换逻辑：** `SetAboveLogSymbol` 先调用 `DisableAllLogs`（清除所有宏），再添加目标宏，确保同一时刻只有一个 AboveLog 级别宏生效。
 
 `DisableAllLogs` 移除顺序：总开关 → SpecifyLog 宏 → AboveLog 宏。
+
+这些菜单沿无目标参数的宏工具处理 `Standalone / iOS / Android / WindowsStoreApps / WebGL` 五个目标，不只修改当前活动平台。`EnableAllLogs` 是先清日志宏再加总开关 `ENABLE_LOG`，不是把全部日志宏都加上；非日志宏保留。
+
+`SetAboveLogSymbol` 的空值或未知宏完全不修改。`SetSpecifyLogSymbols` 的 null、空数组或全未知项也不修改，不能用空数组代表关闭；首次合法项才触发清理，之后逐项添加。先清后加是多次 PlayerSettings 写入，可能触发编译/重载，中途异常没有跨目标事务或回滚。
 
 ---
 

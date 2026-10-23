@@ -64,7 +64,7 @@ void Cancel()
 2. `m_Operation.StartDownload()` 触发底层下载；每个首次开始的文件向策略登记逻辑重试次数
 3. `UniTask.WaitUntil(() => m_Operation.IsDone, cancellationToken: ct)`
 4. ct 取消时调 `Cancel()` 停底层操作并重抛 `OperationCanceledException`
-5. 成功、失败或取消都会幂等取消订阅、注销文件策略状态并清零速率
+5. 等待阶段成功、失败或取消均经 finally 清理订阅、文件策略登记与速率；启动/清理异常边界见下文
 
 ---
 
@@ -86,3 +86,9 @@ bool ok = await downloader.RunAsync(ct);
 ## 微信平台预下载
 
 微信 Host 配置平台策略后，CreateDownloader/ByTags/ByLocations 使用相同门面向平台缓存预下载，保留逻辑重试、主备轮次、取消与 OnProgress。请求成功后按 Manifest 回填已完成文件的大小；实时进度受微信插件限制。重复调用仍交由平台缓存判定，不能据空下载器或 HTTP 成功承诺永久离线可用。
+
+## 取消、异常与进度
+
+空下载器先清理并返回 true，即使 ct 已取消也不等待；这只表示待下载项为空，无效地址全部跳过也会形成空下载器。非空时先调用 StartDownload，再进入 try 等待：等待期间取消会 Cleanup、通知 CancelDownload 并重抛，不返回 false；底层终态失败返回 false。StartDownload 自身抛出不经过该 finally；实例没有并发运行或重复运行保护。
+
+Cleanup 先设置幂等标记，再解绑事件、注销文件、清零速率；注销异常可能中断后续且不自动重试，Cancel 中 Cleanup 异常也可能阻止 CancelDownload。OnProgress/OnFileStarted 直接调用监听方，不隔离监听异常。速度为约 0.5 秒窗口的字节差分估算；FinishedCount、Progress 和 FinishedBytes 不是资源最终可加载或持久离线完整的证明。

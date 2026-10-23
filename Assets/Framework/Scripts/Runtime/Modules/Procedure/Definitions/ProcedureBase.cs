@@ -23,7 +23,7 @@ namespace NovaFramework.Runtime
     public abstract class ProcedureBase : FsmState<IProcedureManager>
     {
         /// <summary>
-        /// 当前流程的取消令牌源。OnEnter 时创建，OnLeave 时取消并释放。
+        /// 当前流程的取消令牌源。OnLeave 仅取消；下一次 OnEnter 或最终 OnDestroy 释放保留源。
         /// </summary>
         private CancellationTokenSource m_Cts;
 

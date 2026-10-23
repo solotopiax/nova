@@ -38,7 +38,9 @@ namespace NovaFramework.Runtime
         /// <param name="config">NativeManager 配置。</param>
         public override void Initialize(NativeManagerConfig config)
         {
-            m_Config = config ?? throw new ArgumentNullException(nameof(config));
+            if (config == null) throw new ArgumentNullException(nameof(config));
+            CancelAppInstall();
+            m_Config = config;
             m_IsShutdown = false;
             InitializePlatform();
         }
@@ -56,6 +58,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void Shutdown()
         {
+            CancelAppInstall();
             UniTaskCompletionSource<NotificationPermissionResult> pending;
             UniTaskCompletionSource<InAppReviewRequestResult> inAppReviewPending;
             lock (m_RequestLock)

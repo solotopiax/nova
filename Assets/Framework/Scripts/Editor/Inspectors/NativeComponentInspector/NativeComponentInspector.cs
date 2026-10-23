@@ -27,6 +27,7 @@ namespace NovaFramework.Editor
         {
             base.OnEnable();
             m_CurNativeManagerTypeName = serializedObject.FindProperty("m_CurNativeManagerTypeName");
+            m_EnableAndroidAppInstall = serializedObject.FindProperty("m_NativeManagerConfig.EnableAndroidAppInstall");
             m_NativeManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(INativeManager)));
         }
 

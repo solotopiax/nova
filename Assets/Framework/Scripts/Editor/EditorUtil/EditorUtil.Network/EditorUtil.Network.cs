@@ -13,7 +13,7 @@ namespace NovaFramework.Editor
     public static partial class EditorUtil
     {
         /// <summary>
-        /// 网络模块编辑器工具集，包含域名表（HostKey）、指令表（NetCmd）和 Proto 协议三类导出入口。
+        /// 网络模块编辑器工具集，包含默认请求头、HTTP JSON 传输以及 HostKey、NetCmd、Proto 导出入口。
         /// </summary>
         public static partial class Network
         {

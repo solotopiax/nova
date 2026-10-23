@@ -72,3 +72,7 @@ handle.Release();
 
 - [IAssetHandle.md](../Interfaces/IAssetHandle.md)
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 释放与完成状态
+
+IsDone/IsValid 不表示 Succeeded，Asset/AssetObject 直接读取底层对象，不额外检查完成或成功。Release 无重复保护，先释放 inner 再归池；底层 Release 异常时不在 finally 归池。Clear 只清 inner，Bind 不释放此前 inner。调用方每笔所有权只 Release 一次并丢弃引用，不能在池复用后继续使用旧引用。

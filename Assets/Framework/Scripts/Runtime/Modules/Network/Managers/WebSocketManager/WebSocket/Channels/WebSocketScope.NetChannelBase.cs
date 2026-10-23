@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -93,7 +92,7 @@ namespace NovaFramework.Runtime
             /// <summary>
             /// 是否正在等待身份认证响应。
             /// </summary>
-            public bool WaitingAuthenticate = true;
+            public bool WaitingAuthenticate;
 
             /// <summary>
             /// 最后一次身份认证消息发送时间。
@@ -227,12 +226,19 @@ namespace NovaFramework.Runtime
             /// <summary>
             /// 是否正在运行线程（非 WebGL）。
             /// </summary>
-            private bool m_IsEnableThread;
+            private volatile bool m_IsEnableThread;
+
+            /// <summary>线程入口返回不代表异步循环退出，终止时等待真正的循环完成。</summary>
+            private UniTaskCompletionSource m_SendLoopCompletion;
+            private UniTaskCompletionSource m_ReceiveLoopCompletion;
 
             /// <summary>
             /// 原生 ClientWebSocket 实例（非 WebGL）。
             /// </summary>
             public ClientWebSocket WebSocket { get; private set; }
+
+            /// <summary>当次连接握手的取消源，超时或主动关闭时结束尚未完成的 ConnectAsync。</summary>
+            private CancellationTokenSource m_ConnectCts;
 
             /// <summary>
             /// 是否已连接（非 WebGL：通过 WebSocket.State 判断）。
@@ -251,7 +257,8 @@ namespace NovaFramework.Runtime
             /// <summary>
             /// 是否身份认证成功（已连接 + 不需要认证 + 认证完毕）。
             /// </summary>
-            public bool IsAuthenticatedSuccess => IsNeedConnect && IsConnected && !NeedAuthenticateRightNow && !WaitingAuthenticate;
+            public bool IsAuthenticatedSuccess => IsNeedConnect && IsConnected && !IsClosing &&
+                                                  !m_IsDisconnectedSubjectively && !NeedAuthenticateRightNow && !WaitingAuthenticate;
 
             /// <summary>
             /// 消息发送成功事件。
@@ -283,7 +290,7 @@ namespace NovaFramework.Runtime
                 m_ServerAddress   = serverAddress;
 
                 NeedAuthenticateRightNow = false;
-                WaitingAuthenticate      = true;
+                WaitingAuthenticate      = false;
                 AuthenticateSendTime     = DateTime.Now;
                 WaitingHeartBeat         = false;
                 HeartBeatSendTime        = DateTime.Now;
@@ -298,6 +305,8 @@ namespace NovaFramework.Runtime
                 }
 #else
                 m_IsEnableThread = true;
+                m_SendLoopCompletion = new UniTaskCompletionSource();
+                m_ReceiveLoopCompletion = new UniTaskCompletionSource();
                 if (IsNeedConnect)
                 {
                     m_SendThread = new Thread(SendMessageNeedConnect);
@@ -306,7 +315,45 @@ namespace NovaFramework.Runtime
                     m_ReceiveThread = new Thread(ReceiveMessageNeedConnect);
                     m_ReceiveThread.Start();
                 }
+                else
+                {
+                    m_SendLoopCompletion.TrySetResult();
+                    m_ReceiveLoopCompletion.TrySetResult();
+                }
 #endif
+            }
+
+            /// <summary>显式连接轮次，用于拒绝已被取消或替换的异步续体。</summary>
+            internal int ConnectionVersion { get; private set; }
+
+            /// <summary>关闭期间不得重新完成认证或发送心跳。</summary>
+            internal bool IsClosing { get; private set; }
+
+            /// <summary>显式初连或重连开始前清除上一轮主动退出标记，连接完成后再进入本轮认证。</summary>
+            internal void PrepareConnect()
+            {
+                ConnectionVersion++;
+                m_IsDisconnectedSubjectively = false;
+                NeedAuthenticateRightNow = IsConnected;
+                WaitingAuthenticate = false;
+                WaitingHeartBeat = false;
+                RecycleQueuedSpecialMessages();
+            }
+
+            /// <summary>旧连接的认证/心跳不能在新 Socket 重放；普通业务队列保持原有契约。</summary>
+            private void RecycleQueuedSpecialMessages()
+            {
+                lock (m_SendBufferLock)
+                {
+                    for (int i = m_SendNetMessageBaseBuffer.Count - 1; i >= 0; i--)
+                    {
+                        NetMessageBase message = m_SendNetMessageBaseBuffer[i];
+                        if (!IsAuthenticateMessage(message) && !IsHeartBeatMessage(message)) continue;
+                        m_SendNetMessageBaseBuffer.RemoveAt(i);
+                        m_SendDataBuffer.RemoveAt(i);
+                        m_Bridge.RecycleMessage(message);
+                    }
+                }
             }
 
             /// <summary>
@@ -323,9 +370,12 @@ namespace NovaFramework.Runtime
 
                 WebSocketScope.WebGL.OnMessageWebSocket -= OnWebGLMessageReceived;
                 WebSocketScope.WebGL.OnErrorWebSocket   -= OnWebGLError;
-                m_CoroutineRunner.StartCoroutine(CloseSocket(false));
+                m_CoroutineRunner.StartCoroutine(CloseSocket(true));
+                await UniTask.WaitUntil(() => WebSocketInstanceID == 0);
 #else
                 m_IsEnableThread = false;
+                try { await CloseSocket(true); }
+                catch (Exception exception) { Log.Warning(LogTag.WebSocket, "终止时断开回调异常：{0}。", exception.GetType().Name); }
                 if (m_SendThread != null && m_SendThread.IsAlive)
                 {
                     m_SendThread.Join(3000);
@@ -338,16 +388,19 @@ namespace NovaFramework.Runtime
                     m_ReceiveThread = null;
                 }
 
-                await CloseSocket(true);
+                if (m_SendLoopCompletion != null) await m_SendLoopCompletion.Task;
+                if (m_ReceiveLoopCompletion != null) await m_ReceiveLoopCompletion.Task;
 #endif
                 lock (m_SendBufferLock)
                 {
+                    foreach (NetMessageBase message in m_SendNetMessageBaseBuffer) m_Bridge.RecycleMessage(message);
                     m_SendDataBuffer.Clear();
                     m_SendNetMessageBaseBuffer.Clear();
                 }
 
                 lock (m_SendOfflineBufferLock)
                 {
+                    foreach (NetMessageBase message in m_SendNetMessageBaseOfflineBuffer) m_Bridge.RecycleMessage(message);
                     m_SendDataOfflineBuffer.Clear();
                     m_SendNetMessageBaseOfflineBuffer.Clear();
                 }
@@ -542,39 +595,60 @@ namespace NovaFramework.Runtime
             public IEnumerator CreateSocket()
             {
                 bool gotResult = false;
+                int connectingInstanceId = 0;
+                int connectionVersion = ConnectionVersion;
+                DateTime startedAt = DateTime.UtcNow;
 
                 void OnOpen(int instanceId)
                 {
-                    if (instanceId != WebSocketInstanceID) return;
+                    if (instanceId != connectingInstanceId || instanceId != WebSocketInstanceID ||
+                        connectionVersion != ConnectionVersion || m_IsDisconnectedSubjectively) return;
                     m_IsWebSocketErrorOnWebGL = false;
-                    m_IsDisconnectedSubjectively = false;
+                    IsClosing = false;
                     NeedAuthenticateRightNow = IsConnected;
+                    WaitingAuthenticate = false;
+                    WaitingHeartBeat = false;
                     gotResult = true;
                 }
 
                 WebSocketScope.WebGL.OnOpenWebSocket -= OnOpen;
                 WebSocketScope.WebGL.OnOpenWebSocket += OnOpen;
 
-                if (WebSocketInstanceID == 0)
+                try
                 {
-                    WebSocketInstanceID = WebSocketScope.WebGL.WebSocketAllocate(m_ServerAddress, m_BinaryType);
-                    int code = WebSocketScope.WebGL.WebSocketConnect(WebSocketInstanceID);
-                    if (code < 0)
+                    if (WebSocketInstanceID == 0)
+                    {
+                        WebSocketInstanceID = WebSocketScope.WebGL.WebSocketAllocate(m_ServerAddress, m_BinaryType);
+                        connectingInstanceId = WebSocketInstanceID;
+                        int code = WebSocketScope.WebGL.WebSocketConnect(WebSocketInstanceID);
+                        if (code < 0)
+                        {
+                            WebSocketScope.WebGL.WebSocketFree(connectingInstanceId);
+                            WebSocketInstanceID = 0;
+                            gotResult = true;
+                        }
+                    }
+                    else
                     {
                         gotResult = true;
                     }
-                }
-                else
-                {
-                    gotResult = true;
-                }
 
-                while (!gotResult)
-                {
-                    yield return null;
+                    while (!gotResult && !m_IsDisconnectedSubjectively && connectionVersion == ConnectionVersion &&
+                           connectingInstanceId == WebSocketInstanceID &&
+                           (DateTime.UtcNow - startedAt).TotalSeconds < m_Bridge.ConnectTimeout)
+                    {
+                        yield return null;
+                    }
                 }
-
-                WebSocketScope.WebGL.OnOpenWebSocket -= OnOpen;
+                finally
+                {
+                    WebSocketScope.WebGL.OnOpenWebSocket -= OnOpen;
+                    if (!gotResult && connectingInstanceId != 0 && connectingInstanceId == WebSocketInstanceID)
+                    {
+                        WebSocketScope.WebGL.WebSocketFree(connectingInstanceId);
+                        WebSocketInstanceID = 0;
+                    }
+                }
             }
 
             /// <summary>
@@ -586,28 +660,46 @@ namespace NovaFramework.Runtime
             public IEnumerator CloseSocket(bool subjectively, Action callback = null)
             {
                 bool gotResult = false;
+                int closingInstanceId = WebSocketInstanceID;
+                DateTime startedAt = DateTime.UtcNow;
+                IsClosing = true;
+                m_IsDisconnectedSubjectively = subjectively;
+                NeedAuthenticateRightNow = false;
+                WaitingAuthenticate = false;
+                WaitingHeartBeat = false;
+                RecycleQueuedSpecialMessages();
 
                 void OnClose(int instanceId, int closeCode, string reason)
                 {
-                    if (instanceId != WebSocketInstanceID) return;
-                    DisconnectServerEvent?.Invoke(this);
+                    if (instanceId != closingInstanceId || instanceId != WebSocketInstanceID) return;
+                    WebSocketScope.WebGL.WebSocketFree(closingInstanceId);
                     WebSocketInstanceID = 0;
                     gotResult = true;
+                    DisconnectServerEvent?.Invoke(this);
                     callback?.Invoke();
                 }
 
                 WebSocketScope.WebGL.OnCloseWebSocket -= OnClose;
                 WebSocketScope.WebGL.OnCloseWebSocket += OnClose;
 
-                if (WebSocketInstanceID != 0)
+                try
                 {
-                    NeedAuthenticateRightNow = false;
-                    m_IsDisconnectedSubjectively = subjectively;
-                    if (IsNeedConnect && IsConnected)
+                    if (WebSocketInstanceID != 0)
                     {
-                        int code = WebSocketScope.WebGL.WebSocketClose(WebSocketInstanceID, (int)WebSocketCloseStatus.NormalClosure, "Normal Closure");
-                        if (code < 0)
+                        if (IsNeedConnect)
                         {
+                            int code = WebSocketScope.WebGL.WebSocketClose(WebSocketInstanceID, (int)WebSocketCloseStatus.NormalClosure, "Normal Closure");
+                            if (code < 0)
+                            {
+                                WebSocketScope.WebGL.WebSocketFree(closingInstanceId);
+                                WebSocketInstanceID = 0;
+                                gotResult = true;
+                            }
+                        }
+                        else
+                        {
+                            WebSocketScope.WebGL.WebSocketFree(closingInstanceId);
+                            WebSocketInstanceID = 0;
                             gotResult = true;
                         }
                     }
@@ -615,18 +707,22 @@ namespace NovaFramework.Runtime
                     {
                         gotResult = true;
                     }
-                }
-                else
-                {
-                    gotResult = true;
-                }
 
-                while (!gotResult)
-                {
-                    yield return null;
+                    while (!gotResult && closingInstanceId == WebSocketInstanceID &&
+                           (DateTime.UtcNow - startedAt).TotalSeconds < m_Bridge.ConnectTimeout)
+                    {
+                        yield return null;
+                    }
                 }
-
-                WebSocketScope.WebGL.OnCloseWebSocket -= OnClose;
+                finally
+                {
+                    WebSocketScope.WebGL.OnCloseWebSocket -= OnClose;
+                    if (!gotResult && closingInstanceId != 0 && closingInstanceId == WebSocketInstanceID)
+                    {
+                        WebSocketScope.WebGL.WebSocketFree(closingInstanceId);
+                        WebSocketInstanceID = 0;
+                    }
+                }
             }
 
             /// <summary>
@@ -649,7 +745,7 @@ namespace NovaFramework.Runtime
 
                     lock (m_SendBufferLock)
                     {
-                        if (IsConnected && m_SendDataBuffer.Count > 0)
+                        if (IsConnected && !IsClosing && m_SendDataBuffer.Count > 0)
                         {
                             sendData = m_SendDataBuffer[0];
                             netMessage = m_SendNetMessageBaseBuffer[0];
@@ -660,9 +756,12 @@ namespace NovaFramework.Runtime
 
                     if (sendData != null)
                     {
-                        WebSocketScope.WebGL.WebSocketSend(WebSocketInstanceID, sendData, sendData.Length);
-                        SendMessageEvent?.Invoke(this, netMessage);
-                        m_Bridge.RecycleMessage(netMessage);
+                        try
+                        {
+                            int code = WebSocketScope.WebGL.WebSocketSend(WebSocketInstanceID, sendData, sendData.Length);
+                            if (code == 0) SendMessageEvent?.Invoke(this, netMessage);
+                        }
+                        finally { m_Bridge.RecycleMessage(netMessage); }
                     }
 
                     yield return null;
@@ -676,33 +775,41 @@ namespace NovaFramework.Runtime
             /// <param name="recvBytes">接收到的字节数组。</param>
             private void OnWebGLMessageReceived(int instanceId, byte[] recvBytes)
             {
-                if (instanceId != WebSocketInstanceID || !IsConnected) return;
+                if (instanceId != WebSocketInstanceID || !IsConnected || IsClosing) return;
+                int connectionVersion = ConnectionVersion;
 
                 NetMessageBase message = ReceiveMessage(recvBytes);
                 if (message == null) return;
 
-                ReceiveMessageEvent?.Invoke(this, message);
-
-                if (IsHeartBeatMessage(message))
+                try
                 {
-                    WaitingHeartBeat = false;
-                }
+                    ReceiveMessageEvent?.Invoke(this, message);
+                    if (instanceId != WebSocketInstanceID || connectionVersion != ConnectionVersion ||
+                        IsClosing || m_IsDisconnectedSubjectively) return;
+                    if (IsHeartBeatMessage(message))
+                    {
+                        WaitingHeartBeat = false;
+                    }
 
-                if (IsAuthenticateMessage(message))
+                    if (IsAuthenticateMessage(message))
+                    {
+                        if (IsAuthenticateMessageSuccess(message))
+                        {
+                            WaitingAuthenticate = false;
+                            Log.Debug(LogTag.WebSocket, "{0} 身份认证成功。", this);
+                        }
+                        else
+                        {
+                            m_CoroutineRunner.StartCoroutine(CloseSocket(true));
+                            Log.Debug(LogTag.WebSocket, "{0} 身份认证失败，断开连接。", this);
+                        }
+                    }
+
+                }
+                finally
                 {
-                    if (IsAuthenticateMessageSuccess(message))
-                    {
-                        WaitingAuthenticate = false;
-                        Log.Debug(LogTag.WebSocket, "{0} 身份认证成功。", this);
-                    }
-                    else
-                    {
-                        m_CoroutineRunner.StartCoroutine(CloseSocket(true));
-                        Log.Debug(LogTag.WebSocket, "{0} 身份认证失败，断开连接。", this);
-                    }
+                    m_Bridge.RecycleMessage(message);
                 }
-
-                m_Bridge.RecycleMessage(message);
             }
 
             /// <summary>
@@ -715,8 +822,10 @@ namespace NovaFramework.Runtime
                 if (instanceId != WebSocketInstanceID) return;
                 Log.Error(LogTag.WebSocket, "{0} WebGL 原生层异常：{1}，等待断线重连。", this, errorMsg);
                 NeedAuthenticateRightNow = false;
-                m_IsDisconnectedSubjectively = false;
+                WaitingAuthenticate = false;
+                WaitingHeartBeat = false;
                 m_IsWebSocketErrorOnWebGL = true;
+                WebSocketScope.WebGL.WebSocketFree(instanceId);
                 WebSocketInstanceID = 0;
                 DisconnectServerEvent?.Invoke(this);
             }
@@ -731,12 +840,38 @@ namespace NovaFramework.Runtime
             {
                 if (WebSocket == null)
                 {
-                    WebSocket = new ClientWebSocket();
-                    Task connectTask = WebSocket.ConnectAsync(new Uri(m_ServerAddress), CancellationToken.None);
-                    Task timeoutTask = Task.Delay(Mathf.CeilToInt(m_Bridge.ConnectTimeout * 1000));
-                    await Task.WhenAny(connectTask, timeoutTask);
-                    m_IsDisconnectedSubjectively = false;
-                    NeedAuthenticateRightNow = IsConnected;
+                    ClientWebSocket client = new ClientWebSocket();
+                    CancellationTokenSource connectCts = new CancellationTokenSource();
+                    int connectionVersion = ConnectionVersion;
+                    WebSocket = client;
+                    m_ConnectCts = connectCts;
+                    connectCts.CancelAfter(Mathf.Max(1, Mathf.CeilToInt(m_Bridge.ConnectTimeout * 1000)));
+                    try
+                    {
+                        await client.ConnectAsync(new Uri(m_ServerAddress), connectCts.Token);
+                        if (!ReferenceEquals(WebSocket, client) || connectionVersion != ConnectionVersion || m_IsDisconnectedSubjectively) return;
+                        IsClosing = false;
+                        NeedAuthenticateRightNow = IsConnected;
+                        WaitingAuthenticate = false;
+                        WaitingHeartBeat = false;
+                    }
+                    catch (Exception exception) when (exception is WebSocketException || exception is OperationCanceledException ||
+                                                      exception is ObjectDisposedException)
+                    {
+                        if (ReferenceEquals(WebSocket, client) && !m_IsDisconnectedSubjectively)
+                            Log.Warning(LogTag.WebSocket, "{0} 连接未完成：{1}。", this, exception.GetType().Name);
+                    }
+                    finally
+                    {
+                        if (ReferenceEquals(m_ConnectCts, connectCts)) m_ConnectCts = null;
+                        connectCts.Dispose();
+                        if (ReferenceEquals(WebSocket, client) &&
+                            (!IsConnected || connectionVersion != ConnectionVersion || m_IsDisconnectedSubjectively))
+                        {
+                            client.Dispose();
+                            WebSocket = null;
+                        }
+                    }
                 }
             }
 
@@ -747,18 +882,35 @@ namespace NovaFramework.Runtime
             /// <returns>异步任务。</returns>
             public async UniTask CloseSocket(bool subjectively)
             {
-                if (WebSocket == null) return;
-
-                NeedAuthenticateRightNow = false;
+                IsClosing = true;
                 m_IsDisconnectedSubjectively = subjectively;
-                if (IsNeedConnect && IsConnected)
-                {
-                    await WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
-                    DisconnectServerEvent?.Invoke(this);
-                }
+                NeedAuthenticateRightNow = false;
+                WaitingAuthenticate = false;
+                WaitingHeartBeat = false;
+                RecycleQueuedSpecialMessages();
+                m_ConnectCts?.Cancel();
+                ClientWebSocket client = WebSocket;
+                if (client == null) return;
+                int connectionVersion = ConnectionVersion;
+                bool notifyDisconnect = IsNeedConnect && client.State == System.Net.WebSockets.WebSocketState.Open;
 
-                WebSocket.Dispose();
-                WebSocket = null;
+                try
+                {
+                    if (notifyDisconnect)
+                    {
+                        using CancellationTokenSource closeCts = new CancellationTokenSource();
+                        closeCts.CancelAfter(Mathf.Max(1, Mathf.CeilToInt(m_Bridge.ConnectTimeout * 1000)));
+                        await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", closeCts.Token);
+                    }
+                }
+                catch (Exception exception) when (exception is WebSocketException || exception is OperationCanceledException ||
+                                                  exception is ObjectDisposedException) { }
+                finally
+                {
+                    client.Dispose();
+                    if (ReferenceEquals(WebSocket, client)) WebSocket = null;
+                }
+                if (notifyDisconnect && connectionVersion == ConnectionVersion) DisconnectServerEvent?.Invoke(this);
             }
 
             /// <summary>
@@ -781,47 +933,64 @@ namespace NovaFramework.Runtime
             /// </summary>
             private async UniTask SendMessageNeedConnectAsync()
             {
-                while (m_IsEnableThread)
+                try
                 {
-                    byte[] sendData = null;
-                    NetMessageBase netMessage = null;
-
-                    lock (m_SendBufferLock)
+                    while (m_IsEnableThread)
                     {
-                        if (IsConnected && m_SendDataBuffer.Count > 0)
-                        {
-                            sendData = m_SendDataBuffer[0];
-                            netMessage = m_SendNetMessageBaseBuffer[0];
-                            m_SendDataBuffer.RemoveAt(0);
-                            m_SendNetMessageBaseBuffer.RemoveAt(0);
-                        }
-                    }
+                        byte[] sendData = null;
+                        NetMessageBase netMessage = null;
+                        ClientWebSocket sendingSocket = null;
+                        int connectionVersion = ConnectionVersion;
 
-                    if (sendData != null)
-                    {
-                        bool isValid = sendData != null;
-                        if (isValid)
+                        lock (m_SendBufferLock)
                         {
-                            await WebSocket.SendAsync(new ArraySegment<byte>(sendData), WebSocketMessageType.Binary, true, CancellationToken.None);
-                        }
-
-                        NetMessageBase msg = netMessage;
-                        bool valid = isValid;
-                        m_Bridge.LazyToQueueOnMainThread(() =>
-                        {
-                            if (valid)
+                            if (IsConnected && !IsClosing && m_SendDataBuffer.Count > 0)
                             {
-                                SendMessageEvent?.Invoke(this, msg);
+                                sendingSocket = WebSocket;
+                                sendData = m_SendDataBuffer[0];
+                                netMessage = m_SendNetMessageBaseBuffer[0];
+                                m_SendDataBuffer.RemoveAt(0);
+                                m_SendNetMessageBaseBuffer.RemoveAt(0);
                             }
+                        }
 
-                            m_Bridge.RecycleMessage(msg);
-                        });
-                    }
-                    else
-                    {
-                        await UniTask.Delay(1);
+                        if (sendData != null)
+                        {
+                            bool sent = false;
+                            try
+                            {
+                                if (ReferenceEquals(WebSocket, sendingSocket) && connectionVersion == ConnectionVersion && !IsClosing)
+                                {
+                                    await sendingSocket.SendAsync(new ArraySegment<byte>(sendData), WebSocketMessageType.Binary, true, CancellationToken.None);
+                                    sent = true;
+                                }
+                            }
+                            catch (Exception exception) when (exception is WebSocketException || exception is OperationCanceledException ||
+                                                              exception is ObjectDisposedException) { }
+                            finally
+                            {
+                                NetMessageBase msg = netMessage;
+                                bool completed = sent;
+                                m_Bridge.LazyToQueueOnMainThread(() =>
+                                {
+                                    try
+                                    {
+                                        if (completed && ReferenceEquals(WebSocket, sendingSocket) &&
+                                            connectionVersion == ConnectionVersion && !IsClosing)
+                                            SendMessageEvent?.Invoke(this, msg);
+                                    }
+                                    finally { m_Bridge.RecycleMessage(msg); }
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // 网络轮询不受游戏暂停影响，后台入口在 EditMode 也必须继续恢复。
+                            await UniTask.Delay(1, DelayType.Realtime);
+                        }
                     }
                 }
+                finally { m_SendLoopCompletion.TrySetResult(); }
             }
 
             /// <summary>
@@ -837,44 +1006,64 @@ namespace NovaFramework.Runtime
             /// </summary>
             private async UniTask ReceiveMessageNeedConnectAsync()
             {
-                while (m_IsEnableThread)
+                try
                 {
-                    if (IsConnected)
+                    while (m_IsEnableThread)
                     {
-                        NetMessageBase message = await ReceiveMessage(WebSocket);
-                        if (message == null) continue;
-
-                        m_Bridge.LazyToQueueOnMainThread(async () =>
+                        if (IsConnected)
                         {
-                            ReceiveMessageEvent?.Invoke(this, message);
+                            ClientWebSocket receivingSocket = WebSocket;
+                            int connectionVersion = ConnectionVersion;
+                            NetMessageBase message = await ReceiveMessage(receivingSocket);
+                            if (message == null) continue;
 
-                            if (IsHeartBeatMessage(message))
+                            m_Bridge.LazyToQueueOnMainThread(async () =>
                             {
-                                WaitingHeartBeat = false;
-                            }
-
-                            if (IsAuthenticateMessage(message))
-                            {
-                                if (IsAuthenticateMessageSuccess(message))
+                                try
                                 {
-                                    WaitingAuthenticate = false;
-                                    Log.Debug(LogTag.WebSocket, "{0} 身份认证成功。", this);
-                                }
-                                else
-                                {
-                                    await CloseSocket(true);
-                                    Log.Debug(LogTag.WebSocket, "{0} 身份认证失败，断开连接。", this);
-                                }
-                            }
+                                    if (!ReferenceEquals(WebSocket, receivingSocket) || connectionVersion != ConnectionVersion ||
+                                        IsClosing || m_IsDisconnectedSubjectively)
+                                    {
+                                        return;
+                                    }
+                                    ReceiveMessageEvent?.Invoke(this, message);
+                                    if (!ReferenceEquals(WebSocket, receivingSocket) || connectionVersion != ConnectionVersion ||
+                                        IsClosing || m_IsDisconnectedSubjectively)
+                                    {
+                                        return;
+                                    }
 
-                            m_Bridge.RecycleMessage(message);
-                        });
-                    }
-                    else
-                    {
-                        await UniTask.Delay(1);
+                                    if (IsHeartBeatMessage(message))
+                                    {
+                                        WaitingHeartBeat = false;
+                                    }
+
+                                    if (IsAuthenticateMessage(message))
+                                    {
+                                        if (IsAuthenticateMessageSuccess(message))
+                                        {
+                                            WaitingAuthenticate = false;
+                                            Log.Debug(LogTag.WebSocket, "{0} 身份认证成功。", this);
+                                        }
+                                        else
+                                        {
+                                            await CloseSocket(true);
+                                            Log.Debug(LogTag.WebSocket, "{0} 身份认证失败，断开连接。", this);
+                                        }
+                                    }
+
+                                }
+                                finally { m_Bridge.RecycleMessage(message); }
+                            });
+                        }
+                        else
+                        {
+                            // 网络轮询不受游戏暂停影响，后台入口在 EditMode 也必须继续恢复。
+                            await UniTask.Delay(1, DelayType.Realtime);
+                        }
                     }
                 }
+                finally { m_ReceiveLoopCompletion.TrySetResult(); }
             }
 
 #endif

@@ -41,7 +41,7 @@ namespace NovaFramework.Runtime
         {
             lock (m_Lock)
             {
-                if (m_ActionQueueOnMultiThread.Count == 0)
+                if (m_ActionQueueOnMultiThread.Count == 0 && m_ActionExecuteQueueOnMainThread.Count == 0)
                 {
                     return;
                 }

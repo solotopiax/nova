@@ -76,5 +76,7 @@ DrawNode(root, 0);
 
 ## 关联文档
 
+`BuildTree` 只根据调用方给出的文件数组与根路径计算相对分段，不扫描、过滤、排序或验证文件是否属于根目录。输入顺序和重复文件均保留，根目录外的 `..` 相对路径也不由这里拒绝。`TotalFileCount` 按当前可变 Children/FileFullPaths 递归求和，不去重；外部插入环或 null 子节点会破坏正常递归，不能把这两个方法当成安全文件枚举器。
+
 - [EditorUtil.FileSystem.md](../EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.md)
 - [EditorUtil.Draw.md](../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md)

@@ -99,7 +99,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 销毁 Prefab 实例，触发引用计数归零。
+        /// 请求销毁 Prefab 实例；默认实现延后由 Tag 销毁回调释放本实例句柄，不保证本次调用结束时引用计数归零。
         /// </summary>
         /// <param name="instance">待销毁的 GameObject。</param>
         public void Destroy(GameObject instance)

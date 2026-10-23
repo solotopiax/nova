@@ -37,7 +37,7 @@ namespace NovaFramework.Runtime
         public bool IsRequestDispatched => Status == InAppReviewRequestStatus.RequestDispatched;
 
         /// <summary>
-        /// 技术失败时的框架错误描述；非失败状态为空。
+        /// 调用方保存的技术错误描述；显式构造将 null 转为空串，不校验状态与文本是否一致。
         /// </summary>
         public string ErrorMessage { get; }
     }

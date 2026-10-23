@@ -108,6 +108,7 @@ namespace NovaFramework.Editor
                     return Execute(settings, sourceDirPath, null, ExportMode.Data, operations);
                 }
 
+                /// <summary>在字体工作区租约内生成、发布并清场；获取失败不清理既有内容，刷新后才释放租约。</summary>
                 private static bool Execute(
                     LocalizationSettings settings,
                     string sourceDirPath,
@@ -121,9 +122,10 @@ namespace NovaFramework.Editor
                     }
 
                     string tempRoot = IOPath.GetFullPath(IOPath.Combine(sourceDirPath, "_temp"));
+                    IDisposable workspace = null;
                     try
                     {
-                        using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                        workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
                         EditorUtil.FileSystem.DeleteUnityTempRoot(tempRoot);
                         using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
                         string stagedCodeDir = IOPath.Combine(applier.StagingRoot, "code~");
@@ -194,13 +196,24 @@ namespace NovaFramework.Editor
                     {
                         try
                         {
-                            EditorUtil.FileSystem.DeleteUnityTempRoot(tempRoot);
+                            // 清场和刷新只能由当前租约持有者完成，防止重入删除其他导出。
+                            if (workspace != null)
+                            {
+                                try
+                                {
+                                    EditorUtil.FileSystem.DeleteUnityTempRoot(tempRoot);
+                                }
+                                catch (Exception exception)
+                                {
+                                    Log.Warning(LogTag.Localization, "清理本地化字体临时目录失败：{0}", exception.Message);
+                                }
+                                operations.RefreshAssetDatabase?.Invoke();
+                            }
                         }
-                        catch (Exception exception)
+                        finally
                         {
-                            Log.Warning(LogTag.Localization, "清理本地化字体临时目录失败：{0}", exception.Message);
+                            workspace?.Dispose();
                         }
-                        operations?.RefreshAssetDatabase?.Invoke();
                     }
                 }
 

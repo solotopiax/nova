@@ -87,7 +87,7 @@ DrawRuntimeInfos()
 
 ### DrawSearchBox 流程
 
-使用 `EditorUtil.Draw` 绘制 `toolbarSearchField` 样式输入框；右侧"×"按钮在 `m_SearchText` 非空时可用，点击后清空文本并还原焦点。
+使用 `EditorUtil.Draw` 绘制 `toolbarSearchField` 样式输入框；右侧"×"按钮在 `m_SearchText` 非空时可用，点击后只清空文本，没有额外的 FocusControl 调用。
 
 ### DrawObjectListPagination 流程
 
@@ -142,3 +142,9 @@ Inspector 自动挂载，无需手动调用。运行时点击 ObjectPoolComponen
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [ObjectPoolComponent.md](../../../Runtime/Modules/ObjectPool/ObjectPoolComponent.md)
 - [ObjectPoolManager.md](../../../Runtime/Modules/ObjectPool/ObjectPoolManager.md)
+
+## 运行操作边界
+
+运行区的释放/释放未使用按钮真实改变对象池，没有独立确认或回滚；状态文字和到期倒计时只是诊断，不保证此刻释放一定成功。CSV 导出全部对象快照，不只当前页；当前行格式没有完整转义对象名中的逗号、引号或换行，特殊名称可能破坏列结构。
+
+分页以池 FullName 为字典键，当前 Play 调用链的首/末页按钮能正确禁用；公共按钮第二 bool 的含义是 disableOnPlaying，不能直接把相同写法复用到任意 Edit GUI 作为通用禁用条件。页码只做上界修正，未来外部传入负值仍需调用方保护。Base 在 Play 绘制时负责 Repaint，无需凭子类未覆盖重绘方法推断面板不会更新。

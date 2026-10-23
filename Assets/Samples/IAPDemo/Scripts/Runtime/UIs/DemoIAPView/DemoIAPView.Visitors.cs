@@ -111,6 +111,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private bool m_StoreModulesInitialized;
 
         /// <summary>
+        /// 当前 View 是否仍处于打开会话；与 Bridge 实例共同阻止旧请求回写重新打开的页面。
+        /// </summary>
+        private bool m_IsOpen;
+
+        /// <summary>
         /// 当前演示账号是否已登录。
         /// </summary>
         private bool m_LoggedIn;

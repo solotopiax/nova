@@ -3,7 +3,7 @@
 **类签名**：`public static class EditorUtil.ProcessRunner`
 **命名空间**：`NovaFramework.Editor`
 
-统一外部进程调用器，封装 stdout/stderr 全异步读取、超时 Kill、退出码判断，避免死锁和编辑器卡死。
+统一外部进程调用器，封装 stdout/stderr 全异步读取、超时 Kill、退出码判断，避免同步管道读取造成的常见死锁；同步调用仍会阻塞编辑器。
 
 ---
 
@@ -143,3 +143,11 @@ EditorUtil.ProcessRunner.RunAsync(
 - [EditorUtil.Luban.CliRunner.md](../EditorUtil.Luban/EditorUtil.Luban.CliRunner.md)
 - [EditorUtil.Proto.CliRunner.md](../EditorUtil.Proto/EditorUtil.Proto.CliRunner.md)
 - [EditorUtil.FileSystem.md](../EditorUtil.FileSystem/EditorUtil.FileSystem.md)
+
+## 结果、参数与调用责任
+
+`RunSync` 仍阻塞调用线程；默认 120000 毫秒，`-1` 表示无限等待。stdout/stderr 异步收集减少管道阻塞，超时只尝试 Kill 当前进程，随后排干输出，不保证终止整个子进程树。Start 返回 null 也使用 `ExitCode=-1, TimedOut=true`，普通异常使用 `-1/false`；不能仅凭 TimedOut 推断一定经过完整超时时间。没有同步版本的工作目录或取消参数。
+
+`RunAsync` 的 true 仅表示进程获准启动，输出委托可在后台线程执行且其异常没有统一保护；它没有等待完成、超时、取消和成功收据。可选 workingDirectory 为空时继承进程默认目录。退出回调等待输出排干再释放进程。命令行参数由调用方构造，本工具不转义业务参数或限制可执行文件。
+
+`ProcessResult` 原样保存退出码、超时标记和输出（null 转空串），不检查这些值互相一致；Success 只等于退出码 0 且未超时，仍需调用方核产物。`FormatOutput` 添加输出标签并裁剪换行，不脱敏、不截断。Luban、Proto、环境探测、安装脚本和数据库工具各自决定程序、参数与成功条件；其日志不可直接当成业务完成或设备验收。

@@ -32,7 +32,7 @@ related:
 
 ## 适用场景
 
-- ProjectGuard、Config Validator、Runtime Error、HelpBox 或文档需要指出 `Nova/Open Config` 中的具体字段。
+- 配置校验、Runtime Error、HelpBox 或文档需要指出 `Nova/Open Config` 中的具体字段。
 - ConfigWindow 通过 `SerializedProperty.displayName` 自动绘制字段，或通过显式 Label 绘制字段。
 
 ## 核心做法
@@ -46,7 +46,7 @@ related:
 
 - 用户解决配置错误时以页面文字为检索锚点；字段别名会让用户在页面中找不到目标输入框。
 - 代码字段名、运行时职责说明和页面 Label 可以不同，但错误提示的导航职责是准确带路，不是重新解释字段语义。
-- 复用同一显示名生成规则可以避免 ConfigWindow 变更后 Guard、日志和文档静默漂移。
+- 复用同一显示名生成规则可以避免 ConfigWindow 变更后校验提示、日志和文档静默漂移。
 
 ## 反模式
 
@@ -57,9 +57,9 @@ related:
 
 ## 验证依据
 
-- `ConfigWindow.RightPanel.cs` 的应用配置面板以 `SerializedProperty.displayName` 绘制字段。
-- 同文件的隐私配置面板显式绘制 `AES-Key` 与 `AES-IV`。
-- `EditorUtil.ProjectGuard.ConfigRule` 的入口文案应与上述两类绘制方式一一对应。
+- [ConfigWindow.RightPanel.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs) 的应用配置面板调用 `DrawIndentedPropertyFieldWithTooltip`，以 `SerializedProperty.displayName` 绘制字段。
+- 同文件的隐私配置面板显式绘制 `AES-Key` 与 `AES-IV`；对外提示分别沿用这两个标签。
+- 当前页面与编辑入口见 [ConfigWindow](../../../Docs/Editor/Windows/ConfigWindow.md)。本模式约束所有指向该页面的校验提示、日志与文档，不依赖额外检查模块。
 
 ## 关联
 

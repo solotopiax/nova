@@ -34,12 +34,8 @@
 
 ## 模块内的高频补充文档
 
-- Asset：`IAssetManager`、各类 Handle 接口、`AssetManagerConfig`
-- Config：`ConfigRuntimeSO`、`ConfigMasterSO`、`PlatformChannelEntry`
-- Procedure：`BuiltInProcedures`、`LauncherSettings`、`ProcedureManager`
-- SDK：`ARCHITECTURE.md`、`INDEX.md`
-- Persist：`PlayerPrefsManager`、`SQLiteManager`、`FileFragmentManager`
-
-## 已废弃的旧认知
-
-旧版模块命名、旧式资源加载器名与旧目录层次已经全部退出当前模块索引。如果在其他文档里仍看到这类名称，应视为历史残留而不是现行事实。
+- Asset：[IAssetManager](Asset/AssetManager/Interfaces/IAssetManager.md)、各类 Handle 接口、[AssetManagerConfig](Asset/AssetManager/Definitions/AssetManagerConfig.md)。
+- Config：[ConfigRuntimeSO](Config/ConfigRuntimeSO.md) 是 Runtime 快照；[ConfigMasterSO](../../Editor/Config/ConfigMasterSO.md) 与 [PlatformChannelEntry](../../Editor/Config/Definitions/PlatformChannelEntry.md) 属于 Editor 设计态配置。
+- Procedure：[ProcedureBase](Procedure/ProcedureBase.md)、[ProcedureLoadDll](Procedure/Procedures/ProcedureLoadDll.md)、[LauncherSettings](Procedure/LauncherSettings.md)、[ProcedureManager](Procedure/ProcedureManager.md)。
+- SDK：[模块入口与包文档路由](SDK/INDEX.md)、[当前架构](SDK/ARCHITECTURE.md)。
+- Persist：[PlayerPrefsManager](Persist/PlayerPrefsManager.md)、[SQLiteManager](Persist/SQLiteManager.md)、[FileFragmentManager](Persist/FileFragmentManager.md)。

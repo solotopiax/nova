@@ -11,6 +11,7 @@ keywords:
   - ADR-072
   - MobileStoreParameterCodec
   - ReceiptParam
+  - IAPThirdPayRewardItem
   - ObfuscatedAccountId
   - AppAccountToken
 tags:
@@ -47,5 +48,5 @@ Mobile 内购把上下文编码进平台账号字段（Android `ObfuscatedAccoun
 - `ReceiptParam` 在支付 / 补单 / 恢复的 `IAPResult` 中均可带回业务（跨重启不丢），补齐了 `CustomData` 的短板。
 - 这是破坏性 on-wire 变更：布局由旧 `uid16+tableId16` 改为 8/8/16，升级前发起、升级后回来的在途单可能解错 tableId；靠 `ResolveTableIdFromTable`（productId 反查）+ 服务端优先 `serverTableId` 兜底，灰度期需关注在途单。
 - 字段容量上限为：uid 为 1-8 位十六进制、tableId ≤8 位十进制、receiptParam 为 1-16 位十六进制；uid / receiptParam 非空值不能以 `0` 开头。业务侧如需自由格式、更长的值或保留前导零，需要另开版本化编码并配合服务端映射。
-- 其余 store（ThirdPay / Voucher）不参与本编码；`IAPResult.ReceiptParam` 对它们保持默认 null。
+- 其余 Store（ThirdPay / Voucher）不参与本编码。ThirdPay 独立使用自由字符串 `ReceiptParam` 完成服务端验单往返；可选的 `FirstRechargeReward` 与 `ExtraBonusReward` 仅进入当前加密支付 URL，不写入订单、不参与验单或回填 `IAPResult`。这些字段不受 Mobile 的 8/8/16 编码约束。
 - 实现事实见 `com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileUtils.md` 的 `MobileStoreParameterCodec` 段。

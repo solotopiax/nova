@@ -57,6 +57,8 @@ string fileMD5 = Util.MD5.GetHashFromFile(Path.AB.PersistentTmp.GetFileFullPath(
 
 ---
 
+`GetHashFromBytes(null)` 和空数组都返回空字符串，并非标准空内容 MD5；已存在的空文件则实际计算标准空内容 MD5。文件检查与打开分开进行，检查后被删除、权限错误及读取错误仍会传播。计算为同步 IO/CPU 工作，不提供取消、锁文件或下载校验事务。十六进制按每字节 `x2` 拼接。
+
 ## 关联文档
 
 - [Util.Encrypt.md](Util.Encrypt.md)

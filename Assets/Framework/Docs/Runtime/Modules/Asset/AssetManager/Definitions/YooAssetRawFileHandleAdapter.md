@@ -37,7 +37,7 @@ bool IsDone { get; }          // m_Inner != null && m_Inner.IsDone
 string FilePath { get; }      // 仅在有效且完成时尽力返回底层 bundle 文件路径，否则为 null
 byte[] GetBytes()             // 仅在有效且完成时调用 RawFileObject.GetBytes() 返回字节副本
 
-void Release()                // 首次调用释放 AssetHandle 并归池；后续重复调用安全返回
+void Release()                // 首次调用释放 AssetHandle 并归池；本租约未被复用前重复调用返回
 
 // IReference 实现
 void IReference.Clear()       // 清空句柄、对象、路径并标记已释放
@@ -54,7 +54,7 @@ internal void Bind(AssetHandle inner, RawFileObject rawFile, string filePath)
 |------|------|
 | GetBytes() 返回副本 | 内部调用 `RawFileObject.GetBytes()`，不依赖 FilePath；调用方用完后仍必须 Release Handle |
 | FilePath 是可选 bundle 路径 | 异步加载尽力通过 `EnsureBundleFileAsync(...).Detail.BundleFilePath` 补充；同步加载及不支持 Ensure 的 Web/内存文件系统返回 null |
-| Release 幂等 | 首次 Release 释放 AssetHandle 并归池，重复调用不会再次减引用计数或重复归池 |
+| Release 幂等 | 首次 Release 释放 AssetHandle 并归池，本租约未被复用前重复调用不会再次减引用计数或重复归池 |
 
 ---
 
@@ -87,3 +87,7 @@ handle.Release();  // bytes 是副本，Release 后仍可由调用方继续使�
 
 - [IRawFileHandle.md](../Interfaces/IRawFileHandle.md)
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 当前租约边界
+
+重复释放保护只覆盖尚未被池重新 Bind 的本次租约；归池后旧引用仍可能指向新操作，不能再使用。Release 先设置已释放、清 inner/对象/路径，再在 finally 归池，因此底层释放抛出仍归还适配器。Bind 不释放之前所有权，Clear 也不执行底层 Release。GetBytes 的提取异常直接传播；FilePath 为 null 不表示字节加载失败。

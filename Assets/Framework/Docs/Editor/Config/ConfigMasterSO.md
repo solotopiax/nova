@@ -25,6 +25,16 @@ SDK / Kit 配置 DTO 会跨平台保留，以便同一份 ConfigMaster 安全编
 
 这些数据保存在 `ConfigMaster.asset`，不会写入 `ConfigRuntime.asset`。
 
+### 直接访问与保存的区别
+
+`EditorEntries` 返回实际 `List`，`GetAllEntries()` 也只以 `IReadOnlyList` 暴露同一列表与可变元素，不是冻结快照。直接修改列表不会自动清除已有索引；`EditorAddEntry / EditorRemoveEntryAt` 才显式使索引失效，也不负责 `SetDirty` 或保存。`RebuildIndex` 跳过 null/非法坐标，重复有效坐标取列表最后一行；这种原始索引行为不等于共享保存允许重复结构。
+
+`GetAppConfigs / GetPrivacyConfigs` 以及物理行的四类 `Get*Configs(mode)` 会在缺行或缺模式时补默认内存结构，因此不能作为保证无修改的查询。它们不完整验证 `DevelopMode`，也不保证修复已经存为 null 的配置；仅 Privacy 的外层模式列表为 null 时会先新建。只查已有行应使用 `TryGetEntry`，模式/配置完整性仍须上层核对。默认行构造建立 Debug/Release 槽，但平台、渠道初值仍为 None。
+
+`GetSDKMask / GetKitMask` 按类型 `FullName` 精确文本匹配，缺记录会追加默认全局掩码；已有记录的 `Mask=null` 不在此补齐。它们不核程序集身份、插件启用状态或默认构造能力。`SDKPluginConfigPanelActionAttribute` 同样只是保存配置类型、按钮文案、菜单路径和排序值（省略 order 为 0）；验证与实际菜单执行属于后续 Scanner/Window。
+
+隐私默认模板只在迁移标记尚未处理时，填充已存在非 null Privacy 配置中的 null/空 `PrivacyInfoConfig`；空白字符串不算空值，也不在这里补缺槽或保存。即使没有可填内容也会置处理标记，之后主动清空不再自动覆盖。`DllMasterAssetEntry` 的来源文件、目标文件与资源地址均原样返回，不检查文件、补扩展名或替换占位符；三者不能当作同一地址使用。
+
 ## 保存与导出
 
 “保存”提交 ConfigWindow 的工作副本到 ConfigMaster；“导出”读取已保存的配置，按明确三维坐标生成 ConfigRuntime，并单独生成客户端密钥源码。保存不生成源码，导出不替用户保存或修正 Master。
@@ -39,6 +49,8 @@ SDK / Kit 配置 DTO 会跨平台保留，以便同一份 ConfigMaster 安全编
 整理在工作副本上原子执行，并在校验通过后落盘。遇到重复有效记录、无法确定来源等真实结构损坏时回滚，不猜测数据。导出继续执行只读校验，采用仍勾选的维度解析当前切片。窗口编辑平台与 Unity Active BuildTarget 是两种用途：保存取前者，生产导出必须符合后者。
 
 实现边界见 [DimensionProjector](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md)，密钥配置与导出见 [资源加解密](../../Runtime/Modules/Asset/ResourceEncryption.md)。
+
+ConfigWindow 与 `nova.project.config.patch-coordinate` 复用 [设计态共享保存](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md)。原批量请求编辑 Namespace 和 AppConfigs 五个固定字符串字段，按现有掩码展开逻辑组；同 Action 的互斥 `operation=coordinate-switch` 只保存明确的 `CurrentChannel/CurrentDevelopMode`，Platform 须匹配并冻结 Active BuildTarget。两分支均不编辑掩码、不隐式修复其他结构、不生成 Runtime，完整状态和真实叶子写集必须在 Plan/Execute 一致，窗口草稿会阻止覆盖；坐标外归一变化须先独立整理。
 
 Config 矩阵只生成非 `None` 的 Platform × Channel 组合。`PlatformType.None` 与 `ChannelType.None` 仅供框架表示未识别或尚未加载状态，不能通过 `GetAppConfigs`、`GetPrivacyConfigs`、`TryGetEntry` 或 `EditorAddEntry` 作为实际配置坐标使用。旧资产中的 Platform None 行会删除；Channel None 行在同平台尚无 Official 行时迁移为 Official，否则作为重复行删除；旧的当前渠道 None 同样归一为 `Official`。
 

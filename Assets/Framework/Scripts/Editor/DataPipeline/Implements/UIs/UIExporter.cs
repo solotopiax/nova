@@ -435,6 +435,7 @@ namespace NovaFramework.Editor
             return true;
         }
 
+        /// <summary>在本批次工作区租约内暂存、发布和清场；刷新异常也必须释放已取得的租约。</summary>
         private static bool ExecuteStaged(
             UISettings settings,
             string sourceDirPath,
@@ -445,9 +446,10 @@ namespace NovaFramework.Editor
         {
             operations ??= new ExportOperations();
             string tempRoot = IOPath.GetFullPath(IOPath.Combine(sourceDirPath, "_temp"));
+            IDisposable workspace = null;
             try
             {
-                using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
                 DeleteTempRoot(tempRoot);
 
                 using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
@@ -514,14 +516,25 @@ namespace NovaFramework.Editor
             {
                 try
                 {
-                    DeleteTempRoot(tempRoot);
-                }
-                catch (Exception cleanupException)
-                {
-                    Log.Warning(LogTag.Editor, "清理 UI 导出临时目录失败：{0}", cleanupException.Message);
-                }
+                    // 未取得租约时不清理其他调用方的临时内容，也不触发刷新。
+                    if (workspace != null)
+                    {
+                        try
+                        {
+                            DeleteTempRoot(tempRoot);
+                        }
+                        catch (Exception cleanupException)
+                        {
+                            Log.Warning(LogTag.Editor, "清理 UI 导出临时目录失败：{0}", cleanupException.Message);
+                        }
 
-                operations.RefreshAssetDatabase?.Invoke();
+                        operations.RefreshAssetDatabase?.Invoke();
+                    }
+                }
+                finally
+                {
+                    workspace?.Dispose();
+                }
             }
         }
 

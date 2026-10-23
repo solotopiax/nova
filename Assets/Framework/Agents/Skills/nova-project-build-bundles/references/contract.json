@@ -4,7 +4,7 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.10",
-    "unity": ">=6000.4"
+    "unity": ">=6000.6.7f1"
   },
   "requires": [],
   "actionAdapters": [
@@ -22,7 +22,8 @@
   "inputs": [
     {
       "name": "projectRoot",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
     },
     {
       "name": "targetPlatform",
@@ -42,7 +43,8 @@
     },
     {
       "name": "buildAndBundledCopyOptions",
-      "required": true
+      "required": true,
+      "constraint": "先读取现存Batch/配置的有效值；WebGL OfflinePlayMode须ClearAndCopyAll，HostPlayMode首包与CDN前提另核。首包Tag不等于启动预热Tag。"
     },
     {
       "name": "encryptionPolicy",
@@ -54,20 +56,32 @@
     },
     {
       "name": "executionEntry",
-      "required": true
+      "required": true,
+      "constraint": "先从当前消费项目、持久化工作区和可用工具读取；展示来源后冻结，不要求新手重复填写可读取事实。已有授权持续有效，仍遵守当前Action的绑定计划确认。"
+    },
+    {
+      "name": "sharedWritesAndCallbacks",
+      "required": true,
+      "constraint": "读取Plan正式解析的OutputCache、脚本/临时输出、可选数据库、共享缓存及回调编译身份；未知回调、脏资产或原临时目录阻断。RawFile独立Package有效组须主Collector/PackRawFile，混合配置阻断，无Raw主Collector不适用。 Collector默认规则编译身份冻结，同名冲突/自定义规则未审写集阻断，不在Plan实例化。 AssetBundle另冻已保存scene setup、有效Collector根递归依赖的路径/GUID/dependencyHash/实物/meta与关键ProjectSettings；已审SBP回调按精确实现和实际分支接受；Analytics已开启时只接受已审空provider集合，未知内部Shader实现/事件、ProBuilder对象/脚本依赖仍阻断，不关闭任何开关。 SRPDisabledCompute仅全部Quality/defaultGraphics无SRP且CoreBuildData未初始化或无SRP空缓存；不调用lazy getter。 ProBuilder正式Settings实例须已初始化，首次静态初始化的迁移/保存订阅未纳入空分支。 IAP有BillingMode时按原store规则冻结canonical/fallback插件候选与Androidcompat/file/meta；无唯一目标或已满足目标值可接受，需改变兼容性仍阻断。 Firebase正常Android回调冻结四资源/必要目录/meta及l:gvh实际候选和manifest非空行闭包；只读Plan不读Measurement实例，同意选择已完成且保留Enabled原值。Package候选只读，可写Assets metadata只允许正规labels结果，其它meta原字节保持；未知token/布局/路径阻断。"
     }
   ],
   "effects": [
     "workspace-write",
     "unity-write",
     "generated-output",
-    "build"
+    "build",
+    "external-write"
   ],
   "writeScope": {
     "allow": [
       "confirmed project-local Bundles output for the selected Package and version",
       "documented YooAsset build cache and temporary output",
-      "selected BundledCopy output under StreamingAssets"
+      "selected BundledCopy output under StreamingAssets",
+      "frozen shared OutputCache, SBP script/temp/cache workspace and optional Library/AssetDependencyDB; clearBuildCache deletes selected Package root with all versions and AssetBundle global SBP cache",
+      "已核原构建回调按冻结的既有设置发送 Unity Editor Analytics 或 vendor telemetry；精确发送条件和字段随Plan展示，未审下游仍阻断",
+      "normal Firebase Crashlytics Android callback: four exact resources under Assets/Plugins/Android/FirebaseCrashlytics.androidlib, required directories and corresponding meta; exact declared Assets EDM metadata labels only, all other importer bytes preserved",
+      "normal Android scene no-resolution Jetifier preflight only: exact ProjectSettings/GvhProjectSettings.xml same-byte rewrite plus effective-True materialization of Unity EditorPrefs:GooglePlayServices.UseJetifier; freeze all other entries/preferences",
+      "execution-only owned public Google.Logger.LogMessage observer, exactly removed and original delegate verified; no logging level/debug changes or vendor callback invocation by the observer"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/** and Library/PackageCache/**",
@@ -80,7 +94,11 @@
     "unity-editor",
     "asset-database",
     "bundle-output-directory",
-    "streaming-assets"
+    "streaming-assets",
+    "yooasset-build",
+    "sbp-build-cache",
+    "Library/PlayerScriptAssemblies",
+    "Library/AssetDependencyDB"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -91,7 +109,7 @@
       "使用非默认加密器",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定 Target、PackageName、BuildVersion、固定输出根和完整构建选项，包含 Bundle/清单加密逻辑值及三个正式类型名；任一输入改变后旧确认失效。"
+    "rule": "确认绑定 Target、PackageName、BuildVersion、固定输出根和完整构建选项，包含 Bundle/清单加密逻辑值及三个正式类型名；任一输入改变后旧确认失效。 完整组合任务先由既有Operation完成适用代码生成与DLL导入，当前Operation不自动扩大到全量导出；跨平台共享StreamingAssets时串行。 确认含正式sharedWrites和已冻结回调；关闭清缓存仍写共享输出，未知回调不得扩大Assets范围放行。 确认同时包含已核原回调的统计/telemetry外发条件与字段，不关闭正常设置造测试通过；构建产物不证明外部收件。"
   },
   "minimumEvidence": "bundle-build",
   "resultStates": [
@@ -105,6 +123,16 @@
     "冻结的 encryptionPolicy、manifestEncryptionPolicy 与三个正式加解密器类型名",
     "BuildResult.Success 和 OutputPackageDirectory",
     "本次输出目录及 YooAsset 构建报告",
-    "未执行 CDN、商店、Git 与 UPM 发布的边界说明"
-  ]
+    "未执行 CDN、商店、Git 与 UPM 发布的边界说明",
+    "适用的正式导出物与DLL资源输入已就绪；单项构建不自动执行无关导出",
+    "WebGL实际PlayMode、BundledCopy与Package/版本首包一致性；Player布局/浏览器证据由请求的组合验收采集",
+    "多平台组合时每平台独立产物；首包在后续Player消费与验收完成后恢复，本轮临时设置基线及清场结果",
+    "本次finalized Receipt的完整辅助集合与Hash、正式报告Target/Package/Version/Pipeline/BundleType和引用Bundle存在/大小；共享缓存不承诺完整性，旧或被后续构建改变的Receipt为partial",
+    "AssetBundle成功与失败Receipt均只读核对源资产/meta、场景setup与脏态，不替用户保存或恢复；SBP回调契约不用于放行Player回调",
+    "callbacks.knownEffects列明已核内存统计和原外部统计条件/字段；下游未审仍blocked，产物成功不升级外部送达证据",
+    "Firebase CallbackExecutionReceipt冻结真实before/after、Generated、实际changedPaths、两个本次资源成功日志与所有写失败日志；XML GUID/Unity版本、create-only文件保持及meta标签边界合法。Generated已true跳过时保持文件，不重置或重放；普通Log失败和旧合法文件不能证明本次生成。已审Report(string,string)无网络发送。VersionHandler日志固定Console/空文件名/无外部委托，并冻结target和level；日志闭包漂移阻断。内部恢复Payload使用有界gzip/版本/原文长度/SHA-256完整封装，保持公共OperationStore上限，兼容旧明文Receipt；解码损坏或超限阻断，不截断来源或回调证据。",
+    "Android scene typed before/after binds full graph/state/artifacts/tools/scheduler/logging/settings; first scene requires actual ordered starting/checking/skipped/succeeded and cursor growth, later scenes require no resolution event and normal cursor growth. Verify is read-only without ReadAll/Resolve. Logger observation records fixed tokens only, retains real duplicates, removes only its owned observer and rejects delegate/instance drift.",
+    "本次 Android 场景回调有序日志/计数或精确完整 SBP 缓存 trace 与报告证据；同域自然 Editor update 的 Version Handler 前后观察，超时/未知调度/旧 Receipt 保持 partial，不推进或清空官方队列。"
+  ],
+  "externalCompletionPolicy": "incidental-build-telemetry"
 }

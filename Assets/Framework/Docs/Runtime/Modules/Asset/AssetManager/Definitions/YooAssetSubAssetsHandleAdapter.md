@@ -75,3 +75,7 @@ handle.Release();
 
 - [ISubAssetsHandle.md](../Interfaces/ISubAssetsHandle.md)
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 数组与释放边界
+
+Assets 在 inner 完成后复制 GetSubAssetObjects<T>() 到缓存数组；不检查 Status，底层集合为 null 时可抛出。数组可修改，后续访问仍返回同一缓存，单元素不拥有独立句柄。Release 无幂等保护，底层 Release 抛出时不会归池；Clear 只清字段，Bind 不释放旧 inner。归池后应立即丢弃引用。

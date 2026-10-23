@@ -36,6 +36,7 @@ namespace NovaFramework.Runtime
         /// <param name="config">
         /// 配置信息，含 ConfigRuntimeSO Asset 地址（AssetLocation）。
         /// </param>
+        /// <remarks>先建立新生命周期再取消旧等待，避免同步重入被覆盖；旧取消回调异常会传播，并可能跳过其后的 Dispose 与等待者通知。此入口不清已加载配置，不等同完整重载。</remarks>
         public override void Initialize(ConfigManagerConfig config)
         {
             if (config == null)
@@ -49,9 +50,14 @@ namespace NovaFramework.Runtime
 
             m_AssetLocation = config.AssetLocation;
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
-            m_LifecycleCts?.Cancel();
-            m_LifecycleCts?.Dispose();
+            UniTaskCompletionSource previousLoad = m_ConfigLoadTcs;
+            m_ConfigLoadTcs = null;
+            CancellationTokenSource previousLifecycle = m_LifecycleCts;
             m_LifecycleCts = new CancellationTokenSource();
+            // 新状态先接管，旧取消通知中的同步重入不再被本次初始化尾部覆盖。
+            previousLifecycle?.Cancel();
+            previousLifecycle?.Dispose();
+            previousLoad?.TrySetCanceled();
         }
 
         /// <summary>
@@ -62,14 +68,16 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 关闭并清理管理器；Release ConfigRuntimeSO 句柄使引用计数归零，清空内部引用。
         /// </summary>
+        /// <remarks>先摘取并清空旧字段，再释放句柄，最后通知旧等待者；取消回调异常仍可能阻止后续 Dispose 和通知。清字段不代表底层资源请求已经结束。</remarks>
         public override void Shutdown()
         {
-            m_LifecycleCts?.Cancel();
-            m_LifecycleCts?.Dispose();
+            CancellationTokenSource lifecycle = m_LifecycleCts;
+            UniTaskCompletionSource load = m_ConfigLoadTcs;
+            UniTaskCompletionSource<bool> refresh = m_AppConfigRefreshTcs;
+            IAssetHandle<ConfigRuntimeSO> handle = m_ConfigHandle;
             m_LifecycleCts = null;
-            m_AppConfigRefreshTcs?.TrySetCanceled();
+            m_ConfigLoadTcs = null;
             m_AppConfigRefreshTcs = null;
-            m_ConfigHandle?.Release();
             m_ConfigHandle = null;
             m_Runtime = null;
             m_AppConfigSnapshot = null;
@@ -78,11 +86,24 @@ namespace NovaFramework.Runtime
             m_IsLoadOver = false;
             m_AssetLocation = null;
             m_AssetManager = null;
+            // 所有旧字段先摘走再通知；等待者同步重入创建的新生命周期不被旧清场覆盖。
+            try
+            {
+                handle?.Release();
+            }
+            finally
+            {
+                lifecycle?.Cancel();
+                lifecycle?.Dispose();
+                refresh?.TrySetCanceled();
+                load?.TrySetCanceled();
+            }
         }
 
         /// <summary>
         /// 异步加载 ConfigRuntimeSO，加载成功后直接持有引用作为数据源；
         /// 已加载时幂等返回（m_IsLoadOver 短路），避免 AB 引用计数紊乱；
+        /// 加载中共享同一完成源；关闭时取消等待，迟到句柄由本次加载归还，不发布旧配置。
         /// 加载失败时 Log.Error 并重新抛出异常，由 Procedure 层决定启动流程是否中断。
         /// </summary>
         /// <returns>
@@ -90,65 +111,120 @@ namespace NovaFramework.Runtime
         /// </returns>
         public override async UniTask LoadAsync()
         {
+#if UNITY_EDITOR
+            // Editor 未结束的隐私存档维护必须先恢复；幂等短路也不能绕过门禁。
+            PrivacyAesMaintenanceGuard.AssertReady();
+#endif
             if (m_IsLoadOver)
             {
                 return;
             }
 
-            IAssetHandle<ConfigRuntimeSO> handle;
+            if (m_ConfigLoadTcs != null)
+            {
+                await m_ConfigLoadTcs.Task;
+                return;
+            }
+
+            var completion = new UniTaskCompletionSource();
+            m_ConfigLoadTcs = completion;
+            RunConfigLoadAsync(completion, m_AssetManager, m_AssetLocation, m_LifecycleCts).Forget();
+            await completion.Task;
+        }
+
+        /// <summary>
+        /// 执行唯一一轮 ConfigRuntimeSO 加载，校验原生命周期后提交，完成或失败后清除本轮共享任务。
+        /// </summary>
+        /// <param name="completion">本轮所有调用者共享的完成源。</param>
+        /// <param name="assetManager">发起时捕获的资源管理器，避免关闭后读取空字段。</param>
+        /// <param name="assetLocation">发起时捕获的配置资源地址。</param>
+        /// <param name="lifecycle">发起时的管理器生命周期；关闭或重新初始化后禁止提交。</param>
+        /// <returns>完成句柄处理与本轮共享任务通知的异步任务。</returns>
+        private async UniTask RunConfigLoadAsync(
+            UniTaskCompletionSource completion,
+            IAssetManager assetManager,
+            string assetLocation,
+            CancellationTokenSource lifecycle)
+        {
+            IAssetHandle<ConfigRuntimeSO> handle = null;
+            Exception failure = null;
             try
             {
-                handle = await m_AssetManager.LoadAsync<ConfigRuntimeSO>(m_AssetLocation);
-            }
-            catch (Exception e)
-            {
-                Log.Error(LogTag.Config, "ConfigManager 加载 ConfigRuntimeSO 异常：location={0}, Error={1}", m_AssetLocation, e);
-                throw;
-            }
+                // 不提前取消资源等待；若关闭后资源迟到，仍取得句柄并在 finally 唯一归还。
+                handle = await assetManager.LoadAsync<ConfigRuntimeSO>(assetLocation);
+                if (lifecycle == null || !ReferenceEquals(m_LifecycleCts, lifecycle) || lifecycle.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException("ConfigManager 加载所属生命周期已结束。");
+                }
 
-            if (handle.Asset == null)
-            {
-                handle.Release();
-                Log.Error(LogTag.Config, "ConfigManager 未能加载 ConfigRuntimeSO：location={0}", m_AssetLocation);
-                throw new InvalidOperationException("ConfigRuntimeSO 加载结果为 null。");
-            }
+                if (handle == null || handle.Asset == null)
+                {
+                    throw new InvalidOperationException("ConfigRuntimeSO 加载结果为 null。");
+                }
 
-            if (handle.Asset.Platform == PlatformType.None || handle.Asset.Channel == ChannelType.None ||
+                if (handle.Asset.Platform == PlatformType.None || handle.Asset.Channel == ChannelType.None ||
                 !Enum.IsDefined(typeof(PlatformType), handle.Asset.Platform) ||
                 !Enum.IsDefined(typeof(ChannelType), handle.Asset.Channel))
-            {
-                PlatformType invalidPlatform = handle.Asset.Platform;
-                ChannelType invalidChannel = handle.Asset.Channel;
-                handle.Release();
-                Log.Error(
-                    LogTag.Config,
-                    "ConfigRuntimeSO 使用了无效坐标：Platform={0}, Channel={1}, location={2}",
-                    invalidPlatform,
-                    invalidChannel,
-                    m_AssetLocation);
-                throw new InvalidOperationException(
-                    $"ConfigRuntimeSO 的 Platform 与 Channel 必须是非 None 的有效值：{invalidPlatform}/{invalidChannel}。");
-            }
+                {
+                    throw new InvalidOperationException(
+                        $"ConfigRuntimeSO 的 Platform 与 Channel 必须是非 None 的有效值：{handle.Asset.Platform}/{handle.Asset.Channel}。");
+                }
 
-            try
-            {
                 Util.Encrypt.AES.InitializeFromConfig(handle.Asset.PrivacyConfigs);
+                m_ConfigHandle = handle;
+                m_Runtime = handle.Asset;
+                m_AppConfigSnapshot = new AppConfigSnapshot(m_Runtime.Custom);
+                TryLoadAppConfigCache();
+                m_Custom = new CustomConfig(this);
+                int enabledCount = m_Runtime.EnabledSDKConfigs != null ? m_Runtime.EnabledSDKConfigs.Count : 0;
+                m_IsLoadOver = true;
+                Log.Debug(LogTag.Config, "Config 成功加载，共计 1 份儿通用配置，{0} 个 SDKPluginConfig 数据。", enabledCount);
+                BeginStartupAppConfigRefresh();
+                handle = null;
             }
-            catch
+            catch (Exception exception)
             {
-                handle.Release();
-                throw;
+                failure = exception;
+                if (!(exception is OperationCanceledException))
+                {
+                    Log.Error(LogTag.Config, "ConfigManager 加载 ConfigRuntimeSO 异常：location={0}, Error={1}", assetLocation, exception);
+                }
+            }
+            finally
+            {
+                if (handle != null)
+                {
+                    if (ReferenceEquals(m_ConfigHandle, handle))
+                    {
+                        m_ConfigHandle = null;
+                        m_Runtime = null;
+                        m_AppConfigSnapshot = null;
+                        m_Custom = null;
+                        m_IsLoadOver = false;
+                    }
+                    try
+                    {
+                        handle.Release();
+                    }
+                    catch (Exception releaseException)
+                    {
+                        failure = failure ?? releaseException;
+                    }
+                }
+                if (ReferenceEquals(m_ConfigLoadTcs, completion))
+                {
+                    m_ConfigLoadTcs = null;
+                }
             }
 
-            m_ConfigHandle = handle;
-            m_Runtime = handle.Asset;
-            m_AppConfigSnapshot = new AppConfigSnapshot(m_Runtime.Custom);
-            TryLoadAppConfigCache();
-            m_Custom = new CustomConfig(this);
-            int enabledCount = m_Runtime.EnabledSDKConfigs != null ? m_Runtime.EnabledSDKConfigs.Count : 0;
-            m_IsLoadOver = true;
-            Log.Debug(LogTag.Config, "Config 成功加载，共计 1 份儿通用配置，{0} 个 SDKPluginConfig 数据。", enabledCount);
-            BeginStartupAppConfigRefresh();
+            if (failure == null)
+            {
+                completion.TrySetResult();
+            }
+            else
+            {
+                completion.TrySetException(failure);
+            }
         }
 
         /// <summary>

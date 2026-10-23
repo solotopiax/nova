@@ -17,7 +17,8 @@
       "nova-project-upgrade-framework",
       "nova-project-setup-entry-scene",
       "nova-project-configure-runtime",
-      "nova-project-onboard-sdk-kit"
+      "nova-project-onboard-sdk-kit",
+      "nova-project-edit-settings"
     ],
     "data": [
       "nova-project-router",
@@ -25,26 +26,30 @@
       "nova-project-integrate-table",
       "nova-project-configure-runtime",
       "nova-project-update-localization",
-      "nova-project-data-driven-ui"
+      "nova-project-data-driven-ui",
+      "nova-project-edit-settings"
     ],
     "ui": [
       "nova-project-router",
       "nova-project-ui-create-view",
       "nova-project-update-ui-view",
-      "nova-project-data-driven-ui"
+      "nova-project-data-driven-ui",
+      "nova-project-edit-settings"
     ],
     "resource": [
       "nova-project-router",
       "nova-project-integrate-resource",
       "nova-project-integrate-content-scene",
-      "nova-project-build-bundles"
+      "nova-project-build-bundles",
+      "nova-project-edit-settings"
     ],
     "hotfix": [
       "nova-project-router",
       "nova-project-refresh-hotfix-dlls",
       "nova-project-generate-hybridclr-artifacts",
       "nova-project-build-bundles",
-      "nova-project-diagnose-startup"
+      "nova-project-diagnose-startup",
+      "nova-project-configure-pipeline"
     ],
     "network": [
       "nova-project-router",
@@ -75,7 +80,8 @@
       "nova-project-build-player",
       "nova-project-upload-google-play",
       "nova-project-diagnose-build",
-      "nova-project-diagnose-device-runtime"
+      "nova-project-diagnose-device-runtime",
+      "nova-project-configure-pipeline"
     ],
     "event": [
       "nova-project-router",
@@ -88,7 +94,8 @@
     "scene": [
       "nova-project-router",
       "nova-project-setup-entry-scene",
-      "nova-project-integrate-content-scene"
+      "nova-project-integrate-content-scene",
+      "nova-project-edit-settings"
     ],
     "sdk-kit": [
       "nova-project-router",
@@ -96,7 +103,8 @@
       "nova-project-configure-runtime",
       "nova-project-onboard-sdk-kit",
       "nova-project-resolve-android-dependencies",
-      "nova-project-diagnose-device-runtime"
+      "nova-project-diagnose-device-runtime",
+      "nova-project-edit-settings"
     ],
     "build": [
       "nova-project-router",
@@ -104,11 +112,18 @@
       "nova-project-resolve-android-dependencies",
       "nova-project-build-bundles",
       "nova-project-build-player",
-      "nova-project-diagnose-build"
+      "nova-project-diagnose-build",
+      "nova-project-configure-pipeline"
     ],
     "device": [
       "nova-project-router",
       "nova-project-diagnose-device-runtime"
+    ],
+    "configuration": [
+      "nova-project-router",
+      "nova-project-configure-runtime",
+      "nova-project-edit-settings",
+      "nova-project-configure-pipeline"
     ]
   },
   "skills": [
@@ -185,9 +200,43 @@
       ],
       "effects": [
         "unity-write",
-        "generated-output"
+        "generated-output",
+        "credential"
       ],
       "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-configure-pipeline",
+      "path": "Skills/nova-project-configure-pipeline",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "configuration",
+        "build"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "credential"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-edit-settings",
+      "path": "Skills/nova-project-edit-settings",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "configuration",
+        "feature"
+      ],
+      "effects": [
+        "read",
+        "workspace-write",
+        "unity-write",
+        "credential"
+      ],
+      "minimumEvidence": "static"
     },
     {
       "id": "nova-project-manage-upm-package",
@@ -328,9 +377,10 @@
       "effects": [
         "workspace-write",
         "unity-write",
-        "generated-output"
+        "generated-output",
+        "credential"
       ],
-      "minimumEvidence": "play"
+      "minimumEvidence": "static"
     },
     {
       "id": "nova-project-integrate-network-api",
@@ -422,7 +472,8 @@
       "effects": [
         "workspace-write",
         "unity-write",
-        "generated-output"
+        "generated-output",
+        "external-write"
       ],
       "minimumEvidence": "compile"
     },
@@ -439,7 +490,8 @@
         "workspace-write",
         "unity-write",
         "generated-output",
-        "build"
+        "build",
+        "external-write"
       ],
       "minimumEvidence": "bundle-build"
     },
@@ -456,7 +508,9 @@
         "workspace-write",
         "unity-write",
         "generated-output",
-        "build"
+        "build",
+        "external-write",
+        "credential"
       ],
       "minimumEvidence": "player-build"
     },
@@ -504,9 +558,12 @@
         "persistence"
       ],
       "effects": [
-        "workspace-write"
+        "read",
+        "workspace-write",
+        "unity-write",
+        "credential"
       ],
-      "minimumEvidence": "play"
+      "minimumEvidence": "static"
     },
     {
       "id": "nova-project-integrate-content-scene",
@@ -595,7 +652,8 @@
       "effects": [
         "workspace-write",
         "unity-write",
-        "generated-output"
+        "generated-output",
+        "external-write"
       ],
       "minimumEvidence": "static"
     }

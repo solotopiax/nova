@@ -36,5 +36,8 @@ namespace NovaFramework.Runtime
         /// 预加载失败提示。
         /// </summary>
         PreloadFailed = 3,
+
+        /// <summary>APK 文件已保存且当前未启用独立安装；确认后推荐更新继续、强制更新退出，取消按钮隐藏。</summary>
+        AppDownloaded = 4,
     }
 }

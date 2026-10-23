@@ -88,10 +88,12 @@ foreach (ITrackPlugin tracker in Nova.SDK.GetAll<ITrackPlugin>())
 - `m_PluginEntries` 仅保留 Inspector 选型元数据，不作为运行时启用、实例化或 Priority 来源。
 - 后续去除组件侧配置状态时，依赖缓存、抢跑兜底和重复初始化保护应收敛到 `SDKManager` 自身保证。
 - `InitializeTask` 在 `m_SDKManager == null` 时返回 `UniTask.CompletedTask`。
-- `InitializeTask` 支持初始化中的并发等待与完成后的重复等待；业务启动流程和 SDK 能力模块可同时等待，失败重试时也可再次等待，且不会重复初始化 SDK。
+- `InitializeTask` 支持初始化中的并发等待与完成后的重复等待；失败后的再次等待取得原任务结果，不会自行创建一次新的 SDK 初始化。
 - 只需要某个 SDK 时等待 `WaitForPluginAsync<T>()`，并确认结果为 `Ready`；全局 `InitializeTask` 仍等所有已启用 SDK 得出结果。
 - 如果首次 DataMaster 拉取需要 `country_code` 等业务属性，登录成功后一次调用 `Login(uid, properties)`。先 `Login(uid)` 再取得插件写属性，不能保证属性赶上首次拉取。
 - `[DisallowMultipleComponent]` 要求一个 GameObject 上最多只能挂一个 `SDKComponent`。
+
+`Start` 只缓存依赖，不主动启动异步插件初始化。`WaitForPluginAsync<T>` 会先触发组件共享初始化任务，但需要检查返回状态是否为 Ready。组件销毁只清 lazy、配置标记和 Manager 引用，不在此正文等待释放；公开查询/登录薄委托大多没有 Manager null 防护，Awake 前或销毁后调用不能指望一律返回 false。PluginEntries 是 Inspector 元数据活列表的只读接口，不是配置快照或运行时启用凭据。
 
 ## 关联文档
 

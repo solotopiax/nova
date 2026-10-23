@@ -152,7 +152,7 @@ SDK / Kit 广播与投影调用此 helper 将源格的 `[SerializeReference]` �
 **为何弃用 `boxedValue` 直接赋值：**
 直接赋值 `SerializeReference` 对象会让多个格共享同一引用；修改其中一格会同步污染其它格。投影器改为先创建同类型实例，再通过 `JsonUtility` 复制字段。
 
-**约束：** SDK/Kit 配置类必须是 `JsonUtility` 可序列化的叶子数据（`[Serializable]` 简单值字段），禁止内嵌 `[SerializeReference]` 多态字段——`JsonUtility` 不保留嵌套多态，届时子引用类型会丢失。目标格没有同类型实例时，投影器会把深拷贝实例加入对应配置列表。
+**约束：** 配置字段须符合当前 Unity 的序列化规则；实现创建顶层同类型实例，再通过 `JsonUtility` 复制字段，不能由此推定任意嵌套对象图都能完整保留。新增配置须在目标 Unity 版本中核对真实深拷贝类型、字段值与引用独立性。目标格没有同类型实例时，投影器把深拷贝实例加入对应列表。
 
 ### ClipCoordToMask — 坐标裁剪
 
@@ -169,7 +169,7 @@ SDK / Kit 广播与投影调用此 helper 将源格的 `[SerializeReference]` �
 | 开启维度时只复制当前切片 | 先枚举旧掩码的全部逻辑组，再对新轴完整拆分 |
 | 取消维度时拿当前完整坐标覆盖全矩阵 | 对每个剩余逻辑组分别保留顶部当前轴值对应的旧分支 |
 | 顶层类维度切换后不刷 `YooAssetInjector.Inject` | YooAsset mask 变更后路径已更新但注入还是旧值；`ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset` 需在 toggle 回调中调用 |
-| 直接复用 SDK/Kit 的配置对象引用 | 通过 `DeepCloneManagedRef` 为每个物理格生成独立实例；SDK/Kit 配置类不得内嵌 `JsonUtility` 无法保留的多态子引用 |
+| 直接复用 SDK/Kit 的配置对象引用 | 通过 `DeepCloneManagedRef` 为每个物理格生成独立实例；新增 SDK/Kit 配置须验证当前 Unity 对实际多态子引用的深拷贝保留 |
 
 ---
 
@@ -196,7 +196,7 @@ DimensionProjector.BroadcastWithinGroup(
     workingCopy,
     workingCopySO,
     DimensionProjector.PanelKind.SDK,
-    "NovaFramework.WeChat.WeChatSDKPluginConfig",
+    "NovaFramework.SDK.WeChatMiniGame.Runtime.WeChatMiniGamePluginConfig",
     curCoord);
 ```
 
@@ -208,3 +208,11 @@ DimensionProjector.BroadcastWithinGroup(
 - [EditorUtil.Config.DimensionalResolver.md](EditorUtil.Config.DimensionalResolver.md)（只读取数对称类）
 - [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)（`AppConfigsMask` / `SDKMasks` / `KitMasks` / `NamespaceMask` / `HybridEditorConfigsMask` / `YooAssetEditorConfigsMask` + `XxxOverrides` 字段）
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)（调用方，在 `DrawDimensionMaskRow` / `DrawYooAssetTitleWithMask` 中触发三操作）
+
+## 逻辑组、克隆与保存归一
+
+分维/合维先捕获全部旧逻辑组，再写目标，每格生成独立配置实例，避免 SDK/Kit 引用共享；值来源由旧掩码的独立轴与显式当前坐标的共用轴共同决定，不把整矩阵覆盖成一个当前格。广播原语本身没有总事务，原子恢复依外层工作副本备份；Apply/Instantiate 在备份 try 前失败或 finally 恢复异常仍可外抛。
+
+NormalizeForSave 先清非法/null 模式再拒有效重复，SyncEnumGrid 后再次预检，扫描全部实际存储的 SDK/Kit（含 disabled）。当前组缺源时只有候选 JSON 一致才回落，不凭空猜；同格重复类型、同优先级不同 Override 值拒绝。Override 候选选完才 Clear/重建，没有排序保证；全局清 Override 保顶层。字段克隆仅含当前已实现的序列化合同，新增字段或不受 Unity JSON 支持的对象图要同步核验，不能把 DeepClone 承诺扩展成任意图。
+
+Ensure HybridCLR/CDN Override 会复制完整 fallback 快照，YooAsset Override 当前只初始化坐标及字段声明默认，命中后不逐字段回落；只改其中一字段可能让其他字段变为默认。所有 Ensure/掩码 Getter 都不应恒视为只读。

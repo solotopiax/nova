@@ -21,7 +21,8 @@ namespace NovaFramework.Runtime
 #endif
 
         /// <summary>
-        /// Initialize the console service before the scene has loaded to catch more of the initialization log.
+        /// 按当前编译分支在 SubsystemRegistration（UNITY_2018 为 BeforeSceneLoad）注册服务，并在设置启用时创建 Console。
+        /// 不读取 DebugComponent 激活策略，也不把服务取得当作完整调试器初始化。
         /// </summary>
         [RuntimeInitializeOnLoadMethod(InitializeLoadType)]
         public static void OnLoadBeforeScene()
@@ -37,7 +38,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// Initialize RuntimeDebugger after the scene has loaded.
+        /// AfterSceneLoad 按 Settings.IsEnabled 调用 Init；不检查 IsInitialized，重复调用沿用既有行为。
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         public static void OnLoad()

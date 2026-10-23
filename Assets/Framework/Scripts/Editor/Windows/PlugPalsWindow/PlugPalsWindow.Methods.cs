@@ -940,7 +940,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 批量调用既有单包安装升级入口，复用依赖预检与延迟 Resolve 机制。
+        /// 批量调用既有安装入口，并用同一本地批次在升级完成及重载后合并重要声明。
         /// </summary>
         private void UpgradeAll(IReadOnlyList<EditorUtil.PlugPals.PackageDisplayEntry> entries)
         {
@@ -954,18 +954,21 @@ namespace NovaFramework.Editor
             int upgradedCount = 0;
             try
             {
-                Dictionary<string, EditorUtil.PlugPals.RegistrySource> knownRegistryPackages = BuildKnownRegistryPackages();
-                for (int i = 0; i < entries.Count; i++)
+                using (EditorUtil.ImportantUpdates.BeginBatch())
                 {
-                    EditorUtil.PlugPals.PackageDisplayEntry entry = entries[i];
-                    if (EditorUtil.PlugPals.InstallPackage(
-                        GetManifestFullPath(),
-                        GetRegistryUrl(entry),
-                        GetRegistryName(entry),
-                        entry,
-                        knownRegistryPackages))
+                    Dictionary<string, EditorUtil.PlugPals.RegistrySource> knownRegistryPackages = BuildKnownRegistryPackages();
+                    for (int i = 0; i < entries.Count; i++)
                     {
-                        upgradedCount++;
+                        EditorUtil.PlugPals.PackageDisplayEntry entry = entries[i];
+                        if (EditorUtil.PlugPals.InstallPackage(
+                            GetManifestFullPath(),
+                            GetRegistryUrl(entry),
+                            GetRegistryName(entry),
+                            entry,
+                            knownRegistryPackages))
+                        {
+                            upgradedCount++;
+                        }
                     }
                 }
 

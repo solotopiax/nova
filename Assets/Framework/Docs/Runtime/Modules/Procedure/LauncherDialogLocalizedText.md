@@ -43,6 +43,10 @@
 - 如果同一个 `DialogType` 配了多条文本，它们会一起激活，不会自动互斥。
 - 旧 Launcher Prefab 上残留的 `TextLocalizing` 会在运行时实例上被禁用并交还 TMP 预处理器，不会修改原 Prefab 资产。
 
+## 参数与生命周期边界
+
+getter 只返回 Inspector 原引用/Key；Refresh 对空文本/空 Key 跳过，用 LauncherLanguage 经独立 LocalizationTextRenderer 写入并接管旧 TextLocalizing。ApplyByType 只按 DialogType 显隐和刷新，忽略 hasCancelAction；Panel 当前自行按两遍算法处理，不调用它。
+
 ## 继续阅读
 
 关键源码：

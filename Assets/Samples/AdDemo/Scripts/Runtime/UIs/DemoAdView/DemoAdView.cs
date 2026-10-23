@@ -8,6 +8,7 @@
  * descrip:   DemoAdView 演示 View — 生命周期与公开接口
  ***************************************************************/
 
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AdPlugin.Runtime;
@@ -28,6 +29,9 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         {
             base.OnOpen(userData);
 
+            m_AdViewCts?.Cancel();
+            m_AdViewCts?.Dispose();
+            m_AdViewCts = new CancellationTokenSource();
             SubscribeAdEvents();
             AppendFeedback("Ad 演示已打开，可在 Debug UI 中请求、检查和播放广告。");
         }
@@ -40,6 +44,9 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public override void OnClose(bool isShutdown, object userData)
         {
+            m_AdViewCts?.Cancel();
+            m_AdViewCts?.Dispose();
+            m_AdViewCts = null;
             UnsubscribeAdEvents();
 
             base.OnClose(isShutdown, userData);

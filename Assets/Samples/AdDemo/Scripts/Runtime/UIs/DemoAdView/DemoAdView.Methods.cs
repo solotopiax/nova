@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AdPlugin.Runtime;
@@ -85,11 +86,16 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
 
         /// <summary>
         /// 请求指定广告类型，并把当前类型对应的参数回传输入框内容放入 customProps。
+        /// 固定本次打开的会话与令牌，关闭或重开后不再回写旧任务反馈。
         /// </summary>
         /// <param name="format">要请求的广告类型。</param>
         /// <param name="customDataInput">当前广告类型对应的参数回传输入框。</param>
         private async UniTaskVoid RequestAdAsync(AdFormat format, TMP_InputField customDataInput)
         {
+            CancellationTokenSource session = m_AdViewCts;
+            if (this == null || !Available || session == null) return;
+            CancellationToken token = session.Token;
+            if (token.IsCancellationRequested) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
@@ -98,10 +104,11 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
             try
             {
                 AppendFeedback("正在请求" + GetFormatDisplayName(format) + "。");
-                AdLoadResult result = await adPlugin.RequestAsync(format, BuildAdCustomProps(format, customDataInput));
+                AdLoadResult result = await adPlugin.RequestAsync(format, BuildAdCustomProps(format, customDataInput), token);
+                if (this == null || !Available || token.IsCancellationRequested || !ReferenceEquals(m_AdViewCts, session)) return;
                 if (result == null || !result.Success)
                 {
-                    AppendFeedback(GetFormatDisplayName(format) + "请求失败：code=" + (result?.ErrorCode ?? 0) + "，message=" + (result?.ErrorMessage ?? "null"), FeedbackLevel.Error);
+                    AppendFeedback(GetFormatDisplayName(format) + "本轮请求失败：code=" + (result?.ErrorCode ?? 0) + "，message=" + (result?.ErrorMessage ?? "null"), FeedbackLevel.Error);
                     return;
                 }
 
@@ -109,10 +116,12 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
             }
             catch (OperationCanceledException)
             {
+                if (this == null || !Available || token.IsCancellationRequested || !ReferenceEquals(m_AdViewCts, session)) return;
                 AppendFeedback(GetFormatDisplayName(format) + "请求已取消。", FeedbackLevel.Warn);
             }
             catch (Exception ex)
             {
+                if (this == null || !Available || token.IsCancellationRequested || !ReferenceEquals(m_AdViewCts, session)) return;
                 AppendFeedback(GetFormatDisplayName(format) + "请求异常：" + ex.Message, FeedbackLevel.Error);
             }
         }
@@ -134,11 +143,16 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
 
         /// <summary>
         /// 播放指定广告类型，并把当前类型对应的参数回传输入框内容放入 customProps。
+        /// 固定本次打开的会话与令牌；等待结束或异常时先确认页面仍属于本次打开。
         /// </summary>
         /// <param name="format">要播放的广告类型。</param>
         /// <param name="customDataInput">当前广告类型对应的参数回传输入框。</param>
         private async UniTaskVoid ShowAdAsync(AdFormat format, TMP_InputField customDataInput)
         {
+            CancellationTokenSource session = m_AdViewCts;
+            if (this == null || !Available || session == null) return;
+            CancellationToken token = session.Token;
+            if (token.IsCancellationRequested) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
@@ -147,15 +161,18 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
             try
             {
                 AppendFeedback("正在播放" + GetFormatDisplayName(format) + "。");
-                await adPlugin.ShowAsync(format, BuildAdCustomProps(format, customDataInput));
+                await adPlugin.ShowAsync(format, BuildAdCustomProps(format, customDataInput), token);
+                if (this == null || !Available || token.IsCancellationRequested || !ReferenceEquals(m_AdViewCts, session)) return;
                 AppendFeedback(GetFormatDisplayName(format) + "播放调用完成。", FeedbackLevel.Success);
             }
             catch (OperationCanceledException)
             {
-                AppendFeedback(GetFormatDisplayName(format) + "播放已取消。", FeedbackLevel.Warn);
+                if (this == null || !Available || token.IsCancellationRequested || !ReferenceEquals(m_AdViewCts, session)) return;
+                AppendFeedback(GetFormatDisplayName(format) + "播放等待已取消，原生展示仍以关闭事件结束。", FeedbackLevel.Warn);
             }
             catch (Exception ex)
             {
+                if (this == null || !Available || token.IsCancellationRequested || !ReferenceEquals(m_AdViewCts, session)) return;
                 AppendFeedback(GetFormatDisplayName(format) + "播放失败：" + ex.Message, FeedbackLevel.Error);
             }
         }

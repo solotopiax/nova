@@ -168,6 +168,8 @@ App 模块的大版本检查依赖 CDN 上的一份 JSON 配置，整个链路�
 
 ## §13 关联文档
 
+面板只编辑序列化配置、显示规则说明并打开模板目录，不在绘制时请求 CDN、验证规则内容或安装包地址，也不执行版本检查。WebGL 的关闭显示不覆盖切回其它平台后的原配置。模板只是业务规则的数据入口；当前下载/安装支持与结果须按 `IAppManager` 和对应运行链验证，不能从 Inspector 上出现选项或旧静态说明推定运行效果。
+
 - [../BaseComponentInspector.md](../BaseComponentInspector.md)
 - [../../../Runtime/Modules/App/AppComponent.md](../../../Runtime/Modules/App/AppComponent.md)
 - [../../../Runtime/Modules/App/AppManager/IAppManager.md](../../../Runtime/Modules/App/AppManager/IAppManager.md)

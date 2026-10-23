@@ -44,3 +44,5 @@ Luban 文本行实现这个接口后，`LocalizationManager` 就能通过 `ITabl
 - [LocalizationManager.md](LocalizationManager.md)
 - [TextLocalizing.md](TextLocalizing.md)
 - [../../Core/Table/ITable.md](../../Core/Table/ITable.md)
+
+接口本身不执行校验或补默认值。翻译 Value 始终保存正常 Unicode 逻辑顺序，RTL 转换只在 TMP 渲染预处理发生；重复 Name 在当前扁平化实现中以后写覆盖，不报告跨表冲突。DataList 本身为 null 仍可抛出异常。

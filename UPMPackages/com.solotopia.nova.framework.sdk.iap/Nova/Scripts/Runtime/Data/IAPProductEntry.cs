@@ -70,9 +70,9 @@ namespace NovaFramework.SDK.IAP.Runtime
         private string m_Currency;
 
         /// <summary>
-        /// 编辑器备注；仅在 IAPConfigWindow 中显示，不导出到 IAPPluginConfig。
+        /// 商品配置备注；随商品条目导出到 ConfigRuntimeSO。
         /// </summary>
-        [SerializeField, Tooltip("编辑器备注，仅供配置阶段使用，不导出到运行时商品表。")]
+        [SerializeField, Tooltip("商品配置备注，随商品条目导出到 ConfigRuntimeSO。")]
         private string m_EditorNote;
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         public string Currency => m_Currency;
 
         /// <summary>
-        /// 编辑器备注；不导出到 IAPPluginConfig。
+        /// 商品配置备注；随商品条目导出到 ConfigRuntimeSO。
         /// </summary>
         public string EditorNote => m_EditorNote;
 

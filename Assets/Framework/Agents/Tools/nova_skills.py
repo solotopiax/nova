@@ -90,6 +90,29 @@ PROGRESSIVE_DISCLOSURE_HEADING = "## 渐进式披露"
 SHA256_HEX_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 RECONCILE_ACTIONS = {"add", "update", "remove"}
 SKILL_STATUSES = {"experimental", "stable", "deprecated"}
+# 用户任务只维护 Skill 契约和当次验收要求，不保存历史结果，也不以发现入口推导成功。
+TASK_EXECUTION_MODES = {
+    "controlled", "business-integration", "read-only", "external-host", "manual", "unimplemented",
+}
+# APK 集证据只供下列精确任务分支使用，不加入 Skill/Catalog 的通用最低证据枚举。
+APK_SET_BUILD_EVIDENCE = "apk-set-build"
+AAB_DEVICE_PROFILE_ID = "android-aab-device-install"
+AAB_DEVICE_TASK_ID = "device.install.aab"
+AAB_DEVICE_CLI = (
+    "java -jar <resolvedBundletool> build-apks --bundle=<frozenAab> --output=<newApks> "
+    "--connected-device --device-id=<frozenSerial> --adb=<resolvedAdb>; "
+    "java -jar <resolvedBundletool> install-apks --apks=<frozenApks> "
+    "--device-id=<frozenSerial> --adb=<resolvedAdb>"
+)
+TASK_EVIDENCE_KINDS = MINIMUM_EVIDENCE_LEVELS | {"artifact", "device", "external", APK_SET_BUILD_EVIDENCE}
+TASK_PROFILE_FIELDS = {"id", "description", "taskIds", "requiredInputs", "actionAdapters",
+                       "minimumEvidence", "additionalEvidence", "effects"}
+# Workflow 必须显式选择原 DAG 子节点；旧独立 Operation 的八字段契约保持不变。
+WORKFLOW_TASK_PROFILE_FIELDS = TASK_PROFILE_FIELDS | {"requires"}
+TASK_PROFILE_ADAPTER_KINDS = {"agent-action", "pipify", "cli"}
+TASK_ID_PATTERN = re.compile(r"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$")
+TASK_ADAPTER_RELATIONS = {"direct", "prerequisite", "verify"}
+TASK_SCOPES = {"consumer", "developer", "internal"}
 CATALOG_FIELDS = {"schemaVersion", "package", "capabilityGroups", "skills"}
 CATALOG_SKILL_FIELDS = {
     "id",
@@ -273,8 +296,21 @@ def _catalog_entries(catalog: dict[str, Any]) -> list[dict[str, Any]]:
     return entries
 
 
+def _allows_incidental_build_telemetry_completion(contract: dict[str, Any]) -> bool:
+    """只接受独立本地生成操作明确声明的附带构建遥测策略；缺省或非法声明保持外部验收门。"""
+    effects = contract.get("effects")
+    return (
+        contract.get("externalCompletionPolicy") == "incidental-build-telemetry"
+        and contract.get("kind") == "operation"
+        and contract.get("requires") == []
+        and contract.get("minimumEvidence") in ("compile", "bundle-build", "player-build")
+        and isinstance(effects, list)
+        and "external-write" in effects
+    )
+
+
 def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[str]:
-    """校验除 Catalog 镜像字段以外的安全契约，避免空值比较掩盖缺失定义。"""
+    """校验安全契约及显式本地完成策略；策略不改变外部写入、凭据、确认与锁。"""
     errors: list[str] = []
     required_fields = {
         "compatibility",
@@ -303,6 +339,13 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
         errors.append(f"{skill_id} 的 contract.json requires 必须是合法 Skill id 数组")
     elif len(requires) != len(set(requires)):
         errors.append(f"{skill_id} 的 contract.json requires 不能重复")
+    if ("externalCompletionPolicy" in contract
+            and not _allows_incidental_build_telemetry_completion(contract)):
+        errors.append(
+            f"{skill_id} 的 externalCompletionPolicy 仅允许 incidental-build-telemetry；"
+            "须为无依赖 Operation、最低证据为 compile/bundle-build/player-build 且保留 external-write，"
+            "只声明已核构建附带遥测，不用于业务外部交付"
+        )
 
     action_adapters = contract.get("actionAdapters")
     if not isinstance(action_adapters, list) or not action_adapters:
@@ -393,11 +436,197 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
         not isinstance(item, str) or not item for item in evidence
     ):
         errors.append(f"{skill_id} 的 contract.json evidence 必须是非空字符串数组")
+    errors.extend(_validate_task_profiles(skill_id, contract))
+    return errors
+
+
+def _is_aab_device_profile(skill_id: str, contract: dict[str, Any], profile: dict[str, Any]) -> bool:
+    """只识别既有 AAB 转换安装分支，保留父构建与凭据等全部副作用及独立设备证据。"""
+    return (
+        skill_id == "nova-project-build-player" and contract.get("id") == skill_id
+        and contract.get("kind") == "operation" and contract.get("requires") == []
+        and contract.get("minimumEvidence") == "player-build"
+        and profile.get("id") == AAB_DEVICE_PROFILE_ID
+        and profile.get("taskIds") == [AAB_DEVICE_TASK_ID]
+        and profile.get("minimumEvidence") == APK_SET_BUILD_EVIDENCE
+        and profile.get("actionAdapters") == [{"kind": "cli", "entry": AAB_DEVICE_CLI}]
+        and isinstance(profile.get("effects"), list)
+        and all(isinstance(effect, str) for effect in profile["effects"])
+        and isinstance(contract.get("effects"), list)
+        and all(isinstance(effect, str) for effect in contract["effects"])
+        and set(profile["effects"]) == set(contract.get("effects", []))
+        and {"build", "credential", "external-write", "workspace-write", "generated-output"}.issubset(profile["effects"])
+        and isinstance(profile.get("requiredInputs"), list)
+        and all(isinstance(name, str) for name in profile["requiredInputs"])
+        and {"projectRoot", "targetPlatform", "executionEntry", "deviceInstallScope"}.issubset(profile["requiredInputs"])
+        and isinstance(profile.get("additionalEvidence"), list) and "device" in profile["additionalEvidence"]
+    )
+
+
+def _validate_task_profiles(skill_id: str, contract: dict[str, Any]) -> list[str]:
+    """校验分支与子 DAG；APK 集只准精确 AAB 设备分支，原构建与外部安全门保持。"""
+    if "taskProfiles" not in contract:
+        return []
+    errors: list[str] = []
+    profiles = contract["taskProfiles"]
+    prefix = skill_id + " 的 taskProfiles"
+    workflow = contract.get("kind") == "workflow"
+    if not workflow and (contract.get("kind") != "operation" or contract.get("requires") != []):
+        errors.append(prefix + " 仅支持无依赖 Operation 或显式选择子 DAG 的 Workflow")
+    if not isinstance(profiles, list) or not profiles:
+        return [*errors, prefix + " 必须为非空数组"]
+    input_items = contract.get("inputs") if isinstance(contract.get("inputs"), list) else []
+    adapter_items = contract.get("actionAdapters") if isinstance(contract.get("actionAdapters"), list) else []
+    input_names = {item.get("name") for item in input_items
+                   if isinstance(item, dict) and isinstance(item.get("name"), str)}
+    allowed_adapters = {(item.get("kind"), item.get("entry"))
+                        for item in adapter_items if isinstance(item, dict)
+                        and isinstance(item.get("kind"), str) and isinstance(item.get("entry"), str)}
+    global_effects = {item for item in contract.get("effects", []) if isinstance(item, str)} if isinstance(contract.get("effects"), list) else set()
+    seen_ids: set[str] = set()
+    seen_tasks: set[str] = set()
+    for profile in profiles:
+        fields = WORKFLOW_TASK_PROFILE_FIELDS if workflow else TASK_PROFILE_FIELDS
+        if not isinstance(profile, dict) or set(profile) != fields:
+            errors.append(prefix + " 项只允许已定义的目标、输入、Adapter 与证据字段")
+            continue
+        if workflow:
+            requires = profile["requires"]
+            original_requires = contract.get("requires", [])
+            if (not isinstance(requires, list)
+                    or any(not isinstance(item, str) or not _is_managed_skill_id(item) for item in requires)
+                    or len(requires) != len(set(requires))
+                    or not isinstance(original_requires, list)
+                    or any(not isinstance(item, str) for item in original_requires)
+                    or not set(requires).issubset(original_requires)):
+                errors.append(prefix + " requires 必须显式选择原 Workflow 无重复的 Operation 子集")
+        profile_id = profile.get("id")
+        if (not isinstance(profile_id, str) or SKILL_NAME_PATTERN.fullmatch(profile_id) is None
+                or profile_id in seen_ids):
+            errors.append(prefix + " id 必须为唯一小写短横线名称")
+        else:
+            seen_ids.add(profile_id)
+        if not isinstance(profile.get("description"), str) or not profile["description"].strip():
+            errors.append(prefix + " description 必须说明具体用户目标与边界")
+        arrays: dict[str, list[str]] = {}
+        for field in ("taskIds", "requiredInputs", "additionalEvidence", "effects"):
+            value = profile.get(field)
+            if (not isinstance(value, list) or (field != "additionalEvidence" and not value)
+                    or any(not isinstance(item, str) or not item.strip() for item in value)
+                    or len(set(value)) != len(value)):
+                errors.append(prefix + " " + field + " 必须为无重复的有效文本数组")
+                arrays[field] = []
+            else:
+                arrays[field] = value
+        for task_id in arrays["taskIds"]:
+            if TASK_ID_PATTERN.fullmatch(task_id) is None or task_id in seen_tasks:
+                errors.append(prefix + " taskIds 格式错误或跨分支重复")
+            seen_tasks.add(task_id)
+        if not set(arrays["requiredInputs"]).issubset(input_names):
+            errors.append(prefix + " requiredInputs 只能引用原 Skill 的 inputs.name")
+        if any(kind not in TASK_EVIDENCE_KINDS for kind in arrays["additionalEvidence"]):
+            errors.append(prefix + " additionalEvidence 包含未知证据种类")
+        effects = set(arrays["effects"])
+        # Workflow 的子节点副作用在完整契约集合可用后核对；不能要求父 Catalog 复制子门。
+        allowed_effects = SKILL_EFFECTS if workflow else global_effects
+        if (not effects.issubset(allowed_effects)
+                or not (global_effects & {"external-write", "credential", "build"}).issubset(effects)):
+            errors.append(prefix + " effects 只能选原副作用且不能省略外部、凭据或构建门")
+        minimum = profile.get("minimumEvidence")
+        apk_set_profile = _is_aab_device_profile(skill_id, contract, profile)
+        if (minimum == APK_SET_BUILD_EVIDENCE or APK_SET_BUILD_EVIDENCE in arrays["additionalEvidence"]) and not apk_set_profile:
+            errors.append(prefix + " apk-set-build 仅允许精确 Android AAB 转换安装分支")
+        if not isinstance(minimum, str) or (minimum not in MINIMUM_EVIDENCE_LEVELS and not apk_set_profile):
+            errors.append(prefix + " minimumEvidence 无效")
+        elif ("build" in effects) != (minimum in BUILD_ARTIFACT_EVIDENCE_LEVELS or apk_set_profile):
+            errors.append(prefix + " build 副作用与构建证据必须成对声明")
+        if ("external-write" in effects and "external" not in arrays["additionalEvidence"]
+                and not _allows_incidental_build_telemetry_completion(contract)):
+            errors.append(prefix + " 外部写入必须独立要求 external 证据")
+        adapters = profile.get("actionAdapters")
+        if not isinstance(adapters, list) or not adapters:
+            errors.append(prefix + " actionAdapters 必须为非空确定性入口数组")
+            continue
+        pairs: set[tuple[str, str]] = set()
+        for adapter in adapters:
+            if (not isinstance(adapter, dict) or set(adapter) != {"kind", "entry"}
+                    or not isinstance(adapter.get("kind"), str) or not isinstance(adapter.get("entry"), str)
+                    or not adapter["kind"].strip() or not adapter["entry"].strip()):
+                errors.append(prefix + " Adapter 仅含 kind/entry")
+                continue
+            pair = (adapter["kind"], adapter["entry"])
+            if pair[0] not in TASK_PROFILE_ADAPTER_KINDS or pair not in allowed_adapters or pair in pairs:
+                errors.append(prefix + " Adapter 必须唯一引用原 Skill 的确定性入口")
+            pairs.add(pair)
     return errors
 
 
 def _find_mcp_gateway(framework_root: Path) -> Path:
-    """定位与 Framework 配套的 MCP 网关源码，拒绝猜测任意第三方目录。"""
+    """按当前消费工程的解析来源定位 MCP，开发仓只在最近项目边界内查找。"""
+    framework_root = Path(framework_root).resolve()
+    package_cache_root = framework_root.parent
+    if package_cache_root.name == "PackageCache" and package_cache_root.parent.name == "Library":
+        # PackageCache 里的 Framework 属于该消费工程，外层仓库不是它的依赖来源。
+        project_root = package_cache_root.parent.parent
+        packages_root = project_root / "Packages"
+        lock = _read_json(packages_root / "packages-lock.json")
+        dependencies = lock.get("dependencies")
+        entry = dependencies.get(MCP_PACKAGE_NAME) if isinstance(dependencies, dict) else None
+        if not isinstance(entry, dict):
+            raise NovaSkillsError("当前消费工程的 packages-lock.json 缺少 MCP 解析条目")
+        source, version = entry.get("source"), entry.get("version")
+        embedded_root = packages_root / MCP_PACKAGE_NAME
+        if embedded_root.is_dir() and source != "embedded":
+            raise NovaSkillsError("当前消费工程的 MCP 嵌入目录与 lock source 不一致")
+
+        expected_version: str | None = None
+        expected_hash: str | None = None
+        if source == "registry":
+            if not isinstance(version, str) or not version or version.startswith("file:"):
+                raise NovaSkillsError("registry MCP lock 缺少有效版本")
+            expected_version = version
+            package_roots = sorted(package_cache_root.glob(f"{MCP_PACKAGE_NAME}@*"))
+        elif source == "git":
+            expected_hash = entry.get("hash")
+            if not isinstance(expected_hash, str) or not expected_hash:
+                raise NovaSkillsError("git MCP lock 缺少有效 hash，无法安全选择缓存")
+            package_roots = sorted(package_cache_root.glob(f"{MCP_PACKAGE_NAME}@*"))
+        elif source == "local":
+            if not isinstance(version, str) or not version.startswith("file:"):
+                raise NovaSkillsError("local MCP lock 必须使用 file: version")
+            package_roots = [_resolve_file_dependency(packages_root / "manifest.json", version)]
+        elif source == "embedded":
+            # 与 Framework 嵌入包规则一致：file: 描述包目录，不是包内版本号。
+            expected_version = version if isinstance(version, str) and ":" not in version else None
+            package_roots = [embedded_root]
+        else:
+            raise NovaSkillsError(f"不支持的 MCP packages-lock.json source：{source!r}")
+
+        candidates: set[Path] = set()
+        for package_root in package_roots:
+            if not package_root.is_dir():
+                continue
+            if expected_hash:
+                cache_hash = package_root.name.removeprefix(f"{MCP_PACKAGE_NAME}@")
+                if not (expected_hash.startswith(cache_hash) or cache_hash.startswith(expected_hash)):
+                    continue
+            try:
+                package = _read_json(package_root / "package.json")
+            except NovaSkillsError:
+                continue
+            if package.get("name") != MCP_PACKAGE_NAME:
+                continue
+            if expected_version is not None and package.get("version") != expected_version:
+                continue
+            gateway = package_root / MCP_GATEWAY_RELATIVE_PATH
+            if gateway.is_file():
+                candidates.add(gateway.resolve())
+        if len(candidates) == 1:
+            return next(iter(candidates))
+        if len(candidates) > 1:
+            raise NovaSkillsError("当前消费工程存在多个匹配 lock 的 MCP 网关，无法安全选择")
+        raise NovaSkillsError("当前消费工程未找到 lock 指定的 MCP 网关，不使用外层仓库替代")
+
     candidates: list[Path] = []
     for ancestor in (framework_root, *framework_root.parents):
         candidates.append(
@@ -406,21 +635,14 @@ def _find_mcp_gateway(framework_root: Path) -> Path:
         candidates.append(
             ancestor / "Packages" / MCP_PACKAGE_NAME / MCP_GATEWAY_RELATIVE_PATH
         )
+        if (ancestor / "Packages" / "manifest.json").is_file():
+            break
 
-    # PackageCache 中的 Framework 与 MCP 包通常是同级目录；只检查精确包名前缀。
-    package_cache_root = framework_root.parent
-    if package_cache_root.is_dir():
-        candidates.extend(
-            sorted(
-                package_root / MCP_GATEWAY_RELATIVE_PATH
-                for package_root in package_cache_root.glob(f"{MCP_PACKAGE_NAME}@*")
-                if package_root.is_dir()
-            )
-        )
-
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate
+    existing = {candidate.resolve() for candidate in candidates if candidate.is_file()}
+    if len(existing) == 1:
+        return next(iter(existing))
+    if len(existing) > 1:
+        raise NovaSkillsError("开发仓存在多个 MCP 网关来源，无法安全选择")
     raise NovaSkillsError(
         "未找到 com.solotopia.nova.framework.mcp 的 NovaProjectActionGateway.cs，"
         "无法校验 Agent Action 的 MCP ExposurePolicy"
@@ -643,6 +865,434 @@ def load_catalog(agents_root: Path) -> dict[str, Any]:
     return _read_json(Path(agents_root) / CATALOG_FILE_NAME)
 
 
+def _task_contract_closure(skill_id: str, contracts: dict[str, dict[str, Any]]) -> set[str]:
+    """取得已有 Operation 复用闭包，保持输入、副作用与确认契约的唯一来源。"""
+    closure: set[str] = set()
+    pending = [skill_id]
+    while pending:
+        current = pending.pop()
+        if current in closure:
+            continue
+        closure.add(current)
+        pending.extend(item for item in contracts.get(current, {}).get("requires", []) if isinstance(item, str))
+    return closure
+
+
+def _task_profile_required_skills(
+    skill_id: str, contract: dict[str, Any], profile: dict[str, Any],
+    contracts: dict[str, dict[str, Any]],
+) -> tuple[set[str], list[str]]:
+    """核对原 Workflow DAG 并选子闭包；父与选中节点高风险门保留，未选节点仍冻结。"""
+    if contract["kind"] != "workflow":
+        return set(), []
+    errors: list[str] = []
+    closure = _task_contract_closure(skill_id, contracts)
+    for current in sorted(closure):
+        node = contracts.get(current)
+        if node is None:
+            errors.append("profile 原 Workflow DAG 引用未知 Skill：" + current)
+            continue
+        if node.get("requires") and node.get("kind") != "workflow":
+            errors.append("profile 原 DAG 仅 Workflow 可声明依赖：" + current)
+        for required in node.get("requires", []):
+            if required == current:
+                errors.append("profile 原 Workflow DAG 不可依赖自身：" + current)
+            elif required in contracts and contracts[required].get("kind") != "operation":
+                # 原 Catalog 只允许 Workflow → 无依赖 Operation，不能借分支扩展成循环图。
+                errors.append("profile 原 Workflow DAG 只能依赖 Operation：" + required)
+    selected: set[str] = set()
+    for required in profile["requires"]:
+        selected.update(_task_contract_closure(required, contracts))
+    profile_adapters = {(item["kind"], item["entry"]) for item in profile["actionAdapters"]}
+    for current in sorted(closure - {skill_id} - selected):
+        child_adapters = {(item["kind"], item["entry"])
+                          for item in contracts.get(current, {}).get("actionAdapters", [])}
+        if profile_adapters & child_adapters:
+            # 父 Workflow 可能重复引用子 Operation 入口；不能用父白名单绕过子证据门。
+            errors.append("profile 复用子 Operation 入口时必须显式选中该节点：" + current)
+    allowed_effects = {effect for current in {skill_id, *selected}
+                       for effect in contracts.get(current, {}).get("effects", []) if isinstance(effect, str)}
+    if not set(profile["effects"]).issubset(allowed_effects):
+        errors.append("profile effects 只能选父与选中子 DAG 的原副作用")
+    risks = allowed_effects & {"external-write", "credential", "build"}
+    if not risks.issubset(profile["effects"]):
+        errors.append("profile 不能省略父与选中子 DAG 的外部、凭据或构建门")
+    return selected, errors
+
+
+def _task_source_path(project_root: Path, agents_root: Path, relative: object) -> Path | None:
+    """解析项目或随包证据路径，禁止绝对路径、路径穿越和包外开发依赖。"""
+    if not isinstance(relative, str) or not relative or "\\" in relative:
+        return None
+    path = Path(relative)
+    if path.is_absolute() or ".." in path.parts or re.match(r"^[A-Za-z]:", relative):
+        return None
+    if relative.startswith("Assets/Framework/"):
+        return _safe_child(agents_root.parent, relative.removeprefix("Assets/Framework/"))
+    return _safe_child(project_root, relative)
+
+
+def _task_file_state(
+    item: object, project_root: Path, agents_root: Path, source_resolver: Any, hashes: dict[str, str | None],
+) -> str:
+    """核对当次 APK 集回执附件的真实字节；缺文件、越界路径或摘要漂移均不能通过。"""
+    if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
+        return "invalid"
+    relative, expected = item.get("path"), item.get("sha256")
+    path = _task_source_path(project_root, agents_root, relative)
+    if path is None or not isinstance(expected, str) or SHA256_HEX_PATTERN.fullmatch(expected) is None:
+        return "invalid"
+    if relative not in hashes:
+        resolved = source_resolver(relative) if source_resolver is not None else path
+        try:
+            hashes[relative] = _file_hash(resolved) if resolved is not None and resolved.is_file() else None
+        except OSError:
+            hashes[relative] = None
+    if hashes[relative] is None:
+        return "unavailable"
+    return "current" if hashes[relative] == expected else "stale"
+
+
+def _apk_set_build_evidence_errors(
+    item: dict[str, Any], task: dict[str, Any], project_root: Path, agents_root: Path,
+    source_resolver: Any,
+) -> list[str]:
+    """仅按需核对当次 APK 集回执及附件；不从 coverage 读取，也不持久化验收结果。"""
+    prefix = "apk-set-build: "
+    if (not isinstance(item, dict) or item.get("kind") != APK_SET_BUILD_EVIDENCE
+            or item.get("status") != "passed" or not isinstance(item.get("context"), dict)
+            or not isinstance(item.get("artifacts"), list) or not item["artifacts"]):
+        return [prefix + "需本次通过状态、明确上下文与非空正式附件"]
+    context = item["context"]
+    if (task.get("id") != AAB_DEVICE_TASK_ID or task.get("skill") != "nova-project-build-player"
+            or task.get("profile") != AAB_DEVICE_PROFILE_ID
+            or context.get("taskId") != task.get("id")
+            or context.get("profileId") != AAB_DEVICE_PROFILE_ID or context.get("platform") != "Android"
+            or not all(isinstance(context.get(key), str) and context[key].strip() for key in ("device", "application", "target"))):
+        return [prefix + "仅接受精确 AAB 设备安装任务及 Android/设备/应用/源摘要上下文"]
+    # 独立调用不再经过历史记录聚合器，必须在加载任何 JSON 前自行核对安全路径及真实 SHA。
+    hashes: dict[str, str | None] = {}
+    refs = [item.get("record"), *item["artifacts"]]
+    if any(_task_file_state(ref, project_root, agents_root, source_resolver, hashes) != "current" for ref in refs):
+        return [prefix + "回执和全部附件须为安全路径、可达文件且准确匹配本次 sha256"]
+
+    def read(ref: dict[str, str]) -> dict[str, Any]:
+        """仅加载已由外层准确 SHA 验证的项目或随包 JSON 附件，不读取任意工具/设备路径。"""
+        path = (source_resolver(ref["path"]) if source_resolver is not None
+                else _task_source_path(project_root, agents_root, ref["path"]))
+        value = _read_json(path) if path is not None else None
+        if not isinstance(value, dict):
+            raise ValueError("回执必须为JSON对象")
+        return value
+
+    try:
+        receipt = read(item["record"]).get("apkSetBuild")
+        fields = {"schemaVersion", "inputAab", "executionPlan", "toolDeviceIdentity", "buildResult",
+                  "apkSetVerification", "cleanupResult", "expectedApkCount", "outputApksPath"}
+        if (not isinstance(receipt, dict) or set(receipt) != fields
+                or type(receipt["schemaVersion"]) is not int or receipt["schemaVersion"] != 1):
+            return [prefix + "需版本1的完整 apkSetBuild 回执"]
+        artifact_refs = {json.dumps(ref, sort_keys=True) for ref in item["artifacts"]}
+        ref_names = ("inputAab", "executionPlan", "toolDeviceIdentity", "buildResult", "apkSetVerification", "cleanupResult")
+        if any(json.dumps(receipt[name], sort_keys=True) not in artifact_refs for name in ref_names):
+            return [prefix + "源AAB及全部正式回执必须列入准确 artifacts"]
+        plan, identity, build, apk_set, cleanup = (read(receipt[name]) for name in ref_names[1:])
+        aab = receipt["inputAab"]
+        selected = plan.get("selectedArtifact", {})
+        expected_count = receipt["expectedApkCount"]
+        apks = apk_set.get("apks")
+        tools, device = identity.get("tools", []), identity.get("device", {})
+        serial = device.get("serial", "")
+        serial_hash = hashlib.sha256(serial.encode()).hexdigest() if isinstance(serial, str) else ""
+        if (not isinstance(aab.get("path"), str) or not aab["path"].endswith(".aab")
+                or selected.get("sha256") != aab.get("sha256")
+                or not isinstance(selected.get("path"), str)
+                or _task_source_path(project_root, agents_root, aab["path"]).resolve() != Path(selected["path"]).resolve()
+                or context["target"] != "sha256:" + aab["sha256"]
+                or plan.get("packageName") != context["application"]
+                or not isinstance(device.get("model"), str) or not device["model"].strip()
+                or context["device"] != device["model"] + ";serial-sha256:" + serial_hash
+                or not serial or serial != plan.get("deviceSerial")):
+            return [prefix + "源AAB、包名或冻结设备身份未与本次上下文一致绑定"]
+        if (not isinstance(receipt["outputApksPath"], str) or not receipt["outputApksPath"].endswith(".apks")
+                or plan.get("outputApks") != receipt["outputApksPath"]
+                or type(build.get("exitCode")) is not int or build["exitCode"] != 0
+                or build.get("outputExists") is not True):
+            return [prefix + "需本次新APKS输出与bundletool成功的真实回执"]
+        if (not isinstance(tools, list) or not tools
+                or any(not isinstance(tool, dict) or not isinstance(tool.get("id"), str) for tool in tools)):
+            return [prefix + "需真实宿主工具身份清单"]
+        tool_ids = [tool["id"] for tool in tools]
+        if (len(set(tool_ids)) != len(tool_ids) or not {"java", "bundletool", "adb"}.issubset(tool_ids)
+                or any(not isinstance(tool, dict) or not isinstance(tool.get("path"), str) or not tool["path"].strip()
+                       or not isinstance(tool.get("sha256"), str) or SHA256_HEX_PATTERN.fullmatch(tool["sha256"]) is None
+                       for tool in tools)
+                or not isinstance(identity.get("versions", {}).get("bundletool"), str)
+                or not identity["versions"]["bundletool"].strip()
+                or not isinstance(device.get("abiList"), str) or not device["abiList"].strip()
+                or not isinstance(device.get("api"), str) or not device["api"].isdigit() or int(device["api"]) < 1):
+            return [prefix + "需真实Java/bundletool/adb身份、bundletool版本及设备ABI/API"]
+        certificate = plan.get("actualSigning", {}).get("certificateSha256")
+        if (not isinstance(certificate, str) or SHA256_HEX_PATTERN.fullmatch(certificate) is None
+                or type(expected_count) is not int or expected_count < 1
+                or not isinstance(apks, list) or len(apks) != expected_count
+                or not isinstance(apk_set.get("apksSha256"), str)
+                or SHA256_HEX_PATTERN.fullmatch(apk_set["apksSha256"]) is None
+                or type(apk_set.get("apksBytes")) is not int or apk_set["apksBytes"] < 1):
+            return [prefix + "APK集数量、APKS身份或冻结签名不完整"]
+        entries = []
+        for apk in apks:
+            if (not isinstance(apk, dict) or not isinstance(apk.get("entry"), str)
+                    or not apk["entry"].endswith(".apk") or Path(apk["entry"]).is_absolute()
+                    or ".." in Path(apk["entry"]).parts or "\\" in apk["entry"]
+                    or type(apk.get("size")) is not int or apk["size"] < 1
+                    or not isinstance(apk.get("sha256"), str) or SHA256_HEX_PATTERN.fullmatch(apk["sha256"]) is None
+                    or apk.get("certificateSha256") != certificate):
+                return [prefix + "每个APK必须有安全唯一entry、正字节数、SHA及同一已授权签名"]
+            entries.append(apk["entry"])
+        if len(set(entries)) != len(entries) or "splits/base-master.apk" not in entries:
+            return [prefix + "APK完整清单不能重复且须包含base-master"]
+        if any(cleanup.get(key) is not True for key in (
+                "inputAabAndKeystoreUnchanged", "ownTemporaryFilesRemoved", "passwordFilesRemoved",
+                "bundletoolExtractionDirectoryAbsent")):
+            return [prefix + "源AAB/签名保护及临时APKS、提取物、密码文件清场未完成"]
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return [prefix + "正式JSON回执缺项或不可解析"]
+    return []
+
+
+def execution_coverage_report(
+    project_root: Path, agents_root: Path, coverage: dict[str, Any], *,
+    function_states: dict[str, str] | None = None, available_entries: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """静态核对任务入口与契约，并派生当次验收要求；不读取或累计历史运行结果。"""
+    project_root, agents_root = project_root.resolve(), agents_root.resolve()
+    errors: list[str] = []
+    warnings: list[str] = []
+    tasks = coverage.get("userTasks")
+    if tasks is None:
+        tasks = []
+        errors.append("coverage.userTasks 缺少必需的任务声明数组")
+    elif not isinstance(tasks, list):
+        errors.append("coverage.userTasks 必须为数组")
+        tasks = []
+    catalog = load_catalog(agents_root)
+    skill_ids = {entry["id"] for entry in catalog["skills"]}
+    contracts = {skill: _read_json(agents_root / "Skills" / skill / "references/contract.json") for skill in skill_ids}
+    for skill, contract in contracts.items():
+        errors.extend(skill + ":" + issue for issue in _validate_contract_shape(skill, contract))
+        if not isinstance(contract.get("minimumEvidence"), str) or contract["minimumEvidence"] not in MINIMUM_EVIDENCE_LEVELS:
+            errors.append(skill + ":缺少有效最低证据要求")
+    if not errors:
+        for skill, contract in contracts.items():
+            for profile in contract.get("taskProfiles", []):
+                _, dependency_errors = _task_profile_required_skills(skill, contract, profile, contracts)
+                errors.extend(skill + ":" + issue for issue in dependency_errors)
+    if errors:
+        return {"valid": False, "errors": errors, "warnings": warnings, "summary": {}, "items": []}
+    task_ids: set[str] = set()
+    task_functions: dict[str, set[str]] = {}
+    items: list[dict[str, Any]] = []
+    for task in tasks:
+        if not isinstance(task, dict) or not isinstance(task.get("id"), str) or not task["id"].strip():
+            errors.append("用户任务需非空 id 对象")
+            continue
+        task_id = task["id"]
+        task_errors: list[str] = []
+        task_fields = {"id", "goal", "skill", "reference", "functions", "execution", "verification"}
+        if not task_fields.issubset(task) or set(task) - task_fields - {"profile"}:
+            task_errors.append("任务仅声明目标、Skill引用、函数范围、执行方式和验收，不复制安全契约或已完成状态")
+        if task_id in task_ids:
+            task_errors.append("任务 ID 重复")
+        task_ids.add(task_id)
+        skill = task.get("skill")
+        if not isinstance(skill, str) or skill not in skill_ids:
+            errors.append(task_id + ":未知消费 Skill")
+            continue
+        closure = _task_contract_closure(skill, contracts)
+        if not closure.issubset(contracts):
+            errors.append(task_id + ":复用链引用未知 Skill")
+            continue
+        contract = contracts[skill]
+        profile: dict[str, Any] | None = None
+        if "profile" in task:
+            profile_id = task["profile"]
+            if not isinstance(profile_id, str) or SKILL_NAME_PATTERN.fullmatch(profile_id) is None:
+                task_errors.append("profile 必须引用当前 Skill 定义的精确分支 ID")
+            else:
+                profile = next((item for item in contract.get("taskProfiles", []) if item["id"] == profile_id), None)
+                if profile is None or task_id not in profile["taskIds"]:
+                    task_errors.append("profile 不存在或未授权当前 taskId")
+                    profile = None
+        selected_required = closure - {skill}
+        if profile is not None:
+            selected_required, dependency_errors = _task_profile_required_skills(skill, contract, profile, contracts)
+            task_errors.extend(dependency_errors)
+        allowed = {(a["kind"], a["entry"]) for sid in closure for a in contracts.get(sid, {}).get("actionAdapters", [])}
+        if profile is not None and contract["kind"] == "workflow":
+            # 父入口仅限分支白名单；未选子节点连 prerequisite/verify 也不得借入执行。
+            allowed = {(a["kind"], a["entry"]) for a in profile["actionAdapters"]} | {
+                (a["kind"], a["entry"]) for sid in selected_required
+                for a in contracts.get(sid, {}).get("actionAdapters", [])}
+        reference = task.get("reference")
+        reference_path = _task_source_path(project_root, agents_root, reference)
+        if not isinstance(task.get("goal"), str) or not task["goal"].strip():
+            task_errors.append("缺少自然语言用户目标")
+        if reference_path is None or not reference_path.is_file():
+            task_errors.append("任务 reference 不可达")
+        if isinstance(reference, str) and (reference.startswith((".nova/", ".agents/")) or "/Minds/" in reference):
+            task_errors.append("消费任务 reference 不得依赖主仓开发规则、投影或 Minds")
+        functions = task.get("functions")
+        if not isinstance(functions, list) or not functions or any(not isinstance(x, str) or re.fullmatch(r"[^#]+#.+", x) is None for x in functions):
+            task_errors.append("任务 functions 需非空精确函数 ID 数组")
+            functions = []
+        elif len(functions) != len(set(functions)):
+            task_errors.append("任务函数 ID 重复")
+        if function_states is not None and any(key not in function_states for key in functions):
+            task_errors.append("任务引用不存在的函数")
+        task_functions[task_id] = {key.split("#", 1)[0] for key in functions}
+        # 源码指纹只保护导航位置；不得从生成或 Docs 存在派生人工已审。
+        source_states = {function_states.get(key, "unavailable") for key in functions} if function_states is not None else {"unknown"}
+        source_status = next((state for state in ("unavailable", "stale", "unknown", "current", "not_applicable") if state in source_states), "unknown")
+        execution = task.get("execution", {})
+        if not isinstance(execution, dict):
+            execution = {}
+        if set(execution) != {"mode", "adapters", "conditions", "gaps"}:
+            task_errors.append("execution 仅声明 mode/adapters/conditions/gaps；不写伪造的完成状态")
+        mode, adapters = execution.get("mode"), execution.get("adapters")
+        if not isinstance(mode, str) or mode not in TASK_EXECUTION_MODES:
+            task_errors.append("execution.mode 无效")
+        if not isinstance(adapters, list):
+            task_errors.append("execution.adapters 必须为数组")
+            adapters = []
+        for key in ("conditions", "gaps"):
+            if not isinstance(execution.get(key), list) or any(not isinstance(x, str) or not x for x in execution.get(key, [])):
+                task_errors.append("execution." + key + " 必须为非空文本数组")
+        direct: list[dict[str, Any]] = []
+        for adapter in adapters:
+            if (not isinstance(adapter, dict) or set(adapter) != {"kind", "entry", "relation"}
+                    or not isinstance(adapter.get("kind"), str) or not isinstance(adapter.get("entry"), str)
+                    or not isinstance(adapter.get("relation"), str) or adapter.get("relation") not in TASK_ADAPTER_RELATIONS
+                    or (adapter.get("kind"), adapter.get("entry")) not in allowed):
+                task_errors.append("任务 Adapter 必须精确引用关联 Skill 复用闭包内的入口及关系")
+                continue
+            if available_entries is not None and adapter["kind"] in {"agent-action", "pipify", "cli"}:
+                key = {"agent-action": "actions", "pipify": "pipify", "cli": "cli"}[adapter["kind"]]
+                if adapter["entry"] not in available_entries.get(key, set()):
+                    task_errors.append("任务入口不存在或未暴露：" + adapter["entry"])
+            if adapter["relation"] == "direct":
+                direct.append(adapter)
+        identities = [(a["kind"], a["entry"], a["relation"]) for a in adapters if isinstance(a, dict) and all(isinstance(a.get(key), str) for key in ("kind", "entry", "relation"))]
+        if len(identities) != len(set(identities)):
+            task_errors.append("任务 Adapter 引用重复")
+        if profile is not None and {(item["kind"], item["entry"]) for item in direct} != {
+                (item["kind"], item["entry"]) for item in profile["actionAdapters"]}:
+            task_errors.append("profile 任务的全部 direct Adapter 必须与权威分支完全一致")
+        if mode == "controlled" and (contract.get("kind") == "router" or not any(a["kind"] in {"agent-action", "pipify", "cli"} for a in direct)):
+            task_errors.append("controlled 任务必须有真实确定性直接入口；Router、C# API 与前置工具不构成执行封装")
+        if mode in {"business-integration", "read-only", "external-host"} and not direct:
+            task_errors.append("已声明任务方式必须引用该任务的直接入口，前置或验收入口不替代执行")
+        if mode == "business-integration" and not any(a["kind"] in {"workspace-edit", "unity-editor-api", "unity-editor-automation"} for a in direct):
+            task_errors.append("业务接入需明确源码或 Editor 接入入口；裸 C# API 不是 Agent 调度协议")
+        if mode in {"manual", "unimplemented"} and not execution.get("gaps"):
+            task_errors.append("人工或未实现任务必须明确缺口")
+        verification = task.get("verification", {})
+        if not isinstance(verification, dict):
+            verification = {}
+        if set(verification) != {"additionalRequired"}:
+            task_errors.append("verification 仅声明 additionalRequired；不保存历史验收结果或目标上下文")
+        additional = verification.get("additionalRequired", [])
+        if not isinstance(additional, list) or any(not isinstance(kind, str) or kind not in TASK_EVIDENCE_KINDS for kind in additional):
+            task_errors.append("verification.additionalRequired 必须为已知独立证据种类数组")
+            additional = []
+        if APK_SET_BUILD_EVIDENCE in additional and (profile is None or not _is_aab_device_profile(skill, contract, profile)):
+            task_errors.append("apk-set-build 不可由普通任务追加，必须引用精确AAB设备安装分支")
+        required = ({profile["minimumEvidence"], *profile["additionalEvidence"]} if profile is not None
+                    else {contracts[sid]["minimumEvidence"] for sid in closure}) | set(additional)
+        if profile is not None:
+            required.update(contracts[sid]["minimumEvidence"] for sid in selected_required if sid in contracts)
+        resolved_effects = list(dict.fromkeys([*profile["effects"], *sorted({
+            effect for sid in selected_required for effect in contracts.get(sid, {}).get("effects", [])
+        })])) if profile is not None else sorted({effect for sid in closure for effect in contracts[sid].get("effects", [])})
+        # 本地构建可不要求附带遥测远端收件，但原 effects、授权和领域失败语义不变。
+        # 逐一检查父与实际选中子节点，避免一个节点的声明覆盖混合 DAG 中的真实外部交付。
+        completion_nodes = {skill, *selected_required} if profile is not None else closure
+        if any("external-write" in contracts[sid].get("effects", [])
+               and not _allows_incidental_build_telemetry_completion(contracts[sid])
+               for sid in completion_nodes):
+            required.add("external")
+        validation = {
+            "status": "invalid" if task_errors else "verify-at-execution",
+            "required": sorted(required), "retention": "ephemeral",
+            "boundary": "仅声明当次验收要求；不执行任务、不证明运行通过或宿主可用；当次验证后清理临时结果，不入 Git 或随包分发",
+        }
+        errors.extend(task_id + ":" + error for error in task_errors)
+        gaps = execution.get("gaps", [])
+        execution_status = "invalid" if task_errors else "gap" if gaps or mode in {"manual", "unimplemented"} else "declared-" + str(mode)
+        effective_inputs = contract["inputs"]
+        if profile is not None:
+            effective_inputs = [dict(item, required=True) for item in contract["inputs"]
+                                if item["name"] in profile["requiredInputs"]]
+            for sid in sorted(selected_required):
+                for item in contracts.get(sid, {}).get("inputs", []):
+                    existing = next((value for value in effective_inputs if value["name"] == item["name"]), None)
+                    if existing is None:
+                        effective_inputs.append(dict(item))
+                    elif item["required"]:
+                        existing["required"] = True
+        items.append({"id": task_id, "goal": task.get("goal"), "skill": skill,
+                      "sourceStatus": source_status, "semanticReview": "not-performed",
+                      "entryStatus": "invalid" if task_errors else "declared" if direct else "no-direct-entry", "executionStatus": execution_status,
+                      "mode": mode, "conditions": execution.get("conditions", []), "gaps": gaps,
+                      "liveAvailability": "unknown; must query the connected host and live describe",
+                      "resolvedProfile": profile,
+                      "effectiveInputs": effective_inputs,
+                      "effectiveEffects": resolved_effects,
+                      "selectedRequiredSkills": sorted(selected_required),
+                      "contract": {key: contract.get(key) for key in ("inputs", "effects", "writeScope", "locks", "idempotency", "confirmation", "minimumEvidence", "evidence")},
+                      "reusedSkills": sorted(closure),
+                      "reusedContracts": {sid: {key: contracts[sid].get(key) for key in ("inputs", "effects", "writeScope", "locks", "idempotency", "confirmation", "minimumEvidence", "evidence")} for sid in sorted(closure)},
+                      "validation": validation})
+    scopes = {scope: 0 for scope in TASK_SCOPES}
+    pending_families = 0
+    development = agents_root == project_root / "Assets/Framework/Agents"
+    for feature in coverage.get("features", []):
+        scope, family = feature.get("taskScope"), str(feature.get("id"))
+        if scope is None:
+            pending_families += 1
+            continue
+        if not isinstance(scope, str) or scope not in TASK_SCOPES:
+            errors.append(family + ":taskScope 无效")
+            continue
+        scopes[scope] += 1
+        refs = feature.get("taskRefs", [])
+        if not isinstance(refs, list) or any(not isinstance(ref, str) or ref not in task_ids for ref in refs):
+            errors.append(family + ":taskRefs 引用未知任务")
+        elif scope == "consumer" and not refs:
+            errors.append(family + ":消费功能族缺任务引用")
+        elif scope == "consumer":
+            sources = set(feature.get("sources", []))
+            for ref in refs:
+                if not sources.intersection(task_functions.get(ref, set())):
+                    errors.append(family + ":任务未引用本功能族的准确来源，不能以通用 Router 映射代替覆盖：" + ref)
+        if scope == "internal" and not (isinstance(feature.get("nonUserReason"), str) and feature["nonUserReason"].strip()):
+            errors.append(family + ":内部功能族需非用户入口理由")
+        if scope == "developer":
+            refs = feature.get("developerReferences")
+            if not isinstance(refs, list) or not refs or any(not isinstance(ref, str) or re.fullmatch(r"\.agents/skills/(?!nova-project-)[^/]+/SKILL\.md", ref) is None for ref in refs):
+                errors.append(family + ":开发功能族需根开发 Skill 引用，不能塞入消费 Catalog")
+            elif development and any(not (_task_source_path(project_root, agents_root, ref) or Path()).is_file() for ref in refs):
+                errors.append(family + ":开发 Skill 引用不可达")
+    if pending_families:
+        warnings.append(str(pending_families) + " 个功能族尚无用户任务/开发/内部范围裁定")
+    gaps = [item["id"] for item in items if item["executionStatus"] == "gap"]
+    if gaps:
+        warnings.append("用户任务执行缺口：" + ",".join(gaps))
+    summary = {"userTasks": len(items), "executionGaps": len(gaps),
+               "pendingTaskFamilies": pending_families, "taskScopes": scopes}
+    return {"valid": not errors, "errors": errors, "warnings": warnings, "summary": summary, "items": items}
+
+
 def validate_agents_root(agents_root: Path) -> list[str]:
     """校验 Catalog、Skill 前置元数据与机器契约是否相互一致。"""
     agents_root = Path(agents_root)
@@ -856,6 +1506,11 @@ def validate_agents_root(agents_root: Path) -> list[str]:
                 errors.append(
                     f"{skill_id} 的 Workflow requires 只能依赖 Operation：{required_id}"
                 )
+
+        if not errors:
+            for profile in contract.get("taskProfiles", []):
+                _, profile_errors = _task_profile_required_skills(skill_id, contract, profile, dict(contracts))
+                errors.extend(skill_id + ":" + issue for issue in profile_errors)
 
     for skill_id, replacement in replacements.items():
         if replacement == skill_id:

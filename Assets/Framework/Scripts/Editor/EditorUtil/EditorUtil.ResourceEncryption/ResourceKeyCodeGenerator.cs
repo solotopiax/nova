@@ -22,6 +22,75 @@ namespace NovaFramework.Editor
         private const string FileName = "ResourceKeys.Generated.cs";
         private const string GeneratedMarker = "// 项目生成的资源密钥：";
 
+        /// <summary>仅驻留内存的生成预览；正文含私有密钥，禁止序列化或输出到日志。</summary>
+        internal sealed class GenerationPreview
+        {
+            internal bool Applicable;
+            internal string AssetPath;
+            internal string LinkerPath;
+            internal string OutputDirectory;
+            internal string AssemblyName;
+            internal string Namespace;
+            internal string Code;
+            internal string Linker;
+            internal string[] Deletions = Array.Empty<string>();
+        }
+
+        /// <summary>预览文件边界的固定安全提示；不携带配置正文或底层异常。</summary>
+        internal sealed class PreviewConflictException : InvalidOperationException
+        {
+            /// <summary>只接受由生成器写死的冲突提示，供 Action 安全说明阻塞原因。</summary>
+            internal PreviewConflictException(string message) : base(message) { }
+        }
+
+        /// <summary>只读校验指定 Master 与精确坐标，不保存、刷新或删除旧程序集。</summary>
+        internal static GenerationPreview PreviewGeneration(ConfigMasterSO master, Coord coord)
+        {
+            if (master == null) throw new InvalidOperationException("需要明确的 ConfigMaster。");
+            ResourceKeyStore.Validate(master.ResourceEncryption);
+            if (!master.ResourceEncryption.Packages.Any(package => package.Keys.Count > 0) &&
+                string.IsNullOrEmpty(master.ResourceEncryption.GeneratedCodeAssetPath)) return new GenerationPreview();
+            string assetPath = GetAssetPath(master);
+            var owner = ValidateConfiguration(master, assetPath, coord);
+            return PreviewFiles(master.ResourceEncryption, assetPath, ResolveNamespace(master, coord), owner.name,
+                AssetDatabase.GetAllAssetPaths());
+        }
+
+        /// <summary>预演生成器的精确文件写集；只读检查手写冲突、唯一提供器与旧工具文件。</summary>
+        internal static GenerationPreview PreviewFiles(ResourceKeyStoreData data, string assetPath,
+            string configuredNamespace, string assemblyName, string[] candidates)
+        {
+            ResourceKeyStore.Validate(data);
+            string previousPath = data.GeneratedCodeAssetPath;
+            ValidateSingleProvider(assetPath, previousPath, candidates);
+            if (File.Exists(assetPath) && !File.ReadAllText(assetPath).StartsWith(GeneratedMarker, StringComparison.Ordinal))
+                throw new PreviewConflictException("导出目录已有同名手写文件，请选择其他目录。");
+            if (!string.IsNullOrEmpty(previousPath) && previousPath != assetPath && File.Exists(previousPath) &&
+                !File.ReadAllText(previousPath).StartsWith(GeneratedMarker, StringComparison.Ordinal))
+                throw new PreviewConflictException("旧生成文件已被手工改写，请先保留该文件并处理路径冲突。");
+            string legacyPath = "Assets/NovaGenerated/ResourceKeys/NovaProject.ResourceKeys.asmdef";
+            const string legacyAssembly = "{\"name\":\"NovaProject.ResourceKeys\",\"references\":[\"NovaFramework.Runtime\"],\"autoReferenced\":true}";
+            if (previousPath == "Assets/NovaGenerated/ResourceKeys/ResourceKeys.Generated.cs" && File.Exists(legacyPath) &&
+                File.ReadAllText(legacyPath).Trim() == legacyAssembly)
+                throw new PreviewConflictException("旧密钥 asmdef 迁移会改变程序集归属，当前只读计划无法确认删除后的真实 Player 程序集；请先使用 ConfigWindow 顶部导出完成一次旧格式迁移，再重新计划。");
+            string linkerPath = Path.GetDirectoryName(assetPath).Replace('\\', '/') + "/link.xml";
+            if (File.Exists(linkerPath) && !File.ReadAllText(linkerPath).StartsWith("<!-- Nova ResourceKeys -->", StringComparison.Ordinal))
+                throw new PreviewConflictException("导出目录已有项目的 link.xml，请选择独立子目录以保留原文件。");
+            var deletions = new System.Collections.Generic.List<string>();
+            if (!string.IsNullOrEmpty(previousPath) && previousPath != assetPath && File.Exists(previousPath)) deletions.Add(previousPath);
+            string previousLinker = string.IsNullOrEmpty(previousPath) ? null : Path.GetDirectoryName(previousPath).Replace('\\', '/') + "/link.xml";
+            if (!string.IsNullOrEmpty(previousLinker) && previousLinker != linkerPath && File.Exists(previousLinker) &&
+                File.ReadAllText(previousLinker).StartsWith("<!-- Nova ResourceKeys -->", StringComparison.Ordinal)) deletions.Add(previousLinker);
+            return new GenerationPreview
+            {
+                Applicable = true, AssetPath = assetPath, LinkerPath = linkerPath,
+                OutputDirectory = NormalizeOutputDirectory(data.ClientCodeOutputDirectory),
+                AssemblyName = assemblyName, Namespace = configuredNamespace,
+                Code = GetCode(data, configuredNamespace), Linker = GetLinkerXml(assemblyName, configuredNamespace),
+                Deletions = deletions.ToArray(),
+            };
+        }
+
         /// <summary>把目录规范为 Assets 相对路径；拒绝越界、目录穿越和 Editor 目录。</summary>
         public static string NormalizeOutputDirectory(string directory)
         {
@@ -179,8 +248,12 @@ namespace NovaFramework.Editor
 
         /// <summary>一个项目只保留一个生成提供器，避免多个 ConfigMaster 生成代码的启动注册互相覆盖。</summary>
         private static void ValidateSingleProvider(string assetPath, string previousPath)
+            => ValidateSingleProvider(assetPath, previousPath, AssetDatabase.GetAllAssetPaths());
+
+        /// <summary>按明确路径集合检查唯一生成提供器，预览与正式生成复用同一冲突语义。</summary>
+        private static void ValidateSingleProvider(string assetPath, string previousPath, string[] candidates)
         {
-            foreach (string candidate in AssetDatabase.GetAllAssetPaths())
+            foreach (string candidate in candidates)
             {
                 if (Path.GetFileName(candidate) != FileName || SamePath(candidate, assetPath) || SamePath(candidate, previousPath)) continue;
                 if (File.Exists(candidate) && File.ReadAllText(candidate).StartsWith(GeneratedMarker, StringComparison.Ordinal))
@@ -205,6 +278,15 @@ namespace NovaFramework.Editor
             if (master == null) return;
             var data = ResourceKeyStore.Load();
             Coord coord = new Coord(master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode);
+            if (!data.Packages.Any(package => package.Keys.Count > 0) && string.IsNullOrEmpty(data.GeneratedCodeAssetPath)) return;
+            ValidateGenerated(master, coord);
+        }
+
+        /// <summary>只读核对指定 Master 的已生成源码、唯一提供器与实际 Player 编译归属。</summary>
+        internal static void ValidateGenerated(ConfigMasterSO master, Coord coord)
+        {
+            var data = master.ResourceEncryption;
+            ResourceKeyStore.Validate(data);
             if (!data.Packages.Any(package => package.Keys.Count > 0) && string.IsNullOrEmpty(data.GeneratedCodeAssetPath)) return;
             string assetPath = GetAssetPath(master);
             var owner = ValidateConfiguration(master, assetPath, coord);

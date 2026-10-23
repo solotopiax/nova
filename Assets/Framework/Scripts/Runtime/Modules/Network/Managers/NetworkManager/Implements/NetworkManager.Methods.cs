@@ -20,9 +20,9 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 从数据缓存构建运行时缓存与 Luban Tables 对象。
-        /// 通过 ITable<INetworkHostKeyRow> 和 ITable<INetworkCmdRow> 协变直接访问 DataList，彻底消除 JArray 手动解析。
+        /// 通过 <see cref="ITable{INetworkHostKeyRow}"/> 和 <see cref="ITable{INetworkCmdRow}"/> 协变直接访问 DataList，彻底消除 JArray 手动解析。
         /// </summary>
-        /// <param name="dataCache">Phase 1 写入的数据加载缓存，消费后由本方法清空。</param>
+        /// <param name="dataCache">本轮资源读取汇总的局部数据缓存；用于构表，不在此入口主动清空。</param>
         /// <returns>构建成功返回 true。</returns>
         private bool BuildTablesFromCache(LubanDataCache dataCache)
         {
@@ -73,7 +73,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从单个 ITable 中通过 ITable<INetworkHostKeyRow> 协变提取域名数据到 m_HostKeyCache。
+        /// 从单个 ITable 中通过 <see cref="ITable{INetworkHostKeyRow}"/> 协变提取域名数据到 m_HostKeyCache。
         /// </summary>
         /// <param name="table">Luban 表实例。</param>
         private void BuildHostKeyCacheFromTable(ITable table)
@@ -188,7 +188,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从单个 ITable 中通过 ITable<INetworkCmdRow> 协变提取指令数据到 m_CmdCache。
+        /// 从单个 ITable 中通过 <see cref="ITable{INetworkCmdRow}"/> 协变提取指令数据到 m_CmdCache。
         /// 缓存键使用 "表类型名.行Name" 复合格式，避免不同表中同名行互相覆盖。
         /// </summary>
         /// <param name="table">Luban 表实例。</param>

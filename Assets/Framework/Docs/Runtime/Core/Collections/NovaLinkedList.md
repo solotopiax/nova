@@ -62,6 +62,12 @@ void CopyTo(Array array, int index);
 Enumerator GetEnumerator();
 ```
 
+## 行为与边界
+
+值重载允许 `null/default(T)` 与重复元素，比较沿默认相等器；节点重载直接使用外部节点，不经过缓存。锚点必须属于本链，插入节点必须尚未挂链，错误沿 BCL 抛出。AddAfter/AddBefore 的值重载会先取缓存节点再验证锚点，插入失败不归还已取出的缓存节点。Remove(value) 仅删除首个匹配，空链 RemoveFirst/Last 抛异常；CopyTo 的空数组、秩、类型、范围与容量交底层校验。
+
+移除和 Clear 把节点 Value 清为默认值并最多缓存 256 个节点，不释放元素关联资源；ClearCachedNodes 只丢缓存，不改变活跃链。First/Last/Find 返回活节点，脱链或清理后可能被复用，持有者不能继续用旧节点代表原元素。容器不自动加锁，SyncRoot 只是同步对象。枚举不是快照，MoveNext 沿底层版本检查；接口形式可能装箱。显式 Reset 把底层结构体枚举器装箱后复位副本，不回写原字段，不应依赖它重置当前枚举器。
+
 ## 关联文档
 
 - [Structures](Structures.md)

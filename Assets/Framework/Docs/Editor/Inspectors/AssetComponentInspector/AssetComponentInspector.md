@@ -86,11 +86,11 @@
 
 1. **Asset 加载管理器**（TypesSelector）— 枚举 `IAssetManager` 全部实现类，配合 HelpBox 说明可自定义扩展。
 2. **分隔线**
-3. **编辑器加载模式**（平铺，`DrawEditorPlayModePopup`）— 自定义 IntPopup，3 选 1，永远可编辑。
+3. **编辑器加载模式**（平铺，`DrawEditorPlayModePopup`）— 自定义 IntPopup，3 选 1；沿公共控件默认规则在 Play Mode 禁用用户交互。
 4. **终端加载模式**（平铺，`DrawRuntimePlayModePopup`）— 自定义 IntPopup，2 选 1，禁 EditorSimulateMode；含 RuntimePlayMode→EnableHotfix 联动逻辑。下方只显示一个 HelpBox，并随 Unity Active BuildTarget 切换内容：WebGL 说明 Offline 必须全量随网页发布、Host 可选三种首包布局及选错影响；其他平台显示普通安装包与远端更新说明。
 5. **WebGL 资源策略**（平铺，`DrawWebGLAssetStrategyPopup`）— 当前 BuildTarget 为 WebGL 时可编辑；其余平台保留显示但禁用。HelpBox 只说明三种策略对启动速度、首次加载等待和内存占用的直接影响，不展示内部 Handle 或加载链路。
 6. **分隔线**
-7. **资源包名列表**（平铺，Unity 默认 List 控件，`DrawPackagesList`）— 对应 `AssetComponent.m_Packages`；通过 `EditorUtil.Draw.PropertyField(includeChildren:true)` 渲染，自带 Size 字段与默认增删按钮；`DrawPackagesList` 强制 `m_Packages.isExpanded = true` 默认展开。
+7. **资源包名列表**（平铺，Unity 默认 List 控件，`DrawPackagesList`）— 对应 `AssetComponent.m_Packages`；通过 `EditorUtil.Draw.PropertyField(includeChildren:true)` 渲染，自带 Size 字段与默认增删按钮；只在 `OnEnable` 初始化为展开，不在每帧强制展开。
 8. **默认资源包名**（平铺，下拉，`DrawDefaultPackageNamePopup`）— 对应 `AssetComponent.m_DefaultPackageName`；选项严格 = 当前 `m_Packages` 全部条目，无占位；当前值不在选项内时自动归一为首项；`m_Packages` 为空时退化为提示 Label。
 9. **场景卸载时自动清理**（平铺）— 对应 `AssetComponent.m_AutoCleanupOnSceneUnload`。
 10. **分隔线**
@@ -157,7 +157,7 @@ Inspector 编辑期双向联动，运行时不再二次覆盖：
 | `RuntimePlayMode` | `OfflinePlayMode` | `EnableHotfix` → `false` |
 | `RuntimePlayMode` | `HostPlayMode` | `EnableHotfix` → `true` |
 
-联动后均调用 `serializedObject.ApplyModifiedProperties()` + `serializedObject.Update()` 刷新 Inspector。
+用户变更引发联动后调用 `serializedObject.ApplyModifiedProperties()` + `serializedObject.Update()` 刷新 Inspector。控件禁用不等于所有前置归一分支都无写入：默认包名缺失时，Popup 绘制前仍可选择首项并 Apply；首项为空、重名以及包是否有实际 Collector 不由此处验证。运行模式中的异常 `EditorSimulateMode` 只在显示局部值上回落为 Offline，没有用户变更时不据此修复序列化值。编辑配置也不会重新初始化当前运行的资源 Manager。
 
 ---
 
@@ -166,7 +166,7 @@ Inspector 编辑期双向联动，运行时不再二次覆盖：
 `DrawRuntimePlayModePopup()` 是 `AssetComponentInspector.Methods.cs` 中的私有方法，实现自定义 IntPopup，满足「终端模式禁 EditorSimulateMode」的约束：
 
 - 合法选项固定为 `{ OfflinePlayMode, HostPlayMode }`；
-- 入参校正：若当前值为 `EditorSimulateMode`（异常值），回落到 `OfflinePlayMode`；
+- 显示校正：若当前值为 `EditorSimulateMode`（异常值），局部回落到 `OfflinePlayMode`；没有用户变更时不写回该异常值；
 - 用 `EditorUtil.Draw.Layout.Horizontal` 包裹 `Label + EditorGUILayout.IntPopup`，与同页其他 Property 视觉对齐；
 - 值变更时触发 RuntimePlayMode→EnableHotfix 联动（见联动规则表）。
 

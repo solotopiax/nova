@@ -46,8 +46,10 @@ namespace NovaFramework.Runtime
                 throw new InvalidOperationException("AppManager 初始化失败：IHttpManager 无效。");
             }
 
+            m_ApkDownloader.Cancel();
             m_Config = config;
             m_VersionCheckFallbackPreferences.ClearAll();
+            ResetMatchedRuleState();
         }
 
         /// <summary>
@@ -62,6 +64,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void Shutdown()
         {
+            m_ApkDownloader.Cancel();
             m_HttpManager = null;
             m_Config = null;
             m_VersionCheckFallbackPreferences.ClearAll();

@@ -65,6 +65,10 @@
 
 这意味着按名称播放时，查的是扁平后的总字典，不是逐表遍历。
 
+JSON/Binary 由 DataFormat 决定。null/空 Unit 列表在异步路径返回 true；空地址跳过，Unit 元素本身为 null 则可能抛出。非空缓存构造 SoundTables 时缺 IConfigManager 或表加载失败返回 false；空缓存直接 true，不能据此证明有声音行。重载时覆盖当前表字典但不先清旧表，已从源移除的表可能仍参与扁平化；null DataList/row/Name 也没有统一守卫，构建失败可留部分新行。
+
+表资源委托取得 TextAsset 后立即 Release 句柄，再把资产交接收器解析，后续 release 委托为空；不是解析完成后才释放，也没有复制原字节或 finally 的统一补偿。Initialize 只保存配置/依赖引用，不清旧组/加载状态；Update 为空，音频淡变由 Unity Helper 执行。
+
 ### 4. 重名 `Name` 会后写覆盖前写
 
 `BuildSoundRowsFromTables()` 直接执行：
@@ -90,11 +94,31 @@
 - 如果给了 `AudioMixer`，组级 Helper 会先尝试路由到 `Master/<Group>`，找不到再退回 `Master`
 - 每个 Agent Helper 还会继续尝试更细一层的 `Master/<Group>/<Group>_<Index>`；命不中时才继承组级 MixerGroup
 
+组先登记再逐个创建代理；数量不为正也可能返回创建成功但没有代理，创建异常可能留已登记组和部分 GameObject。组名为空会抛出，重名返回 false；组音量与代理参数没有 Manager 级运行时 clamp/有限性校验。
+
+### 优先级与代理选择
+
+先选择第一个 `!AudioSource.isPlaying` 的代理，因此暂停中的声音也可能被当作空闲而替换。全部忙时选择低于请求优先级的候选；允许同优先级替换时再按最早设置资源时间选择。替换前发送 OnSoundReplaced；回调/参数赋值失败不恢复原声音。框架优先级越大越优先，Helper 用 `AudioSource.priority = 128 - value` 转换，不在此校验 Unity 底层范围。
+
+组 Stop/Pause/Resume 的 serial 查询只看保存编号，停止、Reset 或释放并不统一归零编号；返回 true 表示匹配并调用控制，不证明仍有 clip、正在播放或可听。StopAllLoaded 只停止 IsPlaying 的代理，PauseAll/ResumeAll 则遍历所有代理，不筛曾暂停状态。Resume 对从未 Pause 的代理可能使用初始为 0 的暂停音量。
+
 ## 资源与控制语义
 
 - 停止加载中的声音，本质是把 `serialID` 放进 `m_SoundsToReleaseOnLoad`
 - `ReleaseAllAsset()` 会先停所有加载中和已加载声音，再释放组内资源
 - `ReleaseAssetBySerialID()` 先尝试停止，再遍历组释放对应资源
+
+### 句柄、加载取消与淡变
+
+加载中的 Stop/StopAllLoading 只登记“加载完成后放弃”并从 loading 集合移除，不取消 IAssetManager 的物理加载。GetAllLoadingSoundSerialIDs 数组为副本，列表重载先 Clear 再填充、拒绝 null；顺序没有保证，IsLoadingSound=false 不代表底层任务已停止。
+
+正常异步完成后，放弃/空 clip/无代理分支释放新句柄；成功交 SoundAgent 持有。PlaySoundInfo 在正常/已处理失败链归池时级联回收 params。异步流程没有关闭代次或取消令牌；Shutdown 清放弃标记后，尚未完成的旧请求仍可能使用它捕获的旧 SoundGroup。关闭不销毁 Helper，不能作为所有在飞请求已结束的证明。
+
+SoundAgent.SetSoundAsset 先 Reset 旧资源，再保存新资产/句柄，随后才让 Helper 接受 AudioClip；失败不回滚旧资源。Reset/ReleaseSoundAsset 以当前 Unity 资产非 null 为释放条件，释放后不统一清 serial；单独 Release 不 Stop、不清 AudioSource.clip。自然播放结束也不自动释放句柄，资源通常保留到替换、显式释放或关闭。资源字段与句柄状态应分别核对。
+
+Helper 的 Play/Pause/Resume/Stop 先取消旧淡变，使用 Time.deltaTime 与 Update 做音量插值，受 timeScale 影响；没有统一非负/有限性校验。Stop 淡出后不恢复原音量，取消淡变不恢复已改音量；ResetHelper 只清 clip/暂停音量，不取消淡变。Helper.OnDestroy 只处理其 CTS，句柄仍由上层管理。
+
+最终静音为 `group.Mute || agent.MuteInSoundGroup`，最终音量为 `group.Volume * agent.VolumeInSoundGroup`。属性写入可以只更新到一部分代理后失败；本模块不为逐组/逐代理异常提供事务。
 
 ## 风险点 / 易错点
 

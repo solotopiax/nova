@@ -13,6 +13,7 @@
 | 文件 | 类 | 说明 |
 |------|----|------|
 | `Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs` | `EditorUtil.TrackRegistry` | 汇总入口：扫描/读取/重名校验/规范化行/调度写盘 |
+| `Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.AgentSnapshot.cs` | `EditorUtil.TrackRegistry`（internal Agent helpers） | 复用真实扫描的全源/meta/包快照、页内容与单色样式只读验证 |
 | `Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.XlsxWriter.cs` | `EditorUtil.TrackRegistry.XlsxWriter`（private） | 最小 OpenXML xlsx 写入器：样式、列宽、行高、合并单元格 |
 
 ---
@@ -64,9 +65,13 @@ public static string Generate(string projectRoot);
 
 ### 触发方式
 
-不在 Editor 启动/域重载时自动跑，仅由 `SDKComponentInspector` 上的“打开打点表”按钮显式触发；失败后只记 `Log.Warning` 不抛给 UI。
+不在 Editor 启动/域重载时自动跑，由 `SDKComponentInspector` 上的“打开打点表”按钮或 `nova.project.tracks.generate-registry` 的受控 Execute 显式触发。Inspector 按钮失败时记录 `Log.Warning`，不向 UI 抛出；Action 则按是否已开始写入返回 `blocked` 或 `partial`，保留收据且不重放。
 
 ---
+
+## Agent 入口
+
+`nova.project.tracks.generate-registry` 只接受 `{"scope":"all"}`。Plan 不写源或汇总，冻结全部正式源和 `.meta`、manifest/lock、package.json、已解析包元数据、页内容及已有输出；`DataJson.registry` 供同领域结构 CLI 复用。Execute 只调用 `Generate`，旧输出备份路径在 Plan 精确列出；提交后取消或失败保持 `partial` 和一次性 Receipt，不重放。Verify 只读核对全来源、整输出 hash、页序、全部行和实际 Network 单色样式。公开 C# API 签名不变，新增 snapshot helpers 均为 internal。源编辑入口与消费态边界见 [Tracks 规范](../../../TRACKS.md)。
 
 ## §11 使用示例
 
@@ -86,3 +91,11 @@ EditorUtil.FileSystem.OpenFile(generatedPath);
 - [EditorUtil.md](../EditorUtil.md)
 - [EditorUtil.Excel.md](../EditorUtil.Excel/EditorUtil.Excel.md)（读取源工作簿 `ReadAllSheets` 的底层入口）
 - [SDKComponentInspector.md](../../Inspectors/SDKComponentInspector/SDKComponentInspector.md)（主要调用方：触发 `Generate` 并打开产物）
+
+## 扫描、快照与缓存失效
+
+物理根只枚举一级，不要求 package.json；只有扫描当前 Unity 项目时才补 PackageInfo.resolvedPath。Framework 根识别仍依据目录名去 @ 后缀，目录名不标准的 file 引用可能漏检，不能仅凭该扫描证明全部有效安装。工作簿路径按 FullPath、忽略大小写去重，不解析符号链接；普通 Generate 仅按 Ordinal 拒绝同名 Sheet，case-only 名称仍可能冲突，Agent 快照另拒绝忽略大小写重名和 `$` 页名。
+
+规范行只裁尾空值、内部 null 转空，不 Trim、不删空行或判断事件正确性；原厂单元格 `$` 保留。TrackSheet/扫描 context 的只读属性仍持有可变列表。输出前先删除旧缓存再写 ZIP，异常可能丢旧文件并留下半份新 xlsx；这是可再生缓存，不是 OutputApplier 事务。
+
+Writer 按内容首格识别事件页，framework 标志不决定样式。固定行高不测量长文本，空 Sheet/全空列、非法 XML 控制字符或未保留首尾空白可能影响实际 Excel；静态审查不是视觉验收。Agent Verify 核页序、全部规范行摘要、事件页全部颜色和 A-C 同列合并，不证明业务已触发或后台收到。CaptureAgentFile 拒绝祖先/目标链接且核完整 Hash，取消检查用于扫描/hash，CaptureAgentSheets 本身无 token 参数。

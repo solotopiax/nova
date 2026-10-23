@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
-  m_LocalizingKeyName: 
+  m_LocalizingKeyName: Demo_Greet
   m_LocalizingFontMark: Main
 --- !u!1 &766842003139460501
 GameObject:
@@ -411,7 +411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
-  m_LocalizingKeyName: 
+  m_LocalizingKeyName: Demo_Cancel
   m_LocalizingFontMark: Main
 --- !u!1 &1464789249144756438
 GameObject:
@@ -837,7 +837,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
-  m_LocalizingKeyName: 
+  m_LocalizingKeyName: Demo_Switch_Lang
   m_LocalizingFontMark: Main
 --- !u!1 &2965908721907868952
 GameObject:
@@ -1025,7 +1025,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
-  m_LocalizingKeyName: 
+  m_LocalizingKeyName: Demo_Toast_Tip
   m_LocalizingFontMark: Main
 --- !u!1 &3421861122153352034
 GameObject:
@@ -1177,7 +1177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
-  m_LocalizingKeyName: 
+  m_LocalizingKeyName: Demo_Confirm
   m_LocalizingFontMark: Main
 --- !u!1 &3491741599760029708
 GameObject:

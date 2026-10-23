@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185f6993d5150494d98da50e26cb1c25, type: 3}
+  m_Name: BundleCollectorSetting
+  m_EditorClassIdentifier: YooAsset.Editor::YooAsset.Editor.BundleCollectorSetting
+  ShowPackageView: 1
+  ShowEditorAlias: 0
+  UniqueBundleName: 0
+  Packages:
+  - PackageName: Default
+    PackageDesc: "\u9ED8\u8BA4package"
+    EnableAddressable: 1
+    SupportExtensionless: 1
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    AutoCollectShaders: 1
+    IgnoreRuleName: NormalIgnoreRule
+    Groups:
+    - GroupName: GameGroup
+      GroupDesc: "Game\u5206\u7EC4"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Configs
+        CollectorGUID: 00b180f2226c4132a9f082ed5e1365f2
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Jsons
+        CollectorGUID: 60715393af49492db0c1ec314cb99c35
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Dlls/AOTMetas
+        CollectorGUID: cf6543e2ba394996ac16bbbc2647c75a
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Dlls/GameDlls
+        CollectorGUID: 2698e522e1fe4ea3892c6f1d6367e8c8
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Prefabs/UIs
+        CollectorGUID: 4a9090b70f4040de84edad0c1dee05b6
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackTopDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Fonts
+        CollectorGUID: 7bed841ec0084dbc8d6919860c7fe5ef
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackTopDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Sounds
+        CollectorGUID: 057c1c058f254fb79a1c3ca713636e4e
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Textures/PicsForAtlas
+        CollectorGUID: 61e1b485d6ca401ea56bea81320d1742
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MemoryProtectionDemo/Scenes/RuntimeHotUpdate/DemoRuntimeHotUpdateContent.unity
+        CollectorGUID: 747523b892d7442e9b2004ea0a049509
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectScene
+        AssetTags: demo_runtime_hotupdate
+        UserData: 

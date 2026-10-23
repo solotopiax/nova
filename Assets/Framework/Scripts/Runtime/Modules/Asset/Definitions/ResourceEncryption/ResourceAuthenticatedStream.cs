@@ -83,7 +83,7 @@ namespace NovaFramework.Runtime
             set { Seek(value, SeekOrigin.Begin); }
         }
 
-        /// <summary>在块认证成功后复制明文；跨块读取按块推进，不暴露未认证块内容。</summary>
+        /// <summary>在块认证成功后复制明文；后一块失败前可能已写入前面有效块并推进位置，跨块读取不回滚。</summary>
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (buffer == null) throw new ArgumentNullException(nameof(buffer));

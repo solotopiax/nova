@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "NovaFramework.Mcp.Editor",
+        "GUID:c5ecc461727906345a35491a0440694f",
         "GUID:9933936cdf5d28e4c8108450606f9a90",
         "GUID:c383f449023b7fd42adcb2698d5622e0",
         "GUID:5dcaa7c28ba9de042a11ef79db487161",

@@ -15,6 +15,8 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NovaFramework.Runtime;
+using NovaFramework.SDK.IAP.Runtime;
+using UnityEngine;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
@@ -23,11 +25,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// </summary>
     internal sealed class ThirdPayUrlPayload
     {
-        /// <summary>
-        /// 第三方商品列表中的商品自增 ID。
-        /// </summary>
-        public int ProductId;
-
         /// <summary>
         /// 当前用户 UID。
         /// </summary>
@@ -64,14 +61,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public string ClientOrderId = string.Empty;
 
         /// <summary>
-        /// 当前构建平台名称。
+        /// 当前请求 Header 的运行平台枚举值。
         /// </summary>
-        public string Platform = string.Empty;
+        public int Platform;
 
         /// <summary>
-        /// 当前运行渠道，来源于 Nova.Config.Channel。
+        /// 当前请求 Header 的运营渠道枚举值。
         /// </summary>
-        public string Channel = string.Empty;
+        public int Channel;
 
         /// <summary>
         /// 公共请求头应用 ID。
@@ -92,6 +89,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 随第三方支付票据往返的业务透传参数。
         /// </summary>
         public string ReceiptParam = string.Empty;
+
+        /// <summary>
+        /// 仅供支付网页使用的首充奖励。
+        /// </summary>
+        public IAPThirdPayRewardItem FirstRechargeReward;
+
+        /// <summary>
+        /// 仅供支付网页使用的额外赠送奖励。
+        /// </summary>
+        public IAPThirdPayRewardItem ExtraBonusReward;
 
         /// <summary>
         /// 最终 ThirdPay 支付页是否由系统外部浏览器打开。
@@ -147,10 +154,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            string customParam = new JObject { { "receipt_param", payload.ReceiptParam ?? string.Empty } }.ToString(Formatting.None);
             var parameters = new JObject
             {
-                { "id", payload.ProductId },
                 { "uid", payload.UserId ?? string.Empty },
                 { "table_id", payload.TableId },
                 { "currency", payload.Currency ?? string.Empty },
@@ -158,13 +163,31 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 { "product_name", payload.ProductName ?? string.Empty },
                 { "country", payload.CountryCode ?? string.Empty },
                 { "client_order_id", payload.ClientOrderId ?? string.Empty },
-                { "platform", payload.Platform ?? string.Empty },
-                { "channel", payload.Channel ?? string.Empty },
+                { "platform", payload.Platform },
+                { "channel", payload.Channel },
                 { "is_external_browser", payload.IsExternalBrowser },
                 { "is_custom_tab", payload.IsCustomTab },
                 { "show_back_button", payload.ShowBackButton },
-                { "custom_param", customParam },
+                { "client_version", Application.version },
+                { "receipt_param", payload.ReceiptParam ?? string.Empty },
             };
+            if (payload.FirstRechargeReward != null)
+            {
+                parameters.Add("first_recharge_reward", new JObject
+                {
+                    { "item_id", payload.FirstRechargeReward.ItemId },
+                    { "quantity", payload.FirstRechargeReward.Quantity },
+                });
+            }
+
+            if (payload.ExtraBonusReward != null)
+            {
+                parameters.Add("extra_bonus_reward", new JObject
+                {
+                    { "item_id", payload.ExtraBonusReward.ItemId },
+                    { "quantity", payload.ExtraBonusReward.Quantity },
+                });
+            }
             if (!string.IsNullOrEmpty(payload.ChannelParams))
             {
                 parameters.Add("payment_customer_ids", payload.ChannelParams);

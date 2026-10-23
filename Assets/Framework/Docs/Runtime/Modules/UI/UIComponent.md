@@ -78,6 +78,8 @@
 
 `LoadSync()` 和 `LoadAsync()` 的目标都不是打开 UI，而是让 UI 注册表进入“可查询、可按泛型打开”的状态。
 
+`LoadSync()` 调用返回 `void` 的 Manager 加载入口后直接设置 `IsLoadOver=true`。Manager 遇到读取失败或建表失败可以只记日志并返回，因此同步调用结束和该标志不能证明目标注册项可用；还须查询对应 `UIView` 注册行。空配置也可以正常跳过加载。
+
 `LoadAsync()` 有两个关键语义：
 
 - 已成功加载后直接复用结果
@@ -87,6 +89,8 @@
 
 - 可以把它放到启动流程里集中加载
 - 不应该自己再在业务层做额外的并发去重
+
+失败或异常转 false 后允许重试；OnDestroy 清任务引用/标志/Manager 引用，不取消正在执行的底层注册表加载。IsLoadOver 与目标行、Prefab 和页面打开分别验证。
 
 ## 高价值 API 面
 
@@ -169,7 +173,7 @@
 - `m_LoadTcs`：用于合并并发 `LoadAsync`。
 - `m_InstanceRoot`：所有运行时 UI 实例挂载根节点。
 - `m_UIGroups`：Inspector 中声明的分组配置，会在 `Start()` 转成真实分组。
-- `IsLoadOver`：只表示“注册表是否已经成功加载”，不表示某个具体 UI 是否已打开。
+- `IsLoadOver`：组件的加载完成标志；同步路径不核对 Manager 的失败结果，不能单凭此标志确认目标注册项存在或具体 UI 已打开。
 
 ## 风险点 / 易错点
 

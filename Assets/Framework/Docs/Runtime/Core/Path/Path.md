@@ -28,6 +28,8 @@ Nova 运行时路径工具的根入口。当前实现是一个 `partial` 静态�
 - `Path` 本身只是静态路径工具，不承担运行时管理职责。
 - `Path.Hotfix` 当前只定义 `ApkDownloadedFullPath`，语义是“安装包下载后的本地保存路径”。
 - `Path.Persist` 是 Nova 持久化目录约定，不等同于 `Path.Persistent`。前者是业务子目录规划，后者是 Unity 提供的根可写目录。
+- `Streaming.GetFileFullPath`、`Persistent.GetFileFullPath` 与 `Cache.GetFileFullPath` 只把根路径、`/` 和实参拼接，再替换反斜杠。`null` 或空实参会得到根目录尾斜杠，前导斜杠可能产生双斜杠；不会消除 `..`、限制结果位于根目录内、创建目录或验证存在性/权限。`NormalizeSeparator(null)` 仍返回 `null`，也不做 URL 编码。不能把这些字符串工具作为路径安全校验。
+- Streaming 与 Persistent 根值在静态初始化时取得；Cache 的属性每次读取当前缓存根。Android/WebGL 的 Streaming 路径可能为 jar/URL，不能仅凭名称把结果交给普通 File IO；缓存和持久化能力仍需按目标平台验证。
 
 ## 使用示例
 

@@ -225,6 +225,7 @@ namespace NovaFramework.Editor
                 return Execute(area, null, classExportPath, ExportMode.All, operations);
             }
 
+            /// <summary>持有当前区域的工作区租约完成生成、发布和清场；未取得租约时不清理其他导出。</summary>
             private static bool Execute(
                 Area area,
                 VibrateUnitSetting formalTargetUnit,
@@ -234,9 +235,10 @@ namespace NovaFramework.Editor
             {
                 operations ??= new ExportOperations();
                 string tempRoot = IOPath.GetFullPath(IOPath.Combine(area.SourceDirPath, "_temp"));
+                IDisposable workspace = null;
                 try
                 {
-                    using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                    workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
                     DeleteTempRoot(tempRoot);
                     using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
                     string stagedCodeDir = IOPath.Combine(applier.StagingRoot, "code~");
@@ -303,7 +305,15 @@ namespace NovaFramework.Editor
                 }
                 finally
                 {
-                    Cleanup(tempRoot, area.Label, operations);
+                    try
+                    {
+                        // 获取失败不拥有临时目录；刷新也必须在租约释放之前结束。
+                        if (workspace != null) Cleanup(tempRoot, area.Label, operations);
+                    }
+                    finally
+                    {
+                        workspace?.Dispose();
+                    }
                 }
             }
 

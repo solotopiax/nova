@@ -216,7 +216,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 幂等释放已经创建的全部 YooAsset BundleFileHandle。
+        /// 逐个释放已创建的有效 BundleFileHandle 后清列表；单个释放异常会中断后续，没有 finally 兜底。
         /// </summary>
         private void ReleaseHandles()
         {

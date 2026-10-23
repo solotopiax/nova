@@ -111,7 +111,7 @@ Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuild
 - BuildPipeline = `EBuildPipeline.RawFileBuildPipeline`
 - BuildBundleType = `EBundleType.RawBundle`
 - `VerifyBuildingResult = true`
-- 仅处理 Collector 中使用 `PackRawFile` 的目标资源
+- 当前 RawFile 管线收集所选 Package 的全部主资源，再要求每个 Bundle 只有一个资源；它不自动按 `PackRawFile` 过滤。受控 Action 要求独立 RawFile Package 的有效组仅使用主 Collector 与 `PackRawFile`，混合采集明确阻断。
 
 ### WebGL 的首包拷贝规则
 
@@ -199,3 +199,41 @@ Pipify 三个字段只保留一个简短说明框。Bundle Builder 与 Pipify �
 | `xor` | `NovaFramework.Editor.ResourceManifestXorEncryptor` | `NovaFramework.Editor.ResourceManifestXorDecryptor` |
 
 Plan 同时冻结两项逻辑值和三个实际正式类型名；Execute 使用冻结值调用既有 BundleBuilder，沿用已保存 ConfigMaster 的密钥来源和缺密钥阻断规则。计划不携带密钥。既有 `encryptionPolicy=none` 且不传清单参数的请求仍生成明文 Bundle 与清单。该受控入口不提供任意自定义类型或旧通用清单类名兼容。
+
+两个 Action 按当前正式参数类冻结共享 `OutputCache`；`clearBuildCache=false` 仍会写该目录。AssetBundle 另声明 `Library/PlayerScriptAssemblies`、`Temp/ContentBuildData`、`Library/BuildCache` 与 `Library/Bee`；启用依赖数据库时声明 `Library/AssetDependencyDB`。清缓存会删除整个选中 Package 根及其全部版本，AssetBundle 还会清全局 SBP 缓存。共享缓存可被后台裁剪，WriteSet 不代表缓存完整性证据。
+
+Plan 冻结 SBP Scene/Shader/Compute 回调、属性回调与四个 SBP 委托的编译身份；自定义回调缺少确定写入契约、已有脏资产可能被全局 `SaveAssets` 保存、或 SBP 临时输出已存在时返回 `blocked`，不实例化回调或删除残留。Execute 重新核对，不能用确认绕过门禁。未知回调逐项补契约后再开放，不通过扩大 `Assets/**` 写集代替审查。
+
+Firebase Crashlytics 的 Android Scene 回调按当前正式包与两个 Editor DLL Hash 核对。Plan 不读取 `Firebase.Editor.Measurement.analytics`，避免首次初始化在只读阶段整理标签；它冻结 `l:gvh` 查询的实际存在路径、可能读取的 manifest 全部非空行、GUID、源文件、原标签和 meta。可写 metadata 必须位于 `Assets`，仅允许正规标签结果，meta 除唯一顶层 `labels` 块外的原字节必须保持。包候选按 EDM 精确包路径规则只读；未知路径、受管标签或 meta 布局明确阻断。统计的同意选择须已完成，Enabled 使用当前值，不关闭开关。
+
+正常回调声明 `Assets/Plugins/Android/FirebaseCrashlytics.androidlib` 下四个文件、必要目录和对应 meta：`AndroidManifest.xml`、`project.properties` 仅缺失时创建，两个 `res/values/crashlytics_*.xml` 按原回调生成。Execute 只调用一次原构建流程，作用域采集两个资源成功行和包括普通 Log 级别在内的写失败，回执保留真实前后文件、标签、`Generated` 与变化路径。`Generated=true` 只表示原回调到达末尾，不能替代成功日志或文件语义；重复构建的已生成跳过分支保持原文件，不重置标志、不要求生成新 GUID。取消或异常保留未完成回执与恢复核查。Verify 同时核对本次日志、XML 的 GUID/Unity 版本、仅创建文件的保持规则和标签边界；旧合法文件与 Console 无 Error 均不能证明本次生成。当前已审 `Report(string,string)` 不发送网络数据。
+
+IAP 已存在 `BillingMode.json` 时，按原 `AppStore` 大小写敏感判定、未知值回退 GooglePlay 和精确 importer 选择规则冻结目标；只有当前 Android 兼容值已满足目标时才接受。无唯一 fallback 候选保持原回调无写分支；需要实际改变 importer 的分支仍有具体门禁，不修改配置消除阻断。
+
+SBP 的场景恢复会从磁盘重新加载原场景，因此 Plan 要求当前场景有保存路径、无脏数据，并冻结场景 setup。有效 Collector 根与所有递归依赖采用保守闭包，不执行采集规则或打开场景；记录逻辑路径、GUID、依赖 Hash、实物和 `.meta` SHA-256，以及 PlayerSettings、GraphicsSettings、QualitySettings。没有磁盘文件的 Unity 内置依赖只记录逻辑身份。执行前后重新核对闭包，不能仅凭原场景列表或文件未删除证明恢复。
+
+当前已审 SBP 分支按引擎 DLL 或正式包版本及源码 Hash 精确匹配：UnityBuildPostprocessor 的场景静态合批同时冻结当前目标的 static batching 设置；ProjectAuditor、Timeline、UGUI 的 SBP 分支只处理内存数据。Adaptive Performance 的 Scene 分支冻结 `UnityEditor.EditorAnalytics.enabled`，已启用时会按非空报告发送构建 GUID、目标平台/平台版本和 provider 信息；`callbacks.knownEffects` 展示这些原外部效果，Action 正式声明 `ExternalWrite`。当前仅接受已审 metadata 的空 provider 字典，非空集合仍需逐实现核对 getter；不自动关闭 Analytics。引擎的 `AttributeCallbackWrapper` 是容器，属性方法仍单独冻结；其注册条件沿用引擎的静态、非泛型及精确参数规则。
+
+三项 Shader 回调还冻结固定版本的内部报告器与事件字段：报告器仅接受已审的内存或日志实现，发现未审可实例化的内部 `IVariantStripper` 或事件订阅便阻断，不调用构造函数或委托。当前 `SRPDisabledComputeShaderVariantStripper` 仅在全部 Quality/default Graphics 无 SRP，且 `CoreBuildData` 未初始化或已有无 SRP 空 Compute 缓存时接受；只读固定字段，不调用 lazy getter。SRP 资产的虚拟 getter 与 GPU 接口仍未放行。ProBuilder 还要求正式 Settings 实例已经初始化，避免首次静态 Pref 初始化迁移旧配置和注册保存回调；Plan 仅读无类型初始化器的固定字段，不调用设置 getter。仅接受已加载对象和上述源依赖闭包均无 `ProBuilderMesh` / `EntityBehaviour` 的空分支；含这些组件的输入仍需独立审查 Mesh 资产缓存等副作用。所有已审契约只适用于 SBP 的 Scene/Shader/Compute 路由，不据此放行 Player 构建回调。
+
+Collector 的忽略、组激活、寻址、打包与过滤规则也会执行代码。Action 只接受已核对的 YooAsset 默认规则，并冻结其程序集/模块身份；同名具体类型冲突或自定义规则缺少写入契约时阻断，不在 Plan 实例化任意规则。直接 API 与 Pipify 的自定义能力保持原语义，消费态受控 Action 的可执行范围需经过独立契约补齐。
+
+Receipt 保留共享写集和 OutputCache、脚本输出及可选依赖数据库的执行后 Hash；Verify 只读校验完整辅助集合、本次正式报告的 Target/Package/Version/管线/Bundle 类型及报告引用文件，再核 SHA-256。后续构建改变共享输出会使旧 Receipt 返回 `partial`；旧 Bundle Receipt 缺少共享证据也为 `partial`。Player 原 Receipt 保持原验证边界。进入构建后的失败保留未完成 Receipt 与可能写入路径，不自动重跑或清原缓存。
+
+AssetBundle 成功与失败 Receipt 均记录执行前源文件、场景 setup 和未保存状态的只读核查结果；存在漂移时不能形成成功凭据。该核查不会替用户保存或恢复场景与资产，失败仍保留现场供归属核查。
+
+Framework Editor 为冻结当前公开 SBP 路径与委托 API，直接引用 `Unity.ScriptableBuildPipeline.Editor`；Framework `package.json` 显式声明 `com.unity.scriptablebuildpipeline` 当前版本下界。消费工程会通过 UPM 解析该既有构建依赖，不需要 Agent 安装临时工具。
+
+IAP 场景回调在 `Assets/Resources/BillingMode.json` 不存在时按已审构建方法的空分支接受；存在时按原 `AppStore` 大小写敏感判定与未知值回退 GooglePlay 的规则，冻结 BillingMode Hash、canonical importer 或精确同名 fallback 候选集合。没有唯一 importer 时原方法无配置写；有 importer 仅在 Android 兼容性已满足目标值时接受，并冻结实际插件及 `.meta` Hash。需要改变配置时仍阻断，不能调用 IAP 设置 API 代替回调或触发其延迟初始化。
+
+EDM 警告回调在非 Android 下为空分支；Android 下冻结原三个警告/自动解析设置，沿正式 EditorSettings / InMemorySettings 的已加载状态只读捕获，不调用私有设置 getter或强制加载 XML。该回调只保留原 Console 警告和内存 HasWarned 状态；真正自动 Resolve 仍需要独立完整的依赖解析合同。
+
+Android EDM 场景无需解析分支还冻结完整依赖图、解析状态与产物、工具和主线程调度。首次必须有本次四条有序场景事件及计数增长，后续仅接受无解析事件的正常计数增长；不重置计数或主动执行解析。为了观察被 Console 过滤的详细日志，作用域临时订阅已审公开 Logger 尾部事件，只保留固定 token/失败类别，精确退订自身并核对原委托；日志级别不变。正规 Jetifier 前置仅接纳项目已有 True 且 canonical XML 与原字节相同的分支，计划声明精确 Gvh 文件和 `Unity EditorPrefs:GooglePlayServices.UseJetifier` 同值写，其他设置保持。Verify 不预读 XML、不重放回调；缓存命中可走独立证据分支：只有本次写出的精确报告和完整 SBP trace、场景 GUID 与冻结依赖闭包、全部场景/写操作缓存标记和计数一致，且场景计数、事件、EDM/Firebase 完整状态和写入集合均未变化，才接受真实未重跑场景回调的缓存结果。缺少 trace、混合未缓存场景或域身份改变保持 partial，不升级旧 Receipt。初始与最终各做一次完整 Version Handler 只读采集，中间仅双读绑定实际 DLL/MVID、域、owner/scheduler 身份及原调度不变量的廉价只读 pending 探针。首完整采集与探针绑定后启动唯一固定十秒的自然 Editor update 等待预算，至少观察一次真实 update；探针完成或到期后只做一次最终完整后验，采集可越过截止点但必须完整匹配且自然完成，仍 pending 保留 partial。回执分别保留真实 update 与成功探针计数，二者须相等且只含首末两份完整快照；旧无探针字段回执仍按每次 update 一份完整快照的原规则读取。未知探针或稳定输入变化立即失败，不重开窗口，不推进、调用或清空官方队列。
+
+构建的全局脏资产门另精确排除已导入字体的零纹理缓存：必须是真实 non-native/foreign 子资产、NotEditable、准确且未改动的 TrueTypeFontImporter，唯一已加载同路径准确主 Font 未改动。只读 Font 的 `m_Texture` 实例 ID，必须直接指向现存候选纹理；`m_DefaultMaterial` 只要求原序列化 ID 非零，不解引用或要求 Material 已加载，也不调用 Font.material、Material.mainTexture 或 objectReferenceValue 来制造条件。生产筛选不 LoadAsset、请求字符或调用 FontEngine。纹理 native 只读元数据和完整零缓存 JSON（包括版本、名称、所有数据/stream 空值及全部 key）必须一致，任何未知或非零字段继续阻断。此分类不清 dirty、不保存或重写源字体/meta；Font 本体、Importer、原生资产、PNG、错误归属与未知导入纹理仍受原门保护。它不宣称已审完 native SaveAssets 的 C++ 实现，也不扩大回调写集。
+
+## 调用与失败边界
+
+下拉 GetPackageNameOptions 无法读场景配置时回落 Default，只是 UI 选项，不证明 Collector 已配置。构建实现类按准确 FullName 选首个可赋值类型并 Activator 创建：空名称先用默认 Type.FullName，空白不回落；候选未找到会 Warning/null，构造、静态初始化或强转错误可传播，不做所有同名程序集身份的唯一性审查。
+
+默认版本基于本地日期与总分钟，不保证同分钟唯一。AssetBundle 与 RawFile 参数结构不同，前者有 Compression，后者有 IncludePathInHash；不能借同名字段把两套参数互换。WebGL 只支持 None、ClearAndCopyByTags、ClearAndCopyAll，非 Tag 模式清空 Tags，非 WebGL 不额外校验所有枚举值。成功构建后的 WebGL None 还需删除本 Package 的旧首包资产并 Refresh；清理失败会使 API 抛错，不能因为 BuildResult 先成功就宣称全链完成。

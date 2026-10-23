@@ -49,6 +49,10 @@ public void Put()
 public void Release(bool isShutdown)
 ```
 
+## 参数与所有权边界
+
+Create 拒 null obj，取引用池包装后先设 RefCount=got?1:0，got=true 随即 OnGet，但不额外更新 LastUseTime；此回调失败不会自动归还已取得包装。Get 则先计数++、UTC 更新时间、再 OnGet。Put 顺序为 OnPut → UTC 更新时间 → 计数-- → 负数检查，回调失败计数未减，重复归还则已改状态后抛。Peek 不计数。Release 先业务释放，再把 T 回 ReferencePool，最后断 m_Object；它不归还自身包装，异常也无 finally 保证。Clear 仅断引用/归零，元数据 getter/setter 直接转发 m_Object，清理后读取可失败。
+
 ## 关联文档
 
 - [ObjectBase](ObjectBase.md) -- 被包装的对象基类

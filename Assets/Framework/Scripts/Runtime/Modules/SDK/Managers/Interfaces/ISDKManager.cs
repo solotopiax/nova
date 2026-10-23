@@ -33,7 +33,7 @@ namespace NovaFramework.Runtime
         /// 完成后 IsInitialized 置为 true。
         /// </summary>
         /// <param name="ct">取消令牌；传入 CancellationToken.None 时不可取消。</param>
-        /// <returns>所有批次初始化完成的异步任务。</returns>
+        /// <returns>所有插件到达最终初始化状态的异步任务。</returns>
         UniTask InitializeAsync(CancellationToken ct = default);
 
         /// <summary>

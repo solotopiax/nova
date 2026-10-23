@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`  
 **目标组件**：`NovaFramework.Runtime.NativeComponent`
 
-Native Inspector 只管理 Manager 实现选择与模块边界说明；它不查询、不请求通知权限，也不触发系统设置跳转。当前为空的 `NativeManagerConfig` 仍由 Runtime 序列化并传给 Manager，但不在 Inspector 中显示无内容的配置行。
+Native Inspector 只管理 Manager 实现选择与模块边界说明；它不查询、不请求通知权限，也不触发系统设置跳转。`NativeManagerConfig.EnableAndroidAppInstall` 默认关闭；Inspector 暴露显式 APK 安装总门，不自动修改项目现有配置。
 
 ## 文件
 
@@ -19,13 +19,11 @@ Native Inspector 只管理 Manager 实现选择与模块边界说明；它不查
 | Runtime 字段 | Inspector 字段 | 绘制方式 |
 |---|---|---|
 | `m_CurNativeManagerTypeName` | `m_CurNativeManagerTypeName` | `EditorUtil.Draw.TypesSelector`，枚举 `INativeManager` 实现类型 |
+| `m_NativeManagerConfig.EnableAndroidAppInstall` | `m_EnableAndroidAppInstall` | `EditorUtil.Draw.PropertyField`，“允许 Android APK 安装”，默认关闭 |
 
-`BaseComponentInspector` 先负责 `serializedObject.Update()` 和只读 DevelopMode 头部；子类随后依次绘制 Manager 类型、两条 HelpBox，最后调用 `FinalRefreshInspectorGUI()`。
+`BaseComponentInspector` 先负责 `serializedObject.Update()` 和只读 DevelopMode 头部；子类随后依次绘制 Manager 类型、安装开关、三条编号 HelpBox，最后调用 `FinalRefreshInspectorGUI()`。
 
-HelpBox 固定说明两项边界：
-
-1. 通知权限只在业务显式调用 `RequestNotificationPermissionAsync` 时请求，框架启动不会自动弹窗。
-2. APNs / FCM Token 与消息生命周期由对应 SDK 管理，不属于 Native 模块。
+HelpBox 说明通知与 Token 边界、Android 9+ 来源许可和系统用户确认，以及下载/安装分离与当前 signer/递增版本限制。开启安装总门后，实际 Build Scene 的生效 Native 配置使构建声明来源安装权限；关闭时不声明此权限。它不获得静默安装能力。
 
 ## 使用与验证
 
