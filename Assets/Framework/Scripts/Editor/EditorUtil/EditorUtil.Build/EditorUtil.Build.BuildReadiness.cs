@@ -11,8 +11,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HybridCLR.Editor;
-using HybridCLR.Editor.Installer;
+using global::HybridCLR.Editor;
+using global::HybridCLR.Editor.Installer;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;

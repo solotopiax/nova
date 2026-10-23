@@ -1,6 +1,6 @@
 # Nova Framework - SDK - Facebook
 
-> 当前版本：`0.1.16`
+> 当前版本：`0.1.17`
 
 Package name: `com.solotopia.nova.framework.sdk.facebook`
 

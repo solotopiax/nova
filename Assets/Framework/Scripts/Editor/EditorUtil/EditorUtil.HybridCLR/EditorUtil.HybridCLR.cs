@@ -8,7 +8,7 @@
  * descrip:   HybridCLR Pipeline 自动化工具 —— 公开接口
  ***************************************************************/
 
-using HybridCLR.Editor.Commands;
+using global::HybridCLR.Editor.Commands;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -22,7 +22,7 @@ namespace NovaFramework.Editor
         /// HybridCLR Pipeline 原子操作合集。
         /// 提供 link.xml 校验补全、HybridCLR Generate 一揽子入口、AOT / 业务 DLL 拷贝等独立方法，
         /// 由 Pipify Steps 按需编排为流水线；框架不再提供主观性的全流程封装。
-        /// 路径通过 HybridCLR.Editor.SettingsUtil 读取，尊重用户在 ProjectSettings 中的自定义配置。
+        /// 路径通过 global::HybridCLR.Editor.SettingsUtil 读取，尊重用户在 ProjectSettings 中的自定义配置。
         /// DLL 列表配置通过 EditorUtil.Config.WorkspaceActive 锚定当前激活的 ConfigMaster。
         /// </summary>
         public static partial class HybridCLR

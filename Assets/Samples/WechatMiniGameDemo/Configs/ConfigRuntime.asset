@@ -23,16 +23,17 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
+    ExtensionConfigsJson: '{}'
     PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
     InfoPlistUsageDescriptions: '{}'
   Platform: 3
   Channel: 4
   EnabledSDKConfigs:
-  - rid: 6078458057645096964
-  - rid: 6078458057645096965
+  - rid: 2095149625450168593
+  - rid: 2095149625450168594
   EnabledKitConfigs:
-  - rid: 6078458057645096966
-  - rid: 6078458057645096967
+  - rid: 2095149625450168595
+  - rid: 2095149625450168596
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -64,7 +65,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 6078458057645096964
+    - rid: 2095149625450168593
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -75,7 +76,7 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 6078458057645096965
+    - rid: 2095149625450168594
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
         m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
@@ -118,12 +119,12 @@ MonoBehaviour:
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
         m_EnableMemoryWarning: 1
-    - rid: 6078458057645096966
+    - rid: 2095149625450168595
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 6078458057645096967
+    - rid: 2095149625450168596
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind

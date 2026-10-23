@@ -23,10 +23,10 @@
 
 | 包 | 声明版本 |
 |---|---|
-| `com.solotopia.nova.framework` | `0.7.0` |
+| `com.solotopia.nova.framework` | `0.7.3` |
 | `com.solotopia.nova.framework.sdk.ad` | `1.2.0` |
 
-父包 `sdk.ad@1.2.0` 另声明 Framework `0.7.0` 依赖；当前本包与 Nova 广告包的最低 Unity 版本统一为 `6000.6.7f1`。当前依赖声明不包含独立 Google Mobile Ads SDK，项目须通过既有安装流程显式接入官方 `com.google.ads.mobile`。Runtime / Editor asmdef 在版本范围 `[11.5.0,12.0.0)` 定义 `NOVA_GOOGLE_MOBILE_ADS`；未安装匹配 SDK 或处于 Editor / 非移动平台时，渠道报告初始化失败，不自动请求测试广告。
+父包 `sdk.ad@1.2.1` 另声明 Framework `0.7.3` 依赖；当前本包与 Nova 广告包的最低 Unity 版本统一为 `6000.4.x`（最低 `6000.4.2f1`）。当前依赖声明不包含独立 Google Mobile Ads SDK，项目须通过既有安装流程显式接入官方 `com.google.ads.mobile`。Runtime / Editor asmdef 在版本范围 `[11.5.0,12.0.0)` 定义 `NOVA_GOOGLE_MOBILE_ADS`；未安装匹配 SDK 或处于 Editor / 非移动平台时，渠道报告初始化失败，不自动请求测试广告。
 
 接入时在 ConfigWindow 的广告聚合渠道列表中保留一项启用的 `AdMobAdChannelConfig`，填写目标平台 App ID、所需格式的真实广告位 ID 与 `TagForUnderAgeOfConsent` 年龄标记，保存 ConfigMaster 并正式导出当前坐标的 ConfigRuntime。App ID 使用 `~`，广告位 ID 使用 `/`，两者不可混填；配置保存或导出成功不等于原厂初始化或广告可播。
 

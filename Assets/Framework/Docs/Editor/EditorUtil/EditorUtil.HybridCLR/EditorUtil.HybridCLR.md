@@ -8,6 +8,14 @@ HybridCLR 原子操作合集：提供 link.xml 校验/补全、对齐 HybridCLR/
 
 ---
 
+## 当前上游版本与执行边界
+
+Nova Framework 仅支持 Unity `6000.4.x`，最低版本为 `6000.4.2f1`；更高的 Unity 次版本存在 HybridCLR 兼容问题，不属于当前支持范围。
+
+项目封装包 `com.solotopia.hybridclr` 的 `Core/` 对应官方 `hybridclr_unity v8.15.0`。包根版本号与上游版本分别管理，编辑器命名空间为 `HybridCLR.Editor`、`HybridCLR.Editor.Commands`、`HybridCLR.Editor.Installer`，程序集名为 `HybridCLR.Editor` 与 `HybridCLR.Runtime`。
+
+本地工具链位于 `HybridCLRData/`，生成物使用 `MethodBridge.cpp`、`UnityVersion.h`、`AssemblyManifest.cpp`。热更 DLL、裁剪 AOT DLL、link.xml 与 AOT 泛型引用文件的输出路径以 `HybridCLRSettings` 中的实际设置为准。包替换和编辑器编译通过不代表工具链已安装、产物已重新生成或 Player 构建通过；受控 Generate/Player 继续按实际源码与回调边界核验。
+
 ## §2 文件表
 
 | 文件 | 类 | 说明 |

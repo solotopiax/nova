@@ -327,7 +327,11 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void CalculateLayoutInputVertical()
         {
+#if UNITY_6000_6_OR_NEWER
             SetLayoutInputForAxis(minHeight, -1f, minHeight, -1, 1);
+#else
+            SetLayoutInputForAxis(minHeight, minHeight, -1, 1);
+#endif
         }
 
         public override void SetLayoutHorizontal()

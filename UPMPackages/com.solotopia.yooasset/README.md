@@ -1,11 +1,11 @@
 # YooAsset
 
 > 包名：`com.solotopia.yooasset`
-> 当前版本：`1.2.0`
+> 当前版本：`1.2.1`
 
-Unity 资源管理与热更新解决方案。Core 基线为官方 YooAsset `3.0.6`（commit `3b4cfb36cc2e81b9558ab74d65fee2cf2eac2804`），私包版本为 `1.2.0`。
+Unity 资源管理与热更新解决方案。Core 基线为官方 YooAsset `3.0.6`（commit `3b4cfb36cc2e81b9558ab74d65fee2cf2eac2804`），私包版本为 `1.2.1`。
 
-保留 Nova 的 Settings 显式注入、配置路径提供器、BundleCollector 缓存重置及 `NovaFramework.Editor` 友元扩展；原生下载在缓存校验最终结果后通知 URL 策略，保持内容校验失败时的主备重试。Scriptable Build Pipeline 使用上游自动版本适配，当前依赖为 `2.6.1`。
+保留 Nova 的 Settings 显式注入、配置路径提供器、BundleCollector 缓存重置及 `NovaFramework.Editor` 友元扩展；原生下载在缓存校验最终结果后通知 URL 策略，保持内容校验失败时的主备重试。Scriptable Build Pipeline 使用上游自动版本适配，当前依赖为 `4.0.1`。
 
 升级到 3.0.6 的自定义异步操作须将 `InternalAbort()` 清理逻辑迁移到 `InternalDispose()`。
 
@@ -17,7 +17,7 @@ Bundle Builder 的三个加解密下拉通过 `EditorAssemblyUtility.GetBuildSer
 
 ```json
 "dependencies": {
-  "com.solotopia.yooasset": "1.2.0"
+  "com.solotopia.yooasset": "1.2.1"
 }
 ```
 

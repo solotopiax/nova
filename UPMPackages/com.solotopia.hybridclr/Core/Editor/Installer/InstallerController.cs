@@ -1,3 +1,4 @@
+// Nova 本地适配：保留已发布的安装器公开查询入口及其历史返回值。
 #if UNITY_6000_3_OR_NEWER && UNITY_EDITOR_OSX
 #define NEW_IL2CPP_PATH
 #endif
@@ -22,6 +23,7 @@ namespace HybridCLR.Editor.Installer
 
         private const string il2cpp_plus_repo_path = "il2cpp_plus_repo";
 
+        /// <summary>获取当前 Unity 的主版本号，保持已发布的安装器查询接口兼容。</summary>
         public int MajorVersion => _curVersion.major;
 
         private readonly UnityVersion _curVersion;
@@ -37,15 +39,7 @@ namespace HybridCLR.Editor.Installer
         {
             _curVersion = ParseUnityVersion(Application.unityVersion);
             _versionManifest = GetHybridCLRVersionManifest();
-            _curDefaultVersion = _versionManifest.versions.FirstOrDefault(v => {
-                return _curVersion.isTuanjieEngine? v.unity_version == $"{_curVersion.major}-tuanjie"
-#if UNITY_6000_3_OR_NEWER
-                    : v.unity_version == "6000.3.x"
-#else
-                    : v.unity_version == _curVersion.major.ToString()
-#endif
-                    ;
-            });
+            _curDefaultVersion = FindMatchedVersion(_versionManifest.versions, _curVersion);
             PackageVersion = LoadPackageInfo().version;
             InstalledLibil2cppVersion = ReadLocalVersion();
         }
@@ -127,9 +121,37 @@ namespace HybridCLR.Editor.Installer
 
         public string GetCurrentUnityVersionMinCompatibleVersionStr()
         {
-            return GetMinCompatibleVersion(MajorVersion);
+            return GetMinCompatibleVersion(_curVersion.major, _curVersion.minor1);
         }
 
+        private HybridclrVersionInfo FindMatchedVersion(List<HybridclrVersionInfo> versions, UnityVersion curVer)
+        {
+            HybridclrVersionInfo bestMatch = null;
+            foreach (var v in versions)
+            {
+                string[] versionWithEngineParts = v.unity_version.Split('-');
+                if ((curVer.isTuanjieEngine && versionWithEngineParts.Length == 1) || (!curVer.isTuanjieEngine && versionWithEngineParts.Length == 2))
+                {
+                    continue;
+                }
+
+                string[] versionParts = versionWithEngineParts[0].Split('.');
+                if (int.Parse(versionParts[0]) == curVer.major && (versionParts.Length == 1 || int.Parse(versionParts[1]) <= curVer.minor1))
+                {
+                    bestMatch = v;
+                }
+            }
+            if (bestMatch == null)
+            {
+                throw new NotSupportedException($"No compatible version found for Unity {curVer.major}.{curVer.minor1}.{curVer.minor2}");
+            }
+            return bestMatch;
+        }
+
+        /// <summary>按已发布的版本表查询最低兼容版本，保留旧入口的返回值和默认值。</summary>
+        /// <param name="majorVersion">Unity 主版本号；未识别的值沿用旧默认版本。</param>
+        /// <returns>历史版本表中的最低兼容版本，未识别的主版本返回 2020.3.0。</returns>
+        /// <remarks>Unity 6000 的返回值仍由编译时宏决定；此重载不参与上游安装器的工具链分支匹配。</remarks>
         public string GetMinCompatibleVersion(int majorVersion)
         {
             switch(majorVersion)
@@ -148,6 +170,26 @@ namespace HybridCLR.Editor.Installer
             }
         }
 
+        private string GetMinCompatibleVersion(int majorVersion, int minorVersion)
+        {
+            switch(majorVersion)
+            {
+            case 2019: return "2019.4.0";
+            case 2020: return "2020.3.0";
+            case 2021: return "2021.3.0";
+            case 2022: return "2022.3.0";
+            case 2023: return "2023.2.0";
+            default:
+            {
+                if (majorVersion < 2019)
+                {
+                    throw new NotSupportedException($"Unsupported major version: {majorVersion}");
+                }
+                return $"{majorVersion}.0.0";
+            }
+            }
+        }
+
         public enum CompatibleType
         {
             Compatible,
@@ -157,11 +199,11 @@ namespace HybridCLR.Editor.Installer
 
         public CompatibleType GetCompatibleType()
         {
-            UnityVersion version = _curVersion;
-            if (version == null)
+            if (_curDefaultVersion == null)
             {
                 return CompatibleType.Incompatible;
             }
+            UnityVersion version = _curVersion;
             if ((version.major == 2019 && version.minor1 < 4)
                 || (version.major >= 2020 &&  version.major <= 2022 && version.minor1 < 3))
             {

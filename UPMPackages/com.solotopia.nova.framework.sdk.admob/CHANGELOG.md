@@ -12,6 +12,10 @@
 
 - 最低依赖对齐至Nova Framework 0.7.0、Ad 1.2.0，与本轮发布的框架及 SDK 接口配套。
 
+- 对齐依赖版本：com.solotopia.nova.framework 0.7.0 → 0.7.3、com.solotopia.nova.framework.sdk.ad 1.2.0 → 1.2.1。
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
 ### Fixed
 
 - 移除已被实际实现取代的“仅骨架、无构建处理器”旧说明；明确 UMP 年龄配置、展开 ID 独立并发重试、统一组间隔和释放后不可复用，MAX 构建处理器不读取独立 AdMob 配置。

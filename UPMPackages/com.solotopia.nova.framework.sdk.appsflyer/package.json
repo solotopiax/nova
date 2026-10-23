@@ -1,13 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.sdk.appsflyer",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "6.18.1",
   "displayName": "Nova Framework - SDK - AppsFlyer",
   "description": "AppsFlyer 归因埋点插件，提供事件追踪服务",
   "category": "Runtime",
-  "unity": "6000.6",
-  "unityRelease": "7f1",
+  "unity": "6000.4",
+  "unityRelease": "2f1",
   "keywords": [
     "nova",
     "sdk",
@@ -22,8 +22,8 @@
     "NovaFramework.SDK.AppsFlyerPlugin.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0",
-    "com.google.external-dependency-manager": "1.2.186",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+    "com.solotopia.nova.framework": "0.7.3",
+    "com.google.external-dependency-manager": "1.2.190",
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
   }
 }

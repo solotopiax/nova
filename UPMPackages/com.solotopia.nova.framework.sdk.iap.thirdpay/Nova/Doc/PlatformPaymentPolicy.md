@@ -6,7 +6,7 @@ ThirdPay 实现支付订单、网页打开、回调和服务端验单。**支付
 
 ## 当前包的实际能力
 
-- Android 使用 `com.unity.purchasing` 5.3.1 的 `ExternalBillingProgramClient` 查询其外部结算计划可用性、创建上报 token、显示信息页，随后用 Auth Tab / Custom Tabs / 系统浏览器打开支付页。`SkipPaymentInformationScreen` 可以跳过信息页；计划不可用或 Billing 服务不可用时，当前实现还可能用空 token 继续打开页面。以上结果均不证明商户已获准上线。
+- Android 使用 `com.unity.purchasing` 5.4.4 的 `ExternalBillingProgramClient` 查询其外部结算计划可用性、创建上报 token、显示信息页，随后用 Auth Tab / Custom Tabs / 系统浏览器打开支付页。`SkipPaymentInformationScreen` 可以跳过信息页；计划不可用或 Billing 服务不可用时，当前实现还可能用空 token 继续打开页面。以上结果均不证明商户已获准上线。
 - iOS 使用 UniWebView Safe Browsing 打开支付页，并读取 Storefront 国家码；包内没有 StoreKit External Purchase Entitlement 配置、`ExternalPurchaseCustomLink`/披露页或外部交易上报实现。
 - 包内 `ThirdGetPaymentConfig` 的 `enabled` 是业务服务端开关，不验证 Play Console / App Store Connect 的资格、商品类别、地区计划、外部链接目的地或交易上报。客户端国家码只用于配置上下文，不能替代平台资格判断。
 - ThirdPay 的 `pay_callback` 只是页面信号；实际发货依赖服务端验单和幂等履约。Google / Apple 所要求的平台交易上报是另一条独立链路，不能用 ThirdPay 验单事件代替。

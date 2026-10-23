@@ -1,17 +1,18 @@
 /***************************************************************
  * filename:  NovaSpark.cs
- * descrip:   Nova 框架一次性引导器（火种）。
- *            把 Nova 框架所需的"火种"——UPM registry、必备依赖与
- *            PlugPals 配置——带入一个全新的 Unity 工程，点燃新征程。
- *            使命完成后自动删除脚本，功成身退。
+ * descrip:   Nova 框架安装脚本。
  *
- *            设计要点：
- *            - Unity 版本门槛：低于最低要求（6000.6.7f1）时不执行任何补全，
- *              仅弹窗提示升级，且不自删（便于升级后重试）。
- *            - 自包含、零第三方依赖（内嵌保序 mini-JSON），可在尚未
- *              安装任何 Nova 包的空工程上直接运行。
- *            - 幂等：file: 引用 Framework 的源码工程自动跳过；已安装的其他工程仍检测并经确认矫正配置。
- *            - 不属于任何自定义程序集，放在 Assets/Editor 下即可。
+ *            作用：在 Unity 项目中安装 Nova Framework。
+ *
+ *            使用方法：
+ *            1. 仅使用 Unity 6000.4.x（最低 6000.4.2f1），将本文件放入项目的 Assets/Editor/。
+ *               更高的 Unity 次版本存在 HybridCLR 兼容问题，不在支持范围内。
+ *            2. 等待 Unity 编译完成，在弹窗中点击“引入框架”。
+ *            3. 等待包解析和编译完成；PlugPals 窗口正常打开且无报错，即表示安装成功。
+ *               本脚本执行结束后会自动删除。
+ *
+ *            已安装 Nova 的项目会先列出需调整的配置，点击“矫正配置”后才修改。
+ *            使用 file: 引用 Framework 的源码工程会自动跳过。
  ***************************************************************/
 
 using System;
@@ -39,10 +40,13 @@ namespace NovaBootstrap
         /// <summary>本会话内"用户已拒绝安装"标记键，避免同一会话每次域重载反复弹窗。</summary>
         private const string c_SessionDeclinedKey = "NovaSpark.Declined";
 
-        /// <summary>Nova 框架要求的最低 Unity 版本（含）。当前工程低于此版本时引导器不执行任何补全，仅提示升级。</summary>
-        private const string c_MinUnityVersion = "6000.6.7f1";
+        /// <summary>Nova 框架支持的最低 Unity 版本（含）；只接受 6000.4.x 版本线。</summary>
+        private const string c_MinUnityVersion = "6000.4.2f1";
 
-        /// <summary>本会话内"已提示 Unity 版本过低"标记键，避免同一会话每次域重载反复弹窗。</summary>
+        /// <summary>Nova 框架支持范围的上界（不含）；更高的 Unity 次版本存在 HybridCLR 兼容问题。</summary>
+        private const string c_MaxUnityVersionExclusive = "6000.5.0a0";
+
+        /// <summary>本会话内"已提示 Unity 版本不受支持"标记键，避免同一会话每次域重载反复弹窗。</summary>
         private const string c_SessionVersionWarnedKey = "NovaSpark.VersionWarned";
 
         /// <summary>PlugPals 窗口菜单路径。用 ExecuteMenuItem 字符串调用，避免对框架类型的编译期依赖。</summary>
@@ -64,7 +68,7 @@ namespace NovaBootstrap
         private const string c_EdmKey = "com.google.external-dependency-manager";
 
         /// <summary>EDM 版本（经 openupm registry 解析）。</summary>
-        private const string c_EdmValue = "1.2.188";
+        private const string c_EdmValue = "1.2.190";
 
         /// <summary>
         /// Nova 框架主包键。双重用途：
@@ -74,19 +78,19 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.7.2";
+        private const string c_FrameworkValue = "0.7.3";
 
         /// <summary>默认显式安装的 Nova 内存防护扩展包键；不随之安装付费 Anti-Cheat Toolkit。</summary>
         private const string c_MemoryProtectionKey = "com.solotopia.nova.framework.memory.protection";
 
         /// <summary>Nova 内存防护扩展包的固定目标版本，经 Solotopia registry 解析。</summary>
-        private const string c_MemoryProtectionValue = "0.1.1";
+        private const string c_MemoryProtectionValue = "0.1.2";
 
         /// <summary>默认显式安装的 Nova MCP 中立契约包键，与 Unity MCP Provider 包分开管理。</summary>
         private const string c_NovaMcpKey = "com.solotopia.nova.framework.mcp";
 
         /// <summary>Nova MCP 中立契约包的固定目标版本；其 Unity MCP Provider 依赖经 OpenUPM 解析。</summary>
-        private const string c_NovaMcpValue = "0.1.5";
+        private const string c_NovaMcpValue = "0.1.6";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";
@@ -140,25 +144,25 @@ namespace NovaBootstrap
             EditorApplication.delayCall += Run;
         }
 
-        /// <summary>引导主流程：检测、确认、矫正，并通过域重载标记接力打开窗口和自动自删。</summary>
+        /// <summary>引导主流程：先拒绝支持范围外的 Unity 版本，再检测、确认、矫正，并通过域重载标记接力打开窗口和自动自删。</summary>
         /// <remarks>跨文件写入不提供事务回滚；发起 Client.Resolve 不等待成功，重试预算耗尽也可能保留标记。</remarks>
         private static void Run()
         {
             try
             {
-                // Unity 版本门槛：低于 Nova 要求的最低版本则不执行任何检测/补全，弹窗提示升级后退出。
-                // 不自删（便于用户升级 Unity 后重新触发引导）；每会话仅提示一次，避免域重载反复弹窗。
+                // Unity 版本门槛：仅允许 6000.4.x 且不低于最低版本，其余版本不执行任何检测或补全。
+                // 不自删（便于用户切换到支持版本后重新触发引导）；每会话仅提示一次，避免域重载反复弹窗。
                 if (!IsUnityVersionSupported())
                 {
                     if (!SessionState.GetBool(c_SessionVersionWarnedKey, false))
                     {
                         SessionState.SetBool(c_SessionVersionWarnedKey, true);
                         EditorUtility.DisplayDialog(
-                            $"{c_Name} · Unity 版本过低",
-                            $"Nova 框架要求 Unity 最低版本 {c_MinUnityVersion}，当前工程为 {Application.unityVersion}。\n\n" +
-                            "请升级 Unity 到不低于该版本后重试；在此之前引导器不会执行任何操作。",
+                            $"{c_Name} · Unity 版本不受支持",
+                            $"Nova 框架仅支持 Unity 6000.4.x（最低 {c_MinUnityVersion}），当前工程为 {Application.unityVersion}。\n\n" +
+                            "更高的 Unity 次版本存在 HybridCLR 兼容问题。请使用支持范围内的版本后重试；在此之前引导器不会执行任何操作。",
                             "我知道了");
-                        Debug.LogWarning($"[{c_Name}] Unity 版本过低（当前 {Application.unityVersion}，要求 ≥ {c_MinUnityVersion}），引导已跳过。");
+                        Debug.LogWarning($"[{c_Name}] Unity 版本不受支持（当前 {Application.unityVersion}，仅支持 6000.4.x 且最低 {c_MinUnityVersion}；更高次版本存在 HybridCLR 兼容问题），引导已跳过。");
                     }
                     return;
                 }
@@ -462,14 +466,16 @@ namespace NovaBootstrap
         /// <summary>工程根目录（Assets 的父级）。</summary>
         private static string ProjectRoot => Directory.GetParent(Application.dataPath).FullName;
 
-        /// <summary>当前 Unity 版本是否达到 Nova 要求的最低版本 c_MinUnityVersion（含发布阶段与修订号，含等于）。</summary>
+        /// <summary>当前 Unity 版本是否处于 6000.4.x 支持范围，含最低版本、不含下一次版本线的首个预发行版。</summary>
+        /// <returns>仅当前版本不低于最低版本且低于支持范围上界时返回 true；非法版本返回 false。</returns>
         private static bool IsUnityVersionSupported()
         {
-            return CompareUnityVersion(Application.unityVersion, c_MinUnityVersion) >= 0;
+            return CompareUnityVersion(Application.unityVersion, c_MinUnityVersion) >= 0 &&
+                   CompareUnityVersion(Application.unityVersion, c_MaxUnityVersionExclusive) < 0;
         }
 
         /// <summary>
-        /// 比较两个 Unity 版本字符串（形如 "6000.6.7f1"），先比较三段数值，再按 a、b、f、p 阶段及修订号比较。
+        /// 比较两个 Unity 版本字符串（形如 "6000.4.2f1"），先比较三段数值，再按 a、b、f、p 阶段及修订号比较。
         /// 同一 patch 的预发行版不能满足正式版门槛；无法解析的版本视为零版本。
         /// </summary>
         /// <param name="a">待比较的 Unity 完整版本。</param>

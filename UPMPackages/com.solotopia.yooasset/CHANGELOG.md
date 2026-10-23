@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-### Added
+## [1.2.1] - 2026-10-23
 
 ### Changed
 
-### Fixed
+- 对齐依赖版本：com.unity.scriptablebuildpipeline 2.6.1 → 4.0.1。
 
-### Breaking
+- Scriptable Build Pipeline 4.0.1 将序列化类型信息纳入内容 Hash；升级后 Bundle Hash 与增量复用结果可能变化，需重新核验资源构建。
 
 ## [1.2.0] - 2026-10-10
 

@@ -9,7 +9,7 @@
  ***************************************************************/
 
 using System.Collections.Generic;
-using HybridCLR.Editor;
+using global::HybridCLR.Editor;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditorInternal;

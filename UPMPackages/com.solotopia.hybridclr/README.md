@@ -1,7 +1,7 @@
 # HybridCLR
 
 > 包名：`com.solotopia.hybridclr`
-> 当前版本：`10.1.0`
+> 当前版本：`10.1.1`
 
 全平台 C# 原生热更新方案，零成本、高性能、低内存
 
@@ -11,9 +11,15 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.hybridclr": "10.1.0"
+  "com.solotopia.hybridclr": "10.1.1"
 }
 ```
+
+## 上游版本与构建边界
+
+- 当前 `Core/` 对应官方 `hybridclr_unity v8.15.0`；包根版本号属于 Nova 封装，二者分别管理。
+- 官方安装器根据当前 Unity 版本选择配对的 HybridCLR 与 `il2cpp_plus` 分支，不修改原厂匹配规则。
+- 本地工具链位于 `HybridCLRData/`；热更 DLL 与裁剪 AOT DLL 的输出根目录使用 `HybridCLRSettings` 中的实际配置。更换 Core 后应安装对应工具链，不能仅凭旧版本标记判断内核已更新。
 
 ## 维护
 

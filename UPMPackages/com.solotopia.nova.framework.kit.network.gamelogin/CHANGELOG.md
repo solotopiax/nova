@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-10-23
+
+### Changed
+
+- 对齐依赖版本：com.solotopia.nova.framework 0.7.0 → 0.7.3。
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
 ## [0.1.17] - 2026-10-23
 
 ### Changed

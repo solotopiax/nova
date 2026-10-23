@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-10-23
+
+### Changed
+
+- 对齐依赖版本：com.coplaydev.unity-mcp 10.2.0 → 10.3.0。
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
 ## [0.1.5] - 2026-10-23
 
 ### Added

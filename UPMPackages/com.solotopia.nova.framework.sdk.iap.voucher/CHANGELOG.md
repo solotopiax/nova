@@ -26,6 +26,10 @@
 
 - 最低依赖对齐至Nova Framework 0.7.0、IAP Core 0.2.0，与本轮发布的框架及 SDK 接口配套。
 
+- 对齐依赖版本：com.solotopia.nova.framework 0.7.0 → 0.7.3、com.solotopia.nova.framework.sdk.iap 0.2.0 → 0.2.2。
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
 ### Removed
 
 - 删除 DeductPlan、VoucherDeductMode、可变 VoucherBalanceSnapshot、旧查询、VoucherCodes/CoinUsages/AddOrder 请求字段及 tableId-keyed pending 存档。

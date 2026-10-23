@@ -119,7 +119,7 @@ namespace NovaFramework.Editor
             if (owner == null) throw new InvalidOperationException("所选目录的程序集不参与当前平台客户端编译，请选择客户端代码目录。");
             if (!owner.assemblyReferences.Any(reference => reference.name == "NovaFramework.Runtime"))
                 throw new InvalidOperationException("所选目录的程序集须引用 NovaFramework.Runtime。");
-            var hotAssemblies = new System.Collections.Generic.HashSet<string>(HybridCLR.Editor.SettingsUtil.HotUpdateAssemblyFilesIncludePreserved
+            var hotAssemblies = new System.Collections.Generic.HashSet<string>(global::HybridCLR.Editor.SettingsUtil.HotUpdateAssemblyFilesIncludePreserved
                 .Select(Path.GetFileNameWithoutExtension), StringComparer.Ordinal);
             var visited = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
             ValidateStartupAssembly(owner, hotAssemblies, visited);

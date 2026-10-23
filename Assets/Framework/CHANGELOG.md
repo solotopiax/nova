@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-10-23
+
+### Changed
+
+- 对齐 HybridCLR 8.15.0 的编辑器命名空间及本地输出配置；运行时程序集名和框架公开入口保持不变。
+
+- Unity 支持范围统一为 6000.4.x，最低 6000.4.2f1；同步安装入口与包级兼容说明。
+
+- 对齐依赖版本：com.unity.inputsystem 1.19.0 → 1.20.1、com.unity.scriptablebuildpipeline 3.0.3 → 4.0.1、com.solotopia.yooasset 1.2.0 → 1.2.1、com.solotopia.nova.framework.mcp 0.1.5 → 0.1.6。
+
+- 移除项目 Skill 契约中的 Unity 版本限制，由包级兼容说明和 NovaSpark 安装入口统一说明支持条件。
+
+### Fixed
+
+- 兼容 Unity 6000.4 的布局接口调用，保持 FlowLayoutGroup 与 VirtualVerticalLayoutGroup 在该版本下正常编译。
+
+### Important
+
+本版本仅支持 **Unity 6000.4.x**，最低版本为 **6000.4.2f1**。更高的 Unity 版本存在 HybridCLR 兼容问题，请使用符合上述条件的 Unity 编辑器；暂勿使用 Unity 6000.5 及更高版本。
+
 ## [0.7.2] - 2026-10-23
 
 ### Changed

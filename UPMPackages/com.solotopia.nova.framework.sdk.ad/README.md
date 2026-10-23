@@ -1,7 +1,7 @@
 # AdPlugin
 
 > 包名：`com.solotopia.nova.framework.sdk.ad`
-> 当前版本：`1.2.0`
+> 当前版本：`1.2.1`
 
 广告聚合插件基类，调度 Rewarded / Interstitial / Banner / AppOpen / Native 格式（具体支持由渠道实现决定，当前 MAX 支持前四种），内置多渠道调度、广告位状态机、重试与打点。
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.ad": "1.2.0"
+  "com.solotopia.nova.framework.sdk.ad": "1.2.1"
 }
 ```
 

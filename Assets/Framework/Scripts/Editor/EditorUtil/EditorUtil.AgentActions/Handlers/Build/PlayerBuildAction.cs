@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using HybridCLR.Editor;
+using global::HybridCLR.Editor;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.Build;

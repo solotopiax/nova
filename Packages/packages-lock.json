@@ -9,133 +9,133 @@
       }
     },
     "com.applovin.mediation.adapters.bidmachine.android": {
-      "version": "3070000.0.0",
+      "version": "3080001.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.bidmachine.ios": {
-      "version": "307000000.0.0",
+      "version": "308020000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.bytedance.android": {
-      "version": "801000300.0.0",
+      "version": "803000500.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.bytedance.ios": {
-      "version": "801000600.0.0",
+      "version": "803000900.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.chartboost.android": {
-      "version": "9110100.0.0",
+      "version": "9140101.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.chartboost.ios": {
-      "version": "9110000.0.0",
+      "version": "9140200.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.facebook.android": {
-      "version": "6200000.0.0",
+      "version": "6220001.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.facebook.ios": {
-      "version": "6210100.0.0",
+      "version": "6220100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.fyber.android": {
-      "version": "8040300.0.0",
+      "version": "8050000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.fyber.ios": {
-      "version": "8040600.0.0",
+      "version": "8050100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.google.android": {
-      "version": "25030000.0.0",
+      "version": "25050000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.google.ios": {
-      "version": "13040000.0.0",
+      "version": "13110000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.googleadmanager.android": {
-      "version": "25030000.0.0",
+      "version": "25050000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.googleadmanager.ios": {
-      "version": "13040000.0.0",
+      "version": "13110000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.inmobi.android": {
-      "version": "11030000.0.0",
+      "version": "11050100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.inmobi.ios": {
-      "version": "11030000.0.0",
+      "version": "11050000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.ironsource.android": {
-      "version": "904030000.0.0",
+      "version": "907000000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.ironsource.ios": {
-      "version": "904010000.0.0",
+      "version": "907000000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.line.android": {
-      "version": "300001010.0.0",
+      "version": "300001010.1.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -149,70 +149,70 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.mintegral.android": {
-      "version": "17016100.0.0",
+      "version": "17019100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.mintegral.ios": {
-      "version": "801040000.0.0",
+      "version": "801080000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.moloco.android": {
-      "version": "4110000.0.0",
+      "version": "4130001.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.moloco.ios": {
-      "version": "4090000.0.0",
+      "version": "4110101.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.unityads.android": {
-      "version": "4200101.0.0",
+      "version": "4210001.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.unityads.ios": {
-      "version": "4200001.0.0",
+      "version": "4210001.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.vungle.android": {
-      "version": "7070200.0.0",
+      "version": "7070901.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.vungle.ios": {
-      "version": "7070200.0.0",
+      "version": "7070800.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.yandex.android": {
-      "version": "8010000.0.0",
+      "version": "8060000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.ads": {
-      "version": "8.6.4",
+      "version": "8.6.6",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -275,7 +275,7 @@
       }
     },
     "com.google.external-dependency-manager": {
-      "version": "1.2.188",
+      "version": "1.2.190",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -324,17 +324,17 @@
       "dependencies": {
         "com.unity.textmeshpro": "3.0.9",
         "com.unity.nuget.newtonsoft-json": "3.2.2",
-        "com.unity.inputsystem": "1.19.0",
-        "com.unity.scriptablebuildpipeline": "3.0.3",
-        "com.solotopia.hybridclr": "10.1.0",
+        "com.unity.inputsystem": "1.20.1",
+        "com.unity.scriptablebuildpipeline": "4.0.1",
+        "com.solotopia.hybridclr": "10.1.1",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.sqlcipher4unity3d": "10.0.5",
         "com.solotopia.simplediskutils": "1.0.7",
         "com.solotopia.excelio": "1.0.6",
         "com.solotopia.nicevibrations": "10.0.6",
         "com.solotopia.luban": "10.1.0",
-        "com.solotopia.yooasset": "1.2.0",
-        "com.solotopia.nova.framework.mcp": "0.1.5"
+        "com.solotopia.yooasset": "1.2.1",
+        "com.solotopia.nova.framework.mcp": "0.1.6"
       }
     },
     "com.solotopia.nova.framework.kit.network.gamebind": {
@@ -342,11 +342,11 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
+        "com.solotopia.nova.framework": "0.7.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.1.0",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
-        "com.solotopia.nova.framework.kit.network.gamesave": "0.1.6"
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18",
+        "com.solotopia.nova.framework.kit.network.gamesave": "0.1.15"
       }
     },
     "com.solotopia.nova.framework.kit.network.gamelogin": {
@@ -354,7 +354,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
+        "com.solotopia.nova.framework": "0.7.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.1.0"
       }
@@ -364,10 +364,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
+        "com.solotopia.nova.framework": "0.7.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.1.0",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
       }
     },
     "com.solotopia.nova.framework.mcp": {
@@ -375,7 +375,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.coplaydev.unity-mcp": "10.2.0",
+        "com.coplaydev.unity-mcp": "10.3.0",
         "com.unity.nuget.newtonsoft-json": "3.2.2"
       }
     },
@@ -384,7 +384,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
+        "com.solotopia.nova.framework": "0.7.3",
         "com.unity.nuget.newtonsoft-json": "3.2.2"
       }
     },
@@ -393,7 +393,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0"
+        "com.solotopia.nova.framework": "0.7.3"
       }
     },
     "com.solotopia.nova.framework.sdk.aihelp": {
@@ -401,7 +401,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0"
+        "com.solotopia.nova.framework": "0.7.3"
       }
     },
     "com.solotopia.nova.framework.sdk.applesignin": {
@@ -409,9 +409,9 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
-        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18",
+        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.9"
       }
     },
     "com.solotopia.nova.framework.sdk.appsflyer": {
@@ -419,9 +419,9 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.google.external-dependency-manager": "1.2.186",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.google.external-dependency-manager": "1.2.190",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
       }
     },
     "com.solotopia.nova.framework.sdk.datamaster.abtest": {
@@ -429,10 +429,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.unity.collections": "2.4.3",
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.unity.collections": "2.7.1",
         "com.starlus.sdk.datamaster": "1.0.2",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
       }
     },
     "com.solotopia.nova.framework.sdk.facebook": {
@@ -440,10 +440,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.google.external-dependency-manager": "1.2.186",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
-        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.google.external-dependency-manager": "1.2.190",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18",
+        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.9"
       }
     },
     "com.solotopia.nova.framework.sdk.firebase": {
@@ -451,9 +451,9 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.google.external-dependency-manager": "1.2.186",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.google.external-dependency-manager": "1.2.190",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
       }
     },
     "com.solotopia.nova.framework.sdk.googlesignin": {
@@ -461,10 +461,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.google.external-dependency-manager": "1.2.186",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
-        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.google.external-dependency-manager": "1.2.190",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18",
+        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.9"
       }
     },
     "com.solotopia.nova.framework.sdk.iap": {
@@ -472,9 +472,9 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
+        "com.solotopia.nova.framework": "0.7.3",
         "com.solotopia.unitask": "10.0.6",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
       }
     },
     "com.solotopia.nova.framework.sdk.iap.mobile": {
@@ -482,10 +482,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.2.0",
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.solotopia.nova.framework.sdk.iap": "0.2.2",
         "com.solotopia.unitask": "10.0.6",
-        "com.unity.purchasing": "5.3.1"
+        "com.unity.purchasing": "5.4.4"
       }
     },
     "com.solotopia.nova.framework.sdk.iap.thirdpay": {
@@ -494,10 +494,10 @@
       "source": "local",
       "dependencies": {
         "com.onevcat.uniwebview": "5.11.1",
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.2.0",
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.solotopia.nova.framework.sdk.iap": "0.2.2",
         "com.solotopia.unitask": "10.0.6",
-        "com.unity.purchasing": "5.3.1"
+        "com.unity.purchasing": "5.4.4"
       }
     },
     "com.solotopia.nova.framework.sdk.iap.voucher": {
@@ -505,8 +505,8 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.2.0",
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.solotopia.nova.framework.sdk.iap": "0.2.2",
         "com.solotopia.unitask": "10.0.6"
       }
     },
@@ -515,38 +515,38 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework.sdk.ad": "1.2.0",
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.applovin.mediation.ads": "8.6.4",
-        "com.applovin.mediation.adapters.bidmachine.android": "3070000.0.0",
-        "com.applovin.mediation.adapters.bidmachine.ios": "307000000.0.0",
-        "com.applovin.mediation.adapters.bytedance.android": "801000300.0.0",
-        "com.applovin.mediation.adapters.bytedance.ios": "801000600.0.0",
-        "com.applovin.mediation.adapters.chartboost.android": "9110100.0.0",
-        "com.applovin.mediation.adapters.chartboost.ios": "9110000.0.0",
-        "com.applovin.mediation.adapters.facebook.android": "6200000.0.0",
-        "com.applovin.mediation.adapters.facebook.ios": "6210100.0.0",
-        "com.applovin.mediation.adapters.fyber.android": "8040300.0.0",
-        "com.applovin.mediation.adapters.fyber.ios": "8040600.0.0",
-        "com.applovin.mediation.adapters.google.android": "25030000.0.0",
-        "com.applovin.mediation.adapters.google.ios": "13040000.0.0",
-        "com.applovin.mediation.adapters.googleadmanager.android": "25030000.0.0",
-        "com.applovin.mediation.adapters.googleadmanager.ios": "13040000.0.0",
-        "com.applovin.mediation.adapters.inmobi.android": "11030000.0.0",
-        "com.applovin.mediation.adapters.inmobi.ios": "11030000.0.0",
-        "com.applovin.mediation.adapters.ironsource.android": "904030000.0.0",
-        "com.applovin.mediation.adapters.ironsource.ios": "904010000.0.0",
-        "com.applovin.mediation.adapters.mintegral.android": "17016100.0.0",
-        "com.applovin.mediation.adapters.mintegral.ios": "801040000.0.0",
-        "com.applovin.mediation.adapters.moloco.android": "4110000.0.0",
-        "com.applovin.mediation.adapters.moloco.ios": "4090000.0.0",
-        "com.applovin.mediation.adapters.unityads.android": "4200101.0.0",
-        "com.applovin.mediation.adapters.unityads.ios": "4200001.0.0",
-        "com.applovin.mediation.adapters.vungle.android": "7070200.0.0",
-        "com.applovin.mediation.adapters.vungle.ios": "7070200.0.0",
-        "com.applovin.mediation.adapters.yandex.android": "8010000.0.0",
+        "com.solotopia.nova.framework.sdk.ad": "1.2.1",
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.applovin.mediation.ads": "8.6.6",
+        "com.applovin.mediation.adapters.bidmachine.android": "3080001.0.0",
+        "com.applovin.mediation.adapters.bidmachine.ios": "308020000.0.0",
+        "com.applovin.mediation.adapters.bytedance.android": "803000500.0.0",
+        "com.applovin.mediation.adapters.bytedance.ios": "803000900.0.0",
+        "com.applovin.mediation.adapters.chartboost.android": "9140101.0.0",
+        "com.applovin.mediation.adapters.chartboost.ios": "9140200.0.0",
+        "com.applovin.mediation.adapters.facebook.android": "6220001.0.0",
+        "com.applovin.mediation.adapters.facebook.ios": "6220100.0.0",
+        "com.applovin.mediation.adapters.fyber.android": "8050000.0.0",
+        "com.applovin.mediation.adapters.fyber.ios": "8050100.0.0",
+        "com.applovin.mediation.adapters.google.android": "25050000.0.0",
+        "com.applovin.mediation.adapters.google.ios": "13110000.0.0",
+        "com.applovin.mediation.adapters.googleadmanager.android": "25050000.0.0",
+        "com.applovin.mediation.adapters.googleadmanager.ios": "13110000.0.0",
+        "com.applovin.mediation.adapters.inmobi.android": "11050100.0.0",
+        "com.applovin.mediation.adapters.inmobi.ios": "11050000.0.0",
+        "com.applovin.mediation.adapters.ironsource.android": "907000000.0.0",
+        "com.applovin.mediation.adapters.ironsource.ios": "907000000.0.0",
+        "com.applovin.mediation.adapters.mintegral.android": "17019100.0.0",
+        "com.applovin.mediation.adapters.mintegral.ios": "801080000.0.0",
+        "com.applovin.mediation.adapters.moloco.android": "4130001.0.0",
+        "com.applovin.mediation.adapters.moloco.ios": "4110101.0.0",
+        "com.applovin.mediation.adapters.unityads.android": "4210001.0.0",
+        "com.applovin.mediation.adapters.unityads.ios": "4210001.0.0",
+        "com.applovin.mediation.adapters.vungle.android": "7070901.0.0",
+        "com.applovin.mediation.adapters.vungle.ios": "7070800.0.0",
+        "com.applovin.mediation.adapters.yandex.android": "8060000.0.0",
         "com.applovin.mediation.adapters.line.ios": "3010102.0.0",
-        "com.applovin.mediation.adapters.line.android": "300001010.0.0"
+        "com.applovin.mediation.adapters.line.android": "300001010.1.0"
       }
     },
     "com.solotopia.nova.framework.sdk.tga": {
@@ -554,8 +554,8 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
       }
     },
     "com.solotopia.nova.framework.sdk.wechat.minigame": {
@@ -563,8 +563,8 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.7.0",
-        "com.solotopia.yooasset": "1.2.0"
+        "com.solotopia.nova.framework": "0.7.3",
+        "com.solotopia.yooasset": "1.2.1"
       }
     },
     "com.solotopia.simplediskutils": {
@@ -596,7 +596,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.scriptablebuildpipeline": "2.6.1",
+        "com.unity.scriptablebuildpipeline": "4.0.1",
         "com.unity.modules.assetbundle": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
         "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
@@ -611,11 +611,11 @@
       }
     },
     "com.unity.2d.animation": {
-      "version": "16.0.1",
+      "version": "14.0.4",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.2d.common": "15.0.0",
+        "com.unity.2d.common": "13.0.2",
         "com.unity.2d.sprite": "1.0.0",
         "com.unity.collections": "2.4.3",
         "com.unity.modules.animation": "1.0.0",
@@ -624,11 +624,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.2d.aseprite": {
-      "version": "6.0.0",
+      "version": "4.0.2",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.2d.common": "15.0.0",
+        "com.unity.2d.common": "13.0.2",
         "com.unity.2d.sprite": "1.0.0",
         "com.unity.2d.tilemap": "1.0.0",
         "com.unity.mathematics": "1.2.6",
@@ -637,7 +637,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.2d.common": {
-      "version": "15.0.0",
+      "version": "13.0.2",
       "depth": 2,
       "source": "registry",
       "dependencies": {
@@ -646,12 +646,13 @@
         "com.unity.collections": "2.4.3",
         "com.unity.mathematics": "1.1.0",
         "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0",
         "com.unity.modules.imageconversion": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
     "com.unity.2d.pixel-perfect": {
-      "version": "6.0.0",
+      "version": "5.1.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -660,11 +661,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.2d.psdimporter": {
-      "version": "15.0.1",
+      "version": "13.0.3",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.2d.common": "15.0.0",
+        "com.unity.2d.common": "13.0.2",
         "com.unity.2d.sprite": "1.0.0",
         "com.unity.2d.tilemap": "1.0.0"
       },
@@ -677,11 +678,11 @@
       "dependencies": {}
     },
     "com.unity.2d.spriteshape": {
-      "version": "16.0.0",
+      "version": "14.0.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.2d.common": "15.0.0",
+        "com.unity.2d.common": "13.0.1",
         "com.unity.mathematics": "1.1.0",
         "com.unity.modules.physics2d": "1.0.0"
       },
@@ -697,7 +698,7 @@
       }
     },
     "com.unity.2d.tilemap.extras": {
-      "version": "9.0.1",
+      "version": "7.0.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -708,42 +709,48 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.2d.tooling": {
-      "version": "4.0.1",
+      "version": "2.0.2",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.2d.common": "15.0.0"
+        "com.unity.2d.common": "13.0.2",
+        "com.unity.modules.uielements": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
     "com.unity.burst": {
-      "version": "2.0.0",
+      "version": "1.8.29",
       "depth": 2,
-      "source": "builtin",
-      "dependencies": {}
+      "source": "registry",
+      "dependencies": {
+        "com.unity.mathematics": "1.2.1",
+        "com.unity.modules.jsonserialize": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.cinemachine": {
-      "version": "6.6.0",
+      "version": "2.10.7",
       "depth": 0,
-      "source": "builtin",
+      "source": "registry",
       "dependencies": {
-        "com.unity.splines": "2.8.4",
-        "com.unity.modules.imgui": "1.0.0"
-      }
+        "com.unity.test-framework": "1.1.31"
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.collections": {
-      "version": "6.6.0",
+      "version": "6.4.0",
       "depth": 1,
       "source": "builtin",
       "dependencies": {
-        "com.unity.burst": "1.8.25",
-        "com.unity.nuget.mono-cecil": "1.11.6",
+        "com.unity.burst": "1.8.23",
+        "com.unity.mathematics": "1.3.2",
+        "com.unity.nuget.mono-cecil": "1.11.5",
         "com.unity.test-framework": "1.4.6",
-        "com.unity.test-framework.performance": "3.2.0"
+        "com.unity.test-framework.performance": "3.0.3"
       }
     },
     "com.unity.ext.nunit": {
-      "version": "2.1.0",
+      "version": "2.0.5",
       "depth": 1,
       "source": "builtin",
       "dependencies": {}
@@ -753,22 +760,16 @@
       "depth": 0,
       "source": "builtin",
       "dependencies": {
-        "com.unity.2d.animation": "16.0.1",
-        "com.unity.2d.pixel-perfect": "6.0.0",
-        "com.unity.2d.psdimporter": "15.0.1",
+        "com.unity.2d.animation": "14.0.4",
+        "com.unity.2d.pixel-perfect": "5.1.1",
+        "com.unity.2d.psdimporter": "13.0.3",
         "com.unity.2d.sprite": "1.0.0",
-        "com.unity.2d.spriteshape": "16.0.0",
+        "com.unity.2d.spriteshape": "14.0.1",
         "com.unity.2d.tilemap": "1.0.0",
-        "com.unity.2d.tilemap.extras": "9.0.1",
-        "com.unity.2d.aseprite": "6.0.0",
-        "com.unity.2d.tooling": "4.0.1"
+        "com.unity.2d.tilemap.extras": "7.0.1",
+        "com.unity.2d.aseprite": "4.0.2",
+        "com.unity.2d.tooling": "2.0.2"
       }
-    },
-    "com.unity.graph-authoring": {
-      "version": "1.0.0",
-      "depth": 2,
-      "source": "builtin",
-      "dependencies": {}
     },
     "com.unity.ide.rider": {
       "version": "3.1.0",
@@ -796,13 +797,14 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.mathematics": {
-      "version": "1.4.0",
+      "version": "1.3.3",
       "depth": 2,
-      "source": "builtin",
-      "dependencies": {}
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
     },
     "com.unity.multiplayer.center": {
-      "version": "2.1.0",
+      "version": "1.0.1",
       "depth": 0,
       "source": "builtin",
       "dependencies": {
@@ -835,39 +837,35 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.unity.profiling.core": {
-      "version": "1.0.3",
-      "depth": 3,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
     "com.unity.purchasing": {
-      "version": "5.3.1",
-      "depth": 1,
+      "version": "5.4.4",
+      "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.ugui": "1.0.0",
-        "com.unity.services.core": "1.14.0",
+        "com.unity.services.core": "1.18.0",
         "com.unity.modules.androidjni": "1.0.0",
+        "com.unity.services.deployment": "1.7.2",
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
     "com.unity.render-pipelines.core": {
-      "version": "17.6.0",
+      "version": "17.4.0",
       "depth": 2,
       "source": "builtin",
       "dependencies": {
         "com.unity.burst": "1.8.14",
+        "com.unity.mathematics": "1.3.2",
+        "com.unity.ugui": "2.0.0",
         "com.unity.collections": "2.4.3",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.profiling.core": "1.0.3"
+        "com.unity.modules.terrain": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0"
       }
     },
     "com.unity.scriptablebuildpipeline": {
-      "version": "3.0.3",
+      "version": "4.0.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -877,7 +875,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.searcher": {
-      "version": "4.9.5",
+      "version": "4.9.4",
       "depth": 2,
       "source": "registry",
       "dependencies": {},
@@ -894,6 +892,23 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.services.deployment": {
+      "version": "1.7.2",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.15.1",
+        "com.unity.services.deployment.api": "1.1.2"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.services.deployment.api": {
+      "version": "1.1.3",
+      "depth": 2,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.settings-manager": {
       "version": "2.1.1",
       "depth": 1,
@@ -902,44 +917,33 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.shadergraph": {
-      "version": "17.6.0",
+      "version": "17.4.0",
       "depth": 1,
       "source": "builtin",
       "dependencies": {
-        "com.unity.render-pipelines.core": "17.6.0",
-        "com.unity.searcher": "4.9.5",
-        "com.unity.graph-authoring": "1.0.0"
+        "com.unity.render-pipelines.core": "17.4.0",
+        "com.unity.searcher": "4.9.3"
       }
     },
-    "com.unity.splines": {
-      "version": "2.9.1",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.mathematics": "1.2.1",
-        "com.unity.modules.imgui": "1.0.0",
-        "com.unity.settings-manager": "1.0.3"
-      },
-      "url": "https://packages.unity.com"
-    },
     "com.unity.test-framework": {
-      "version": "1.8.0",
+      "version": "1.6.0",
       "depth": 0,
       "source": "builtin",
       "dependencies": {
-        "com.unity.ext.nunit": "2.1.0",
+        "com.unity.ext.nunit": "2.0.3",
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
       }
     },
     "com.unity.test-framework.performance": {
-      "version": "6.6.0",
+      "version": "3.4.0",
       "depth": 2,
-      "source": "builtin",
+      "source": "registry",
       "dependencies": {
         "com.unity.test-framework": "1.1.33",
         "com.unity.modules.jsonserialize": "1.0.0"
-      }
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
       "version": "5.0.0",
@@ -950,26 +954,24 @@
       }
     },
     "com.unity.timeline": {
-      "version": "6.6.0",
+      "version": "1.8.12",
       "depth": 0,
-      "source": "builtin",
+      "source": "registry",
       "dependencies": {
+        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.director": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
-        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.particlesystem": "1.0.0"
-      }
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.ugui": {
-      "version": "2.6.0",
+      "version": "2.0.0",
       "depth": 0,
       "source": "builtin",
       "dependencies": {
         "com.unity.modules.ui": "1.0.0",
-        "com.unity.modules.imgui": "1.0.0",
-        "com.unity.modules.audio": "1.0.0",
-        "com.unity.modules.physics2d": "1.0.0",
-        "com.unity.modules.physics": "1.0.0"
+        "com.unity.modules.imgui": "1.0.0"
       }
     },
     "com.unity.visualscripting": {
@@ -1006,9 +1008,7 @@
       "version": "1.0.0",
       "depth": 0,
       "source": "builtin",
-      "dependencies": {
-        "com.unity.modules.jsonserialize": "1.0.0"
-      }
+      "dependencies": {}
     },
     "com.unity.modules.animation": {
       "version": "1.0.0",
@@ -1085,14 +1085,6 @@
       "version": "1.0.0",
       "depth": 0,
       "source": "builtin",
-      "dependencies": {
-        "com.unity.modules.physicscore2d": "1.0.0"
-      }
-    },
-    "com.unity.modules.physicscore2d": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "builtin",
       "dependencies": {}
     },
     "com.unity.modules.screencapture": {
@@ -1126,26 +1118,12 @@
         "com.unity.modules.terrain": "1.0.0"
       }
     },
-    "com.unity.modules.tetgen": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "builtin",
-      "dependencies": {}
-    },
     "com.unity.modules.tilemap": {
       "version": "1.0.0",
       "depth": 0,
       "source": "builtin",
       "dependencies": {
         "com.unity.modules.physics2d": "1.0.0"
-      }
-    },
-    "com.unity.modules.timelinefoundation": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "builtin",
-      "dependencies": {
-        "com.unity.modules.jsonserialize": "1.0.0"
       }
     },
     "com.unity.modules.ui": {
@@ -1163,8 +1141,7 @@
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.hierarchycore": "1.0.0",
-        "com.unity.modules.physics": "1.0.0",
-        "com.unity.modules.animation": "1.0.0"
+        "com.unity.modules.physics": "1.0.0"
       }
     },
     "com.unity.modules.umbra": {

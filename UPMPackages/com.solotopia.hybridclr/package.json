@@ -1,8 +1,8 @@
 {
     "name": "com.solotopia.hybridclr",
-    "version": "10.1.0",
+    "version": "10.1.1",
     "license": "SEE LICENSE IN LICENSE.md",
-    "coreVersion": "v6000.3.x-8.13.0",
+    "coreVersion": "v8.15.0",
     "displayName": "HybridCLR",
     "description": "全平台 C# 原生热更新方案，零成本、高性能、低内存",
     "unity": "6000.3",

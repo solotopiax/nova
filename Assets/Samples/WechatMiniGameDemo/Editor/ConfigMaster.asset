@@ -431,12 +431,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -491,12 +493,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -551,12 +555,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -611,12 +617,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -671,12 +679,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -731,12 +741,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -791,12 +803,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -851,12 +865,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -911,12 +927,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -971,12 +989,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1031,12 +1051,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1091,12 +1113,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1151,12 +1175,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1211,12 +1237,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1271,12 +1299,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1331,12 +1361,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1391,12 +1423,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1451,12 +1485,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:

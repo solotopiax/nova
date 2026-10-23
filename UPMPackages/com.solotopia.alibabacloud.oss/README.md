@@ -21,7 +21,7 @@ GitHub 提交是本包的版本真相源。完整、未修改的 tracked 源码�
 
 ## 运行环境
 
-支持 Nova 基线 Unity `6000.6.7f1` 及以上的 Editor。此包不支持、也不需要 Player / IL2CPP / WebGL 运行时接入。
+支持 Nova 基线 Unity `6000.4.x`（最低 `6000.4.2f1`）的 Editor。此包不支持、也不需要 Player / IL2CPP / WebGL 运行时接入。
 
 ## 安全要求
 

@@ -6,12 +6,12 @@
     "displayName": "Nova Framework - SDK - AdMob",
     "description": "Google AdMob 广告渠道插件，提供广告展示服务",
     "category": "Runtime",
-    "unity": "6000.6",
-    "unityRelease": "7f1",
+    "unity": "6000.4",
+    "unityRelease": "2f1",
     "keywords": ["nova", "sdk", "admob", "advertisement", "ads"],
     "author": { "name": "Solotopia" },
     "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0",
-    "com.solotopia.nova.framework.sdk.ad": "1.2.0"
+    "com.solotopia.nova.framework": "0.7.3",
+    "com.solotopia.nova.framework.sdk.ad": "1.2.1"
     }
 }

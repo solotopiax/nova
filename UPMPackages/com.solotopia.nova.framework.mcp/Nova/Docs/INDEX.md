@@ -20,7 +20,7 @@
 
 ## 安装前置
 
-当前完整安装入口是 NovaSpark。它先向消费工程 `Packages/manifest.json` 写入 OpenUPM registry 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework；UPM 依赖链随后自动解析 `Framework -> 本包 -> com.coplaydev.unity-mcp@10.2.0`。Unity MCP 不需要成为项目顶层 Git 依赖；绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 用于开发态验证，不改变对外包的默认选型。
+当前完整安装入口是 NovaSpark。它先向消费工程 `Packages/manifest.json` 写入 OpenUPM registry 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework；UPM 依赖链随后自动解析 `Framework -> 本包 -> com.coplaydev.unity-mcp@10.3.0`。Unity MCP 不需要成为项目顶层 Git 依赖；绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 用于开发态验证，不改变对外包的默认选型。
 
 安装完成不等于外部 Agent 已经连接：本包不自动启动 Server、不占端口、不修改外部 Agent 配置。首次连接或升级后，已有会话若未刷新 Tool 列表，需要重连 MCP 或开启新会话。
 

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-23
+
+### Changed
+
+- 对齐依赖版本：com.solotopia.nova.framework 0.7.0 → 0.7.3、com.solotopia.nova.framework.sdk.iap 0.2.0 → 0.2.2、com.unity.purchasing 5.3.1 → 5.4.4。
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
+- Unity Purchasing 5.4.4 的 Android 原生依赖升级至 Google Play Billing 9.0.0；ThirdPay 地区查询桥保持参数版 pending-purchase 初始化接口。
+
 ## [0.1.1] - 2026-10-23
 
 ### Fixed

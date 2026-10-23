@@ -1,11 +1,11 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.2.0`
+> 当前版本：`0.2.1`
 
 MAX 广告聚合插件，提供广告展示服务。
 
-本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads@8.6.4` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 `package.json` 统一声明为 AppLovin 官方 UPM 依赖。
+本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads@8.6.6` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 `package.json` 统一声明为 AppLovin 官方 UPM 依赖。
 
 Unity Ads Android adapter 固定为 `4200101.0.0`（AppLovin adapter `4.20.1.1`、Unity Ads SDK `4.20.1`），iOS adapter 固定为 `4200001.0.0`（`4.20.0.1`、Unity Ads SDK `4.20.0`），LINE iOS adapter 固定为 `3010102.0.0`（`3.1.1.2`、LINE SDK `3.1.1`）。Android 官方修复包移除了错误的 iOS SPM 版本占位符；两个 iOS 官方包使用真实三段 tag，解决 Xcode 读取旧四段版本时崩溃。
 
@@ -20,12 +20,12 @@ Android 构建时，若 Unity 为 `6000.4.4f1` 及以上且 AppLovin Integration
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.max": "0.2.0"
+    "com.solotopia.nova.framework.sdk.max": "0.2.1"
   }
 }
 ```
 
-本包固定依赖 Ad `1.2.0`、Framework `0.7.0` 和 MAX `8.6.4`，最低 Unity `6000.6.7f1`；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
+本包固定依赖 Ad `1.2.1`、Framework `0.7.3` 和 MAX `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
 
 Nova PlugPals 会把本包 `nova.scopedRegistries` 写到工程顶层 manifest；通过 Unity 原生 Package Manager 或直接改 manifest 安装时，需要合并以下 registry，保留项目已有条目：
 
@@ -74,7 +74,7 @@ Nova PlugPals 会把本包 `nova.scopedRegistries` 写到工程顶层 manifest�
 
 旧单ID列表自然成为单ID组，首次仍并发；失败后不再立即重试N次，按统一间隔数组循环等待，成功后从第一档重新开始。旧逐广告重试次数、间隔访问器和槽位字段已删除。字段改名保留Unity资产迁移，旧PlacementIds访问器返回真实展开ID。运行时初始化检查重复 ID 与语法，无效格式不注册；当前构建处理器没有该门禁，原始组表达式不会送入 MAX。
 
-加载/展示结果先快照再回主线程推进；收益纯打点即时上报。业务取消只结束等待，全屏占用到匹配hidden/displayFailed或Dispose才结束。MAX Show若内部静默拒绝，不以超时证明未在展示或解除占用，不创建未displayed的诊断等待。MAX没有request token或Cancel Load，Nova仅保证主动Load组内串行。MAX8.6.4 iOS RV expiry事件名尾空格属于原厂限制，不在本包改厂商源码。
+加载/展示结果先快照再回主线程推进；收益纯打点即时上报。业务取消只结束等待，全屏占用到匹配hidden/displayFailed或Dispose才结束。MAX Show若内部静默拒绝，不以超时证明未在展示或解除占用，不创建未displayed的诊断等待。MAX没有request token或Cancel Load，Nova仅保证主动Load组内串行。MAX 8.6.6 已修正 iOS RV expiry 事件名尾空格，设备回调仍需在目标工程验证。
 
 30 个已注册广告回调均以 `Log.Debug(LogTag.Max, ...)` 为首句，正文以格式名开头，不重复 MAX 前缀；实际原厂 Show 调用也有 Debug 日志。手动或默认业务请求仅记录准备请求、实际渠道请求与平台加载回调；展示记录准备展示、原厂 Show 与平台回调，广告组新轮仅在展示后补量（`reason=AutoRefill`）和自动重试（`reason=Retry`）时记录，详见[主文档](./Nova/Doc/MaxAdPlugin.md#本地调用与回调日志)。Warning / Error 异常诊断保留，`LogEnable` 只控制原厂详细日志。全屏终态先取出并清空对应 TCS 与真实 ID，再通知聚合层并在 finally 完成本次等待，避免重入影响新的展示。
 

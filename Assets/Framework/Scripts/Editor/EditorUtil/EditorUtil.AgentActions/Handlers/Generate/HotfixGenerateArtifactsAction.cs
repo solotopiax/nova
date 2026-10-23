@@ -14,8 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
-using HybridCLR.Editor;
-using HybridCLR.Editor.Installer;
+using global::HybridCLR.Editor;
+using global::HybridCLR.Editor.Installer;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -684,7 +684,7 @@ namespace NovaFramework.Editor
             {
                 SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target), SettingsUtil.GetAssembliesPostIl2CppStripDir(target),
                 SettingsUtil.GeneratedCppDir, genericRaw, linkXml,
-                Path.Combine(SettingsUtil.HybridCLRDataDir, "StrippedAOTDllsTempProj", target.ToString()), SettingsUtil.Il2CppBuildCacheDir,
+                Path.Combine(SettingsUtil.HybridCLRDataDir, "StrippedAOTDllsTempProj", target.ToString()), Path.Combine(SettingsUtil.ProjectDir, "Library/Il2cppBuildCache"),
             };
             var resolved = new string[values.Length];
             for (int index = 0; index < values.Length; index++)
@@ -720,9 +720,9 @@ namespace NovaFramework.Editor
         /// <returns>聚合设置文本的摘要；仅读取和序列化设置，不保存配置文件。</returns>
         private static string ComputeSettingsHash(BuildTarget target, OutputSet outputs)
         {
+            // 完整设置 JSON 绑定实际有效的 AOT 列表及输出配置。
             string value = target + "\n" + EditorUserBuildSettings.development + "\n" +
                            string.Join("\n", SettingsUtil.HotUpdateAssemblyFilesIncludePreserved ?? new List<string>()) + "\n" +
-                           string.Join("\n", SettingsUtil.AOTAssemblyNames ?? new List<string>()) + "\n" +
                            Util.Json.Serialize(outputs) + "\n" + EditorJsonUtility.ToJson(SettingsUtil.HybridCLRSettings, false);
             return GenerateActionCommon.ComputeTextHash(value);
         }

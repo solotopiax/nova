@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
-using HybridCLR.Editor;
+using global::HybridCLR.Editor;
 using NovaFramework.Runtime;
 using UnityEditor;
 using Path = System.IO.Path;

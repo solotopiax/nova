@@ -3,8 +3,7 @@
   "id": "nova-project-ui-create-view",
   "kind": "operation",
   "compatibility": {
-    "framework": ">=0.6.10",
-    "unity": ">=6000.6.7f1"
+    "framework": ">=0.6.10"
   },
   "requires": [],
   "actionAdapters": [

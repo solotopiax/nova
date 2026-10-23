@@ -13,7 +13,7 @@ using Path = System.IO.Path;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using HybridCLR.Editor;
+using global::HybridCLR.Editor;
 using Newtonsoft.Json;
 using NovaFramework.Runtime;
 using UnityEditor;

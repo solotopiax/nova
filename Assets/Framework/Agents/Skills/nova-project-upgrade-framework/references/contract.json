@@ -4,7 +4,6 @@
   "kind": "operation",
   "compatibility": {
     "framework": ">=0.6.15",
-    "unity": ">=6000.6.7f1",
     "externalUpmHost": "a Framework-external controlled UPM client with live single-package upgrade and Resolve capabilities"
   },
   "requires": [],

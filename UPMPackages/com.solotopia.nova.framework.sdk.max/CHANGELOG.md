@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-23
+
+### Changed
+
+- 依赖对齐至 Ad 1.2.1、Framework 0.7.3、MAX 8.6.6，并更新已声明的 mediation adapters 至官方 registry 最新正式版本。
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
+### Fixed
+
+- MAX 8.6.6 原厂修正 iOS 奖励重载事件名的尾空格，消除其与 C# 回调匹配不一致的问题。
+
 ## [0.2.0] - 2026-10-23
 
 ### Fixed

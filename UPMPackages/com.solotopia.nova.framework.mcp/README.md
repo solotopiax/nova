@@ -2,9 +2,9 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.5`
+> 当前版本：`0.1.6`
 >
-> 当前默认 Provider：`com.coplaydev.unity-mcp@10.2.0`
+> 当前默认 Provider：`com.coplaydev.unity-mcp@10.3.0`
 
 Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `nova_project_action` Tool 连接到受控 `EditorUtil.AgentActions`。本包只负责中立契约、传输准入与结果裁剪，不复制 Config、HybridCLR、YooAsset、Build 或 UPM 的领域实现。
 
@@ -19,10 +19,10 @@ Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `no
 
 消费项目只安装或升级 `com.solotopia.nova.framework`；UPM 应沿 Framework 的显性依赖自动解析本包，再解析：
 
-- `com.coplaydev.unity-mcp@10.2.0`
+- `com.coplaydev.unity-mcp@10.3.0`
 - `com.unity.nuget.newtonsoft-json@3.2.2`
 
-`com.coplaydev.unity-mcp@10.2.0` 由 OpenUPM 提供。NovaSpark 会先在消费工程 `Packages/manifest.json` 的 OpenUPM scoped registry 中补齐精确 scope `com.coplaydev.unity-mcp`，再写入 Framework；本包的 semver 依赖随后由 UPM 自动解析，不需要把 Unity MCP 作为项目顶层 Git 依赖。绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 做开发验证；它不会改变对外 UPM 包当前默认适配 Unity MCP 的事实。
+`com.coplaydev.unity-mcp@10.3.0` 由 OpenUPM 提供。NovaSpark 会先在消费工程 `Packages/manifest.json` 的 OpenUPM scoped registry 中补齐精确 scope `com.coplaydev.unity-mcp`，再写入 Framework；本包的 semver 依赖随后由 UPM 自动解析，不需要把 Unity MCP 作为项目顶层 Git 依赖。绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 做开发验证；它不会改变对外 UPM 包当前默认适配 Unity MCP 的事实。
 
 `nova_project_action` 声明 `AutoRegister=true`。本包不会自动启动 Server、占用端口或修改外部 Agent 配置。已有 Agent 会话如果缓存了 Tool 列表，安装或升级后需要重连 MCP 或开启新会话。
 

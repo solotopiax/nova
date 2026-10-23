@@ -14,7 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using HybridCLR.Editor;
+using global::HybridCLR.Editor;
 using UnityEditor;
 
 namespace NovaFramework.Editor

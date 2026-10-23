@@ -23,10 +23,11 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
+    ExtensionConfigsJson: '{}'
     PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
     InfoPlistUsageDescriptions: '{}'
   Platform: 1
-  Channel: 1
+  Channel: 2
   EnabledSDKConfigs: []
   EnabledKitConfigs: []
   HybridConfigs:

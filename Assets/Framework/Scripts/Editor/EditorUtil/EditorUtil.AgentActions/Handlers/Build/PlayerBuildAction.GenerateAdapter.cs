@@ -15,7 +15,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using HybridCLR.Editor;
+using global::HybridCLR.Editor;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.Build.Reporting;

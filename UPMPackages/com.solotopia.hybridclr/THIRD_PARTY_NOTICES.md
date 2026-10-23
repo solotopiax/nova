@@ -7,7 +7,7 @@
 ## Upstream components and licenses
 - `HybridCLR`
   - Upstream project: `https://github.com/focus-creative-games/hybridclr`
-  - Unity package source: `https://github.com/focus-creative-games/hybridclr_unity` tag `v8.13.0`
+  - Unity package source: `https://github.com/focus-creative-games/hybridclr_unity` tag `v8.15.0`
   - License: `MIT`
   - Corresponding content in this repo: `Core/**`
   - Bundled upstream license file: `Core/LICENSE`
@@ -16,6 +16,7 @@
 - `Nova/**`, the root `package.json`, `README.md`, `CHANGELOG.md`, and `LICENSE.md` are the Solotopia / Nova UPM packaging, integration notes, and adaptation layer.
 - These files do not override the original license boundary of `Core/**`.
 - `Core/Editor/SettingsUtil.cs` retains only the required package relocation adaptation: it resolves the Nova package name and nested `Core/Data~` path instead of the upstream package root.
+- `Core/Editor/Installer/InstallerController.cs` locally restores the published `MajorVersion` property and `GetMinCompatibleVersion(int)` overload with their original return values. The upstream v8.15.0 branch matching and private two-argument version query remain unchanged.
 
 ## Public distribution requirements
 - When distributing publicly, retain `Core/LICENSE` and this file.
@@ -34,7 +35,7 @@
 
 - `HybridCLR`
   - 上游项目：`https://github.com/focus-creative-games/hybridclr`
-  - Unity 包源码：`https://github.com/focus-creative-games/hybridclr_unity` 的 `v8.13.0` tag
+  - Unity 包源码：`https://github.com/focus-creative-games/hybridclr_unity` 的 `v8.15.0` tag
   - 许可证：`MIT`
   - 本仓库内对应内容：`Core/**`
   - 本仓库内许可文件：`Core/LICENSE`
@@ -44,6 +45,7 @@
 - `Nova/**`、包根 `package.json`、`README.md`、`CHANGELOG.md`、`LICENSE.md` 属于 Solotopia / Nova 的 UPM 封装、接入说明与适配层。
 - 这些文件不覆盖 `Core/**` 的原始许可证边界。
 - `Core/Editor/SettingsUtil.cs` 仅保留包迁移所需适配：将上游包根解析改为 Nova 包名与嵌套的 `Core/Data~` 路径。
+- `Core/Editor/Installer/InstallerController.cs` 本地恢复已发布的 `MajorVersion` 属性与 `GetMinCompatibleVersion(int)` 重载，并保留原返回值；不修改上游 v8.15.0 的分支匹配和私有双参版本查询逻辑。
 
 ## 公开分发要求
 

@@ -1,13 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.sdk.aihelp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "6.0.+",
   "displayName": "Nova Framework - SDK - AIHelp",
   "description": "Nova Framework 的 AIHelp 智能客服 / 帮助中心对接层，封装 AIHelpPlugin 由 SDKManager 编排。AIHelp Unity SDK 6.0 随包 bundle。",
   "category": "Runtime",
-  "unity": "6000.6",
-  "unityRelease": "7f1",
+  "unity": "6000.4",
+  "unityRelease": "2f1",
   "keywords": [
     "nova",
     "sdk",
@@ -22,6 +22,6 @@
     "NovaFramework.SDK.AIHelp.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0"
+    "com.solotopia.nova.framework": "0.7.3"
   }
 }

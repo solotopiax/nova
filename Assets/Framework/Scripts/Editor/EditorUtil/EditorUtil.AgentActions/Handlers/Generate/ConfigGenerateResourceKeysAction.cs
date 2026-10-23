@@ -357,7 +357,7 @@ namespace NovaFramework.Editor
                 if (!string.IsNullOrEmpty(definition) && File.Exists(definition)) parts.Add(GenerateActionCommon.ComputeFileHash(definition, CancellationToken.None));
                 parts.Add("--assembly--");
             }
-            parts.AddRange(HybridCLR.Editor.SettingsUtil.HotUpdateAssemblyFilesIncludePreserved.OrderBy(item => item, StringComparer.Ordinal));
+            parts.AddRange(global::HybridCLR.Editor.SettingsUtil.HotUpdateAssemblyFilesIncludePreserved.OrderBy(item => item, StringComparer.Ordinal));
             return GenerateActionCommon.ComputeTextHash(string.Join("\n", parts));
         }
 

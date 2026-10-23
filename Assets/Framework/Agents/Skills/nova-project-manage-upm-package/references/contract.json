@@ -3,8 +3,7 @@
   "id": "nova-project-manage-upm-package",
   "kind": "operation",
   "compatibility": {
-    "framework": ">=0.6.15",
-    "unity": ">=6000.6.7f1"
+    "framework": ">=0.6.15"
   },
   "requires": [],
   "actionAdapters": [

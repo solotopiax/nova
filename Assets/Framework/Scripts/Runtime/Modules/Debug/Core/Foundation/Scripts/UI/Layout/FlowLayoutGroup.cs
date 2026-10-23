@@ -75,7 +75,11 @@ namespace NovaFramework.Runtime
 
             var minWidth = GetGreatestMinimumChildWidth() + padding.left + padding.right;
 
+#if UNITY_6000_6_OR_NEWER
             SetLayoutInputForAxis(minWidth, -1f, -1, -1, 0);
+#else
+            SetLayoutInputForAxis(minWidth, -1, -1, 0);
+#endif
         }
 
         public override void SetLayoutHorizontal()
@@ -185,7 +189,11 @@ namespace NovaFramework.Runtime
             {
                 if (axis == 1)
                 {
+#if UNITY_6000_6_OR_NEWER
                     SetLayoutInputForAxis(yOffset, -1f, yOffset, -1, axis);
+#else
+                    SetLayoutInputForAxis(yOffset, yOffset, -1, axis);
+#endif
                 }
             }
 

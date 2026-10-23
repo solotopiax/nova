@@ -1,8 +1,8 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.7.2`
-> Unity：`6000.6.7f1` 及以上
+> 当前版本：`0.7.3`
+> Unity：仅支持 `6000.4.x`，最低 `6000.4.2f1`；更高的 Unity 次版本存在 HybridCLR 兼容问题。
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
 
@@ -14,7 +14,7 @@ Android 构建可在 Pipify 的 `build.package` 后添加 `googleplay.upload_aab
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.7.2"
+  "com.solotopia.nova.framework": "0.7.3"
 }
 ```
 
@@ -52,17 +52,17 @@ Agent 能力需要 **Nova Framework - MCP**（`com.solotopia.nova.framework.mcp`
 |---|---|
 | com.unity.textmeshpro | 3.0.9 |
 | com.unity.nuget.newtonsoft-json | 3.2.2 |
-| com.unity.inputsystem | 1.19.0 |
-| com.unity.scriptablebuildpipeline | 3.0.3 |
-| com.solotopia.hybridclr | 10.1.0 |
+| com.unity.inputsystem | 1.20.1 |
+| com.unity.scriptablebuildpipeline | 4.0.1 |
+| com.solotopia.hybridclr | 10.1.1 |
 | com.solotopia.unitask | 10.0.6 |
 | com.solotopia.sqlcipher4unity3d | 10.0.5 |
 | com.solotopia.simplediskutils | 1.0.7 |
 | com.solotopia.excelio | 1.0.6 |
 | com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
-| com.solotopia.yooasset | 1.2.0 |
-| com.solotopia.nova.framework.mcp | 0.1.5 |
+| com.solotopia.yooasset | 1.2.1 |
+| com.solotopia.nova.framework.mcp | 0.1.6 |
 
 ## 可选核心扩展
 

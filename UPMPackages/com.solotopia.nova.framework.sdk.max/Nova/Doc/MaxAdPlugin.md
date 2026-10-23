@@ -45,7 +45,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 
 Mediation adapters 也由 [package.json](../../package.json) 固定版本声明为 AppLovin 官方 UPM 包，按平台拆为 `.android` / `.ios` 依赖。当前声明 BidMachine、ByteDance、Chartboost、Facebook、Fyber、Google、Google Ad Manager、InMobi、IronSource、Mintegral、Moloco、UnityAds、Vungle、Line 的双平台包，以及 Yandex Android 包；未声明 Yandex iOS。旧 `Core/MaxSdk/Mediation/**/Dependencies.xml` 不再作为依赖来源。Google / Google Ad Manager 当前固定 Android `25030000.0.0`、iOS `13040000.0.0`，不表示安装时自动追踪最新版。
 
-本包版本为 `0.1.13`，依赖 Ad 基础包 `1.1.16`、Framework `0.6.38`、MAX SDK `8.6.4`，最低 Unity `6000.6.7f1`。官方 SDK 还传递依赖 EDM4U；消费工程必须同时提供 AppLovin 与 EDM4U registry，安装示例见 [README](../../README.md#安装)。Nova PlugPals 会处理本包 `nova.scopedRegistries` 元数据；Unity 原生 Package Manager 不会自动把该元数据写入工程 manifest。
+本包依赖 Ad 基础包 `1.2.1`、Framework `0.7.3`、MAX SDK `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）。官方 SDK 还传递依赖 EDM4U；消费工程必须同时提供 AppLovin 与 EDM4U registry，安装示例见 [README](../../README.md#安装)。Nova PlugPals 会处理本包 `nova.scopedRegistries` 元数据；Unity 原生 Package Manager 不会自动把该元数据写入工程 manifest。
 
 两个 asmdef 均通过官方包版本定义生成 `NOVA_APPLOVIN_MAX`（表达式 `8.5.0`）；Runtime 不限制平台，MAX 门面在 Android/iOS 使用 native SDK，在 Editor 和其他平台使用原厂 Editor 实现，不能据此视为桌面或 WebGL 真广告支持。Editor 程序集仅在 Editor 且非 `UNITY_WEBGL` 时参与编译。宏缺失时渠道初始化报告失败，广告能力不可用。
 
@@ -627,7 +627,7 @@ finally
 
 Rewarded、Interstitial、AppOpen 的 expiry 重载事件只在无活动加载的 Idle / Waiting，或同一 Ready 缓存时采纳，并复查原厂 Ready；采纳后取消旧 timer、成功归零间隔下标，不结算旧业务请求批次。Loading / Showing 不作为主动加载终态，另一 Ready ID 也不会被替换。MAX 8.6.4 没有 Load 请求 token / Cancel Load，原厂自主 reload 不属于 Nova 主动组内串行保证。
 
-iOS 原厂 `MAUnityAdManager.m` 的奖励重载事件写作 `"OnExpiredRewardedAdReloadedEvent "`（尾空格），C# `MaxSdkCallbacks` 使用严格末尾匹配，因此该事件可能无法进入 Nova 回调。该限制已在已安装 MAX 8.6.4 源码确认；本包不修改第三方源码。缓存失效仍通过真实 Ready 检查识别，不能把这一点写成已修复原厂事件。
+MAX 8.6.6 的 iOS 原厂 `MAUnityAdManager.m` 已将奖励重载事件名修正为 `"OnExpiredRewardedAdReloadedEvent"`，与 C# `MaxSdkCallbacks` 使用的事件名一致。缓存失效仍通过真实 Ready 检查识别；奖励重载事件的设备表现须在目标工程验证。
 
 ### 验证边界
 

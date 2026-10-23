@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-10-23
+
+### Changed
+
+- 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
+
 ## [0.0.4] - 2026-10-23
 
 ### Breaking

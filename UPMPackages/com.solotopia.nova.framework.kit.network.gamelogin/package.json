@@ -1,13 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamelogin",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "license": "MIT",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - Kit - Network - GameLogin",
   "description": "登录业务网络模块，封装登录协议及相关协议类型",
   "category": "Runtime",
-  "unity": "6000.6",
-  "unityRelease": "7f1",
+  "unity": "6000.4",
+  "unityRelease": "2f1",
   "keywords": [
     "nova",
     "network",
@@ -19,7 +19,7 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0",
+    "com.solotopia.nova.framework": "0.7.3",
     "com.solotopia.unitask": "10.0.6",
     "com.solotopia.luban": "10.1.0"
   }

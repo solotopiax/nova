@@ -1,17 +1,17 @@
 {
   "name": "com.solotopia.nova.framework.memory.protection",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "coreVersion": "0.1.0",
   "displayName": "Nova Framework - MemoryProtection",
   "description": "Nova Framework 核心内存数值防护：可选 Anti-Cheat Toolkit 适配、异常隔离与密钥轮换。",
   "license": "MIT",
-  "unity": "6000.6",
-  "unityRelease": "7f1",
+  "unity": "6000.4",
+  "unityRelease": "2f1",
   "category": "Runtime",
   "keywords": ["nova", "framework", "memory", "protection", "anti-cheat"],
   "author": { "name": "Solotopia" },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0",
+    "com.solotopia.nova.framework": "0.7.3",
     "com.unity.nuget.newtonsoft-json": "3.2.2"
   },
   "nova": {

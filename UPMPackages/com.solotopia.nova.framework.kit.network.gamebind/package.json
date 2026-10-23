@@ -1,13 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamebind",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "license": "MIT",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - Kit - Network - GameBind",
   "description": "账号绑定业务网络模块，封装绑定、冲突查询与裁决协议及类型",
   "category": "Runtime",
-  "unity": "6000.6",
-  "unityRelease": "7f1",
+  "unity": "6000.4",
+  "unityRelease": "2f1",
   "keywords": [
     "nova",
     "network",
@@ -19,10 +19,10 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0",
+    "com.solotopia.nova.framework": "0.7.3",
     "com.solotopia.unitask": "10.0.6",
     "com.solotopia.luban": "10.1.0",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
-    "com.solotopia.nova.framework.kit.network.gamesave": "0.1.6"
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18",
+    "com.solotopia.nova.framework.kit.network.gamesave": "0.1.15"
   }
 }

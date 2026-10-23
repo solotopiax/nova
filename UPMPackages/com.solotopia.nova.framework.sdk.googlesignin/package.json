@@ -1,13 +1,13 @@
 {
   "name": "com.solotopia.nova.framework.sdk.googlesignin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - SDK - Google Sign-In",
   "description": "Google Sign-In SDK plugin package. Contains Nova integration and native bridges for official Google sign-in flows.",
   "category": "Runtime",
-  "unity": "6000.6",
-  "unityRelease": "7f1",
+  "unity": "6000.4",
+  "unityRelease": "2f1",
   "keywords": [
     "nova",
     "sdk",
@@ -23,9 +23,9 @@
     "NovaFramework.SDK.GoogleSignIn.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.7.0",
-    "com.google.external-dependency-manager": "1.2.186",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
-    "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
+    "com.solotopia.nova.framework": "0.7.3",
+    "com.google.external-dependency-manager": "1.2.190",
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18",
+    "com.solotopia.nova.framework.kit.network.gamebind": "0.1.9"
   }
 }

@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP - Mobile
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.mobile`
-> 当前版本：`0.2.0`
+> 当前版本：`0.2.1`
 
 Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化、购买、Restore、服务端验单、补单、订阅到期与非消耗品持有状态。
 
@@ -11,16 +11,16 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap.mobile": "0.2.0"
+  "com.solotopia.nova.framework.sdk.iap.mobile": "0.2.1"
 }
 ```
 
 ## 依赖
 
-- `com.solotopia.nova.framework`: `0.7.0`
-- `com.solotopia.nova.framework.sdk.iap`: `0.2.0`
+- `com.solotopia.nova.framework`: `0.7.3`
+- `com.solotopia.nova.framework.sdk.iap`: `0.2.2`
 - `com.solotopia.unitask`: `10.0.6`
-- `com.unity.purchasing`: `5.3.1`
+- `com.unity.purchasing`: `5.4.4`
 
 ## 当前公开入口
 
