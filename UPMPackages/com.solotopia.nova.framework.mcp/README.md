@@ -2,7 +2,7 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.6`
+> 当前版本：`0.1.7`
 >
 > 当前默认 Provider：`com.coplaydev.unity-mcp@10.3.0`
 
@@ -20,11 +20,16 @@ Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `no
 消费项目只安装或升级 `com.solotopia.nova.framework`；UPM 应沿 Framework 的显性依赖自动解析本包，再解析：
 
 - `com.coplaydev.unity-mcp@10.3.0`
+- `com.solotopia.unitask@10.0.6`
 - `com.unity.nuget.newtonsoft-json@3.2.2`
 
 `com.coplaydev.unity-mcp@10.3.0` 由 OpenUPM 提供。NovaSpark 会先在消费工程 `Packages/manifest.json` 的 OpenUPM scoped registry 中补齐精确 scope `com.coplaydev.unity-mcp`，再写入 Framework；本包的 semver 依赖随后由 UPM 自动解析，不需要把 Unity MCP 作为项目顶层 Git 依赖。绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 做开发验证；它不会改变对外 UPM 包当前默认适配 Unity MCP 的事实。
 
-`nova_project_action` 声明 `AutoRegister=true`。本包不会自动启动 Server、占用端口或修改外部 Agent 配置。已有 Agent 会话如果缓存了 Tool 列表，安装或升级后需要重连 MCP 或开启新会话。
+`nova_project_action` 声明 `AutoRegister=true`。Framework 的自动安装调度会调用本包的服务与绑定入口：自动安装并验证缺失的 uv 运行时，复用已经连接当前 Editor 的 Coplay 服务；没有本机服务时按已有 loopback 地址启动后台服务，再验证 Editor 连接与 Nova `describe`。不会停止已有端口上的服务、切换端口或修改远程认证。
+
+Codex 已有精确匹配的项目或用户级 MCP 绑定时直接复用；缺少时只向当前项目 `.codex/config.toml` 写入项目专属受管项，保留其他内容，不覆盖用户全局 `unityMCP`、其他项目、凭据或其他 Agent 软件的配置。`CODEX_HOME` 用于定位用户级配置。项目明确不受信任、已有配置损坏、权限或网络失败时返回准确阻碍，由框架有界重试，不转嫁为项目组手工补装。项目配置的宿主信任规则见 [Codex 配置说明](https://learn.chatgpt.com/docs/config-file/config-basic)。
+
+本地部署 `success` 必须同时满足实际 Provider 连接核验、Nova 网关 `describe` 和精确绑定配置；新写或复用配置、HTTP 或既有 stdio 都使用同一标准。它不证明当前聊天已经刷新工具列表，宿主需自动加载新配置后才能使用，当前聊天的 `tools/list` 证据须另行现场核对；stdio 服务由宿主读取配置后自动启动。本包不执行 AI 任务或消耗模型额度。完整 API、状态和失败边界见 [包内文档](./Nova/Docs/INDEX.md#自动服务与当前项目绑定)。
 
 ## 调用协议
 

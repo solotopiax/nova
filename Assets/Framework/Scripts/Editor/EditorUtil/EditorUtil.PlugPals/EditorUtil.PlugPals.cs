@@ -40,15 +40,48 @@ namespace NovaFramework.Editor
             /// <returns>远程包信息数组，解析失败返回 null。</returns>
             public static async Task<VerdaccioPackageInfo[]> FetchRemotePackagesAsync(string registryUrl, string apiPath, CancellationToken token)
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, registryUrl + apiPath);
-                HttpResponseMessage response = await s_HttpClient.SendAsync(request, token);
+                return await FetchRemotePackagesAsync(registryUrl, apiPath, token, false);
+            }
+
+            /// <summary>
+            /// 拉取包列表，并按需补充各版本的发布时间；关闭补充时保持原有单次列表查询。
+            /// 时间查询失败只影响时间展示，不阻断包列表及既有安装判断。
+            /// </summary>
+            /// <param name="registryUrl">Verdaccio 仓库根地址。</param>
+            /// <param name="apiPath">包列表 API 路径。</param>
+            /// <param name="token">取消令牌。</param>
+            /// <param name="includeReleaseTimes">是否并发补充详情需要的各版本发布时间。</param>
+            /// <returns>远程包信息数组，时间缺失的版本保持未知。</returns>
+            public static async Task<VerdaccioPackageInfo[]> FetchRemotePackagesAsync(string registryUrl, string apiPath, CancellationToken token, bool includeReleaseTimes)
+            {
+                using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, registryUrl + apiPath);
+                using HttpResponseMessage response = await s_HttpClient.SendAsync(request, token);
                 response.EnsureSuccessStatusCode();
                 token.ThrowIfCancellationRequested();
                 string json = await response.Content.ReadAsStringAsync();
                 token.ThrowIfCancellationRequested();
 
                 VerdaccioPackageInfo[] packages = Util.Json.Deserialize<VerdaccioPackageInfo[]>(json);
+                if (includeReleaseTimes && packages != null)
+                {
+                    using var concurrency = new SemaphoreSlim(4);
+                    await Task.WhenAll(packages.Where(package => package != null && !string.IsNullOrEmpty(package.Name))
+                        .Select(package => FetchPackageReleaseTimesAsync(package, registryUrl, concurrency, token)));
+                }
                 return packages;
+            }
+
+            /// <summary>
+            /// 将发布时间转换为编辑器本地时区，采用精确到秒的 24 小时制。
+            /// </summary>
+            /// <param name="releaseTime">带时区的 ISO 8601 时间；无效或缺失时显示未知。</param>
+            /// <returns>yyyy/MM/dd HH:mm:ss 格式的发布时间，缺失时返回未知。</returns>
+            public static string FormatReleaseTime(string releaseTime)
+            {
+                string normalized = NormalizeReleaseTime(releaseTime);
+                return normalized == null ? "未知" : DateTimeOffset.Parse(normalized,
+                    System.Globalization.CultureInfo.InvariantCulture).ToLocalTime()
+                    .ToString("yyyy/MM/dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
             }
 
             /// <summary>
@@ -184,6 +217,7 @@ namespace NovaFramework.Editor
                         IsDirectDependency = isDirectDependency,
                         IsNonRegistry = isNonRegistry,
                         LatestVersion = remote.Version,
+                        LatestReleaseTime = GetVersionReleaseTime(remote, remote.Version),
                         Status = status,
                         Category = CategorizePackage(remote.Name),
                         CoreVersion = remote.CoreVersion,

@@ -25,8 +25,13 @@
     },
     {
       "kind": "unity-editor-automation",
-      "entry": "MCP tools/list -> nova_project_action presence check only",
-      "when": "重新连接同一消费工程后确认目标 Framework 的 Nova MCP 默认 Adapter 已恢复；只检查 Tool 可见性，不能用它升级自身"
+      "entry": "MCP tools/list -> nova_project_action presence -> read-only describe",
+      "when": "重新连接同一消费工程后确认Tool可见并执行只读describe，不用它升级自身"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity Editor menu Nova/Check and Setup AI Toolchain -> completed Nova AI toolchain Console report",
+      "when": "新版本包含该入口且升级、Resolve和编译稳定后，自动安装缺失主机工具、插件和Pipeline，绑定本项目并复核；失败自动重试，菜单返回不等于完成，不要求项目组补装"
     }
   ],
   "inputs": [
@@ -71,14 +76,17 @@
     "allow": [
       "the confirmed external UPM host change to the single direct com.solotopia.nova.framework manifest entry, retaining the frozen configured registry source",
       "Packages/packages-lock.json and resolved dependency closure updates produced only by Unity Package Manager Resolve after that confirmed change",
-      "Library/Nova/ImportantUpdates/<local-user-hash>/State.json automatic upgrade-scope bookkeeping and explicit human acknowledgement; never edited directly by the Agent"
+      "Library/Nova/ImportantUpdates/<local-user-hash>/State.json automatic upgrade-scope bookkeeping and explicit human acknowledgement; never edited directly by the Agent",
+      "Framework 安装升级后固定自动流程安装缺失的 Unity CLI、Codex CLI、官方 Unity 插件及本项目 com.unity.pipeline；保留现有可用版本和其他包依赖",
+      "默认 Provider 自动准备本机 MCP 服务，保留其他项目有效服务和宿主配置，仅补齐当前项目专用 Codex MCP 绑定",
+      "Library/Nova/AgentToolchain/ 下本轮有界安装下载与失败恢复状态；临时脚本完成、失败或取消后清理"
     ],
     "deny": [
       "nova_project_action, Framework C# AgentAction, arbitrary C#, reflection, execute_code or menu simulation for Framework self-upgrade",
       "manual Packages/manifest.json or Packages/packages-lock.json edits, Git/file/local source, registry switch, downgrade or batch package upgrade",
       "direct changes to Packages/com.solotopia.nova.framework/**, Library/PackageCache/**, package cache or Library cleanup",
       "ConfigMaster, ConfigRuntimeSO, business Config fields, SDK/Kit setup, Sample, Scene, Prefab, Bundle or Player changes",
-      "automatic retry, rollback, dependency substitution, Git commit/push, UPM publish, external deployment or credential output",
+      "automatic replay of Framework upgrade, rollback, dependency substitution, Git commit/push, UPM publish, external deployment or credential output",
       "automatic Important acknowledgement, UI confirmation simulation, reflection or direct edits to local acknowledgement markers"
     ]
   },
@@ -102,7 +110,7 @@
       "any changed project root, current/target version, registry, host Schema, default Provider dependency, MCP Adapter closure or package graph",
       "cache cleanup, rollback, source switch, credential use, Git commit/push, publish or external deployment"
     ],
-    "rule": "确认只绑定当前 direct Framework entry、同源目标、外部宿主 Schema、registry 可达性和目标 Nova MCP 默认 Adapter 闭包。任何 manifest、lock、registry、目标元数据、Provider 依赖或 Editor domain 漂移都会使旧确认失效；断线或 reload 后只做恢复核验，绝不自动重放升级。"
+    "rule": "确认只绑定当前 direct Framework entry、同源目标、外部宿主 Schema、registry 可达性和目标 Nova MCP 默认 Adapter 闭包。任何 manifest、lock、registry、目标元数据、Provider 依赖或 Editor domain 漂移都会使旧确认失效；断线或 reload 后只做恢复核验，绝不自动重放升级。 Framework 升级提交只执行一次；其后固定工具链自动安装、绑定和失败重试属于安装升级流程，无需项目组手动补齐，不能借此重复升级 Framework。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -118,6 +126,7 @@
     "目标 Framework 的 catalog.json 实际 Skill 数量和 nova_skills.py doctor 对 .agents/skills 的 clean 结果；数量不硬编码",
     "同一项目重连后 MCP tools/list 中 nova_project_action 的可见性，及缺失时未使用它或任意 C# 绕过的事实",
     "未执行 Config、缓存清理、回滚、Git、发布、外部部署或凭据输出的边界说明",
-    "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。"
+    "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。",
+    "自动安装和绑定逐项取得实际证据：官方插件installed/enabled、Unity CLI版本与当前Editor连接、两个MCP包闭包及服务、全部Skills；外部聊天工具列表另行现场核验，缺项或超时保持partial，不把缓存或菜单返回当作完成"
   ]
 }

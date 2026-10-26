@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-10-26
+
+### Added
+
+- 安装或手动升级 Framework 后，自动补齐 Unity 官方 Agent 插件、Unity CLI、Pipeline 连接包、Coplay Unity MCP、Nova MCP 和 Nova Skills，并绑定当前项目；缺失项自动安装、失败自动重试，保留已有服务和本地冲突，当前聊天工具可见性单独核验。
+
+### Fixed
+
+- 修复 AI 工具链菜单点击后没有即时反馈、重复检查结果被日志去重隐藏的问题；现在会立即显示执行或等待状态，并重新输出手动重检结果。
+
+### Changed
+
+- PlugPals 详情新增最新版发布时间 Release Time；新包优先读取包内记录，旧包按对应仓库版本补取上传时间，公网与内网一致。
+
 ## [0.7.4] - 2026-10-26
 
 ### Added

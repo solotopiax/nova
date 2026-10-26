@@ -13,6 +13,8 @@ description: Use when Nova 项目组要安装某个已配置 registry 包的最�
 
 先读取 `references/contract.json` 冻结操作与副作用。安装/升级调用 MCP Tool `nova_project_action` 驱动 `nova.project.upm.manage-latest`；卸载使用独立 Action `nova.project.upm.uninstall-direct`。只有需要理解 Action 协议或 MCP Adapter 边界时才读取 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md`，需要理解 registry、manifest、依赖预检或卸载清理语义时才读取 `Docs/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md`。不要预加载发布、SDK/Kit 配置或全部 UPM 文档。
 
+仅查看版本及发布时间时，打开 `Nova/Open PlugPals` 并展开对应包：`Release Time` 显示最新版本的发布时间，位于 `Core Version` 下方；没有 `Core Version` 时紧跟 `Latest Version`。`Local Version` 和 `Latest Version` 均只显示版本号。时间采用编辑器本地时区（`yyyy/MM/dd HH:mm:ss`，24 小时制），优先读取最新版本包内的 `nova.releaseTime`，旧包才回退所属仓库该版本的上传时间，缺失时显示 `未知`；公网和内网规则一致。详细来源见 `Docs/Editor/Windows/PlugPalsWindow.md`。只读查看不执行安装、升级或卸载，也不修改包清单。
+
 ## 支持范围
 
 - `install-latest`：安装已配置 registry 中的远程最新版。

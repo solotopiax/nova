@@ -3,6 +3,7 @@
     "rootNamespace": "NovaFramework.Mcp.UnityMcp.Editor",
     "references": [
         "NovaFramework.Mcp.Editor",
+        "UniTask",
         "MCPForUnity.Editor"
     ],
     "includePlatforms": [

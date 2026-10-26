@@ -3526,11 +3526,16 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.Cli.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.Initializer.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.Reconciler.cs",
-        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.cs"
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.Toolchain.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainValidation.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainSetup.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainProvisioning.cs"
       ],
       "docs": [
         "Assets/Framework/Docs/INDEX.md",
-        "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md"
+        "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md"
       ],
       "skills": [
         "nova-project-router",
@@ -3567,6 +3572,11 @@
           "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
           "kind": "cli",
           "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值"
+        },
+        {
+          "entry": "Unity Editor menu Nova/Check and Setup AI Toolchain -> completed Nova AI toolchain Console report",
+          "kind": "unity-editor-automation",
+          "when": "安装或升级后自动补齐缺失工具、绑定本项目并等待复核完成；失败自动重试，无需项目组手动补装；当前聊天连接另行现场验收"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -6731,7 +6741,10 @@
         "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Editor/NovaProjectActionGateway.cs",
         "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Editor/NovaProjectActionPlanJobStore.cs",
         "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Editor/NovaProjectActionProvider.cs",
-        "UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs"
+        "UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs",
+        "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Editor/NovaToolchainBinding.cs",
+        "UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaToolchainBindingUnityMcp.cs",
+        "UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaToolchainBindingUnityMcp.Codex.cs"
       ],
       "docs": [
         "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Docs/INDEX.md"
@@ -17405,7 +17418,7 @@
     },
     {
       "id": "package.framework.upgrade",
-      "goal": "通过外部 UPM 宿主更新 Framework 并恢复技能发现",
+      "goal": "通过外部 UPM 宿主更新 Framework，并自动安装绑定工具链与恢复技能发现",
       "skill": "nova-project-upgrade-framework",
       "reference": "Assets/Framework/Agents/Skills/nova-project-upgrade-framework/SKILL.md",
       "functions": [
@@ -17418,7 +17431,12 @@
         "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs#NovaFramework.Editor.CheckUpdateWindow.Open()",
         "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs#NovaFramework.Editor.CheckUpdateWindow.Open(List<EditorUtil.CheckUpdate.UpdateInfo>)",
         "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs#NovaFramework.Editor.CheckUpdateWindow.Open(List<EditorUtil.CheckUpdate.UpdateInfo>,List<EditorUtil.CheckUpdate.UpdateInfo>)",
-        "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.cs#NovaFramework.Editor.CheckUpdateWindow.OnGUI()"
+        "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.cs#NovaFramework.Editor.CheckUpdateWindow.OnGUI()",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.Toolchain.cs#NovaFramework.Editor.EditorUtil.AgentSkills.ValidateToolchainAsync()",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainValidation.cs#NovaFramework.Editor.EditorUtil.AgentSkills.RequestToolchainSetup(bool)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainValidation.cs#NovaFramework.Editor.EditorUtil.AgentSkills.SetupAndCheckToolchain()",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainSetup.cs#NovaFramework.Editor.EditorUtil.AgentSkills.EnsureToolchainAsync(CancellationToken)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainProvisioning.cs#NovaFramework.Editor.EditorUtil.AgentSkills.ProvisionHostToolsAsync(CancellationToken)"
       ],
       "execution": {
         "mode": "external-host",
@@ -17432,7 +17450,8 @@
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "Framework 更新后本域 Action 可能失效，不能用其更新自身；宿主 capability 和重新发现要实测",
-          "出现CHANGELOG Important模态提示时等待用户亲自阅读确认；Agent不得自动确认或修改Library/Nova/ImportantUpdates；安装后验与人工阅读状态分别报告，不重放升级。"
+          "出现CHANGELOG Important模态提示时等待用户亲自阅读确认；Agent不得自动确认或修改Library/Nova/ImportantUpdates；安装后验与人工阅读状态分别报告，不重放升级。",
+          "安装升级后自动补齐并绑定缺失工具；包、插件启用、CLI及本项目连接、Skills分别核验，失败自动重试；外部聊天MCP现场执行只读describe，不能用本地配置推定当前聊天工具已刷新"
         ],
         "gaps": []
       },

@@ -44,6 +44,7 @@
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
 | **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
 | **升级后强制确认重要内容（CHANGELOG Important / 单包与批量 / 本地已读）** | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) → [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) |
+| **安装或升级后自动补齐 AI 开发工具** | [Nova Skills 与 AI 工具链安装](Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)：五项自动安装、绑定、失败重试和当前聊天连接边界，以及 `Nova/Check and Setup AI Toolchain` 重检入口。 |
 | **Inspector GUI 绘制工具** | [EditorUtil.Draw.md · 全方法签名](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) |
 | **持久化存储（读写数据）** | [PersistComponent.md · 直接访问属性](Runtime/Modules/Persist/PersistComponent.md) → [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) / [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) / [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) |
 | 理解 UIGroup 深度 / 遮挡排序 | [UIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/UIGroupHelper.md) → [UIManager.md · UIGroup.Refresh 算法](Runtime/Modules/UI/UIManager/UIManager.md) |

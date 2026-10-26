@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using Log = NovaFramework.Runtime.Log;
+using LogTag = NovaFramework.Runtime.LogTag;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 using PackageRegistrationEventArgs = UnityEditor.PackageManager.PackageRegistrationEventArgs;
 using PackageEvents = UnityEditor.PackageManager.Events;
@@ -48,6 +50,8 @@ namespace NovaFramework.Editor
                         && (ContainsFramework(eventArgs.added) || ContainsFramework(eventArgs.changedTo)))
                     {
                         QueueAutomaticReconcile();
+                        // 同版本重新安装也需检查，不能只依赖版本号变化。
+                        RequestToolchainSetup();
                     }
                 }
 
@@ -119,12 +123,17 @@ namespace NovaFramework.Editor
                         ReconcileResult result = AgentSkills.Reconcile();
                         if (result.Conflicts.Count > 0)
                         {
-                            Debug.LogWarning($"[Nova Project Skills] 自动 bridge 部分完成，保留本地冲突：{BuildConflictSummary(result.Conflicts)}");
+                            Log.Warning(LogTag.Editor, $"[Nova Project Skills] 自动 bridge 部分完成，保留本地冲突：{BuildConflictSummary(result.Conflicts)}");
                         }
                     }
                     catch (Exception exception)
                     {
-                        Debug.LogWarning($"[Nova Project Skills] 自动 bridge 未完成：{exception.Message}");
+                        Log.Warning(LogTag.Editor, $"[Nova Project Skills] 自动 bridge 未完成：{exception.Message}");
+                    }
+                    finally
+                    {
+                        // 即使 Skills 同步冲突或失败，也必须检查其余工具并准确报告未完成项。
+                        RequestToolchainSetup(false);
                     }
                 }
 

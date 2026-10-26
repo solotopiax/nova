@@ -14,6 +14,8 @@
 
 Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户安装或升级 Nova 后首次打开 Unity，Editor 会在编译和包更新结束后检查，并按需把包内 Catalog Skill 同步为项目根 `.agents/skills/` 下的受管同步副本，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
 
+通过 NovaSpark 安装、矫正配置，以及手动升级 Framework 后，Editor 会自动补齐并绑定 Unity 官方 Agent 插件、Unity CLI、Coplay Unity MCP、Nova MCP 和 Nova Skills，无需项目组手动补装。Console 的 `[Nova AI 工具链]` 显示实际结果；失败自动重试，NovaSpark 等本地安装和绑定验证通过后才删除自身。需要立即重试时使用 **Nova → Check and Setup AI Toolchain**。当前聊天的工具列表仍需由 Agent 现场确认。触发、安装范围与连接边界见 [AI 工具链安装](Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
+
 Skill 发现与 MCP Tool 发现是两条不同链路：33 个 `nova-project-*` 是 Agent 从 `.agents/skills/` 读取的任务说明，不会被 MCP Provider 逐个注册成 33 个 Tool。对外 Nova MCP UPM 包当前默认适配 Unity MCP，只注册一个 Nova Tool：`nova_project_action`；该 Tool 再通过 live `describe` 公开当前安全开放的 Action。NovaSpark 会先在项目 manifest 中配置 OpenUPM 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework 及其 Nova MCP 依赖；Unity MCP 由 Nova MCP 包的 semver 依赖自动解析，不作为项目 direct Git dependency。安装包不能替外部 Agent 启动 Server、占用端口或热刷新既有会话；首次连接或包升级后，宿主仍需连接当前 MCP Provider，已有会话未刷新 Tool 列表时需重连或开启新会话。
 
 三处位置的职责不同：

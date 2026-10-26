@@ -58,11 +58,24 @@ NovaFramework.Editor.EditorUtil (public static partial class)
 /// </summary>
 public static async Task<VerdaccioPackageInfo[]> FetchRemotePackagesAsync(string registryUrl, string apiPath, CancellationToken token)
 
+/// <summary>按需补充各版本发布时间；原三参数入口不增加额外查询。</summary>
+public static Task<VerdaccioPackageInfo[]> FetchRemotePackagesAsync(string registryUrl, string apiPath, CancellationToken token, bool includeReleaseTimes)
+
+/// <summary>按编辑器本地时区生成独立展示的 24 小时制发布时间。</summary>
+public static string FormatReleaseTime(string releaseTime)
+
 /// <summary>
 /// 根据远程包信息和本地已安装版本构建显示条目列表（按 DisplayName 排序）。
 /// </summary>
 public static List<PackageDisplayEntry> BuildDisplayEntries(VerdaccioPackageInfo[] remotePackages, string registryUrl)
 ```
+
+详情时间统一存为包内 `nova.releaseTime`（UTC ISO 8601，精确到秒，例如 `2026-10-26T08:09:10Z`）。正式发布器在公网、内网签名前记录；消费侧只读，不修改已发布包或用文件修改时间回填。
+
+- `VerdaccioPackageInfo.VersionReleaseTimes`：按精确版本记录有效时间；包内字段优先，旧包回退仓库完整元数据的 `time[版本号]`。不使用 `created`、`modified` 或其他版本时间代替。
+- `PackageDisplayEntry.LatestReleaseTime`：远端最新版本的时间，供详情独立的 `Release Time` 行显示；本地版本不展示时间。
+- 四参数拉取入口用于窗口详情的时间补充，单仓库最多并发 4 个元数据请求；调用方取消令牌照常传播，单包失败只使该包时间未知。现有三参数入口继续只查列表，自动更新和 Agent 包操作不额外请求全部版本元数据。
+- `FormatReleaseTime` 输出 `yyyy/MM/dd HH:mm:ss`，转换为编辑器本地时区；非法或缺失时间显示 `未知`。原始版本字段不包含时间，不改变比较、安装、缓存或依赖规则。
 
 ### 本地版本读取
 

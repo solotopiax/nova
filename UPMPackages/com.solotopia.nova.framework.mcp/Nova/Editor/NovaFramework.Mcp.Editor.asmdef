@@ -1,7 +1,9 @@
 {
     "name": "NovaFramework.Mcp.Editor",
     "rootNamespace": "NovaFramework.Mcp.Editor",
-    "references": [],
+    "references": [
+        "UniTask"
+    ],
     "includePlatforms": [
         "Editor"
     ],

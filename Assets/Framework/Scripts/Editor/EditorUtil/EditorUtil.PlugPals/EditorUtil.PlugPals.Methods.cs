@@ -11,7 +11,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NovaFramework.Runtime;
 using UnityEngine;
 
@@ -21,6 +27,110 @@ namespace NovaFramework.Editor
     {
         public static partial class PlugPals
         {
+            /// <summary>
+            /// 有限并发读取一个包的版本元数据；取消沿用调用方令牌，单包失败不影响列表。
+            /// </summary>
+            /// <param name="package">需要补充时间的远端包。</param>
+            /// <param name="registryUrl">该包所属的仓库地址。</param>
+            /// <param name="concurrency">当前仓库请求共用的并发限制。</param>
+            /// <param name="token">窗口请求的取消令牌。</param>
+            private static async Task FetchPackageReleaseTimesAsync(VerdaccioPackageInfo package, string registryUrl, SemaphoreSlim concurrency, CancellationToken token)
+            {
+                await concurrency.WaitAsync(token);
+                try
+                {
+                    string url = registryUrl.TrimEnd('/') + "/" + Uri.EscapeDataString(package.Name);
+                    using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                    using HttpResponseMessage response = await s_HttpClient.SendAsync(request, token);
+                    response.EnsureSuccessStatusCode();
+                    string json = await response.Content.ReadAsStringAsync();
+                    token.ThrowIfCancellationRequested();
+                    // 保留 ISO 字符串中的时区，避免 JSON 的自动日期转换隐式改变时间。
+                    JObject metadata = JsonConvert.DeserializeObject<JObject>(json,
+                        new JsonSerializerSettings { DateParseHandling = DateParseHandling.None });
+                    if (string.Equals((string)metadata?["name"], package.Name, StringComparison.Ordinal))
+                    {
+                        package.VersionReleaseTimes = ParsePackageReleaseTimes(metadata);
+                    }
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(LogTag.Editor, "PlugPals 发布时间读取失败 {0}: {1}", package.Name, e.Message);
+                }
+                finally
+                {
+                    concurrency.Release();
+                }
+            }
+
+            /// <summary>
+            /// 按版本提取发布时间：包内 nova.releaseTime 优先，旧包使用该版本的仓库上传时间。
+            /// 不采用 modified、created 或其他版本的时间，避免把仓库维护时间误认为版本发布时间。
+            /// </summary>
+            /// <param name="metadata">单包的完整仓库元数据。</param>
+            /// <returns>版本号到有效 UTC 时间的映射。</returns>
+            private static Dictionary<string, string> ParsePackageReleaseTimes(JObject metadata)
+            {
+                var result = new Dictionary<string, string>(StringComparer.Ordinal);
+                if (!(metadata?["versions"] is JObject versions))
+                {
+                    return result;
+                }
+
+                foreach (JProperty version in versions.Properties())
+                {
+                    string releaseTime = NormalizeReleaseTime((string)version.Value["nova"]?["releaseTime"])
+                        ?? NormalizeReleaseTime((string)metadata["time"]?[version.Name]);
+                    if (releaseTime != null)
+                    {
+                        result[version.Name] = releaseTime;
+                    }
+                }
+                return result;
+            }
+
+            /// <summary>
+            /// 读取指定版本的时间；只有确为远端最新版本时才使用列表中的最新包元数据。
+            /// </summary>
+            /// <param name="package">当前仓库中的远端包。</param>
+            /// <param name="version">需要查询的精确版本号。</param>
+            /// <returns>有效 UTC 时间，无法确定时为空。</returns>
+            private static string GetVersionReleaseTime(VerdaccioPackageInfo package, string version)
+            {
+                if (string.IsNullOrEmpty(version))
+                {
+                    return null;
+                }
+                if (string.Equals(package.Version, version, StringComparison.Ordinal))
+                {
+                    string recorded = NormalizeReleaseTime(package.Nova?.releaseTime);
+                    if (recorded != null)
+                    {
+                        return recorded;
+                    }
+                }
+                return package.VersionReleaseTimes != null && package.VersionReleaseTimes.TryGetValue(version, out string time)
+                    ? NormalizeReleaseTime(time) : null;
+            }
+
+            /// <summary>
+            /// 校验带时区、精确到秒的 ISO 8601 时间，并统一转换为 UTC，拒绝只有日期的伪时间。
+            /// </summary>
+            /// <param name="value">包内记录或仓库返回的时间字符串。</param>
+            /// <returns>规范 UTC 字符串，无效时为空。</returns>
+            private static string NormalizeReleaseTime(string value)
+            {
+                string[] formats = { "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFF'Z'",
+                    "yyyy-MM-dd'T'HH:mm:sszzz", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFzzz" };
+                return DateTimeOffset.TryParseExact(value, formats, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTimeOffset time)
+                    ? time.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture) : null;
+            }
+
             /// <summary>
             /// 把 manifest 中可验证的 file: 直连开发包补入实际安装版本。
             /// Unity 不一定把位于 Assets 下的本地包返回给 GetAllRegisteredPackages，因此需独立校验其真实目录与 package.json。

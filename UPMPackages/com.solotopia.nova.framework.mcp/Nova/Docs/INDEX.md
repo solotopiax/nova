@@ -22,7 +22,25 @@
 
 当前完整安装入口是 NovaSpark。它先向消费工程 `Packages/manifest.json` 写入 OpenUPM registry 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework；UPM 依赖链随后自动解析 `Framework -> 本包 -> com.coplaydev.unity-mcp@10.3.0`。Unity MCP 不需要成为项目顶层 Git 依赖；绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 用于开发态验证，不改变对外包的默认选型。
 
-安装完成不等于外部 Agent 已经连接：本包不自动启动 Server、不占端口、不修改外部 Agent 配置。首次连接或升级后，已有会话若未刷新 Tool 列表，需要重连 MCP 或开启新会话。
+安装调度现在会自动准备服务与当前项目 Codex 绑定；安装包存在、端口监听、Editor 连接和当前聊天工具可见性仍是不同层级的证据。
+
+## 自动服务与当前项目绑定
+
+`NovaFramework.Mcp.Editor.NovaToolchainBinding.EnsureAsync(projectRoot, cancellationToken)` 返回 `UniTask<BindingResult>`；结果包含 `ProjectRoot`、`Status` 和 `Detail`，当前域最近状态可从 `LastResult` 读取。入口只接受当前 Editor 项目，同一时刻串行执行，不接受任意 C#、反射或 Action 请求。Provider 通过 `RegisterProvider(providerId, ensure)` 显式注册；Coplay Adapter 的 `InitializeOnLoad` 只注册回调，实际工作由安装调度调用入口后开始。中立程序集不反向引用 Framework 或 Coplay。
+
+默认 HTTP 流程：
+
+1. 验证已经连到当前 Editor 的 Provider，正确连接直接复用，不重启本机服务。
+2. 未连通时，在线程池执行原厂运行时版本检查；缺失时调用原厂 `UvInstaller` 自动安装 uv，安装器自身最多等待 120 秒。原厂入口不接受取消信号，因此取消/重载不保证同步终止其子进程；三分钟会话接力租期避免立即并发重装，调用方稍后自动重试。日志与进程原始输出不进入结果。
+3. 保留既有 loopback URL。端口有监听时只尝试连接，不终止进程；端口空闲时用原厂固定服务版本参数和后台启动器新增服务。原厂总启动入口会先尝试停止当前端口服务，因此自动绑定不调用该入口，也不调用全部客户端配置。启动接力由会话标记保持，首次下载尚未开始监听时返回 `partial`，避免每次重试都再启动一份服务。
+4. 通过 Provider 实际状态和异步验证确认当前 Editor 已连接；确认并启用 `nova_project_action`，HTTP 连接重新登记当前工具，再调用只读网关 `describe`。不会执行任何业务 Action。
+5. 先匹配当前项目和 `CODEX_HOME/config.toml` 中已有启用配置；一致时只读复用。缺少绑定时，在项目 `.codex/config.toml` 的专属受管区块新增服务器项，先严格解析、保留区块外文本、核对并发变化，再原子保存与读回验证。临时写入文件在所有退出路径清理；不自动修改 Git 忽略、项目信任或用户全局配置。
+
+`success` 只表示当前 Editor 的 Provider 连接、Nova `describe` 和客户端精确绑定已经核验；新写和既有配置、HTTP 和 stdio 均采用同一本地部署标准，不根据等待时间推断宿主已加载。stdio 核验针对当前 Editor 桥接，宿主将依配置启动外部服务；当前聊天的 `tools/list`/实际通道可用性必须由外部宿主现场核验，包内没有可强制热加载聊天工具的 API。宿主会在加载受信任项目配置时连接；说明见 [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp)。
+
+`partial` 用于运行时服务仍在准备或被重载/取消中断；不会要求项目组手工安装或配置。`blocked` 用于项目不匹配、Provider 缺失、网络或权限失败、端口服务不兼容、网关失败、损坏/冲突/外部链接配置，或宿主明确不信任项目。调用方有界重试；不会以关掉其他项目服务、覆盖凭据或提高信任权限绕过阻碍。
+
+既有远程连接和精确客户端绑定均有效时可复用；远程连接未通或缺少可复用绑定时保留地址与认证并返回 `blocked`，不改成本机，也不把凭据复制到项目或新增未经认证核验的绑定。既有 stdio 选择也保留：自动准备 uv、Editor 桥接和同传输启动配置，但不把监听就绪当作外部 stdio 服务已被宿主加载。启动日志位于当前项目 `Library/Nova/Toolchain/mcp-server-launch.log`，用于实际后台进程排障，不作为历史验收档案；自动结果不转储该日志。
 
 ## Tool 协议
 

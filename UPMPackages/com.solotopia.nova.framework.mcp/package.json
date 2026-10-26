@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.mcp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - MCP",
@@ -21,9 +21,11 @@
   },
   "dependencies": {
     "com.coplaydev.unity-mcp": "10.3.0",
+    "com.solotopia.unitask": "10.0.6",
     "com.unity.nuget.newtonsoft-json": "3.2.2"
   },
   "nova": {
-    "requiredFrameworkApiVersion": "0.7.0"
+    "requiredFrameworkApiVersion": "0.7.0",
+    "releaseTime": "2026-10-26T09:35:34Z"
   }
 }

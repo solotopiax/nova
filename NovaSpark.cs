@@ -8,8 +8,8 @@
  *            1. 仅使用 Unity 6000.4.x（最低 6000.4.2f1），将本文件放入项目的 Assets/Editor/。
  *               更高的 Unity 次版本存在 HybridCLR 兼容问题，不在支持范围内。
  *            2. 等待 Unity 编译完成，在弹窗中点击“引入框架”。
- *            3. 等待包解析和编译完成；PlugPals 窗口正常打开且无报错，即表示安装成功。
- *               本脚本执行结束后会自动删除。
+ *            3. 等待包解析、编译和 AI 工具链自动安装、绑定完成；脚本会打开 PlugPals。
+ *               缺失工具自动补齐，失败自动重试；验证通过后引导脚本才自动删除。
  *
  *            已安装 Nova 的项目会先列出需调整的配置，点击“矫正配置”后才修改。
  *            使用 file: 引用 Framework 的源码工程会自动跳过。
@@ -52,6 +52,9 @@ namespace NovaBootstrap
         /// <summary>PlugPals 窗口菜单路径。用 ExecuteMenuItem 字符串调用，避免对框架类型的编译期依赖。</summary>
         private const string c_PlugPalsMenuPath = "Nova/Open PlugPals";
 
+        /// <summary>安装完成后请求 Framework 检查工具链；固定字符串避免首装前引用 Framework 程序集。</summary>
+        private const string c_ToolchainMenuPath = "Nova/Check and Setup AI Toolchain";
+
         /// <summary>
         /// 单轮域重载内"尝试打开 PlugPals 窗口"的最大轮询次数上限。
         /// 静态字段在每次域重载后重置为 0，故每轮重载都获得一份全新预算，
@@ -61,6 +64,16 @@ namespace NovaBootstrap
 
         /// <summary>当前域重载内累计的打开尝试次数（域重载即归零）。</summary>
         private static int s_openAttempts;
+
+        /// <summary>同一域中只请求一次自动安装；之后轮询实际结果，不反复重置重试间隔。</summary>
+        private static bool s_ToolchainRequested;
+        private static bool s_WaitWarningShown;
+
+        /// <summary>按秒等待，避免同一帧耗尽包注册和菜单就绪预算。</summary>
+        private static double s_NextRunTime;
+
+        /// <summary>域重载后的实际安装包查询；Resolve 不返回请求对象，必须另行核对安装包图。</summary>
+        private static UnityEditor.PackageManager.Requests.ListRequest s_InstalledPackagesRequest;
 
         // ---- manifest 待补全的依赖项 ----
 
@@ -78,7 +91,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.7.4";
+        private const string c_FrameworkValue = "0.7.5";
 
         /// <summary>默认显式安装的 Nova 内存防护扩展包键；不随之安装付费 Anti-Cheat Toolkit。</summary>
         private const string c_MemoryProtectionKey = "com.solotopia.nova.framework.memory.protection";
@@ -90,7 +103,7 @@ namespace NovaBootstrap
         private const string c_NovaMcpKey = "com.solotopia.nova.framework.mcp";
 
         /// <summary>Nova MCP 中立契约包的固定目标版本；其 Unity MCP Provider 依赖经 OpenUPM 解析。</summary>
-        private const string c_NovaMcpValue = "0.1.6";
+        private const string c_NovaMcpValue = "0.1.7";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";
@@ -169,17 +182,58 @@ namespace NovaBootstrap
 
                 // 接力：上一轮已补全并落下"待打开 PlugPals"标记。此处先于其它判断处理，
                 // 等框架编译完成、菜单可用后打开窗口，再功成身退；菜单暂不可用则下个 tick 续试。
-                if (EditorPrefs.GetBool(PendingOpenKey, false))
+                if (EditorPrefs.GetBool(PendingOpenKey, false)
+                    || EditorPrefs.GetBool(PendingToolchainKey, false))
                 {
-                    if (EditorApplication.ExecuteMenuItem(c_PlugPalsMenuPath))
+                    if (EditorApplication.isCompiling || EditorApplication.isUpdating)
                     {
+                        ScheduleRun();
+                        return;
+                    }
+
+                    if (!AreBootstrapPackagesReady())
+                    {
+                        return;
+                    }
+
+                    bool openReady = !EditorPrefs.GetBool(PendingOpenKey, false)
+                        || EditorApplication.ExecuteMenuItem(c_PlugPalsMenuPath);
+                    if (openReady)
+                    {
+                        // 窗口只打开一次，后续等待工具链自动安装绑定完成。
+                        EditorPrefs.SetBool(PendingToolchainKey, true);
                         EditorPrefs.DeleteKey(PendingOpenKey);
-                        DeleteSelf();
+                    }
+                    if (openReady && !s_ToolchainRequested)
+                    {
+                        s_ToolchainRequested = EditorApplication.ExecuteMenuItem(c_ToolchainMenuPath);
+                    }
+                    if (s_ToolchainRequested)
+                    {
+                        string state = SessionState.GetString("Nova.AgentSkills.Toolchain.State.v1", string.Empty);
+                        string identity = SessionState.GetString("Nova.AgentSkills.Toolchain.CheckedIdentity.v1", string.Empty);
+                        if (state == "success" && identity.EndsWith("|" + c_FrameworkValue, StringComparison.Ordinal))
+                        {
+                            EditorPrefs.DeleteKey(PendingOpenKey);
+                            EditorPrefs.DeleteKey(PendingToolchainKey);
+                            Debug.Log($"[{c_Name}] Nova Framework 和 AI 工具链已自动安装、绑定并通过本地复核，引导脚本自动删除。");
+                            DeleteSelf();
+                        }
+                        else ScheduleRun();
                     }
                     else if (s_openAttempts++ < c_MaxOpenAttempts)
                     {
                         // 框架尚在解析/编译，菜单还未注册，等下个编辑器 tick 再试。
-                        EditorApplication.delayCall += Run;
+                        ScheduleRun();
+                    }
+                    else
+                    {
+                        if (!s_WaitWarningShown)
+                        {
+                            s_WaitWarningShown = true;
+                            Debug.LogWarning($"[{c_Name}] 正在等待工具链安装入口，保留引导脚本并继续自动重试。");
+                        }
+                        ScheduleRun(30);
                     }
                     return;
                 }
@@ -208,8 +262,9 @@ namespace NovaBootstrap
                     // 否则（首装工程理论上不该出现 missing 为空，兜底）静默退出。
                     if (alreadyInstalled)
                     {
-                        Debug.Log($"[{c_Name}] 配置已是本版最新状态，无需矫正；火种已传递，新征程启程。");
-                        EditorApplication.delayCall += DeleteSelf;
+                        Debug.Log($"[{c_Name}] 配置无需矫正，编译稳定后仍会自动补齐、绑定并检查 AI 工具链。");
+                        EditorPrefs.SetBool(PendingToolchainKey, true);
+                        EditorApplication.delayCall += Run;
                     }
                     return;
                 }
@@ -260,11 +315,11 @@ namespace NovaBootstrap
                         Debug.LogWarning($"[{c_Name}] 清理 packages-lock.json 失败（不影响后续 Resolve）：{ex.Message}");
                     }
                     Debug.Log($"[{c_Name}] 配置矫正完成：依赖版本/registry/PlugPals 已对齐本版规格；UPM 正在重新解析（请稍候）。");
+                    EditorPrefs.SetBool(PendingToolchainKey, true);
                     Client.Resolve();
                     AssetDatabase.Refresh();
-                    // 火种使命完成（矫正模式不打开 PlugPals 窗口，直接自删）；
-                    // 延迟一帧再删，避免域重载与 Client.Resolve() 撞车。
-                    EditorApplication.delayCall += DeleteSelf;
+                    // 与首装共用重载接力，工具链安装绑定通过后再自删；矫正模式不额外打开 PlugPals。
+                    EditorApplication.delayCall += Run;
                     return;
                 }
 
@@ -274,12 +329,96 @@ namespace NovaBootstrap
                 // 落下接力标记，待框架编译完成后的下一轮 Run 打开窗口并自删；
                 // 同时排一次延迟回调兜底，防止个别情形下不触发域重载。
                 EditorPrefs.SetBool(PendingOpenKey, true);
+                Client.Resolve();
                 EditorApplication.delayCall += Run;
             }
             catch (Exception e)
             {
                 Debug.LogError($"[{c_Name}] 引导过程出错：{e}");
             }
+        }
+
+        /// <summary>查询 UPM 实际安装版本；Resolve 无返回结果，必须以目标包图而非旧菜单判断接力条件。</summary>
+        /// <returns>实际 Framework 和配套直接包已按本轮目标注册时返回 true。</returns>
+        private static bool AreBootstrapPackagesReady()
+        {
+            if (s_InstalledPackagesRequest == null)
+            {
+                s_InstalledPackagesRequest = Client.List(true, true);
+            }
+            if (!s_InstalledPackagesRequest.IsCompleted)
+            {
+                ScheduleRun();
+                return false;
+            }
+            if (s_InstalledPackagesRequest.Status == StatusCode.Failure)
+            {
+                if (!s_WaitWarningShown)
+                {
+                    s_WaitWarningShown = true;
+                    Debug.LogWarning($"[{c_Name}] UPM 实际安装结果尚未就绪，保留引导脚本，稍后自动重新解析和核对。");
+                }
+                s_InstalledPackagesRequest = null;
+                Client.Resolve();
+                ScheduleRun(30);
+                return false;
+            }
+
+            bool framework = false, novaMcp = false, memory = false, edm = false;
+            foreach (UnityEditor.PackageManager.PackageInfo package in s_InstalledPackagesRequest.Result)
+            {
+                if (package.errors != null && package.errors.Length > 0) continue;
+                if (package.name == c_FrameworkKey && package.version == c_FrameworkValue) framework = true;
+                if (package.name == c_NovaMcpKey && package.version == c_NovaMcpValue) novaMcp = true;
+                if (package.name == c_MemoryProtectionKey && package.version == c_MemoryProtectionValue) memory = true;
+                if (package.name == c_EdmKey && package.version == c_EdmValue) edm = true;
+            }
+            if (framework && novaMcp && memory && edm)
+            {
+                // UPM 列表与 Editor 已注册包都达到目标，避免列表已更新而加载中的程序集仍属于旧包。
+                UnityEditor.PackageManager.PackageInfo[] registered = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
+                if (registered != null && Array.Exists(registered,
+                    package => package.name == c_FrameworkKey && package.version == c_FrameworkValue
+                        && (package.errors == null || package.errors.Length == 0)))
+                {
+                    return true;
+                }
+            }
+
+            // 包图可能仍处于重载切换窗口；有限次重查，耗尽后保留真实未完成状态。
+            s_InstalledPackagesRequest = null;
+            if (s_openAttempts++ < c_MaxOpenAttempts)
+            {
+                ScheduleRun();
+            }
+            else
+            {
+                if (!s_WaitWarningShown)
+                {
+                    s_WaitWarningShown = true;
+                    Debug.LogWarning($"[{c_Name}] 实际安装包尚未达到目标，保留引导脚本并自动重新解析；不会仅凭旧菜单判断完成。");
+                }
+                s_openAttempts = 0;
+                Client.Resolve();
+                ScheduleRun(30);
+            }
+            return false;
+        }
+
+        /// <summary>有等待项时按秒继续推进；失败状态由 Framework 自动重试，不要求项目组补装。</summary>
+        private static void ScheduleRun(double delaySeconds = 1)
+        {
+            s_NextRunTime = EditorApplication.timeSinceStartup + delaySeconds;
+            EditorApplication.update -= TryRunScheduled;
+            EditorApplication.update += TryRunScheduled;
+        }
+
+        /// <summary>时间到达后只执行一次，域重载由静态入口自动接力。</summary>
+        private static void TryRunScheduled()
+        {
+            if (EditorApplication.timeSinceStartup < s_NextRunTime) return;
+            EditorApplication.update -= TryRunScheduled;
+            Run();
         }
 
         /// <summary>检测新工程与已装工程的默认直接依赖、registry 及配置缺项，统一核对固定目标版本。</summary>
@@ -515,6 +654,9 @@ namespace NovaBootstrap
 
         /// <summary>"待打开 PlugPals"接力标记键。EditorPrefs 为全用户级，故按工程路径区分，避免跨工程串扰。</summary>
         private static string PendingOpenKey => "NovaSpark.PendingOpenPlugPals." + ProjectRoot;
+
+        /// <summary>已有工程矫正或重复导入后的工具链检查接力标记，按项目隔离并在本地安装绑定验证通过后删除。</summary>
+        private static string PendingToolchainKey => "NovaSpark.PendingToolchainValidation." + ProjectRoot;
 
         /// <summary>加载 ProjectSettings.asset 的 SerializedObject（PlayerSettings 序列化体），用于读写发布开关。</summary>
         private static SerializedObject LoadProjectSettings()

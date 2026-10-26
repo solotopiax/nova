@@ -151,7 +151,8 @@ namespace NovaFramework.Editor
                 EditorUtil.PlugPals.VerdaccioPackageInfo[] packages = await EditorUtil.PlugPals.FetchRemotePackagesAsync(
                     registryUrl,
                     EditorUtil.PlugPals.c_RegistryApiPath,
-                    token);
+                    token,
+                    true);
                 token.ThrowIfCancellationRequested();
 
                 if (packages == null)
@@ -671,6 +672,7 @@ namespace NovaFramework.Editor
                     {
                         DrawInfoField("Core Version", entry.CoreVersion, false);
                     }
+                    DrawInfoField("Release Time", EditorUtil.PlugPals.FormatReleaseTime(entry.LatestReleaseTime), false);
                     DrawInfoField("Description", entry.Description, false);
                     EditorUtil.Draw.Space(4f);
                     DrawRowActionButtons(entry);

@@ -61,6 +61,8 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 
 用户安装或升级 Nova 后，首次打开 Unity 时 Editor 会在编译和包更新结束后检查，并按需把包内全部 Catalog Skill 同步为项目根 `.agents/skills/` 下的受管同步副本；不需要执行 `sync` 或手工复制。该目录不是第二真源，不能反向编辑真源。
 
+同一流程还会自动安装、绑定并复核五项 AI 工具链依赖，未完成项自动重试，无需项目组补装。当前聊天的工具可见性仍需现场核验。NovaSpark 首装、配置矫正及手动升级后的触发与重试规则见 [AI 工具链安装](../Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
+
 受管同步副本的冲突保留、已有事务恢复、真源缺失、项目本地状态和 Git 忽略边界统一见 [Agent 快速入口](../Docs/START_HERE.md)。能力分组只帮助 Router、导航和展示当前能力，不控制同步范围。Skill 也不是固定执行序列：Agent 只调用当前自然语言任务匹配的 Router、Workflow 或 Operation；多个有依赖的操作才由 Workflow 形成 DAG，且 Unity Editor、AssetDatabase、活动场景和同一导出目录仍是单写者资源。
 
 ## 当前 Skill 范围

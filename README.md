@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.4-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.5-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -34,7 +34,7 @@
 | com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.1 |
-| com.solotopia.nova.framework.mcp | 0.1.6 |
+| com.solotopia.nova.framework.mcp | 0.1.7 |
 
 Android AAB 可通过 Pipify 上传 Google Play，默认内部测试草稿；配置与上传边界见 [Google Play 上传说明](./Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)。
 
@@ -90,13 +90,13 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 1. 下载火种脚本 [NovaSpark.cs](./NovaSpark.cs)，放入消费项目的 `Assets/Editor/`。
 2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会显式安装 Nova Framework、MemoryProtection、Nova MCP 和 EDM，补齐所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
-3. 等待包解析和编译完成；PlugPals 窗口成功打开后，火种脚本会自动删除自身。手动打开入口为 `Nova/Open PlugPals`。
+3. 等待包解析、编译和 AI 工具链自动安装、绑定完成。缺失工具会自动补齐，失败自动重试；Console 显示实际结果，本地复核通过后脚本才自删除。无需项目组执行补装命令。PlugPals 的手动打开入口为 `Nova/Open PlugPals`；工具链重试入口为 `Nova/Check and Setup AI Toolchain`。
 
 默认直接安装的包：
 
-- Nova Framework：`com.solotopia.nova.framework@0.7.3`。
+- Nova Framework：`com.solotopia.nova.framework@0.7.5`。
 - Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.2`。
-- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.6`。
+- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.7`。
 - EDM：`com.google.external-dependency-manager@1.2.190`。
 
 Nova Framework - MCP 提供 Nova 的 MCP 接入基础，`com.coplaydev.unity-mcp` 是其当前使用的 Unity MCP Provider，由包依赖经 OpenUPM 自动解析，不另写入工程的直接依赖。
@@ -105,7 +105,7 @@ MemoryProtection 包默认安装，实际防篡改还需单独安装兼容的 **
 
 NovaSpark 会修改项目配置。已有 Nova 项目重复导入时，它会先列出待矫正项并等待确认；本仓这类使用本地 `file:` Framework 的源码工程会自动跳过。
 
-确认矫正后，脚本按随脚本提供的目标值覆盖依赖版本和同名 Registry URL，并重写 PlugPals 固定配置，可能替换已有定制值；它不比较版本高低，也不提供跨文件事务回滚。`Client.Resolve()` 只是发起解析，脚本返回或自删除均不证明 UPM 已成功。仍须等待当前项目包解析和编译，失败时根据实际 manifest、配置及 Console 继续处理，不能把引导完成当作安装验收。
+确认矫正后，脚本按随脚本提供的目标值覆盖依赖版本和同名 Registry URL，并重写 PlugPals 固定配置，可能替换已有定制值；它不比较版本高低，也不提供跨文件事务回滚。脚本等待实际包图、编译以及工具链自动安装绑定通过后才删除自身。手动升级 Framework 后同样自动补齐缺项，失败继续自动重试；需要立即重试时使用 `Nova/Check and Setup AI Toolchain`。安装范围和当前聊天连接的独立验收见 [AI 工具链安装](Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
 
 ---
 

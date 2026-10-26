@@ -136,6 +136,13 @@ namespace NovaFramework.Editor
                 /// </summary>
                 [JsonProperty("nova")]
                 public NovaPackageMetadata Nova;
+
+                /// <summary>
+                /// 各远程版本的发布时间，优先采用该版本包内记录，其次采用仓库上传时间。
+                /// 仅详情查询填充，不参与包操作或版本比较。
+                /// </summary>
+                [JsonIgnore]
+                public Dictionary<string, string> VersionReleaseTimes;
             }
 
             /// <summary>
@@ -182,6 +189,11 @@ namespace NovaFramework.Editor
                 /// 远程最新版本。
                 /// </summary>
                 public string LatestVersion;
+
+                /// <summary>
+                /// 远端最新版本的 UTC 发布时间；不借用其他版本的时间。
+                /// </summary>
+                public string LatestReleaseTime;
 
                 /// <summary>
                 /// 安装状态。
@@ -245,6 +257,11 @@ namespace NovaFramework.Editor
             /// </summary>
             public class NovaPackageMetadata
             {
+                /// <summary>
+                /// 正式签名前写入的 UTC 发布时间，使用精确到秒的 ISO 8601 格式。
+                /// </summary>
+                public string releaseTime;
+
                 /// <summary>
                 /// 必须的三方库引导信息（依赖包名 -> 引导信息）。
                 /// </summary>
