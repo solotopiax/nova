@@ -71,6 +71,7 @@ SDKComponent
 - `SetEnabled` 运行期启停
 - `PayGuardAsync` 支付前置模板：启用状态、初始化状态、防重入、商品表校验
 - `SetUserId` 账号 UID 写入
+- `GetNetCmdUrl(dtName)` 按已加载 NetCmd 行的 `Name` 解析 URL；不带表名前缀，缺少 NetworkManager、行或 Host 配置时返回 null。该 helper 不发送请求。
 - `LoadPersistData<T>` / `SavePersistData<T>` 按 `iap_{storeType}` + `data_{uid}` 读写
 - `IAPLoadingGuard` 和默认 Loading 面板绑定
 - `IAPLogOwner` 日志收口；Store 和 Service 只声明固定 `LogTag`，日志底层不依赖 `IAPStoreType`

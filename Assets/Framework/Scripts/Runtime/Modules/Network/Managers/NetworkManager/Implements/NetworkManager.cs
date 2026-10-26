@@ -172,7 +172,7 @@ namespace NovaFramework.Runtime
         /// 根据复合键（tbName + dtName）获取完整 URL（HostKey URL + Path）。
         /// </summary>
         /// <param name="tbName">Luban 表类型名称，与 dtName 共同构成复合缓存键。</param>
-        /// <param name="dtName">NetCmd 数据类型名称。</param>
+        /// <param name="dtName">指令行名称，对应 INetworkCmdRow.Name，不是生成的数据类型名。</param>
         /// <returns>URL 字符串，不存在时返回 null。</returns>
         public override string GetNetCmdUrl(string tbName, string dtName)
         {
@@ -196,7 +196,7 @@ namespace NovaFramework.Runtime
         /// 根据 NetCmd 名称获取完整 URL（HostKey URL + Path），泛型版本提供编译期类型约束。
         /// </summary>
         /// <typeparam name="T">Luban 表类型（编译期约束），Name 用于构造复合缓存键。</typeparam>
-        /// <param name="dtName">NetCmd 数据类型名称。</param>
+        /// <param name="dtName">指令行名称，对应 INetworkCmdRow.Name，不是生成的数据类型名。</param>
         /// <returns>URL 字符串，不存在时返回 null。</returns>
         public override string GetNetCmdUrl<T>(string dtName)
         {
@@ -265,7 +265,46 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 获取指定类型的 Luban 表实例。
+        /// 按域名标识名称查询已加载的 HostKey 原始配置行，不改变或重新校验路由缓存。
+        /// </summary>
+        /// <param name="hostKeyName">域名表的 INetworkHostKeyRow.Name，忽略大小写；空值不匹配。</param>
+        /// <returns>原始配置行；未命中时返回 null，同名行按已加载表的遍历顺序取最后一条。</returns>
+        public override INetworkHostKeyRow ResolveHostKeyRow(string hostKeyName)
+        {
+            if (string.IsNullOrEmpty(hostKeyName))
+            {
+                return null;
+            }
+
+            INetworkHostKeyRow result = null;
+            foreach (ITable table in m_NetworkDatas.Values)
+            {
+                if (!(table is ITable<INetworkHostKeyRow> hostKeyTable) || hostKeyTable.DataList == null)
+                {
+                    continue;
+                }
+
+                IReadOnlyList<INetworkHostKeyRow> rows = hostKeyTable.DataList;
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    INetworkHostKeyRow row = rows[i];
+                    if (row != null && string.Equals(row.Name, hostKeyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = row;
+                    }
+                }
+            }
+
+            if (result == null)
+            {
+                Log.Warning(LogTag.Network, "ResolveHostKeyRow 未找到 HostKey：{0}。", hostKeyName);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 获取指定类型的已加载 HostKey 或 NetCmd Luban 表实例。
         /// </summary>
         /// <typeparam name="T">Luban 表类型。</typeparam>
         /// <returns>表实例，不存在时返回 null。</returns>

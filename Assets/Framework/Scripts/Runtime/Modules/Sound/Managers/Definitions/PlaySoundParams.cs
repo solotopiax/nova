@@ -11,8 +11,8 @@
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 播放声音参数。
-    /// 🔴 红线：本类是 IReference。一经传入 ISoundManager.PlaySound，所有权转移到内部
+    /// 单次播放的运行时参数；循环、优先级、音量与空间混合度统一来自声音表。
+    /// 本类是 IReference。一经传入 ISoundManager.PlaySound 或 PlaySoundByAsset，所有权转移到内部
     /// PlaySoundInfo，由其 Clear 时级联归还。调用方禁止再持有该实例或重复
     /// ReferencePool.Put，否则会触发引用池"重复回收"异常。
     /// </summary>
@@ -29,24 +29,6 @@ namespace NovaFramework.Runtime
         /// </summary>
         private bool m_MuteInSoundGroup;
         public bool MuteInSoundGroup { get => m_MuteInSoundGroup; set => m_MuteInSoundGroup = value; }
-
-        /// <summary>
-        /// 是否循环播放。
-        /// </summary>
-        private bool m_Loop;
-        public bool Loop { get => m_Loop; set => m_Loop = value; }
-
-        /// <summary>
-        /// 声音优先级。
-        /// </summary>
-        private int m_Priority;
-        public int Priority { get => m_Priority; set => m_Priority = value; }
-
-        /// <summary>
-        /// 在声音组内音量大小。
-        /// </summary>
-        private float m_VolumeInSoundGroup;
-        public float VolumeInSoundGroup { get => m_VolumeInSoundGroup; set => m_VolumeInSoundGroup = value; }
 
         /// <summary>
         /// 声音淡入时间（秒）。
@@ -73,9 +55,6 @@ namespace NovaFramework.Runtime
         {
             m_Time = SoundConstant.c_DefaultTime;
             m_MuteInSoundGroup = SoundConstant.c_DefaultMute;
-            m_Loop = SoundConstant.c_DefaultLoop;
-            m_Priority = SoundConstant.c_DefaultPriority;
-            m_VolumeInSoundGroup = SoundConstant.c_DefaultVolume;
             m_FadeInSeconds = SoundConstant.c_DefaultFadeInSeconds;
             m_Pitch = SoundConstant.c_DefaultPitch;
             m_PanStereo = SoundConstant.c_DefaultPanStereo;
@@ -97,9 +76,6 @@ namespace NovaFramework.Runtime
         {
             m_Time = SoundConstant.c_DefaultTime;
             m_MuteInSoundGroup = SoundConstant.c_DefaultMute;
-            m_Loop = SoundConstant.c_DefaultLoop;
-            m_Priority = SoundConstant.c_DefaultPriority;
-            m_VolumeInSoundGroup = SoundConstant.c_DefaultVolume;
             m_FadeInSeconds = SoundConstant.c_DefaultFadeInSeconds;
             m_Pitch = SoundConstant.c_DefaultPitch;
             m_PanStereo = SoundConstant.c_DefaultPanStereo;

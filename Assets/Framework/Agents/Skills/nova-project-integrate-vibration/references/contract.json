@@ -24,8 +24,8 @@
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.Vibrate.LoadAsync / Play / PlayCustom / PlayEmphasis / StopAll",
-      "when": "在运行时完成加载，触发冻结的预设或命名区域，并由确认责任方停止"
+      "entry": "Nova.Vibrate.LoadAsync / Play / PlayCustom / PlayEmphasis / PlayCustomByParams / PlayEmphasisByParams / StopAll",
+      "when": "表驱动调用先完成加载，PlayCustom(name)/PlayEmphasis(name) 的首参固定为对应区域表的 Name 并完整使用全部行配置；手工参数需求使用明确的 ByParams 入口（Emphasis 仅三参数），由确认责任方停止"
     },
     {
       "kind": "unity-editor-automation",

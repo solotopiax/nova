@@ -147,6 +147,21 @@ namespace NovaFramework.Runtime
         ITable GetTexts(string tbName);
 
         /// <summary>
+        /// 按字体标记获取当前语言的首条匹配配置，不加载资源或回退到其他语言。
+        /// </summary>
+        /// <param name="mark">字体表的 Mark，按 Ordinal 精确匹配；空值不匹配。</param>
+        /// <returns>原始字体配置行；标记为空、当前语言没有数据或未命中时返回 null。</returns>
+        ILocalizationFontRow GetFontData(string mark);
+
+        /// <summary>
+        /// 按语言和字体标记获取首条匹配配置，不加载资源或回退到其他语言。
+        /// </summary>
+        /// <param name="language">要查询的语言。</param>
+        /// <param name="mark">字体表的 Mark，按 Ordinal 精确匹配；空值不匹配。</param>
+        /// <returns>原始字体配置行；标记为空、语言没有数据或未命中时返回 null。</returns>
+        ILocalizationFontRow GetFontData(Language language, string mark);
+
+        /// <summary>
         /// 检查指定语言是否存在字体数据。
         /// </summary>
         /// <param name="language">目标语言。</param>

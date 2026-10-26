@@ -1094,10 +1094,10 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("nova.project.sound.export", adapter_entries)
         self.assertNotIn("export.sound.data / export.sound.code", adapter_entries)
         self.assertIn(
-            "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / StopSound / ReleaseAssetBySerialID",
+            "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / PlaySoundByAsset / StopSound / ReleaseAssetBySerialID",
             adapter_entries,
         )
-        self.assertIn("serialID 不是播放成功证据", skill_content)
+        self.assertIn("非负 `serialID` 也不是播放成功证据", skill_content)
         self.assertIn("LoadAsync()==true 也不是播放成功证据", skill_content)
         self.assertIn("输入已确认且已执行允许步骤", skill_content)
         self.assertIn("实际 AudioSource 播放", skill_content)

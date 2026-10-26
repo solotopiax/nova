@@ -41,7 +41,7 @@ namespace NovaFramework.Runtime
         /// 根据 NetCmd 名称获取对应完整 URL（HostKey URL + Path）。
         /// </summary>
         /// <param name="tbName">Luban 表类型名称，用于构造复合缓存键以避免跨表同名冲突。</param>
-        /// <param name="dtName">NetCmd 数据类型名称。</param>
+        /// <param name="dtName">指令行名称，对应 INetworkCmdRow.Name，不是生成的数据类型名。</param>
         /// <returns>目标 URL 字符串，名称不存在时返回 null。</returns>
         string GetNetCmdUrl(string tbName, string dtName);
 
@@ -49,7 +49,7 @@ namespace NovaFramework.Runtime
         /// 根据 NetCmd 名称获取对应完整 URL（HostKey URL + Path），泛型版本提供编译期类型约束。
         /// </summary>
         /// <typeparam name="T">Luban 表类型（编译期约束），Name 用于构造复合缓存键。</typeparam>
-        /// <param name="dtName">NetCmd 数据类型名称。</param>
+        /// <param name="dtName">指令行名称，对应 INetworkCmdRow.Name，不是生成的数据类型名。</param>
         /// <returns>目标 URL 字符串，名称不存在时返回 null。</returns>
         string GetNetCmdUrl<T>(string dtName) where T : class, ITable;
 
@@ -75,7 +75,14 @@ namespace NovaFramework.Runtime
         INetworkCmdRow ResolveNetCmdRow(string cmdName);
 
         /// <summary>
-        /// 获取指定类型的 Luban 表实例。
+        /// 按域名标识名称查询已加载的 HostKey 原始配置行，不改变或重新校验路由缓存。
+        /// </summary>
+        /// <param name="hostKeyName">域名表的 INetworkHostKeyRow.Name，忽略大小写；空值不匹配。</param>
+        /// <returns>原始配置行；未命中时返回 null，同名行按已加载表的遍历顺序取最后一条。</returns>
+        INetworkHostKeyRow ResolveHostKeyRow(string hostKeyName);
+
+        /// <summary>
+        /// 获取指定类型的已加载 HostKey 或 NetCmd Luban 表实例。
         /// </summary>
         /// <typeparam name="T">Luban 表类型。</typeparam>
         /// <returns>表实例，不存在时返回 null。</returns>

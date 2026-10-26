@@ -84,7 +84,7 @@ auto_generated: true
 - [ADR-033 MainDemo 演示拓扑：各 sample 独立 Nova.prefab + MainDemo 内树形导航](../2-Areas/ADR/ADR-033-maindemo-isolated-topology.md) — sample 独立闭包；MainDemo 树形导航
 - [ADR-043 GameSave 全量/非全量由 proto full 字段显式区分](../2-Areas/ADR/ADR-043-gamesave-full-explicit-flag.md) — 协议 full=true 是全量唯一信号，废弃 keys 空判
 - [ADR-045 SetFullAsync 全量上传 value 复用 datas[0].Value（Key 空串）](../2-Areas/ADR/ADR-045-setfull-value-via-datas0.md) — 全量上传载荷复用 datas[0]，Key 留空串
-- [ADR-046 Sound/Vibrate 模块对外 API 不暴露按行重载](../2-Areas/ADR/ADR-046-sound-vibrate-no-by-row-api.md) — Sound/Vibrate 对外 API 仅按名重载
+- [ADR-046 Sound/Vibrate 模块对外 API 不暴露按行重载](../2-Areas/ADR/ADR-046-sound-vibrate-no-by-row-api.md) — 表配置按名称访问，替代输入显式命名
 - [ADR-047 Editor 激活 ConfigMaster 锚点（Globals.json + GUID + 四段回退）](../2-Areas/ADR/ADR-047-editor-active-master-anchor.md) — Globals.json 锚定 Editor 激活 master
 - [ADR-048 Nova.prefab 跟主框架版本走（amends ADR-033）](../2-Areas/ADR/ADR-048-nova-prefab-follow-framework.md) — sample scene 引用主框架包内 prefab 实例
 - [ADR-049 YooAsset Settings 路径 ConfigMaster 化（含 UPM 包本地 fork）](../2-Areas/ADR/ADR-049-yooasset-settings-via-configmaster.md) — YooAsset 设置路径收口 ConfigMaster

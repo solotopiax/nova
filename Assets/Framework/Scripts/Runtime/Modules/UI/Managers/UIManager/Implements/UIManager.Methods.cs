@@ -238,20 +238,120 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 使用已经确定的表格行同步打开，实例池与生命周期共用原有执行链。
+        /// </summary>
+        /// <param name="entry">本次唯一匹配的 UI 配置行，所有打开行为均从该行读取。</param>
+        /// <param name="userData">原样传递给视图的业务数据。</param>
+        /// <returns>已打开视图的序列编号。</returns>
+        private int OpenRegisteredUIViewSync(IUIViewRow entry, object userData)
+        {
+            PrepareOpenUIView(entry.AssetLocation, entry.UIGroupName, entry.InObjectPools,
+                out int serialID, out UIGroup uiGroup, out string instanceName, out UIViewInstanceObject instanceObject);
+            bool isNewInstance = instanceObject == null;
+            if (isNewInstance)
+            {
+                Transform parent = ((MonoBehaviour)uiGroup.Helper).transform;
+                object uiViewTarget = LoadUIViewSync(entry.AssetLocation, parent);
+                instanceObject = UIViewInstanceObject.Create(instanceName, uiViewTarget);
+                if (entry.InObjectPools)
+                {
+                    m_InstancePool.Register(instanceObject, true);
+                }
+            }
+
+            InternalOpenUIView(serialID, entry.AssetLocation, uiGroup, instanceObject.Target,
+                entry.PauseCoveredUIView, entry.InObjectPools, isNewInstance, 0f, userData);
+            return serialID;
+        }
+
+        /// <summary>
+        /// 使用已经确定的表格行创建异步打开请求，将本次配置冻结到加载信息中。
+        /// </summary>
+        /// <param name="entry">本次唯一匹配的 UI 配置行，所有打开行为均从该行读取。</param>
+        /// <param name="userData">原样传递给视图的业务数据，调用方负责其等待期间的有效性。</param>
+        /// <returns>打开请求的序列编号，不代表异步加载已经成功。</returns>
+        private int OpenRegisteredUIViewAsync(IUIViewRow entry, object userData)
+        {
+            PrepareOpenUIView(entry.AssetLocation, entry.UIGroupName, entry.InObjectPools,
+                out int serialID, out UIGroup uiGroup, out string instanceName, out UIViewInstanceObject instanceObject);
+            if (instanceObject == null)
+            {
+                m_UIViewsBeingLoaded.Add(serialID, entry.AssetLocation);
+                Transform parent = ((MonoBehaviour)uiGroup.Helper).transform;
+                LoadUIViewAsync(entry.AssetLocation, parent,
+                    OpenUIViewInfo.Create(serialID, uiGroup, entry.PauseCoveredUIView, entry.InObjectPools, userData)).Forget();
+            }
+            else
+            {
+                InternalOpenUIView(serialID, entry.AssetLocation, uiGroup, instanceObject.Target,
+                    entry.PauseCoveredUIView, entry.InObjectPools, false, 0f, userData);
+            }
+
+            return serialID;
+        }
+
+        /// <summary>
+        /// 按 UI 表的 Name 精确查找配置，缺失时只报错，不生成默认配置。
+        /// </summary>
+        /// <param name="uiViewName">UI 表的 Name 列值。</param>
+        /// <returns>匹配行；名称为空或未注册时返回 null。</returns>
+        private IUIViewRow GetUIViewRowByName(string uiViewName)
+        {
+            if (string.IsNullOrEmpty(uiViewName) || !m_UIViewRegistry.TryGetValue(uiViewName, out IUIViewRow row))
+            {
+                Log.Error(LogTag.UI, "未在注册表中找到视图配置：'{0}'，请检查 UI 配置表。", uiViewName);
+                return null;
+            }
+
+            return row;
+        }
+
+        /// <summary>
+        /// 按资源地址查找唯一 UI 配置；共享地址必须改用名称入口，不猜测分组。
+        /// </summary>
+        /// <param name="assetLocation">UI 表的 AssetLocation 列值，按序号比较精确匹配。</param>
+        /// <returns>唯一匹配行；缺失或有多条匹配时返回 null，不分配序列编号。</returns>
+        private IUIViewRow GetUIViewRowByAssetLocation(string assetLocation)
+        {
+            if (string.IsNullOrEmpty(assetLocation))
+            {
+                Log.Error(LogTag.UI, "按资源地址打开视图时，资源地址不能为空。");
+                return null;
+            }
+
+            IUIViewRow result = null;
+            foreach (IUIViewRow row in m_UIViewRegistry.Values)
+            {
+                if (!string.Equals(row.AssetLocation, assetLocation, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (result != null)
+                {
+                    Log.Error(LogTag.UI, "资源地址 '{0}' 对应多条 UI 配置，请使用 OpenUIViewSync/Async 按 UI 表 Name 打开。", assetLocation);
+                    return null;
+                }
+
+                result = row;
+            }
+
+            if (result == null)
+            {
+                Log.Error(LogTag.UI, "未找到资源地址 '{0}' 的 UI 配置，请检查 UI 表并完成加载。", assetLocation);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 通过泛型类型从注册表中查找视图配置条目。
         /// </summary>
         /// <typeparam name="T">UIView 子类类型。</typeparam>
         /// <returns>视图配置数据行，未找到时返回 null 并输出错误日志。</returns>
         private IUIViewRow GetUIViewRow<T>() where T : UIView
         {
-            string typeName = typeof(T).Name;
-            if (!m_UIViewRegistry.TryGetValue(typeName, out IUIViewRow row))
-            {
-                Log.Error(LogTag.UI, "未在注册表中找到视图配置：'{0}'，请检查 UI 配置表。", typeName);
-                return null;
-            }
-
-            return row;
+            return GetUIViewRowByName(typeof(T).Name);
         }
 
         /// <summary>

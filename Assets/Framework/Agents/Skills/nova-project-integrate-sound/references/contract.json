@@ -34,8 +34,8 @@
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / StopSound / ReleaseAssetBySerialID",
-      "when": "在 Play Mode 中加载、确认目标组、触发；本 Owner 显式结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID(serialID)，验证停止与句柄释放。Pause/Resume 保留请求与资源，自然结束仍需履行释放责任"
+      "entry": "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / PlaySoundByAsset / StopSound / ReleaseAssetBySerialID",
+      "when": "PlaySound 首参为表 Name，PlaySoundByAsset 首参为 AssetLocation 且必须唯一反查行；全部表内组、资源、循环、优先级、音量与空间混合度来自该行，参数只补 Time/MuteInSoundGroup/FadeInSeconds/Pitch/PanStereo。同步拒绝返回 -1 且仍接管参数；非负编号也需实际播放验证。本 Owner 结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID，并验证停止与句柄释放；Pause/Resume 和自然结束责任沿用生命周期合同。"
     },
     {
       "kind": "unity-editor-automation",
@@ -62,7 +62,8 @@
     },
     {
       "name": "soundRowAndGroupContract",
-      "required": true
+      "required": true,
+      "description": "冻结唯一 Name、AssetLocation、GroupName、Loop、Priority、Volume、SpatialBlend 和已注册组壳。普通播放首参为 Name；ByAsset 仅接受唯一地址反查行，缺失或歧义拒绝，禁止硬编码组/资源和参数覆盖表字段。表外 Time/MuteInSoundGroup/FadeInSeconds/Pitch/PanStereo 可保留；旧 group+address 和参数 Loop/Priority/VolumeInSoundGroup 迁入源表后正式导出。"
     },
     {
       "name": "businessTriggerAndLifecycle",
@@ -173,7 +174,7 @@
   "evidence": [
     "冻结的 active ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 有效路径，以及 Sound 表行、AudioClip、Collector、Package、地址和声音组映射",
     "定向 Exporter 或已确认 Sound Batch 的暂存发布与 Unity 编译证据",
-    "Play Mode 中 Nova.Sound.LoadAsync、HasSoundGroup、业务触发和实际 AudioSource 播放证据",
+    "Play Mode 中 Nova.Sound.LoadAsync、HasSoundGroup、按 Name 或唯一 AssetLocation 的业务触发和实际 AudioSource 播放证据；核对 loop、priority、最终音量及 spatialBlend 与表配置一致，-1 拒绝且非负 serialID 也不替代实际播放",
     "本 Owner 的 BGM / SFX 显式结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID 的停止与句柄释放证据；覆盖本次涉及的加载中停止，Pause/Resume 保留请求与资源，自然结束仍需履行释放责任",
     "资源释放不能只凭 Stop bool、Release 的 void 调用记录或 helper AudioSource.clip 是否非空判断；使用受控只读诊断或等价资源句柄探针，不保证 Unity 立即卸载内存",
     "本轮测试态、临时runner/脚本/meta/marker/日志/产物清场、必要Refresh与目标工作树核对；正式交付和原有工作保留"

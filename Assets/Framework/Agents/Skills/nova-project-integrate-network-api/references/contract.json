@@ -34,7 +34,7 @@
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+      "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
       "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
     },
     {

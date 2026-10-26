@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-10-26
+
+### Added
+
+- UI 普通 OpenUIViewSync/Async 字符串入口按表内 Name 打开；OpenUIViewByAssetSync/Async 按唯一 AssetLocation 打开。首参数含义由方法名明确区分，第二参数 userData 原样传递，泛型、名称与地址打开均使用已加载表格中的分组、暂停与池化配置。
+
+- Sound 新增 PlaySoundByAsset 按资源地址唯一查表播放；本地化新增 GetFontData 按当前或指定语言与 Mark 查询字体配置；Network 新增 ResolveHostKeyRow 按 HostKey 表内 Name 读取原始配置。
+
+### Breaking
+
+- 移除旧版非泛型“资源地址 + 分组”打开重载，地址调用改用 OpenUIViewByAssetSync/Async；共享地址改用 Name 选择配置。普通字符串入口的首参现在是 Name，第二个字符串是业务数据，旧调用可能仍能编译但含义已变化，必须检查迁移。旧泛型 bool 重载保留并标记弃用，开关不再覆盖表格；缺配置或地址有歧义返回 -1，不补默认值。自定义 IUIManager 需实现两个 Name 字符串重载及两个 ByAsset 方法。
+
+- Sound 移除 PlaySound(groupName, assetLocation, params) 及 PlaySoundParams.Loop / Priority / VolumeInSoundGroup，迁移到表内配置和 PlaySound(name[, params]) 或 PlaySoundByAsset。Vibrate 数值入口改名为 PlayCustomByParams / PlayEmphasisByParams，后者删除原来不生效的 interval，保留名称入口。自定义 ISoundManager / IVibrateManager / ILocalizationManager / INetworkManager 实现需按新接口补齐成员；MainDemo 已迁移。
+
+### Important
+
+本次统一 UI、声音和振动的表格入口，包含不兼容调整，升级前请迁移旧调用。
+
+(1) **UI 按名称或地址打开。** `OpenUIViewSync/Async` 的字符串首参改为表内 `Name`；资源地址改用 `OpenUIViewByAssetSync/Async`。第二参只传业务数据，分组、暂停下层、对象池由表决定，旧开关不再生效。旧“地址＋分组”调用可能仍能编译，必须逐处检查。
+
+(2) **声音配置交给表格。** 使用 `PlaySound(name)` 或 `PlaySoundByAsset(address)`，移除旧“组＋地址”调用。循环、优先级、音量改在表中配置，不再通过 `PlaySoundParams` 覆盖；空间混合度现在实际生效。修改源表后请正式导出。
+
+(3) **区分表格振动与手工参数。** `PlayCustom/PlayEmphasis(name)` 继续按名称播放；数值调用改用 `PlayCustomByParams/PlayEmphasisByParams`，后者删除原来无效的 `interval`。现在会合并全部表的同名步骤，同顺序保留来源顺序，请检查此前未生效的后续配置。
+
+(4) **检查缺配置和重载失败。** UI/声音缺配置或地址不唯一时返回 `-1`。声音表的空行、空名称或重名会拒绝整轮索引，重新加载不再沿用旧行或部分表。振动加载失败保留旧完整配置，空配置加载成功会清空旧组。
+
+(5) **补齐自定义管理器。** 自行实现 UI、声音、振动、本地化或网络管理器的项目，需同步新接口。字体新增 `GetFontData` 按语言与 `Mark` 查询，域名配置新增 `ResolveHostKeyRow(name)`。
+
+### Fixed
+
+- Sound 播放完整使用声音表的组、资源、循环、优先级、音量与 SpatialBlend，修复空间混合度未写入 AudioSource；拒绝无配置或歧义地址，重名或空名称拒绝整轮索引。Vibrate 汇总每个区域全部 Unit 的表行，同 Order 保持源顺序，成功后同时替换两路分组，修复只读首表、重复加载残留与构组半更新。
+
+### Changed
+
+- 重要升级窗口中每个版本的具体说明统一显示红色，包名、版本号及其他文字保持原有颜色，正文仍可选择复制。
+
 ## [0.7.3] - 2026-10-23
 
 ### Changed

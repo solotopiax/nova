@@ -77,8 +77,11 @@ namespace NovaFramework.Runtime
 
             LubanDataCache dataCache = new LubanDataCache();
 
-            AddSyncLoadTasks(m_EmphasisUnitsSettings, dataCache, syncLoadFunc, releaseFunc);
-            AddSyncLoadTasks(m_CustomUnitsSettings, dataCache, syncLoadFunc, releaseFunc);
+            if (!AddSyncLoadTasks(m_EmphasisUnitsSettings, dataCache, syncLoadFunc, releaseFunc) ||
+                !AddSyncLoadTasks(m_CustomUnitsSettings, dataCache, syncLoadFunc, releaseFunc))
+            {
+                return;
+            }
 
             BuildGroupsFromCache(dataCache);
         }
@@ -152,7 +155,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 按名称播放自定义振动组合，未命中时输出 Warning 并静默返回。
+        /// 按 Custom 表的 Name 播放整组步骤，完整使用行内配置；未命中时警告并返回。
         /// </summary>
         /// <param name="name">振动分组名称（对应数据表 Name 字段）。</param>
         public override void PlayCustom(string name)
@@ -170,13 +173,13 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 播放自定义持续振动。
+        /// 直接按参数播放自定义持续振动，不读取振动表。
         /// </summary>
         /// <param name="intensity">振动强度（0~1）。</param>
         /// <param name="sharpness">振动锐度（0~1）。</param>
         /// <param name="preDuration">前置等待时长（秒）。</param>
         /// <param name="duration">振动持续时长（秒）。</param>
-        public override void PlayCustom(float intensity, float sharpness, float preDuration, float duration)
+        public override void PlayCustomByParams(float intensity, float sharpness, float preDuration, float duration)
         {
             if (!Enable) return;
 
@@ -200,7 +203,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 按名称播放强调振动组合，未命中时输出 Warning 并静默返回。
+        /// 按 Emphasis 表的 Name 播放整组步骤，完整使用行内配置；未命中时警告并返回。
         /// </summary>
         /// <param name="name">振动分组名称（对应数据表 Name 字段）。</param>
         public override void PlayEmphasis(string name)
@@ -218,13 +221,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 播放强调振动。
+        /// 直接按参数播放单次强调振动，不读取振动表。
         /// </summary>
         /// <param name="amplitude">振幅（0~1）。</param>
         /// <param name="frequency">频率（0~1）。</param>
         /// <param name="preDuration">前置等待时长（秒）。</param>
-        /// <param name="interval">仅校验非负，当前数值重载不使用它等待或调用插件；表行 Interval 的语义独立。</param>
-        public override void PlayEmphasis(float amplitude, float frequency, float preDuration, float interval)
+        public override void PlayEmphasisByParams(float amplitude, float frequency, float preDuration)
         {
             if (!Enable) return;
 
@@ -232,8 +234,6 @@ namespace NovaFramework.Runtime
             ValidateRange01(frequency, nameof(frequency));
             if (preDuration < 0f)
                 throw new ArgumentOutOfRangeException(nameof(preDuration), "preDuration 不可为负数。");
-            if (interval < 0f)
-                throw new ArgumentOutOfRangeException(nameof(interval), "interval 不可为负数。");
 
 #if NOVA_NICEVIBRATIONS
             if (preDuration > 0f)

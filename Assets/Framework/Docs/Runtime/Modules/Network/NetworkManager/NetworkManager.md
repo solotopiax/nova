@@ -25,6 +25,8 @@ Network 路由管理器加载 HostKey 与 NetCmd 两套 Luban 表，构建运行
 
 HostKey 的 Value 是主域名，FallbackValue 是备用域名。运行时只接收 HTTP(S) 绝对基础地址，首尾不能有空格，末尾不能带 /；两个地址都有效时保留相同协议的备用地址。这个检查保留原值，不规范化 URI，也未禁止 userinfo、query、fragment 或路径。NetCmd.Path 应为空或以 / 开头，此约束由配置/导出链维护，运行时缓存不重新校验，解析仍直接拼接字符串。
 
+需要按表内名称读取原始配置时使用 `ResolveHostKeyRow(hostKeyName)`。它从已加载的 `ITable<INetworkHostKeyRow>` 中按 `Name` 忽略大小写查询，空名称或未命中返回 `null`，非空名称未命中记录告警；同名行按已加载表遍历顺序取最后一条。此查询不触发加载、不校验或修改路由缓存，因此取到原始行不代表其主备地址都能用于请求。实际发送继续走原有 URL 解析链。生成表入口 `GetNetCmd<T>()` / `GetNetCmd(tbName)` 仍可读取 HostKey 和 NetCmd 两种表。
+
 ## URL 解析
 
 ~~~text
@@ -63,6 +65,7 @@ INetworkCmdRow row = Nova.Network.ResolveNetCmdRow("Login");
 ## 注意事项
 
 - GetNetCmdUrl 的复合键是 表类型名 + "." + 指令行名，不是单独的行名。
+- `GetNetCmdUrl` 的既有形参 `dtName` 指 `INetworkCmdRow.Name`，不是生成的数据类型名；参数名保留以兼容命名实参。
 - ResolveNetCmdRow 按行名建立单键索引；跨表同名时后写入项覆盖先写入项。
 - QueryPublicIPAddressAsync 使用 HTTP 管理器；业务代码通常通过 Nova.Network 使用公开能力，不直接依赖此 internal 实现。
 

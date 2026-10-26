@@ -32,6 +32,12 @@ namespace NovaFramework.Runtime
             public SoundGroup SoundGroup => m_SoundGroup;
 
             /// <summary>
+            /// 此请求已解析的声音表行；异步资源完成后仍使用同一行的播放配置。
+            /// </summary>
+            private ISoundRow m_SoundRow;
+            public ISoundRow SoundRow => m_SoundRow;
+
+            /// <summary>
             /// 播放声音参数。
             /// </summary>
             private PlaySoundParams m_PlaySoundParams;
@@ -44,6 +50,7 @@ namespace NovaFramework.Runtime
             {
                 m_SerialID = 0;
                 m_SoundGroup = null;
+                m_SoundRow = null;
                 m_PlaySoundParams = null;
             }
 
@@ -52,13 +59,15 @@ namespace NovaFramework.Runtime
             /// </summary>
             /// <param name="serialID">声音序列编号。</param>
             /// <param name="soundGroup">所属声音组。</param>
+            /// <param name="soundRow">已解析且通过校验的声音表行。</param>
             /// <param name="playSoundParams">播放声音参数。</param>
             /// <returns>播放声音信息实例。</returns>
-            public static PlaySoundInfo Create(int serialID, SoundGroup soundGroup, PlaySoundParams playSoundParams)
+            public static PlaySoundInfo Create(int serialID, SoundGroup soundGroup, ISoundRow soundRow, PlaySoundParams playSoundParams)
             {
                 PlaySoundInfo playSoundInfo = ReferencePool.Get<PlaySoundInfo>();
                 playSoundInfo.m_SerialID = serialID;
                 playSoundInfo.m_SoundGroup = soundGroup;
+                playSoundInfo.m_SoundRow = soundRow;
                 playSoundInfo.m_PlaySoundParams = playSoundParams;
                 return playSoundInfo;
             }
@@ -70,6 +79,7 @@ namespace NovaFramework.Runtime
             {
                 m_SerialID = 0;
                 m_SoundGroup = null;
+                m_SoundRow = null;
                 if (m_PlaySoundParams != null)
                 {
                     ReferencePool.Put(m_PlaySoundParams);

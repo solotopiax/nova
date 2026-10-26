@@ -3,7 +3,7 @@
 `UIManager` 是 UI 模块真正的运行时核心。  
 它同时管理两层东西：
 
-- UI 注册表：把 `IUIViewRow` 数据装进内存，支撑泛型打开
+- UI 注册表：把 `IUIViewRow` 数据装进内存，支撑泛型、名称和资源地址打开
 - UI 实例系统：分组、打开、关闭、回收、对象池、安全区
 
 `UIComponent` 负责场景入口和生命周期编排，`UIManager` 负责具体运行。
@@ -71,7 +71,7 @@
 这是一个明确的时序切分点。  
 UI 视图如果要走对象池，前提是这一步已经完成。
 
-### 3. LoadSync / LoadAsync：只让“泛型打开所需注册表”可用
+### 3. LoadSync / LoadAsync：准备所有打开入口所需的注册表
 
 这两个方法都只处理 UI 表数据：
 
@@ -84,16 +84,28 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 关键边界：
 
 - 这里不会创建任何 UI 实例
-- 这里解决的是“泛型打开时能不能找到配置”
+- 这里解决的是“按类型、名称或资源地址打开时能不能找到配置”
 - `UIManager` 本身没有 `IsLoadOver`，加载幂等和并发合并在 `UIComponent`
 
 空 Unit/空缓存可能返回 true，不证明有目标注册项；类型不匹配跳过并警告，空行/空 Name 跳过，重复 Name 保留首项并警告。注册表不在每次构建前自动清空，重载不是替换整份注册表的事务。泛型键是 `typeof(T).Name` 短名，跨 namespace 同名类型不会自动隔离。
 
 注册表资源委托取 TextAsset 后立即 Release 句柄再返回给解析器，后续 release 委托为空，未复制 bytes；因此不具备“解析完成才释放”的所有权保证，异常也没有统一 finally 补偿。
 
-### 4. OpenUIView：先准备，再决定走对象池还是加载
+### 4. OpenUIView：先查配置，再决定走对象池还是加载
 
-同步和异步打开都先走 `PrepareOpenUIView(...)`：
+所有打开入口先从 `m_UIViewRegistry` 选择配置行：
+
+| 入口 | 选择规则 |
+|---|---|
+| `OpenUIViewSync<T>` / `OpenUIViewAsync<T>` | `Name == typeof(T).Name`，保持短类名匹配 |
+| 字符串 `OpenUIViewSync` / `OpenUIViewAsync` | `Name == uiViewName`；名称是表内某行的 `Name` 值，不是 xlsx 文件名 |
+| `OpenUIViewByAssetSync` / `OpenUIViewByAssetAsync` | `AssetLocation == assetLocation`，整个已加载注册表内必须只有一行 |
+
+接口后缀决定字符串首参含义：`OpenUIViewSync/Async` 只按 `Name`，`OpenUIViewByAssetSync/Async` 只按 `AssetLocation`，不自动检测或尝试另一种身份。第二个参数是 `userData`，字符串业务数据也原样透传。
+
+字符串按原值精确匹配，不做路径规范化。缺失配置、输入为空或地址匹配不唯一时返回 `-1`，不分配 `serialID`，也不开始资源加载。多行共享资源地址时须按各行 `Name` 打开；地址入口不会自行选第一行，也不能用分组参数消歧。
+
+匹配成功后，`OpenRegisteredUIViewSync` / `OpenRegisteredUIViewAsync` 从该行读取 `AssetLocation`、`UIGroupName`、`PauseCoveredUIView`、`InObjectPools`，再调用 `PrepareOpenUIView(...)`：
 
 1. 校验 `assetLocation` 和 `uiGroupName`
 2. 校验目标分组存在
@@ -107,7 +119,7 @@ UI 视图如果要走对象池，前提是这一步已经完成。
   - 同步版：立刻实例化 Prefab
   - 异步版：记入 `m_UIViewsBeingLoaded`，等待回调成功后再真正打开
 
-字符串省略参数时默认 PauseCoveredUIView=false、InObjectPools=true、userData=null；泛型入口从注册行读取 AssetLocation/UIGroupName/PauseCoveredUIView/InObjectPools，显式参数覆盖对应默认。池名由原资源地址得到，不做路径规范化；编号分配跳过已打开索引，但不同时检查 loading 编号。
+所有入口的分组、暂停和池化开关都由所选表格行决定；旧版泛型 bool 重载保留签名并标记 `[Obsolete]`，仅转发到按类型查表入口，传入的开关不再生效。非泛型“资源地址 + 分组”重载已移除。`userData` 原样传递，省略时为 null。池名仍由原资源地址得到；编号分配跳过已打开索引，但不同时检查 loading 编号。
 
 创建实例后会按分组父节点重新归零 localPosition/rotation/scale，并要求根上已有 UIView 子类，不能用任意 IUIView 实现替代这条 Prefab 入口。InternalOpen 按 OnInit→加入组/索引→OnOpen→Refresh 顺序执行，异常包装后传播，但已建立索引、池登记、实例没有完整回滚。UIView 的新实例初始化钩子自身还可能记录并吞异常，继续进入打开链。
 
@@ -172,14 +184,16 @@ DefaultSafeAreaProvider 直接从 Screen.safeArea 给出 Left=xMin、Right=xMax�
 
 - `OpenUIViewSync<T>()`
 - `OpenUIViewAsync<T>()`
-- `OpenUIViewSync(assetLocation, uiGroupName, ...)`
-- `OpenUIViewAsync(assetLocation, uiGroupName, ...)`
+- `OpenUIViewSync(uiViewName, userData = null)`
+- `OpenUIViewAsync(uiViewName, userData = null)`
+- `OpenUIViewByAssetSync(assetLocation, userData = null)`
+- `OpenUIViewByAssetAsync(assetLocation, userData = null)`
 - `OnOpenUIViewFail(serialID, assetLocation, errorMessage)`
 
-语义差异：
+共同语义：
 
-- 泛型入口依赖 `m_UIViewRegistry`
-- 字符串入口直接显式指定资源与分组
+- 全部入口依赖 `m_UIViewRegistry`，只按类型、Name 或资源地址选择配置的方式不同
+- 资源地址、分组、暂停与池化全部从匹配行读取，没有缺配时的默认值旁路
 - 异步打开的非负 `serialID` 只表示请求已创建；资源加载或实例化失败通过 `OnOpenUIViewFail` 通知
 - 关闭仍在加载的请求属于主动取消，不触发 `OnOpenUIViewFail`
 
@@ -214,7 +228,7 @@ DefaultSafeAreaProvider 直接从 Screen.safeArea 给出 Left=xMin、Right=xMax�
 
 ## 关键状态
 
-- `m_UIViewRegistry`：泛型打开的配置源，键是 `typeof(T).Name`
+- `m_UIViewRegistry`：所有打开入口共用的配置源，键是表内 `Name`；泛型入口用 `typeof(T).Name` 查询
 - `m_UIViewIndex`：`serialID -> IUIView`
 - `m_UIGroups`：分组容器
 - `m_UIViewsBeingLoaded`：还没真正打开完成的异步视图
@@ -225,13 +239,21 @@ DefaultSafeAreaProvider 直接从 Screen.safeArea 给出 Left=xMin、Right=xMax�
 
 ## 风险点 / 易错点
 
-- 泛型打开依赖注册表；如果 `LoadSync / LoadAsync` 还没跑，`GetUIViewRow<T>()` 会报错并返回 `-1`。
-- 字符串打开不依赖注册表，但依赖目标分组已经存在；分组不存在会直接抛异常。
+- 所有打开入口都依赖注册表；如果 `LoadSync / LoadAsync` 还没跑或目标行缺失，打开会报错并返回 `-1`。
+- 按地址打开要求唯一配置；多个行共享地址时按 `Name` 打开，不接受额外分组筛选。跨 Unit 或 Sheet 也使用同一个注册表匹配。
+- 配置行存在后，目标分组仍须先注册；表内组名没有对应运行时分组时，实例准备阶段仍会抛异常。
 - `inObjectPools == true` 的路径默认会访问 `m_InstancePool`；如果对象池还没创建，时序就不成立。
 - `CloseUIView(serialID)` 对“正在加载中的视图”不是立刻 `OnClose`，而是标记到 `m_UIViewsToReleaseOnLoad`，等资源返回后直接释放实例。
 - `UIManager` 自己不做加载幂等；如果外层重复触发注册表加载，去重逻辑不在这里。
 - `GetDeviceSafeArea()` 返回的是物理像素矩形；`isForGUISystem=true` 时会切换到 GUI 坐标系的 Y 方向。
 - `Refresh()` 会触发 `OnReveal / OnCover / OnResume / OnPause`，这些回调里再开关 UI 会递归进入刷新逻辑，排查问题时必须按真实调用链看。
+
+## Breaking：升级迁移
+
+- 原“资源地址 + 分组”重载全部移除。按地址打开改为 `OpenUIViewByAssetSync/Async(assetLocation, userData)`；共享地址则用 `OpenUIViewSync/Async(uiViewName, userData)`，不再由调用方指定分组。
+- 旧两个字符串调用必须逐处迁移：新字符串入口将第一项当 `Name`、第二项当 `userData`，不会继续按地址和组名解释，也不会自动猜测。
+- 旧泛型 bool 开关参数不再覆盖表格；将暂停和池化行为维护在 UI 表，调用改为不带开关的泛型重载。所有入口都需要先完成权威表导出和注册表加载。
+- 外部自定义 `IUIManager` 必须补齐两个名称字符串重载及两个 `ByAsset` 方法，并移除旧接口依赖，详见 [IUIManager.md](Interfaces/IUIManager.md)。
 
 ## 继续阅读
 

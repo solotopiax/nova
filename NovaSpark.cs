@@ -78,7 +78,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.7.3";
+        private const string c_FrameworkValue = "0.7.4";
 
         /// <summary>默认显式安装的 Nova 内存防护扩展包键；不随之安装付费 Anti-Cheat Toolkit。</summary>
         private const string c_MemoryProtectionKey = "com.solotopia.nova.framework.memory.protection";

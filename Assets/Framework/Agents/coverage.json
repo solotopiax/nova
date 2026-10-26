@@ -9215,6 +9215,11 @@
           "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
           "kind": "cli",
           "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值"
+        },
+        {
+          "entry": "Nova.Localization.SetLanguageSync / SetLanguageAsync / GetText / GetFontData / GetFontDatas",
+          "kind": "csharp-api",
+          "when": "仅授权业务源码调用与Play观察的底层公开API，不是可调度方法入口；用本契约workspace-edit实现真实可达消费路径。文本按Name，字体按当前或显式Language与Mark精确匹配首行，缺失null、无隐式回退；字体查询不加载资源或代替绑定与显示验收"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -9458,9 +9463,19 @@
           "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
           "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
+        },
+        {
+          "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
+          "kind": "csharp-api",
+          "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
+        },
+        {
+          "entry": "Nova.Network.CreateMessage / SendMessage / RecycleMessage / OnWebSocketReceiveMessage / OnWebSocketSendMessage + WebSocketScope.TcpMessage.Initialize / TcpPbMessage.Initialize",
+          "kind": "csharp-api",
+          "when": "仅在已确认消息协议与真实通道的业务源中接收发送；true仅入队，成功交付后归通道持有，发送/接收回调返回后框架回收，业务只借用并拷贝，不双重回池或以SequenceID替代业务幂等身份"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -10226,6 +10241,16 @@
           "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
           "kind": "cli",
           "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值"
+        },
+        {
+          "entry": "EditorUtil.Config.DimensionalResolver.ResolveYooAsset / YooAsset.Editor.SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>",
+          "kind": "csharp-api",
+          "when": "冻结 active ConfigMaster、YooAssetEditorConfigsMask 与 target Platform/Channel/DevelopMode 后，按解析出的 BundleCollectorSettingPath 定位既有 Collector；解析为空、漂移或与确认 Collector 不一致时 blocked"
+        },
+        {
+          "entry": "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / PlaySoundByAsset / StopSound / ReleaseAssetBySerialID",
+          "kind": "csharp-api",
+          "when": "PlaySound 首参为表 Name，PlaySoundByAsset 首参为 AssetLocation 且必须唯一反查行；全部表内组、资源、循环、优先级、音量与空间混合度来自该行，参数只补 Time/MuteInSoundGroup/FadeInSeconds/Pitch/PanStereo。同步拒绝返回 -1 且仍接管参数；非负编号也需实际播放验证。本 Owner 结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID，并验证停止与句柄释放；Pause/Resume 和自然结束责任沿用生命周期合同。"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -10395,6 +10420,11 @@
           "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
           "kind": "cli",
           "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值"
+        },
+        {
+          "entry": "Nova.UI.OpenUIViewSync<T> / OpenUIViewAsync<T> / OpenUIViewSync(string uiViewName, object userData = null) / OpenUIViewAsync(string uiViewName, object userData = null) / OpenUIViewByAssetSync / OpenUIViewByAssetAsync",
+          "kind": "csharp-api",
+          "when": "在已授权业务源码接入中按类型、UI表Name或唯一AssetLocation选择配置；所有打开先加载UI注册表，分组、暂停与池化以表为准，缺失或歧义返回-1；旧bool重载仅供迁移且不再覆盖表格"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -10478,6 +10508,11 @@
           "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory [--feature <id>] [--kind fields|files|entries|functions|features] [--json]; py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> describe <feature-id> [--json]",
           "kind": "cli",
           "when": "Windows需要只读查询既有功能、参数声明、源码/Docs/Skill/Adapter来源与已知限制时；仅使用消费项目已解析随包快照，不推断effective值"
+        },
+        {
+          "entry": "Nova.Vibrate.LoadAsync / Play / PlayCustom / PlayEmphasis / PlayCustomByParams / PlayEmphasisByParams / StopAll",
+          "kind": "csharp-api",
+          "when": "表驱动调用先完成加载，PlayCustom(name)/PlayEmphasis(name) 的首参固定为对应区域表的 Name 并完整使用全部行配置；手工参数需求使用明确的 ByParams 入口（Emphasis 仅三参数），由确认责任方停止"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -11016,11 +11051,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -11059,6 +11089,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -11511,11 +11546,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -11554,6 +11584,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -11780,11 +11815,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -11823,6 +11853,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -12270,11 +12305,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -12313,6 +12343,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -12543,11 +12578,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -12586,6 +12616,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -12686,11 +12721,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -12729,6 +12759,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -12828,11 +12863,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -12871,6 +12901,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -12971,11 +13006,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -13039,6 +13069,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -13265,11 +13300,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -13308,6 +13338,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -14163,11 +14198,6 @@
           "when": "导出已冻结的 HostKey、NetCmd 或 Proto；Proto 不支持 data，Verify 按版本 2 Receipt 的完整预期输出、路径/类型与 Hash 核验，旧或缺项证据保持 partial"
         },
         {
-          "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
-          "kind": "csharp-api",
-          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无ct/主备/retry且每个HttpResponse finally回池，有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket"
-        },
-        {
           "entry": "Nova.Network.ConnectServer / ReconnectServer / DisconnectServer / IsWebSocketConnected / IsWebSocketAuthenticatedSuccess / WebSocketNetChannels",
           "kind": "csharp-api",
           "when": "仅在已确认WebSocket业务源中实现唯一连接拥有者与退出语义；void不是连接或认证成功，公开接口没有ct，重复ConnectServer不保证幂等"
@@ -14206,6 +14236,11 @@
           "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
           "kind": "unity-editor-automation",
           "when": "用户明确允许收集 Unity 或 Play 证据时"
+        },
+        {
+          "entry": "Nova.Network.LoadAsync / GetNetCmd / GetNetCmdUrl / ResolveNetCmdRow / ResolveHostKeyRow / SendProtoAsync / GetAsync / PostAsync / PostRawDataAsync / PostFileAsync",
+          "kind": "csharp-api",
+          "when": "HTTP业务源用正式Proto门面复用原AES/主备/取消/解析，不调用隐藏NetService；普通HTTP单URL无主备/retry，旧无ct入口保留，新ct-last重载全部原参数必填并要求ICancellableHttpManager；预取消不发送，在飞取消Update轮询Abort返回失败响应，所有最终HttpResponse必须继续await并finally唯一回池，退出主动Cancel且拒迟到，不以Dispose/Shutdown/AttachExternalCancellation替代；有限业务retry需明确幂等/状态/次数/退避；真实Play请求单独遵守精确授权，不套WebSocket；LoadAsync/路由只限实际用表分支；既有单URL生命周期维护保原协议/认证，仅核原端点/owner/manager/ct/响应与受控延迟probe，不强制新表导出或新账号"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -15569,7 +15604,15 @@
         "Assets/Framework/Scripts/Runtime/Modules/Localization/TextLocalizing/TextLocalizing.cs#NovaFramework.Runtime.TextLocalizing.OnEnable()",
         "Assets/Framework/Scripts/Runtime/Modules/Localization/TextLocalizing/TextLocalizing.cs#NovaFramework.Runtime.TextLocalizing.SetFontMark(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Localization/TextLocalizing/TextLocalizing.cs#NovaFramework.Runtime.TextLocalizing.SetKeyName(string)",
-        "Assets/Framework/Scripts/Runtime/Modules/Localization/TextLocalizing/TextLocalizing.cs#NovaFramework.Runtime.TextLocalizing.Start()"
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/TextLocalizing/TextLocalizing.cs#NovaFramework.Runtime.TextLocalizing.Start()",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/Managers/Interfaces/ILocalizationManager.cs#NovaFramework.Runtime.ILocalizationManager.GetFontData(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/Managers/Interfaces/ILocalizationManager.cs#NovaFramework.Runtime.ILocalizationManager.GetFontData(Language,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/Managers/Implements/LocalizationManagerBase.cs#NovaFramework.Runtime.LocalizationManagerBase.GetFontData(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/Managers/Implements/LocalizationManagerBase.cs#NovaFramework.Runtime.LocalizationManagerBase.GetFontData(Language,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/Managers/Implements/LocalizationManager.cs#NovaFramework.Runtime.LocalizationManager.GetFontData(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/Managers/Implements/LocalizationManager.cs#NovaFramework.Runtime.LocalizationManager.GetFontData(Language,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/LocalizationComponent.cs#NovaFramework.Runtime.LocalizationComponent.GetFontData(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Localization/LocalizationComponent.cs#NovaFramework.Runtime.LocalizationComponent.GetFontData(Language,string)"
       ],
       "execution": {
         "mode": "business-integration",
@@ -15811,32 +15854,32 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.cs#NovaFramework.Editor.EditorUtil.Sound.Exporter.ExportAll(string,SoundSettings)",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.cs#NovaFramework.Editor.EditorUtil.Sound.Exporter.ExportAll(string,SoundSettings,ExportOperations)",
         "Assets/Framework/Scripts/Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.Methods.cs#NovaFramework.Editor.SoundComponentInspector.DrawSoundSettings()",
-        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.SoundGroup.cs#NovaFramework.Runtime.SoundManager.SoundGroup.PlaySound(int,UnityEngine.Object,IAssetHandle,PlaySoundParams,out PlaySoundErrorCode?)",
+        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.SoundGroup.cs#NovaFramework.Runtime.SoundManager.SoundGroup.PlaySound(int,UnityEngine.Object,IAssetHandle,ISoundRow,PlaySoundParams,out PlaySoundErrorCode?)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.SoundGroup.cs#NovaFramework.Runtime.SoundManager.SoundGroup.StopSound(int,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.PlaySound(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.PlaySound(string,PlaySoundParams)",
-        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.PlaySound(string,string,PlaySoundParams)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.ReleaseAssetBySerialID(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.StopSound(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.StopSound(int,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.PlaySound(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.PlaySound(string,PlaySoundParams)",
-        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.PlaySound(string,string,PlaySoundParams)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.ReleaseAssetBySerialID(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.StopSound(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.StopSound(int,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.PlaySound(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.PlaySound(string,PlaySoundParams)",
-        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.PlaySound(string,string,PlaySoundParams)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.ReleaseAssetBySerialID(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.StopSound(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.StopSound(int,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.PlaySound(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.PlaySound(string,PlaySoundParams)",
-        "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.PlaySound(string,string,PlaySoundParams)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.ReleaseAssetBySerialID(int)",
         "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.StopSound(int)",
-        "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.StopSound(int,float)"
+        "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.StopSound(int,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Interfaces/ISoundManager.cs#NovaFramework.Runtime.ISoundManager.PlaySoundByAsset(string,PlaySoundParams)",
+        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManagerBase.cs#NovaFramework.Runtime.SoundManagerBase.PlaySoundByAsset(string,PlaySoundParams)",
+        "Assets/Framework/Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.cs#NovaFramework.Runtime.SoundManager.PlaySoundByAsset(string,PlaySoundParams)",
+        "Assets/Framework/Scripts/Runtime/Modules/Sound/SoundComponent.cs#NovaFramework.Runtime.SoundComponent.PlaySoundByAsset(string,PlaySoundParams)"
       ],
       "execution": {
         "mode": "business-integration",
@@ -15911,30 +15954,30 @@
         "Assets/Framework/Scripts/Editor/Inspectors/VibrateComponentInspector/VibrateComponentInspector.Methods.cs#NovaFramework.Editor.VibrateComponentInspector.DrawEmphasisVibrateExport()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.Play()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.Play(VibrateType)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.PlayCustom(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.PlayCustomByParams(float,float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.PlayCustom(string)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.PlayEmphasis(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.PlayEmphasisByParams(float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.PlayEmphasis(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManager.cs#NovaFramework.Runtime.VibrateManager.StopAll()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.Play()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.Play(VibrateType)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.PlayCustom(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.PlayCustomByParams(float,float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.PlayCustom(string)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.PlayEmphasis(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.PlayEmphasisByParams(float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.PlayEmphasis(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Implements/VibrateManagerBase.cs#NovaFramework.Runtime.VibrateManagerBase.StopAll()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.Play()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.Play(VibrateType)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.PlayCustom(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.PlayCustomByParams(float,float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.PlayCustom(string)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.PlayEmphasis(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.PlayEmphasisByParams(float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.PlayEmphasis(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/Managers/Interfaces/IVibrateManager.cs#NovaFramework.Runtime.IVibrateManager.StopAll()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.Play()",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.Play(VibrateType)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.PlayCustom(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.PlayCustomByParams(float,float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.PlayCustom(string)",
-        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.PlayEmphasis(float,float,float,float)",
+        "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.PlayEmphasisByParams(float,float,float)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.PlayEmphasis(string)",
         "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs#NovaFramework.Runtime.VibrateComponent.StopAll()"
       ],
@@ -16061,7 +16104,11 @@
         "Assets/Samples/MainDemo/Scripts/Runtime/UIs/DemoNetworkView/DemoNetworkView.cs#NovaFramework.Samples.Runtime.DemoNetworkView.OnGetButtonClick()",
         "Assets/Samples/MainDemo/Scripts/Runtime/UIs/DemoNetworkView/DemoNetworkView.cs#NovaFramework.Samples.Runtime.DemoNetworkView.OnInit(object)",
         "Assets/Samples/MainDemo/Scripts/Runtime/UIs/DemoNetworkView/DemoNetworkView.cs#NovaFramework.Samples.Runtime.DemoNetworkView.OnOpen(object)",
-        "Assets/Samples/MainDemo/Scripts/Runtime/UIs/DemoNetworkView/DemoNetworkView.cs#NovaFramework.Samples.Runtime.DemoNetworkView.OnPostButtonClick()"
+        "Assets/Samples/MainDemo/Scripts/Runtime/UIs/DemoNetworkView/DemoNetworkView.cs#NovaFramework.Samples.Runtime.DemoNetworkView.OnPostButtonClick()",
+        "Assets/Framework/Scripts/Runtime/Modules/Network/Managers/NetworkManager/Interfaces/INetworkManager.cs#NovaFramework.Runtime.INetworkManager.ResolveHostKeyRow(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Network/Managers/NetworkManager/Implements/NetworkManagerBase.cs#NovaFramework.Runtime.NetworkManagerBase.ResolveHostKeyRow(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Network/Managers/NetworkManager/Implements/NetworkManager.cs#NovaFramework.Runtime.NetworkManager.ResolveHostKeyRow(string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Network/NetworkComponent.Network.cs#NovaFramework.Runtime.NetworkComponent.ResolveHostKeyRow(string)"
       ],
       "execution": {
         "mode": "business-integration",

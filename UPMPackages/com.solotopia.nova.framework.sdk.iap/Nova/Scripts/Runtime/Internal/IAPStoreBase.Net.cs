@@ -25,10 +25,10 @@ namespace NovaFramework.SDK.IAP.Runtime
         private const int c_RequestTimeoutSeconds = 30;
 
         /// <summary>
-        /// 通过 NetworkManager 解析指定 NetCmd dtName 对应的服务端 URL。
+        /// 通过 NetworkManager 解析指定 NetCmd 行名称 对应的服务端 URL。
         /// NetworkManager 为 null 或解析抛出异常时返回 null。
         /// </summary>
-        /// <param name="dtName">NetCmd dtName，与服务端路由配置对齐。</param>
+        /// <param name="dtName">已加载 NetCmd 表行的 Name，不带表名前缀。</param>
         /// <returns>URL 字符串；不可用时返回 null。</returns>
         protected string GetNetCmdUrl(string dtName)
         {
@@ -39,7 +39,8 @@ namespace NovaFramework.SDK.IAP.Runtime
 
             try
             {
-                return Context.NetworkManager.GetNetCmdUrl(string.Empty, dtName);
+                INetworkCmdRow row = Context.NetworkManager.ResolveNetCmdRow(dtName);
+                return Context.NetworkManager.ResolveNetCmdUrl(row);
             }
             catch (Exception ex)
             {

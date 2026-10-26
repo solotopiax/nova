@@ -18,6 +18,8 @@
 
 语言来源、自动字体与字段用途从匹配版本 Docs/源码核实：字体需 AutoFontAdapt=true、非空且 Ordinal 匹配的 Mark、当前语言有效字体行及可加载 AssetLocation，不能只看译文。文本、字体、支持语言列表保持同一格式；更改格式/回退/语言集合是额外语义，不随单元格值修改自动执行。
 
+运行时文本按 `Nova.Localization.GetText(name)` 读取文本表的 `Name`；字体表实际键是 `Language + Mark`，不新增 `Name` 字段。授权业务源码可调用 `Nova.Localization.GetFontData(mark)` 查当前语言，或 `GetFontData(language, mark)` 查指定语言；返回首个 Ordinal 精确匹配的原始配置行，空标记或未命中返回 null，无隐式语言/标记回退。该查询不加载字体资源，也不代替 `TextLocalizing` 持久绑定或真实显示验收；既有 `GetFontDatas(language)` 列表 API 保留。
+
 验收通过已保存的业务入口。全新 Play 中不手动切换静态绑定组件，先等待首次启动门完成；既有启动 Owner 完成 Load 与 InitCurrentLanguage 后，复用业务切换方法；需要补观察点时只修改授权的项目 UIView/启动源码，保留刷新与取消生命周期，不执行私有方法或临时任意代码。用户请求的完整冻结语言集合中逐一检查同一实际 TMP 的文字、回退、方向、必要字体与布局，并检查启停页面无重复监听；动态计数/输入节点保留原拥有者。请求多语言时只验部分语言、编译、静态 GetText、截图、先开关组件才通过和初始化返回都不足以证明显示完成。
 
 报告分别给源 CLI、持久配置/绑定、正式导出、编译与逐一覆盖请求语言的 Play 证据。恢复本轮语言偏好和测试态，删除临时探针及文件；正式用户译文与绑定保留，未请求部分不改。

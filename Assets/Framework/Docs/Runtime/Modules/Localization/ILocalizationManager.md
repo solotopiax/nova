@@ -55,7 +55,8 @@
 
 ### 5. 字体适配与文本系统分开
 
-- `HasFontDatas()` / `GetFontDatas()` 只承诺字体适配数据查询
+- `GetFontData(mark)` / `GetFontData(language, mark)` 查询单行，`HasFontDatas()` / `GetFontDatas()` 查询语言级列表
+- 字体键是 `Language + Mark`，不是文本表的 `Name`；单行查询按 Ordinal 精确匹配首条配置，空标记或未命中返回 `null`，不回退、不加载字体资源
 - 它们不代表当前语言文本一定已经初始化完成
 
 ## 最小 API 面
@@ -65,7 +66,7 @@
 - 当前语言初始化：`InitCurrentLanguageSync()` / `InitCurrentLanguageAsync()`
 - 语言解析与切换：`ResolveLanguage()` / `SetLanguageSync()` / `SetLanguageAsync()`
 - 文本查询：`GetText()` / `GetTexts<T>()`
-- 字体查询：`GetFontDatas(Language language)`
+- 字体查询：`GetFontData(string mark)` / `GetFontData(Language language, string mark)` / `GetFontDatas(Language language)`
 
 ## 变更影响面
 
@@ -74,6 +75,8 @@
 - [LocalizationComponent.md](LocalizationComponent.md)
 - [LocalizationManager.md](LocalizationManager.md)
 - 所有依赖 `Nova.Localization` 的启动流程和运行时代码
+
+自行实现 `ILocalizationManager` 的项目需要实现两个 `GetFontData` 重载，保持上述匹配与失败语义；既有字体列表 API 保留。
 
 尤其高风险的是：
 

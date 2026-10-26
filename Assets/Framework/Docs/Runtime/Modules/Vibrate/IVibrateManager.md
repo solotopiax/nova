@@ -21,7 +21,11 @@
 
 - `Play()` / `Play(VibrateType)` 这种即时预设调用
 - `PlayCustom(name)` / `PlayEmphasis(name)` 这种按表驱动的分组调用
-- `PlayCustom(...)` / `PlayEmphasis(...)` 这种直接传参数的即时调用
+- `PlayCustomByParams(intensity, sharpness, preDuration, duration)` / `PlayEmphasisByParams(amplitude, frequency, preDuration)` 这种明确绕过表的即时调用
+
+`PlayCustom` 的首参只表示 Custom 表的 `Name`，`PlayEmphasis` 的首参只表示 Emphasis 表的 `Name`；两者都播放整个组，按 `Order` 顺序使用每行完整配置，不接受同名数值重载或行对象。
+
+迁移：旧四参数 `PlayCustom(...)` 改为 `PlayCustomByParams(...)`；旧四参数 `PlayEmphasis(amplitude, frequency, preDuration, interval)` 改为三参数 `PlayEmphasisByParams(amplitude, frequency, preDuration)`。旧数值 `interval` 从未参与播放，新接口删除该无效参数；表行 `Interval` 仍作为每步播放后的等待。自定义 Manager 实现与业务调用须同时迁移，没有兼容壳。
 
 ### 2. 数据加载是显式阶段，不是隐式首调加载
 

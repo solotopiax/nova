@@ -62,7 +62,8 @@ Nova.UI
 | 批量关闭视图 | `CloseUIViews(...)` |
 | 新增或查询层级组 | `AddUIGroup` / `HasUIGroup` / `GetUIGroup` |
 | 业务 UI 基类 | `UIView` |
-| 视图资源地址 + 分组名 | `assetLocation + uiGroupName` |
+| 按表内名称打开 | `OpenUIViewSync / OpenUIViewAsync` 的字符串重载，名称取 `Name` 列 |
+| 按资源地址打开 | `OpenUIViewByAssetSync / OpenUIViewByAssetAsync`，地址取 `AssetLocation` 列 |
 | 视图对象池开关 | `inObjectPools` |
 | 被遮挡时是否暂停 | `pauseCoveredUIView` |
 
@@ -70,6 +71,9 @@ Nova.UI
 
 - 业务公开面是 `OpenUIViewSync* / OpenUIViewAsync* / CloseUIView* / CloseUIViews*`
 - `LoadAsync / LoadSync` 先加载并解析 UI 视图注册表，再允许按泛型或资源地址打开视图
+- 普通打开方法的字符串首参表示表内 Name，ByAsset 后缀表示首参为 AssetLocation；入口不自动猜测另一种身份，第二参数始终是业务数据。
+- 打开策略的唯一来源是已加载的 UI 表：类型、名称与地址只负责选中配置行，分组、覆盖暂停与池化全部使用该行配置；调用参数与硬编码默认值不能覆盖它。
+- 资源地址可能由多个配置共用，地址入口必须明确匹配唯一行；缺配置或有歧义时拒绝打开，业务数据 `userData` 仍由调用方传递。
 - `UIComponent` 在 `Start()` 中初始化 `UIManagerConfig`、补默认 `UIGroup`、创建实例池
 - `UISettings` 不是普通业务配置页，而是 UI 注册表导出链的一部分
 - `UIView.Close()` 内部直接转到 `Nova.UI.CloseUIView(this)`
@@ -99,10 +103,14 @@ Modules/UI/
 - 把公开入口写成 `OpenView / CloseView`
 - 把 `UIComponent` 当成业务逻辑主容器
 - 把 UI 注册表导出设置和普通业务配置混成一类
+- 将 UI 表的 `Name` 配置行名称误当作 Excel 文件名，或用资源地址猜测配置名称
+- 通过旧版行为开关参数或写死默认值绕过表格配置
 - 在没加载注册表时就默认泛型打开一定可用
 - 把 `UIView` 内部生命周期和 Unity 原生生命周期混写成一套
 
 ## 先往哪看
+
+配置来源与打开契约以当前 [UIComponent 文档](../../../Docs/Runtime/Modules/UI/UIComponent.md)、[IUIManager 文档](../../../Docs/Runtime/Modules/UI/UIManager/Interfaces/IUIManager.md) 和 `UIManager.Methods.cs` 中的配置行解析与打开链为准。
 
 - 改模块边界：[[ADR-001-component-manager-three-layer]]
 - 改访问方式：[[ADR-016-framework-vs-business-access]]

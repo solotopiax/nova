@@ -39,8 +39,8 @@
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.UI OpenUIView* / CloseUIView* / GetUIView*",
-      "when": "获授权后验证目标页面的打开、关闭和查询行为"
+      "entry": "Nova.UI.OpenUIViewSync<T> / OpenUIViewAsync<T> / OpenUIViewSync(string uiViewName, object userData = null) / OpenUIViewAsync(string uiViewName, object userData = null) / OpenUIViewByAssetSync / OpenUIViewByAssetAsync",
+      "when": "在已授权业务源码接入中按类型、UI表Name或唯一AssetLocation选择配置；所有打开先加载UI注册表，分组、暂停与池化以表为准，缺失或歧义返回-1；旧bool重载仅供迁移且不再覆盖表格"
     }
   ],
   "inputs": [

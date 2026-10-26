@@ -31,7 +31,7 @@ Sound 模块负责“按声音组组织播放能力”，公开入口是 `Nova.S
 ## 何时查这页
 
 - 要改声音播放、组管理、代理数量或音量控制
-- 要判断播放入口该走 `name` 还是 `group + assetLocation`
+- 要判断播放入口该走 表内 `name` 还是显式 `ByAsset` 地址入口
 - 要理解 `SoundGroup / SoundAgent / PlaySoundParams` 的关系
 
 ## 当前结构
@@ -50,14 +50,14 @@ Nova.Sound
 
 - `Start()` 时用 `SoundSettings + AudioMixer + SoundGroupShell[]` 初始化 Manager
 - 组是在组件启动时通过 `AddSoundGroup(...)` 建出来的
-- 模块既支持先加载声音表再按 `name` 播放，也支持直接按 `group + assetLocation` 播放
+- 播放前加载声音表；按 `Name` 或唯一 `AssetLocation` 定位同一表行，组和播放配置均由表提供
 
 ## 高频入口
 
 - `LoadSync / LoadAsync`
 - `PlaySound(name)`
 - `PlaySound(name, PlaySoundParams)`
-- `PlaySound(groupName, assetLocation, PlaySoundParams)`
+- `PlaySoundByAsset(assetLocation, PlaySoundParams)`
 - `StopSound / PauseSound / ResumeSound`
 - `StopGroupSound / PauseGroupSound / ResumeGroupSound`
 - `StopAllLoadedSounds / StopAllLoadingSounds`
@@ -68,7 +68,7 @@ Nova.Sound
 
 - `SoundGroup` 是逻辑分组，不是业务上的任意标签系统
 - `SoundAgent` 是组内实际播放承载单元
-- `PlaySoundParams` 是调用期参数对象，不能把它当长期配置存储
+- `PlaySoundParams` 只补充表外运行时控制，不能覆盖表内音量、循环或优先级，也不能当长期配置存储
 - 声音资源加载仍要遵守统一的 Load/Release 约束，Sound 只是播放编排层
 - `AudioMixer` 是 `SoundComponent` 暴露的配置面，不应被误写成“完全不可见的内部细节”
 

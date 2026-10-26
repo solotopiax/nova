@@ -7,7 +7,7 @@
  * created:   2026/05/23
  * descrip:   Modules 2.13 — Sound 模块演示视图（交互触发型）。
  *            演示声音播放/停止/暂停/恢复，以及 name 重载播放与资源释放。
- *            API：Nova.Sound.PlaySound(group, location) / PlaySound(name) /
+ *            API：Nova.Sound.PlaySoundByAsset(location) / PlaySound(name) /
  *                 PlaySound(name, params) / StopSound / PauseSound / ResumeSound / ReleaseAssetBySerialID
  ***************************************************************/
 
@@ -19,13 +19,13 @@ using UnityEngine.UI;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// Sound 模块演示视图，演示声音播放（group/name 重载）、停止、暂停与恢复。
-    /// 继承 BaseDemoView 三段式骨架，包含组/location 选择与多个操作按钮。
+    /// Sound 模块演示视图，演示按表中名称或资源地址播放、停止、暂停与恢复。
+    /// 继承 BaseDemoView 三段式骨架，声音组由表格决定，交互区可填写资源地址。
     /// </summary>
     public sealed class DemoSoundView : BaseDemoView
     {
         /// <summary>
-        /// 声音组输入框（BGM / SFX）。
+        /// 声音组说明框；只读显示其配置来自声音表。
         /// </summary>
 
         [SerializeField] private TMP_InputField m_GroupInput;
@@ -37,7 +37,7 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private TMP_InputField m_LocationInput;
 
         /// <summary>
-        /// Play 按钮，调用 PlaySound(group, location) 播放声音。
+        /// Play 按钮，调用 PlaySoundByAsset(location) 查表播放声音。
         /// </summary>
 
         [SerializeField] private Button m_PlayButton;
@@ -79,14 +79,9 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private TextMeshProUGUI m_CurrentSerialIDText;
 
         /// <summary>
-        /// 默认声音组名。
+        /// Demo_Sound 表中已注册的默认声音资源地址。
         /// </summary>
-        private const string c_DefaultGroup = "BGM";
-
-        /// <summary>
-        /// 兜底声音 Asset 地址（Demo_Sound 未加载时使用）。
-        /// </summary>
-        private const string c_FallbackLocation = "bgm_main";
+        private const string c_DefaultLocation = "bgm_main";
 
         /// <summary>
         /// PlaySound(name) 演示固定 name（来自 Demo_Sound 数据表，BGM 组）。
@@ -121,18 +116,19 @@ namespace NovaFramework.Samples.Runtime
 
             if (m_GroupInput != null)
             {
-                m_GroupInput.text = c_DefaultGroup;
+                m_GroupInput.text = "由声音表决定";
+                m_GroupInput.interactable = false;
             }
 
             if (m_LocationInput != null)
             {
-                m_LocationInput.text = c_FallbackLocation;
+                m_LocationInput.text = c_DefaultLocation;
             }
 
             if (m_PlayButton != null)
             {
                 m_PlayButton.onClick.AddListener(OnPlayButtonClick);
-                SetButtonApiHint(m_PlayButton, "Nova.Sound.PlaySound(group, location)");
+                SetButtonApiHint(m_PlayButton, "Nova.Sound.PlaySoundByAsset(location)");
             }
 
             if (m_PlayByNameButton != null)
@@ -204,25 +200,17 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            string group = m_GroupInput != null && !string.IsNullOrWhiteSpace(m_GroupInput.text) ? m_GroupInput.text : c_DefaultGroup;
-            string location = m_LocationInput != null && !string.IsNullOrWhiteSpace(m_LocationInput.text) ? m_LocationInput.text : c_FallbackLocation;
-
-            if (!Nova.Sound.HasSoundGroup(group))
-            {
-                AppendFeedback($"Nova.Sound.PlaySound(\"{group}\", \"{location}\") -> 声音组 \"{group}\" 未注册（请检查 SoundComponent.SoundGroupShells）", FeedbackLevel.Error);
-                return;
-            }
-
-            int serialID = Nova.Sound.PlaySound(group, location);
+            string location = m_LocationInput != null && !string.IsNullOrWhiteSpace(m_LocationInput.text) ? m_LocationInput.text : c_DefaultLocation;
+            int serialID = Nova.Sound.PlaySoundByAsset(location);
             if (serialID <= 0)
             {
-                AppendFeedback($"Nova.Sound.PlaySound(\"{group}\", \"{location}\") -> 失败（声音组不存在或资源无效）", FeedbackLevel.Error);
+                AppendFeedback($"Nova.Sound.PlaySoundByAsset(\"{location}\") -> 失败（表未加载、地址未唯一注册或声音组不可用）", FeedbackLevel.Error);
                 return;
             }
 
             ReplaceCurrentSound(serialID);
             RefreshSerialIDText();
-            AppendFeedback($"Nova.Sound.PlaySound(\"{group}\", \"{location}\") -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
+            AppendFeedback($"Nova.Sound.PlaySoundByAsset(\"{location}\") -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
         }
 
         /// <summary>
@@ -260,7 +248,7 @@ namespace NovaFramework.Samples.Runtime
             }
 
             PlaySoundParams param = PlaySoundParams.Create();
-            param.VolumeInSoundGroup = 0.8f;
+            param.FadeInSeconds = 0.05f;
             int serialID = Nova.Sound.PlaySound(c_DemoSoundNameSfx, param);
             if (serialID <= 0)
             {
@@ -270,7 +258,7 @@ namespace NovaFramework.Samples.Runtime
 
             ReplaceCurrentSound(serialID);
             RefreshSerialIDText();
-            AppendFeedback($"Nova.Sound.PlaySound(\"{c_DemoSoundNameSfx}\", params{{volumeInGroup=0.8}}) -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
+            AppendFeedback($"Nova.Sound.PlaySound(\"{c_DemoSoundNameSfx}\", params{{fadeInSeconds=0.05}}) -> 已发起播放请求 SerialID={serialID}", FeedbackLevel.Info);
         }
 
         /// <summary>

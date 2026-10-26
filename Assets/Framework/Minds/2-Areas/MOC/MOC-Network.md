@@ -67,6 +67,7 @@ Nova.Network
 
 - `NetworkManager.LoadNetCmdsAsync()` 负责把表数据变成运行时路由缓存
 - `NetworkManager.ResolveNetCmdUrls()` 根据 `HostKey + NetCmd` 解析本次业务请求的主备 URL
+- `ResolveNetCmdRow(name)` / `ResolveHostKeyRow(name)` 暴露各自表内 Name 查询；HostKey 行查询返回原始配置，不改写运行时主备路由缓存
 - `Kit/NetService` 冻结请求体和请求头后交给 `HttpManager`；主地址无正式 HTTP 响应时才进入备用地址
 - App 版本检查与 Asset 热更新各自维护已配置的主备语义，不进入业务 NetCmd 路由链
 

@@ -52,7 +52,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 加载振动数据（fire-and-forget）。
+        /// 同步加载振动数据，失败时终止本次构组并保留已有完整缓存。
         /// </summary>
         public void LoadSync()
         {
@@ -114,7 +114,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 按名称播放自定义振动组合，未命中时输出 Warning 并静默返回。
+        /// 按 Custom 表的 Name 播放整组步骤，完整使用行内配置；未命中时警告并返回。
         /// </summary>
         /// <param name="name">振动分组名称（对应数据表 Name 字段）。</param>
         public void PlayCustom(string name)
@@ -123,19 +123,19 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 播放自定义持续振动。
+        /// 直接按参数播放自定义持续振动，不读取振动表。
         /// </summary>
         /// <param name="intensity">振动强度（0~1）。</param>
         /// <param name="sharpness">振动锐度（0~1）。</param>
         /// <param name="preDuration">前置等待时长（秒）。</param>
         /// <param name="duration">振动持续时长（秒）。</param>
-        public void PlayCustom(float intensity, float sharpness, float preDuration, float duration)
+        public void PlayCustomByParams(float intensity, float sharpness, float preDuration, float duration)
         {
-            m_VibrateManager.PlayCustom(intensity, sharpness, preDuration, duration);
+            m_VibrateManager.PlayCustomByParams(intensity, sharpness, preDuration, duration);
         }
 
         /// <summary>
-        /// 按名称播放强调振动组合，未命中时输出 Warning 并静默返回。
+        /// 按 Emphasis 表的 Name 播放整组步骤，完整使用行内配置；未命中时警告并返回。
         /// </summary>
         /// <param name="name">振动分组名称（对应数据表 Name 字段）。</param>
         public void PlayEmphasis(string name)
@@ -144,15 +144,14 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 播放强调振动。
+        /// 直接按参数播放单次强调振动，不读取振动表。
         /// </summary>
         /// <param name="amplitude">振幅（0~1）。</param>
         /// <param name="frequency">频率（0~1）。</param>
         /// <param name="preDuration">前置等待时长（秒）。</param>
-        /// <param name="interval">振动间隔时长（秒）。</param>
-        public void PlayEmphasis(float amplitude, float frequency, float preDuration, float interval)
+        public void PlayEmphasisByParams(float amplitude, float frequency, float preDuration)
         {
-            m_VibrateManager.PlayEmphasis(amplitude, frequency, preDuration, interval);
+            m_VibrateManager.PlayEmphasisByParams(amplitude, frequency, preDuration);
         }
         
         /// <summary>

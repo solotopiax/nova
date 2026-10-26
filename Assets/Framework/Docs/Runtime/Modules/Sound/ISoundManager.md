@@ -31,7 +31,7 @@
 
 接口注释里已经把红线写得很清楚：
 
-- 一旦传入 `PlaySound(...)`
+- 一旦传入 `PlaySound(...)` 或 `PlaySoundByAsset(...)`
 - `PlaySoundParams` 的所有权转入 Manager
 - 调用方不应再持有，也不应再 `ReferencePool.Put`
 
@@ -44,15 +44,23 @@
 ## 契约边界
 
 - 这个接口公开的是声音系统运行面，不公开内部 `SoundGroup` / `SoundAgent` 实现
-- 它允许按名称查表播放，也允许直接按 `group + assetLocation` 播放
+- `PlaySound(name, params)` 的首参固定为声音表 `Name`；`PlaySoundByAsset(assetLocation, params = null)` 的首参固定为 `AssetLocation`，必须唯一反查表行
+- 所有播放入口都使用表行的组、地址、循环、优先级、音量与空间混合度；运行时参数不能覆盖这些字段
+- 缺名称、缺地址、地址歧义、缺组或无代理时同步返回 `-1`；传入的参数仍由 Manager 回收
 - 它不把播放失败细节暴露为返回码；失败更多通过日志和行为结果体现
 
 ## 风险点 / 易错点
 
-- `PlaySound(...)` 返回 `serialID` 不代表一定播放成功；资源加载、组不存在、代理不足都可能导致最终没播出来。
+- 非负 `serialID` 只表示配置检查通过并接受异步请求；资源加载或后续代理调度仍可能失败，不能代替播放证据。
 - `LoadSync()` 不回传结果，适合明确知道数据环境正确的路径。
 - 如果新实现没有严格遵守 `PlaySoundParams` 的引用池所有权约定，很容易引发重复回收或泄漏。
 - 调用面虽然大，但不要把编辑器导表、Inspector 配置等职责继续塞进这个接口。
+
+## 迁移与自定义实现
+
+旧的 `PlaySound(group, assetLocation, params)` 已移除，没有兼容壳。先把组和播放配置维护到声音源表并正式导出，再按名称调用；只有地址唯一时才使用 `PlaySoundByAsset`。`PlaySoundParams.Loop / Priority / VolumeInSoundGroup` 已移除，分别迁移到表中 `Loop / Priority / Volume`。独立的组音量、暂停、停止等运行命令继续使用原 API。
+
+仓外自定义 `ISoundManager` 必须新增 `PlaySoundByAsset` 并移除旧双字符串播放重载；接受和拒绝请求时均需接管参数所有权，并遵守名称唯一、地址歧义拒绝、全部表字段生效和 `-1` 同步拒绝的契约。`SoundManagerBase` 是 `internal`，仓外实现应实现公开接口并按框架管理器要求接入，不能直接继承该内部基类。
 
 ## 继续阅读
 

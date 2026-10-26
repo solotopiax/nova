@@ -62,7 +62,9 @@
 
 ### 4. 组件层是纯门面
 
-组件公开的 `Play()`、`Play(VibrateType)`、`PlayCustom(...)`、`PlayEmphasis(...)`、`StopAll()`、`Enable`、`IsSupported`，本质都只是透传给 Manager。
+组件公开的 `Play()`、`Play(VibrateType)`、`PlayCustom(name)`、`PlayEmphasis(name)`、`PlayCustomByParams(...)`、`PlayEmphasisByParams(...)`、`StopAll()`、`Enable`、`IsSupported`，本质都只是透传给 Manager。
+
+`PlayCustom(name)` 与 `PlayEmphasis(name)` 分别查找对应表的 `Name`，使用组内全部行和字段；业务按表配置振动时使用这两个入口。手工数值能力显式使用 `ByParams`，无需加载表。旧数值 `PlayCustom` 改为 `PlayCustomByParams`；旧数值 `PlayEmphasis` 改为 `PlayEmphasisByParams(amplitude, frequency, preDuration)`，移除原来不参与播放的 `interval` 参数；按名调用不变。
 
 ## 风险点 / 易错点
 

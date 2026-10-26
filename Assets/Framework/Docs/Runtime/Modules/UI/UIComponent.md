@@ -76,7 +76,7 @@
 
 ### LoadSync / LoadAsync：只负责“注册表可用”
 
-`LoadSync()` 和 `LoadAsync()` 的目标都不是打开 UI，而是让 UI 注册表进入“可查询、可按泛型打开”的状态。
+`LoadSync()` 和 `LoadAsync()` 的目标都不是打开 UI，而是让 UI 注册表进入可供所有打开入口查找配置的状态。泛型、表内名称和资源地址入口都要先加载注册表。
 
 `LoadSync()` 调用返回 `void` 的 Manager 加载入口后直接设置 `IsLoadOver=true`。Manager 遇到读取失败或建表失败可以只记日志并返回，因此同步调用结束和该标志不能证明目标注册项可用；还须查询对应 `UIView` 注册行。空配置也可以正常跳过加载。
 
@@ -110,19 +110,44 @@
 
 - `OpenUIViewSync<T>()`
 - `OpenUIViewAsync<T>()`
-- `OpenUIViewSync(assetLocation, uiGroupName, ...)`
-- `OpenUIViewAsync(assetLocation, uiGroupName, ...)`
+- `OpenUIViewSync(uiViewName, userData = null)`
+- `OpenUIViewAsync(uiViewName, userData = null)`
+- `OpenUIViewByAssetSync(assetLocation, userData = null)`
+- `OpenUIViewByAssetAsync(assetLocation, userData = null)`
 - `OnOpenUIViewFail`
 
-`OpenUIViewAsync(...)` 返回的 `serialID` 只表示打开请求已创建；后续资源加载或实例化失败时，
+所有入口都先查找已加载的 UI 配置行，再从该行读取资源地址、分组、是否暂停下层视图和是否缓存到对象池。`userData` 只透传给视图，不改变这些配置。
+
+| 打开方式 | 配置匹配规则 |
+|---|---|
+| 泛型 `OpenUIViewSync<T>` / `OpenUIViewAsync<T>` | 按 `typeof(T).Name` 匹配 UI 表的 `Name`，仍使用短类名 |
+| 字符串 `OpenUIViewSync` / `OpenUIViewAsync` | 首参 `uiViewName` 匹配 UI 表某一行的 `Name`；这里的名称不是 xlsx 文件名 |
+| `OpenUIViewByAssetSync` / `OpenUIViewByAssetAsync` | 首参 `assetLocation` 按 `AssetLocation` 在整个已加载注册表中查找唯一行；共享地址有多行时改按 `Name` 打开 |
+
+接口名称决定首参含义：无 `ByAsset` 的字符串入口始终按 `Name` 查找，带 `ByAsset` 的入口始终按资源地址查找，不自动猜测或在两者之间回退。第二个参数始终是 `userData`，即使它是字符串也会原样交给视图。
+
+名称和资源地址都按原字符串精确匹配。缺少配置、注册表尚未加载，或地址匹配到多行时返回 `-1`，不创建打开请求，也不以默认开关绕过表格。分组统一取自匹配行的 `UIGroupName`。
+
+`OpenUIViewAsync` 和 `OpenUIViewByAssetAsync` 返回的非负 `serialID` 只表示打开请求已创建；后续资源加载或实例化失败时，
 通过 `OnOpenUIViewFail(serialID, assetLocation, errorMessage)` 通知业务层。业务订阅者应按
 自己保存的 `serialID` 过滤事件，并在生命周期结束时注销。
 
-语义：
+```csharp
+// Name 列值为 DemoToastView 的配置行。
+// 第二个字符串是业务数据。
+int byName = Nova.UI.OpenUIViewAsync("DemoToastView", "Hello");
 
-- 泛型入口走注册表
-- 字符串入口走显式资源地址 + 分组
-- 是否暂停被覆盖视图、是否带 `userData` 都属于打开策略层，而不是入口层差异
+// AssetLocation 列值为 DemoToastView，且只对应一行配置。
+int byAsset = Nova.UI.OpenUIViewByAssetAsync("DemoToastView");
+```
+
+#### Breaking：旧调用迁移
+
+- 原有泛型 bool 重载保留签名并标记 `[Obsolete]`，传入的开关不再生效；将行为写回 UI 表，并改用不带开关的泛型入口。
+- 原有非泛型“资源地址 + 分组”重载全部移除。按地址打开改为 `OpenUIViewByAssetSync/Async(assetLocation, userData)`；地址对应多行时改为 `OpenUIViewSync/Async(uiViewName, userData)`，分组从该行读取。
+- 必须检查旧的两个字符串调用：`OpenUIViewAsync(assetLocation, uiGroupName)` 现在会按第一项作为 `Name`、第二项作为业务数据绑定，不能继续把第二项当分组使用。
+- 原先未在 UI 表登记的资源地址现在不能直接打开，需要先登记并正式导出、加载注册表。
+- 项目自定义 `IUIManager` 需要实现新增的两个 `OpenUIViewSync/Async(string uiViewName, object userData = null)` 名称重载和两个 `OpenUIViewByAssetSync/Async` 方法，详见 [IUIManager.md](UIManager/Interfaces/IUIManager.md)。
 
 ### 3. 关闭与重聚焦
 
@@ -177,8 +202,8 @@
 
 ## 风险点 / 易错点
 
-- `LoadAsync()` 成功前，不要假设泛型打开和基于注册表的查询一定可用。
-- 泛型异步打开返回 `-1` 表示注册表查找等立即失败；请求创建后的异步失败通过 `OnOpenUIViewFail` 通知。
+- `LoadAsync()` 成功前，不要假设任何打开入口已有所需配置；即使 `IsLoadOver=true`，目标行也可能缺失。
+- 所有打开入口返回 `-1` 都表示未创建打开请求；请求创建后的异步失败通过 `OnOpenUIViewFail` 通知。
 - `UIComponent` 的很多 public API 只是门面；如果要排查打开失败、排序异常、实例回收异常，直接看 `UIManager`。
 - `CreateInstancePool()` 被放在 `Start()` 末尾，不要把对象池相关假设提前到 `Awake()`。
 - `m_InstanceRoot` 为空时会自动创建根节点；如果你依赖自定义层级或现成 Canvas，需要确认 Inspector 配置是否覆盖了默认行为。

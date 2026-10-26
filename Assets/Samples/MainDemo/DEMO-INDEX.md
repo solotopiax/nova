@@ -48,7 +48,7 @@
 | 2.10 | `DemoProcedureView` | I | 注册与当前流程快照；`ProcedurePlaying.RequestPreloadRestart()` → 原八步预加载 → `ProcedurePlaying` | 重新预加载 |
 | 2.11 | `DemoObjectPoolView` | I | `Nova.ObjectPool.CreateSingleGettingObjectPool<T>() / GetObjectPool<T>()` | 无 |
 | 2.12 | `DemoPersistView` | I | `Nova.Persist.PlayerPrefs.SetInt / GetInt / HasItem / RemoveItem / Save("Demo")`；默认保存提交整个进程偏好 | 无 |
-| 2.13 | `DemoSoundView` | I | `Nova.Sound.PlaySound(group, location, params)` / `StopSound(serialID, 0f)` + `ReleaseAssetBySerialID(serialID)` | mp3 `bgm_main` / `sfx_click` / `sfx_confirm`；xlsx `Demo_Sound` |
+| 2.13 | `DemoSoundView` | I | `Nova.Sound.PlaySound(name, params) / PlaySoundByAsset(location)` / `StopSound(serialID, 0f)` + `ReleaseAssetBySerialID(serialID)` | mp3 `bgm_main` / `sfx_click` / `sfx_confirm`；xlsx `Demo_Sound` |
 | 2.14 | `DemoVibrateView` | I | `Nova.Vibrate.Play(VibrateType.LightImpact) / PlayCustom(...) / PlayEmphasis(...) / StopAll()` | xlsx `Demo_VibrateCustom` / `Demo_VibrateEmphasis` |
 | 2.15 | `DemoSDKView` | R | `Nova.SDK.GetAll<ISDKPlugin>() / TryGet<TPlugin>(out p)` | 无 |
 | 2.16 | `DemoDebugView` | I | `RuntimeDebugger.Instance.ShowDebugPanel(false) / HideDebugPanel() / IsDebugPanelVisible` | 激活条件满足并初始化后可用 |

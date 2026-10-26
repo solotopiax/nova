@@ -17,6 +17,8 @@ description: Use when 项目组要把已接入或已明确表源的 Nova 数据�
 - L3：确认后先按表接入状态调用或复核 Table Operation，再调用既有页面更新或已授权的新页面创建/注册、Unity Editor/MCP 与`nova.project.ui.export`，遵守依赖图和单写者锁。
 - L4：只收集本次数据绑定的编译与 Play smoke 证据；任何节点缺失时停止并返回 `partial` 或 `blocked`。
 
+打开入口先读取当前 `Docs/Runtime/Modules/UI/UIComponent.md`：普通 `OpenUIViewSync/Async` 的字符串首参只接收 UI 表 `Name`；`OpenUIViewByAssetSync/Async` 的首参只接收唯一 `AssetLocation`，泛型入口仍按类型名查表，分组、暂停与池化都来自表格；缺配置或匹配不唯一时停止，不使用旧 bool 重载覆盖配置，也不绕过注册表加载。`Name` 指配置行名称，不是 Excel 文件名；第二参数 `userData` 即使是字符串也只作业务数据，不能继续传旧分组参数。
+
 ## 冻结业务契约
 
 必须确认 Luban 表源、Schema、`ProjectId/DescriptionId`、导出范围、运行时加载描述与 Asset 地址、表类型、主键/选中规则、展示字段、缺行处理、语言与图标来源、目标 View/UIGroup、命名空间/程序集、Prefab Asset 地址、注册源、主页入口、返回行为和重复点击策略。禁止默认取“第一行”、硬编码表数据、在 UI 内重复加载表或替用户猜测导航语义。

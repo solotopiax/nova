@@ -24,8 +24,8 @@
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.Localization.SetLanguageSync / SetLanguageAsync",
-      "when": "仅授权业务源码调用与Play观察的底层公开API，不是可调度方法入口；用本契约workspace-edit实现真实可达消费路径"
+      "entry": "Nova.Localization.SetLanguageSync / SetLanguageAsync / GetText / GetFontData / GetFontDatas",
+      "when": "仅授权业务源码调用与Play观察的底层公开API，不是可调度方法入口；用本契约workspace-edit实现真实可达消费路径。文本按Name，字体按当前或显式Language与Mark精确匹配首行，缺失null、无隐式回退；字体查询不加载资源或代替绑定与显示验收"
     },
     {
       "kind": "agent-action",

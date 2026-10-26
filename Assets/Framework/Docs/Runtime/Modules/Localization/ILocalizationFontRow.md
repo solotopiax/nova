@@ -26,7 +26,7 @@ Luban 生成的字体表行只要实现这个接口，`LocalizationManager` 和 
 
 表示字体标记。
 
-`TextLocalizing` 正是通过 `Mark` 去匹配某个 UI 文本应该使用哪套字体。
+`Nova.Localization.GetFontData(mark)` 按当前语言和 `Mark` 查询字体配置，显式语言重载为 `GetFontData(language, mark)`；`TextLocalizing` 复用同一个查询。它们返回首个 Ordinal 精确匹配的原始配置行，空标记或未命中返回 `null`，不自动回退或加载字体资源。字体表没有通用 `Name` 字段。
 
 ### 3. `AssetLocation` / `MaterialName`
 

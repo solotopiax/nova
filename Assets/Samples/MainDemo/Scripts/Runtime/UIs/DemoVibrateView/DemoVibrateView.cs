@@ -8,7 +8,7 @@
  * descrip:   Modules 2.14 — Vibrate 模块演示视图（交互触发型）。
  *            演示振动类型预设、自定义振动（参数/name）、
  *            强调振动（参数/name）与停止全部。
- *            API：Nova.Vibrate.Play / PlayCustom / PlayEmphasis / StopAll
+ *            API：Nova.Vibrate.Play / PlayCustom / PlayEmphasis / PlayCustomByParams / PlayEmphasisByParams / StopAll
  ***************************************************************/
 
 using System.Globalization;
@@ -58,7 +58,7 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private TMP_InputField m_CustomDurationInput;
 
         /// <summary>
-        /// PlayCustom 按钮，调用 PlayCustom(intensity, sharpness, preDuration, duration)。
+        /// PlayCustom 按钮，调用 PlayCustomByParams(intensity, sharpness, preDuration, duration)。
         /// </summary>
 
         [SerializeField] private Button m_PlayCustomButton;
@@ -85,12 +85,7 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private TMP_InputField m_EmphasisPreDurationInput;
 
         /// <summary>
-        /// PlayEmphasis 间隔输入（秒）。
-        /// </summary>
-        [SerializeField] private TMP_InputField m_EmphasisIntervalInput;
-
-        /// <summary>
-        /// PlayEmphasis 按钮，调用 PlayEmphasis(amplitude, frequency, preDuration, interval)。
+        /// PlayEmphasis 按钮，调用 PlayEmphasisByParams(amplitude, frequency, preDuration)。
         /// </summary>
 
         [SerializeField] private Button m_PlayEmphasisButton;
@@ -144,7 +139,7 @@ namespace NovaFramework.Samples.Runtime
             if (m_PlayCustomButton != null)
             {
                 m_PlayCustomButton.onClick.AddListener(OnPlayCustomButtonClick);
-                SetButtonApiHint(m_PlayCustomButton, "Nova.Vibrate.PlayCustom(intensity, sharpness, pre, dur)");
+                SetButtonApiHint(m_PlayCustomButton, "Nova.Vibrate.PlayCustomByParams(intensity, sharpness, pre, dur)");
             }
 
             if (m_PlayCustomByNameButton != null)
@@ -156,7 +151,7 @@ namespace NovaFramework.Samples.Runtime
             if (m_PlayEmphasisButton != null)
             {
                 m_PlayEmphasisButton.onClick.AddListener(OnPlayEmphasisButtonClick);
-                SetButtonApiHint(m_PlayEmphasisButton, "Nova.Vibrate.PlayEmphasis(amp, freq, pre, interval)");
+                SetButtonApiHint(m_PlayEmphasisButton, "Nova.Vibrate.PlayEmphasisByParams(amp, freq, pre)");
             }
 
             if (m_PlayEmphasisByNameButton != null)
@@ -200,7 +195,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// PlayCustom 按钮点击：读取配置并调用 PlayCustom(intensity, sharpness, preDuration, duration)。
+        /// PlayCustom 按钮点击：读取配置并调用 PlayCustomByParams(intensity, sharpness, preDuration, duration)。
         /// </summary>
         private void OnPlayCustomButtonClick()
         {
@@ -218,9 +213,9 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            Nova.Vibrate.PlayCustom(intensity, sharpness, preDuration, duration);
+            Nova.Vibrate.PlayCustomByParams(intensity, sharpness, preDuration, duration);
             bool supported = Nova.Vibrate.IsSupported;
-            AppendFeedback($"Nova.Vibrate.PlayCustom(intensity={intensity}, sharpness={sharpness}, pre={preDuration}, dur={duration}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            AppendFeedback($"Nova.Vibrate.PlayCustomByParams(intensity={intensity}, sharpness={sharpness}, pre={preDuration}, dur={duration}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
         }
 
         /// <summary>
@@ -240,7 +235,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// PlayEmphasis 按钮点击：读取配置并调用 PlayEmphasis(amplitude, frequency, preDuration, interval)。
+        /// PlayEmphasis 按钮点击：读取配置并调用 PlayEmphasisByParams(amplitude, frequency, preDuration)。
         /// </summary>
         private void OnPlayEmphasisButtonClick()
         {
@@ -252,15 +247,14 @@ namespace NovaFramework.Samples.Runtime
 
             if (!TryReadParameter(m_EmphasisAmplitudeInput, "amplitude", true, out float amplitude) ||
                 !TryReadParameter(m_EmphasisFrequencyInput, "frequency", true, out float frequency) ||
-                !TryReadParameter(m_EmphasisPreDurationInput, "preDuration", false, out float preDuration) ||
-                !TryReadParameter(m_EmphasisIntervalInput, "interval", false, out float interval))
+                !TryReadParameter(m_EmphasisPreDurationInput, "preDuration", false, out float preDuration))
             {
                 return;
             }
 
-            Nova.Vibrate.PlayEmphasis(amplitude, frequency, preDuration, interval);
+            Nova.Vibrate.PlayEmphasisByParams(amplitude, frequency, preDuration);
             bool supported = Nova.Vibrate.IsSupported;
-            AppendFeedback($"Nova.Vibrate.PlayEmphasis(amp={amplitude}, freq={frequency}, pre={preDuration}, interval={interval}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            AppendFeedback($"Nova.Vibrate.PlayEmphasisByParams(amp={amplitude}, freq={frequency}, pre={preDuration}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
         }
 
         /// <summary>

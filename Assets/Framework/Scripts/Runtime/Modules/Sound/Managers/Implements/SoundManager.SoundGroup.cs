@@ -116,10 +116,11 @@ namespace NovaFramework.Runtime
             /// <param name="serialID">声音的序列编号。</param>
             /// <param name="soundAsset">声音资源。</param>
             /// <param name="handle">声音资源句柄，所有权转入 SoundAgent，停止时由 SoundAgent 自动 Release。</param>
-            /// <param name="playSoundParams">播放声音参数。</param>
+            /// <param name="soundRow">提供循环、优先级、音量与空间混合度的声音表行。</param>
+            /// <param name="playSoundParams">仅本次请求的表外运行时参数。</param>
             /// <param name="errorCode">错误码。</param>
             /// <returns>用于播放的声音代理，失败时返回 null。</returns>
-            public SoundAgent PlaySound(int serialID, UnityEngine.Object soundAsset, IAssetHandle handle, PlaySoundParams playSoundParams, out PlaySoundErrorCode? errorCode)
+            public SoundAgent PlaySound(int serialID, UnityEngine.Object soundAsset, IAssetHandle handle, ISoundRow soundRow, PlaySoundParams playSoundParams, out PlaySoundErrorCode? errorCode)
             {
                 errorCode = null;
                 SoundAgent candidateAgent = null;
@@ -135,14 +136,14 @@ namespace NovaFramework.Runtime
 
                     busyCount++;
 
-                    if (soundAgent.Priority < playSoundParams.Priority)
+                    if (soundAgent.Priority < soundRow.Priority)
                     {
                         if (candidateAgent == null || soundAgent.Priority < candidateAgent.Priority)
                         {
                             candidateAgent = soundAgent;
                         }
                     }
-                    else if (!m_AvoidBeingReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
+                    else if (!m_AvoidBeingReplacedBySamePriority && soundAgent.Priority == soundRow.Priority)
                     {
                         if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
                         {
@@ -172,9 +173,10 @@ namespace NovaFramework.Runtime
                 candidateAgent.SerialID = serialID;
                 candidateAgent.Time = playSoundParams.Time;
                 candidateAgent.MuteInSoundGroup = playSoundParams.MuteInSoundGroup;
-                candidateAgent.Loop = playSoundParams.Loop;
-                candidateAgent.Priority = playSoundParams.Priority;
-                candidateAgent.VolumeInSoundGroup = playSoundParams.VolumeInSoundGroup;
+                candidateAgent.Loop = soundRow.Loop;
+                candidateAgent.Priority = soundRow.Priority;
+                candidateAgent.VolumeInSoundGroup = soundRow.Volume;
+                candidateAgent.Helper.SpatialBlend = soundRow.SpatialBlend;
                 candidateAgent.Pitch = playSoundParams.Pitch;
                 candidateAgent.PanStereo = playSoundParams.PanStereo;
                 candidateAgent.Play(playSoundParams.FadeInSeconds);

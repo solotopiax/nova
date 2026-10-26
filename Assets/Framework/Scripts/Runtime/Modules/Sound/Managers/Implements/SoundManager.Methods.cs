@@ -121,28 +121,94 @@ namespace NovaFramework.Runtime
             }
 
             Log.Debug(LogTag.Sound, "Sound 成功加载了 {0} 个数据文件，共计 {1} 个表格数据。", fileCount, m_SoundTableDatas.Count);
-            BuildSoundRowsFromTables();
+            return BuildSoundRowsFromTables();
+        }
+
+        /// <summary>
+        /// 将当前声音表构建为唯一名称索引；空行、空名称或重名时拒绝整个索引，不留下部分可播放数据。
+        /// </summary>
+        /// <returns>所有声音表及名称均有效时返回 true。</returns>
+        private bool BuildSoundRowsFromTables()
+        {
+            m_SoundRows.Clear();
+            Dictionary<string, ISoundRow> rows = new Dictionary<string, ISoundRow>(StringComparer.Ordinal);
+            foreach (KeyValuePair<Type, ITable> kv in m_SoundTableDatas)
+            {
+                if (!(kv.Value is ITable<ISoundRow> soundTable) || soundTable.DataList == null)
+                {
+                    Log.Error(LogTag.Sound, "声音表 '{0}' 未实现 ITable<ISoundRow> 或 DataList 为空，已拒绝构建声音索引。", kv.Key);
+                    return false;
+                }
+
+                foreach (ISoundRow row in soundTable.DataList)
+                {
+                    if (row == null || string.IsNullOrWhiteSpace(row.Name) || rows.ContainsKey(row.Name))
+                    {
+                        Log.Error(LogTag.Sound, "声音表 '{0}' 存在空行、空 Name 或重复 Name '{1}'，已拒绝构建声音索引。", kv.Key, row?.Name);
+                        return false;
+                    }
+
+                    rows.Add(row.Name, row);
+                }
+            }
+
+            foreach (KeyValuePair<string, ISoundRow> row in rows)
+            {
+                m_SoundRows.Add(row.Key, row.Value);
+            }
+
+            Log.Debug(LogTag.Sound, "BuildSoundRowsFromTables 完成，共缓存 {0} 条声音行。", m_SoundRows.Count);
             return true;
         }
 
         /// <summary>
-        /// 将所有声音表中的数据行扁平化到 m_SoundRows，以 ISoundRow.Name 为键。
+        /// 校验已解析表行与声音组后创建请求；表内配置保持由行提供，参数对象只补充运行时上下文。
         /// </summary>
-        private void BuildSoundRowsFromTables()
+        /// <param name="row">按 Name 或唯一 AssetLocation 解析出的声音表行。</param>
+        /// <param name="playSoundParams">调用后由 Manager 接管的表外运行时参数。</param>
+        /// <returns>请求序列编号；配置无效时为 -1。</returns>
+        private int PlaySoundRow(ISoundRow row, PlaySoundParams playSoundParams)
         {
-            m_SoundRows.Clear();
-            foreach (KeyValuePair<Type, ITable> kv in m_SoundTableDatas)
+            if (row == null || string.IsNullOrWhiteSpace(row.AssetLocation) || string.IsNullOrWhiteSpace(row.GroupName))
             {
-                if (kv.Value is ITable<ISoundRow> soundTable)
-                {
-                    foreach (ISoundRow row in soundTable.DataList)
-                    {
-                        m_SoundRows[row.Name] = row;
-                    }
-                }
+                Log.Warning(LogTag.Sound, "声音行 '{0}' 缺少 AssetLocation 或 GroupName，已拒绝播放。", row?.Name);
+                return RejectSoundRequest(playSoundParams);
             }
 
-            Log.Debug(LogTag.Sound, "BuildSoundRowsFromTables 完成，共缓存 {0} 条声音行。", m_SoundRows.Count);
+            SoundGroup soundGroup = GetSoundGroup(row.GroupName);
+            if (soundGroup == null)
+            {
+                Log.Warning(LogTag.Sound, "声音行 '{0}' 配置的声音组 '{1}' 不存在，errorCode={2}", row.Name, row.GroupName, PlaySoundErrorCode.SoundGroupNotExist);
+                return RejectSoundRequest(playSoundParams);
+            }
+
+            if (soundGroup.SoundAgentCount <= 0)
+            {
+                Log.Warning(LogTag.Sound, "声音组 '{0}' 没有声音代理，errorCode={1}", row.GroupName, PlaySoundErrorCode.SoundGroupHasNotEnoughAgent);
+                return RejectSoundRequest(playSoundParams);
+            }
+
+            playSoundParams = playSoundParams ?? PlaySoundParams.Create();
+            int serialID = ++m_Serial;
+            m_SoundsLoading.Add(serialID);
+            PlaySoundInfo playSoundInfo = PlaySoundInfo.Create(serialID, soundGroup, row, playSoundParams);
+            LoadAndPlaySoundAsync(playSoundInfo, row.AssetLocation).Forget();
+            return serialID;
+        }
+
+        /// <summary>
+        /// 归还已转移所有权的参数并返回拒绝标识；拒绝请求不生成有效序列编号。
+        /// </summary>
+        /// <param name="playSoundParams">本次接管的参数，允许为 null。</param>
+        /// <returns>固定为 -1。</returns>
+        private static int RejectSoundRequest(PlaySoundParams playSoundParams)
+        {
+            if (playSoundParams != null)
+            {
+                ReferencePool.Put(playSoundParams);
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -188,7 +254,7 @@ namespace NovaFramework.Runtime
 
                 PlaySoundErrorCode? errorCode;
                 SoundAgent soundAgent = playSoundInfo.SoundGroup.PlaySound(
-                    playSoundInfo.SerialID, clipHandle.Asset, clipHandle, playSoundInfo.PlaySoundParams, out errorCode);
+                    playSoundInfo.SerialID, clipHandle.Asset, clipHandle, playSoundInfo.SoundRow, playSoundInfo.PlaySoundParams, out errorCode);
                 if (soundAgent == null)
                 {
                     m_SoundsToReleaseOnLoad.Remove(playSoundInfo.SerialID);

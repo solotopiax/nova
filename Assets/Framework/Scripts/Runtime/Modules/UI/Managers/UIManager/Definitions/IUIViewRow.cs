@@ -17,7 +17,7 @@ namespace NovaFramework.Runtime
     public interface IUIViewRow
     {
         /// <summary>
-        /// 视图类名（作为注册表 Key，与 typeof(T).Name 对齐）。
+        /// 视图配置名称（作为注册表 Key）；泛型入口与 typeof(T).Name 对齐，名称入口直接使用此值。
         /// </summary>
         string Name { get; }
 

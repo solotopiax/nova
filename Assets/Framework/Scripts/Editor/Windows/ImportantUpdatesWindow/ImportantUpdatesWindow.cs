@@ -149,7 +149,16 @@ namespace NovaFramework.Editor
             m_ContentAreaStyle = new GUIStyle { padding = new RectOffset(20, 8, 0, 0) };
             m_ScrollStyle = new GUIStyle { normal = { background = Texture2D.whiteTexture } };
             m_VersionStyle = new GUIStyle(EditorStyles.boldLabel) { padding = new RectOffset(2 + indent, 2, 0, 0) };
-            m_ContentStyle = new GUIStyle(EditorStyles.wordWrappedLabel) { richText = false, padding = new RectOffset(2 + indent * 2, 2, 6, 6) };
+            // 仅版本下的具体说明使用红色；独立样式避免影响版本、包名及阅读确认区，选中或聚焦时也保持醒目。
+            m_ContentStyle = new GUIStyle(EditorStyles.wordWrappedLabel)
+            {
+                richText = false,
+                padding = new RectOffset(2 + indent * 2, 2, 6, 6),
+                normal = { textColor = Color.red },
+                hover = { textColor = Color.red },
+                active = { textColor = Color.red },
+                focused = { textColor = Color.red }
+            };
             m_SummaryStyle = new GUIStyle(EditorStyles.miniLabel) { fontSize = 11, wordWrap = false, normal = { textColor = Color.white } };
             m_SeparatorStyle = new GUIStyle { normal = { background = Texture2D.grayTexture }, margin = new RectOffset(8, 8, 0, 0) };
             m_ConfirmationStyle = new GUIStyle { padding = new RectOffset(12, 12, 10, 12), margin = new RectOffset(8, 8, 10, 0) };

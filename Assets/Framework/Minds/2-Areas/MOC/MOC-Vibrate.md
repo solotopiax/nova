@@ -53,8 +53,8 @@ Nova.Vibrate
 
 - `Play()`
 - `Play(VibrateType type)`
-- `PlayCustom(string name | float intensity, float sharpness, float preDuration, float duration)`
-- `PlayEmphasis(string name | float amplitude, float frequency, float preDuration, float interval)`
+- `PlayCustom(string name)` / `PlayCustomByParams(float intensity, float sharpness, float preDuration, float duration)`
+- `PlayEmphasis(string name)` / `PlayEmphasisByParams(float amplitude, float frequency, float preDuration)`
 - `StopAll()`
 - `Enable`
 - `IsSupported`
@@ -73,7 +73,8 @@ Nova.Vibrate
 ## 导航提醒
 
 - 组件对外方法名是 `LoadSync / LoadAsync`，Manager 内部真实方法名是 `LoadVibrateDataSync / LoadVibrateDataAsync`
-- 名称型 `PlayCustom(name)` / `PlayEmphasis(name)` 依赖已加载的数据表
+- 名称型 `PlayCustom(name)` / `PlayEmphasis(name)` 依赖已加载的数据表；每个区域汇总所有 Unit 的同名行并按 Order 稳定排序，不能只取首表
+- 表驱动与手工参数入口分开命名，名称入口完整使用表行配置
 - 具体优先级、平台支持细节与资源释放路径，以 `Docs` 和源码为准。
 
 ## 常见误区

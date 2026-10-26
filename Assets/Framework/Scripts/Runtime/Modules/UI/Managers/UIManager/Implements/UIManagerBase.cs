@@ -94,176 +94,106 @@ namespace NovaFramework.Runtime
         public abstract void LoadSync();
 
         /// <summary>
-        /// 通过泛型同步打开视图，使用注册表中的默认配置。
+        /// 按视图类型同步打开，资源地址、分组、暂停与池化全部使用 UI 表配置。
         /// </summary>
-        /// <typeparam name="T">UIView 子类类型。</typeparam>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号，失败返回 -1。</returns>
+        /// <typeparam name="T">UIView 子类类型，其短类名必须匹配 UI 表的 Name。</typeparam>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
         public abstract int OpenUIViewSync<T>(object userData = null) where T : UIView;
 
         /// <summary>
-        /// 通过泛型同步打开视图，允许覆盖 PauseCoveredUIView。
+        /// 按 UI 表的 Name 同步打开，全部行为使用该行配置。
         /// </summary>
-        /// <typeparam name="T">UIView 子类类型。</typeparam>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号，失败返回 -1。</returns>
-        public abstract int OpenUIViewSync<T>(bool pauseCoveredUIView, object userData = null) where T : UIView;
+        /// <param name="uiViewName">UI 表的 Name 列值，不是 Excel 文件名或资源地址。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        public abstract int OpenUIViewSync(string uiViewName, object userData = null);
 
         /// <summary>
-        /// 通过泛型同步打开视图，允许覆盖 PauseCoveredUIView 与 InObjectPools。
+        /// 按唯一资源地址查表后同步打开；地址对应多条配置时须改用名称入口。
         /// </summary>
-        /// <typeparam name="T">UIView 子类类型。</typeparam>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="inObjectPools">是否启用对象池缓存。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号，失败返回 -1。</returns>
-        public abstract int OpenUIViewSync<T>(bool pauseCoveredUIView, bool inObjectPools, object userData = null) where T : UIView;
+        /// <param name="assetLocation">UI 表的 AssetLocation 列值，按原字符串精确匹配。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        public abstract int OpenUIViewByAssetSync(string assetLocation, object userData = null);
 
         /// <summary>
-        /// 同步打开视图。
+        /// 兼容旧版泛型同步打开签名，暂停行为以 UI 表配置为准。
         /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewSync(string assetLocation, string uiGroupName)
+        /// <typeparam name="T">UIView 子类类型，其短类名必须匹配 UI 表的 Name。</typeparam>
+        /// <param name="pauseCoveredUIView">旧版暂停参数，保留签名供迁移；实际使用 UI 表配置。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        [Obsolete("打开行为统一由 UI 表配置决定，开关参数不再生效；请使用不带开关参数的打开接口。")]
+        public virtual int OpenUIViewSync<T>(bool pauseCoveredUIView, object userData = null) where T : UIView
         {
-            return OpenUIViewSync(assetLocation, uiGroupName, false, true, null);
+            return OpenUIViewSync<T>(userData);
         }
 
         /// <summary>
-        /// 同步打开视图。
+        /// 兼容旧版泛型同步打开签名，暂停与池化均以 UI 表配置为准。
         /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewSync(string assetLocation, string uiGroupName, bool pauseCoveredUIView)
+        /// <typeparam name="T">UIView 子类类型，其短类名必须匹配 UI 表的 Name。</typeparam>
+        /// <param name="pauseCoveredUIView">旧版暂停参数，保留签名供迁移；实际使用 UI 表配置。</param>
+        /// <param name="inObjectPools">旧版池化参数，保留签名供迁移；实际使用 UI 表配置。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        [Obsolete("打开行为统一由 UI 表配置决定，开关参数不再生效；请使用不带开关参数的打开接口。")]
+        public virtual int OpenUIViewSync<T>(bool pauseCoveredUIView, bool inObjectPools, object userData = null) where T : UIView
         {
-            return OpenUIViewSync(assetLocation, uiGroupName, pauseCoveredUIView, true, null);
+            return OpenUIViewSync<T>(userData);
         }
 
         /// <summary>
-        /// 同步打开视图。
+        /// 按视图类型异步打开，资源地址、分组、暂停与池化全部使用 UI 表配置。
         /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewSync(string assetLocation, string uiGroupName, object userData)
-        {
-            return OpenUIViewSync(assetLocation, uiGroupName, false, true, userData);
-        }
-
-        /// <summary>
-        /// 同步打开视图。
-        /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewSync(string assetLocation, string uiGroupName, bool pauseCoveredUIView, object userData)
-        {
-            return OpenUIViewSync(assetLocation, uiGroupName, pauseCoveredUIView, true, userData);
-        }
-
-        /// <summary>
-        /// 同步打开视图。
-        /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="inObjectPools">是否启用对象池缓存。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号。</returns>
-        public abstract int OpenUIViewSync(string assetLocation, string uiGroupName, bool pauseCoveredUIView, bool inObjectPools, object userData);
-
-        /// <summary>
-        /// 通过泛型异步打开视图，使用注册表中的默认配置。
-        /// </summary>
-        /// <typeparam name="T">UIView 子类类型。</typeparam>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号，失败返回 -1。</returns>
+        /// <typeparam name="T">UIView 子类类型，其短类名必须匹配 UI 表的 Name。</typeparam>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
         public abstract int OpenUIViewAsync<T>(object userData = null) where T : UIView;
 
         /// <summary>
-        /// 通过泛型异步打开视图，允许覆盖 PauseCoveredUIView。
+        /// 按 UI 表的 Name 异步打开，全部行为使用该行配置。
         /// </summary>
-        /// <typeparam name="T">UIView 子类类型。</typeparam>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号，失败返回 -1。</returns>
-        public abstract int OpenUIViewAsync<T>(bool pauseCoveredUIView, object userData = null) where T : UIView;
+        /// <param name="uiViewName">UI 表的 Name 列值，不是 Excel 文件名或资源地址。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        public abstract int OpenUIViewAsync(string uiViewName, object userData = null);
 
         /// <summary>
-        /// 通过泛型异步打开视图，允许覆盖 PauseCoveredUIView 与 InObjectPools。
+        /// 按唯一资源地址查表后异步打开；地址对应多条配置时须改用名称入口。
         /// </summary>
-        /// <typeparam name="T">UIView 子类类型。</typeparam>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="inObjectPools">是否启用对象池缓存。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号，失败返回 -1。</returns>
-        public abstract int OpenUIViewAsync<T>(bool pauseCoveredUIView, bool inObjectPools, object userData = null) where T : UIView;
+        /// <param name="assetLocation">UI 表的 AssetLocation 列值，按原字符串精确匹配。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        public abstract int OpenUIViewByAssetAsync(string assetLocation, object userData = null);
 
         /// <summary>
-        /// 异步打开视图。
+        /// 兼容旧版泛型异步打开签名，暂停行为以 UI 表配置为准。
         /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewAsync(string assetLocation, string uiGroupName)
+        /// <typeparam name="T">UIView 子类类型，其短类名必须匹配 UI 表的 Name。</typeparam>
+        /// <param name="pauseCoveredUIView">旧版暂停参数，保留签名供迁移；实际使用 UI 表配置。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        [Obsolete("打开行为统一由 UI 表配置决定，开关参数不再生效；请使用不带开关参数的打开接口。")]
+        public virtual int OpenUIViewAsync<T>(bool pauseCoveredUIView, object userData = null) where T : UIView
         {
-            return OpenUIViewAsync(assetLocation, uiGroupName, false, true, null);
+            return OpenUIViewAsync<T>(userData);
         }
 
         /// <summary>
-        /// 异步打开视图。
+        /// 兼容旧版泛型异步打开签名，暂停与池化均以 UI 表配置为准。
         /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewAsync(string assetLocation, string uiGroupName, bool pauseCoveredUIView)
+        /// <typeparam name="T">UIView 子类类型，其短类名必须匹配 UI 表的 Name。</typeparam>
+        /// <param name="pauseCoveredUIView">旧版暂停参数，保留签名供迁移；实际使用 UI 表配置。</param>
+        /// <param name="inObjectPools">旧版池化参数，保留签名供迁移；实际使用 UI 表配置。</param>
+        /// <param name="userData">传递给视图的业务数据，不参与 UI 行为配置。</param>
+        /// <returns>视图序列编号；未找到唯一配置时返回 -1，未创建打开请求。</returns>
+        [Obsolete("打开行为统一由 UI 表配置决定，开关参数不再生效；请使用不带开关参数的打开接口。")]
+        public virtual int OpenUIViewAsync<T>(bool pauseCoveredUIView, bool inObjectPools, object userData = null) where T : UIView
         {
-            return OpenUIViewAsync(assetLocation, uiGroupName, pauseCoveredUIView, true, null);
+            return OpenUIViewAsync<T>(userData);
         }
-
-        /// <summary>
-        /// 异步打开视图。
-        /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewAsync(string assetLocation, string uiGroupName, object userData)
-        {
-            return OpenUIViewAsync(assetLocation, uiGroupName, false, true, userData);
-        }
-
-        /// <summary>
-        /// 异步打开视图。
-        /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号。</returns>
-        public virtual int OpenUIViewAsync(string assetLocation, string uiGroupName, bool pauseCoveredUIView, object userData)
-        {
-            return OpenUIViewAsync(assetLocation, uiGroupName, pauseCoveredUIView, true, userData);
-        }
-
-        /// <summary>
-        /// 异步打开视图。
-        /// </summary>
-        /// <param name="assetLocation">视图资源地址。</param>
-        /// <param name="uiGroupName">视图分组名称。</param>
-        /// <param name="pauseCoveredUIView">是否暂停被覆盖的视图。</param>
-        /// <param name="inObjectPools">是否启用对象池缓存。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <returns>视图的序列编号。</returns>
-        public abstract int OpenUIViewAsync(string assetLocation, string uiGroupName, bool pauseCoveredUIView, bool inObjectPools, object userData);
 
         /// <summary>
         /// 关闭视图。

@@ -9,7 +9,6 @@
  ***************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -162,22 +161,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            IReadOnlyList<ILocalizationFontRow> fontDatas = m_LocalizationManager.GetFontDatas(m_LocalizationManager.Language);
-            if (fontDatas == null || fontDatas.Count == 0)
-            {
-                return;
-            }
-
-            ILocalizationFontRow targetFontData = null;
-            for (int i = 0; i < fontDatas.Count; i++)
-            {
-                if (string.Equals(fontDatas[i].Mark, m_LocalizingFontMark, StringComparison.Ordinal))
-                {
-                    targetFontData = fontDatas[i];
-                    break;
-                }
-            }
-
+            ILocalizationFontRow targetFontData = m_LocalizationManager.GetFontData(m_LocalizingFontMark);
             if (targetFontData == null)
             {
                 Log.Debug(LogTag.Localization, "TextLocalizing 未找到匹配的字体数据，FontMark='{0}'，Language='{1}'。", m_LocalizingFontMark, m_LocalizationManager.Language);

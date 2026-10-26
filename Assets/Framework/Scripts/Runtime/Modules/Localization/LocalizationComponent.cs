@@ -211,6 +211,27 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 按字体标记获取当前语言的首条匹配配置，不加载字体资源。
+        /// </summary>
+        /// <param name="mark">字体表的 Mark，按 Ordinal 精确匹配；空值不匹配。</param>
+        /// <returns>原始字体配置行；未命中时返回 null，不回退语言。</returns>
+        public ILocalizationFontRow GetFontData(string mark)
+        {
+            return m_LocalizationManager.GetFontData(mark);
+        }
+
+        /// <summary>
+        /// 按语言和字体标记获取首条匹配配置，不切换语言或加载字体资源。
+        /// </summary>
+        /// <param name="language">要查询的语言。</param>
+        /// <param name="mark">字体表的 Mark，按 Ordinal 精确匹配；空值不匹配。</param>
+        /// <returns>原始字体配置行；未命中时返回 null，不回退语言。</returns>
+        public ILocalizationFontRow GetFontData(Language language, string mark)
+        {
+            return m_LocalizationManager.GetFontData(language, mark);
+        }
+
+        /// <summary>
         /// 检查指定语言是否存在字体数据。
         /// </summary>
         /// <param name="language">目标语言。</param>

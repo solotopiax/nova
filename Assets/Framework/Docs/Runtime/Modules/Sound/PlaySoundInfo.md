@@ -2,10 +2,11 @@
 
 `PlaySoundInfo` 不是公开 API，而是 `SoundManager` 的内部播放上下文对象。
 
-它把一次播放请求在“进入异步资源加载后”仍然需要携带的三样信息绑在一起：
+它把一次播放请求在“进入异步资源加载后”仍然需要携带的信息绑在一起：
 
 - `SerialID`
 - `SoundGroup`
+- `ISoundRow`（此次请求的组、资源与全部表内播放配置来源）
 - `PlaySoundParams`
 
 ## 什么时候先看这页

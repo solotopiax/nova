@@ -48,6 +48,7 @@ Awake 按 HTTP、Network、WebSocket 的顺序创建管理器；Start 使用 Ins
 UniTask<bool> LoadAsync();
 bool LoadSync();
 NetworkSettings GetCurrentSettings();
+INetworkHostKeyRow ResolveHostKeyRow(string hostKeyName);
 T Kit<T>() where T : class, new();
 UniTask<NetResponse<TResp>> SendProtoAsync<TReq, TResp>(
     INetworkCmdRow cmdRow, Func<PbNetReqHeader, TReq> requestFactory,
@@ -132,7 +133,10 @@ if (!await Nova.Network.LoadAsync())
 
 // 读取主地址兼容 URL；业务 Kit 的 SendAsync 会使用内部主备链。
 string url = Nova.Network.GetNetCmdUrl("TbUserCmd", "Login");
+INetworkHostKeyRow host = Nova.Network.ResolveHostKeyRow("Business");
 ~~~
+
+`ResolveHostKeyRow` 按域名表内的 `Name` 忽略大小写查原始行；空名称或未命中返回 `null`，非空名称未命中记录告警。同名行按已加载表遍历顺序取最后一条。查询不加载表，也不修改主备路由缓存；是否能发请求仍由既有 URL 解析链决定。`GetNetCmd<T>()` / `GetNetCmd(tbName)` 的旧名称保留，它们同时支持已加载的 HostKey 和 NetCmd 生成表；`GetNetCmdUrl` 的 `dtName` 是指令行 `Name`，不是数据类型名。
 
 ## 关联文档
 

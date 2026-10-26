@@ -76,15 +76,20 @@
 ## 高价值门面
 
 - 数据加载：`LoadSync()` / `LoadAsync()`
-- 播放：`PlaySound(name)`、`PlaySound(name, params)`、`PlaySound(group, assetLocation, params)`
+- 播放：`PlaySound(name)`、`PlaySound(name, params)`、`PlaySoundByAsset(assetLocation, params = null)`
 - 控制：`Stop*`、`Pause*`、`Resume*`
 - 状态：`IsLoadOver`、`SoundGroupCount`
+
+普通入口首参是声音表 `Name`；按地址入口首参是 `AssetLocation`，必须唯一反查到一行。两种入口都使用表内的声音组、资源、循环、优先级、音量与空间混合度；`PlaySoundParams` 只补充进度、单次静音、淡入、音调和声相。缺名称、缺地址、地址歧义、缺组或无代理时返回 `-1`，不发起资源加载。
+
+升级迁移：原 `PlaySound(group, assetLocation, params)` 改成 `PlaySound(name, params)`，或在地址唯一时改成 `PlaySoundByAsset(assetLocation, params)`；组名写入声音源表并正式导出，不再由播放调用覆盖。
 
 ## 风险点 / 易错点
 
 - `Start()` 之前没有把声音组注册到 Manager；太早调用播放很容易命中“组不存在”。
 - `SoundSettings` 为空会直接抛异常，不是静默跳过。
 - `LoadSync()` 同步执行数据加载/构表，不返回成功 bool；不是异步 fire-and-forget。
+- 同步载表中某个有效 Unit 读取失败时，整轮停止且正式索引保持为空，不继续使用前面部分数据或旧表行；具体失败看读取日志。
 - 组件层只是门面；如果你要排查表数据加载、播放失败码、资源释放，应该继续看 `SoundManager`。
 
 ## 继续阅读

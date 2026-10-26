@@ -94,6 +94,11 @@ namespace NovaFramework.Runtime
             public float PanStereo { get => m_AudioSource.panStereo; set => m_AudioSource.panStereo = value; }
 
             /// <summary>
+            /// 获取或设置表行指定的空间混合度（0 为二维，1 为三维）。
+            /// </summary>
+            public float SpatialBlend { get => m_AudioSource.spatialBlend; set => m_AudioSource.spatialBlend = value; }
+
+            /// <summary>
             /// 获取或设置声音代理辅助器所在的混音组。
             /// </summary>
             public AudioMixerGroup AudioMixerGroup { get => m_AudioSource.outputAudioMixerGroup; set => m_AudioSource.outputAudioMixerGroup = value; }

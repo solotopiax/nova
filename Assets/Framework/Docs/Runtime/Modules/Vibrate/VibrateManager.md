@@ -63,9 +63,11 @@
 - 生成 `Name -> List<Row>` 的缓存
 - 每组按 `Order` 升序排序
 
-无效 Unit（null 或空 AssetLocation）跳过；两路分别构造 `VibrateEmphasisTables`、`VibrateCustomTables`，每路只取返回字典中的首张表建组，不聚合全部表。类型不匹配或 DataList 为空会得到空组，同 Order 不保证稳定排序，null Name 会在字典分组时失败。即使两路没有生成表，BuildGroupsFromCache 也可能返回 true 并保留此前组；加载成功不证明指定组存在。
+无效 Unit（null 或空 AssetLocation）跳过；两路分别构造 `VibrateEmphasisTables`、`VibrateCustomTables`，各自聚合全部表，跨表同名行属于同一组。按 `Order` 稳定升序排列，同序号保留表遍历与 DataList 的原顺序；需要确定业务顺序时仍建议使用不同序号。
 
-资源委托先取 TextAsset、立即 Release handle，再将同一 TextAsset 返回给接收器，后续 release 委托为空。这里没有复制 bytes 或 finally 保证失败释放；不能把这条数据加载实现理解为持有句柄直至解析结束。同步路径丢弃接收器和构组的 bool，异步路径汇总有效任务再构组；Initialize 仅保存列表引用、不清旧组、不取消旧播放，Shutdown 也不取消在途数据加载。
+两路先构建候选缓存，全部有效才一起替换；配置了有效 Unit 但生成表失败、未得到任何表、行接口不匹配或非空行的 Name 为空时构组失败，并保留上次完整缓存。无有效 Unit 的区域成功加载后替换为空缓存；两路均为空时不需要构造 Tables。DataList 为空或 null、空行本身不报错，但没有可播放组；成功不证明指定组存在。
+
+资源委托先取 TextAsset、立即 Release handle，再将同一 TextAsset 返回给接收器，后续 release 委托为空。这里没有复制 bytes 或 finally 保证失败释放；不能把这条数据加载实现理解为持有句柄直至解析结束。同步路径遇到接收器失败就终止，公开同步入口仍不返回 bool；异步路径汇总有效任务再构组，并向上返回构组失败；Initialize 仅保存列表引用、不清旧组、不取消旧播放，Shutdown 也不取消在途数据加载。
 
 ### 4. 分组播放不是一次性预设，而是顺序执行一串步骤
 
@@ -74,7 +76,7 @@
 
 名称命中后，这两条路径都会先取消上一次未完成的播放，再创建新的 `CancellationTokenSource`。名称为空或未命中只警告，不取消当前播放。
 
-Custom 每步等待 PreDuration 后触发持续振动，再等待 Duration；Emphasis 每步等待 PreDuration 后触发强调，再等待 Interval。正值才等待。组播放不经数值重载校验，也不在每一步重新检查 Enable/IsSupported；取消异常被吞掉，其余步骤异常记 Warning 后结束。没有插件时组仍可能执行等待，只是不调用设备。
+Custom 每步等待 PreDuration 后触发持续振动，再等待 Duration；Emphasis 每步等待 PreDuration 后触发强调，再等待 Interval。正值才等待。组播放不经 ByParams 校验，也不在每一步重新检查 Enable/IsSupported；取消异常被吞掉，其余步骤异常记 Warning 后结束。没有插件时组仍可能执行等待，只是不调用设备。
 
 ### 5. 插件能力是硬边界
 
@@ -88,27 +90,29 @@ Custom 每步等待 PreDuration 后触发持续振动，再等待 Duration；Emp
 ## 关键行为差异
 
 - `Play(VibrateType)`：走预设枚举映射
-- `PlayCustom(float...)`：直接播放持续振动，可带前置等待
-- `PlayEmphasis(float...)`：直接播放强调振动，可带前置等待
+- `PlayCustomByParams(intensity, sharpness, preDuration, duration)`：直接播放持续振动，可带前置等待，不读表
+- `PlayEmphasisByParams(amplitude, frequency, preDuration)`：直接播放单次强调振动，可带前置等待，不读表
 - `PlayCustom(name)` / `PlayEmphasis(name)`：走表驱动组合播放
 
 | 操作 | 取消和停止边界 |
 |---|---|
 | 无参/预设 Play | 无参默认 PlayConstant(1,1,0.3)，None 不播放，未知预设回退 Selection；不替换组 CTS |
-| 数值重载的延迟 | EnsureCts 仅在为空时创建，不取消已有等待，所以数次延迟可以重叠；等待完成时重新检查 Enable |
-| 数值 PlayEmphasis 的 interval | 只检查非负，未传插件，也不用于等待；与表行 Interval 的步后等待不同 |
+| ByParams 的延迟 | EnsureCts 仅在为空时创建，不取消已有等待，所以数次延迟可以重叠；等待完成时重新检查 Enable |
+| Emphasis 时间参数 | ByParams 只有触发前的 preDuration；表行 Interval 独立控制该步触发后的等待 |
 | Enable=false | 调用入口短路，不等于取消已有 CTS 或显式 StopAll；无插件时本地开关初始 true，仍不代表支持设备 |
 | StopAll | 取消/Dispose 旧 CTS 并新建，再在插件分支调用 HapticController.Stop |
 | Shutdown | 取消并释放 CTS、清组和列表引用，但不调用 HapticController.Stop，不置空 IAssetManager，不取消在途载表 |
 
 Cancel 回调或插件异常未被统一捕获，可能阻止后续 Dispose/停止/清理。返回 void 的播放门面没有完成结果或触感成功证明。
 
+旧数值调用需要迁移为 `ByParams`；旧四参数 `PlayEmphasis` 删除从未生效的 `interval`，改为三参数。接口、基类、默认实现、组件门面及自定义实现必须同步迁移，按名调用保持不变。
+
 ## 风险点 / 易错点
 
 - `IConfigManager` 缺失会让振动数据加载失败，这不是 Vibrate 模块单独能补救的。
 - `name` 未命中分组时只会 warning，不会抛异常。
 - 新播放会取消旧的组合振动流程；如果业务期望并发多条振动链，当前实现并不支持。
-- 数值重载在 Enable=true 时比较强度/锐度/振幅/频率感是否在 0～1、时间是否非负；纯比较不会拒绝 NaN，正无限时间也没有有限性门。表行不经过这组校验，调用方不能依赖它清洗全部数据。
+- ByParams 在 Enable=true 时比较强度/锐度/振幅/频率感是否在 0～1、时间是否非负；纯比较不会拒绝 NaN，正无限时间也没有有限性门。表行不经过这组校验，调用方不能依赖它清洗全部数据。
 
 ## 继续阅读
 

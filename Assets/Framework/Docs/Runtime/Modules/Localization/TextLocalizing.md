@@ -84,7 +84,7 @@
 - 当前语言存在字体数据
 - 当前语言字体数据里能找到匹配的 `Mark`
 
-找到后才会进入 `LoadAndApplyFont(...)`。
+组件通过 `ILocalizationManager.GetFontData(FontMark)` 查询当前语言的配置，不再自行遍历列表。找到后才会进入 `LoadAndApplyFont(...)`；未命中不会改用其他语言或默认标记。
 
 ### 5. Disable 时会取消订阅并释放句柄
 

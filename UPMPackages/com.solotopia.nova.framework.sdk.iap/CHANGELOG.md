@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-26
+
+### Fixed
+
+- 修复 IAPStoreBase.GetNetCmdUrl 按行名称查询时错误拼接空表名前缀的问题，改为按已加载 NetCmd 行的 Name 解析地址；缺少行或 Host 配置仍返回 null。
+
+### Important
+
+自定义支付渠道请检查 `IAPStoreBase.GetNetCmdUrl(dtName)`：参数应传 NetCmd 表内名称，不带表名前缀。此方法现在能正确解析地址，原来可能一直返回 null；请检查依赖空结果跳过处理的旧逻辑。缺少配置时仍返回 null，方法本身不发送请求。
+
 ## [0.2.2] - 2026-10-23
 
 ### Changed

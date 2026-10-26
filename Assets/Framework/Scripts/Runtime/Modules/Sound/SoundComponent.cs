@@ -66,7 +66,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 加载声音数据（fire-and-forget）。
+        /// 同步加载全部声音数据；有效单元读取失败时拒绝整轮，不保留部分索引或旧行。
         /// </summary>
         public void LoadSync()
         {
@@ -111,36 +111,35 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 按声音名称查表播放声音（使用表中配置的默认参数）。
+        /// 按声音表 Name 播放；声音组、资源及全部表内播放配置均取自该行。
         /// </summary>
         /// <param name="name">ISoundRow.Name 主键。</param>
-        /// <returns>声音的序列编号。</returns>
+        /// <returns>请求序列编号；名称或配置无效时为 -1，异步加载及实际播放仍可能失败。</returns>
         public int PlaySound(string name)
         {
             return m_SoundManager.PlaySound(name);
         }
 
         /// <summary>
-        /// 按声音名称查表播放声音。
+        /// 按声音表 Name 播放，补充本次请求的表外运行时参数。
         /// </summary>
         /// <param name="name">ISoundRow.Name 主键。</param>
-        /// <param name="playSoundParams">播放声音参数（为 null 时从行配置构造默认参数）。</param>
-        /// <returns>声音的序列编号。</returns>
+        /// <param name="playSoundParams">表外运行时参数；调用后所有权转入 Manager，接受或拒绝时都禁止由调用方回收。</param>
+        /// <returns>请求序列编号；名称或配置无效时为 -1，异步加载及实际播放仍可能失败。</returns>
         public int PlaySound(string name, PlaySoundParams playSoundParams)
         {
             return m_SoundManager.PlaySound(name, playSoundParams);
         }
 
         /// <summary>
-        /// 播放声音。
+        /// 按资源地址唯一反查声音表后播放；地址缺失或歧义时拒绝，不绕过声音表。
         /// </summary>
-        /// <param name="soundGroupName">声音组名称。</param>
-        /// <param name="assetLocation">Asset 地址。</param>
-        /// <param name="playSoundParams">播放声音参数（为 null 时使用默认参数）。</param>
-        /// <returns>声音的序列编号。</returns>
-        public int PlaySound(string soundGroupName, string assetLocation, PlaySoundParams playSoundParams = null)
+        /// <param name="assetLocation">ISoundRow.AssetLocation，精确区分大小写。</param>
+        /// <param name="playSoundParams">表外运行时参数；为 null 时使用其默认值，调用后所有权转入 Manager。</param>
+        /// <returns>请求序列编号；地址缺失、歧义或配置无效时为 -1。</returns>
+        public int PlaySoundByAsset(string assetLocation, PlaySoundParams playSoundParams = null)
         {
-            return m_SoundManager.PlaySound(soundGroupName, assetLocation, playSoundParams);
+            return m_SoundManager.PlaySoundByAsset(assetLocation, playSoundParams);
         }
         
         /// <summary>

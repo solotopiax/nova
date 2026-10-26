@@ -6,7 +6,7 @@
 
 ---
 
-异步与池化示例遵守各自所有权：`DemoNetworkView` 每次打开创建HTTP令牌源，GET/POST传入令牌末位重载，关闭或销毁时主动取消并释放令牌源；旧任务继续取得最终响应并在 `finally` 唯一归还 `HttpResponse`，旧代际不会更新重开的页面。取消驱动物理Abort，不代表服务端回滚；`DemoAssetView` 每次加载独立持有 CTS/代际，取消、替换或关闭后的结果自行释放。`DemoObjectPoolView` 按 `"DemoBullet"` 取用，纯 C# 占位对象以自身提供唯一 Target，当前对象未归还时不再覆盖；`DemoSoundView` 在 Stop、替换旧 SerialID 或关闭页面时，先调用 `StopSound(serialID, 0f)`，再调用 `ReleaseAssetBySerialID(serialID)` 结束本页面持有的声音请求。已加载声音仅 Stop 或自然结束不会释放资源，仍需显式释放；加载中的请求会登记停止，异步结果到达后由 Manager 释放且不播放。Pause/Resume 保留 SerialID 与资源，自然结束后也保留本页面的释放责任，直到显式结束、替换或关闭。声音 SerialID 只证明已发起请求，实际声音资源与播放仍需运行验证；`PlaySoundParams` 交给 SoundManager 后不自行重复归还。
+异步与池化示例遵守各自所有权：`DemoNetworkView` 每次打开创建HTTP令牌源，GET/POST传入令牌末位重载，关闭或销毁时主动取消并释放令牌源；旧任务继续取得最终响应并在 `finally` 唯一归还 `HttpResponse`，旧代际不会更新重开的页面。取消驱动物理Abort，不代表服务端回滚；`DemoAssetView` 每次加载独立持有 CTS/代际，取消、替换或关闭后的结果自行释放。`DemoObjectPoolView` 按 `"DemoBullet"` 取用，纯 C# 占位对象以自身提供唯一 Target，当前对象未归还时不再覆盖；`DemoSoundView` 在 Stop、替换旧 SerialID 或关闭页面时，先调用 `StopSound(serialID, 0f)`，再调用 `ReleaseAssetBySerialID(serialID)` 结束本页面持有的声音请求。已加载声音仅 Stop 或自然结束不会释放资源，仍需显式释放；加载中的请求会登记停止，异步结果到达后由 Manager 释放且不播放。Pause/Resume 保留 SerialID 与资源，自然结束后也保留本页面的释放责任，直到显式结束、替换或关闭。声音 SerialID 只证明已发起请求，实际声音资源与播放仍需运行验证；`PlaySoundParams` 交给 SoundManager 后不自行重复归还。按表内名称播放使用 `PlaySound(name)`；地址输入使用 `PlaySoundByAsset(location)`，地址必须唯一对应已加载的表行，声音组显示为只读说明。组、循环、优先级、音量和空间混合度均来自声音表；带参数示例仅设置本次淡入时长。
 
 `DemoNetworkView` 的 Connect 按钮另提供独占的二进制 echo 示例：URL 输入为 `ws://` 或 `wss://` 时使用该地址，HTTP 输入仍沿用原公开 echo 默认地址，不改变 GET/POST 语义。连接就绪后发送 Sample 协议号 `790001`、通道分配序列号与随机 nonce；仅收到三者匹配的完整回显才显示本次 ack，入队与 10 秒超时分别报告且不自动重放。已连接时再次点击发送新 echo，连接或待 ack 时重复点击不再发送，断线后显式点击重连。关闭和销毁先退订再只断开自己的唯一通道；本 Sample 曾释放且已完成底层关闭的实例可在重开时复用。未知归属、活动或歧义通道不接管，防止影响其它业务及其普通消息队列。接收回调仅复制值，不保留或再次回收框架池对象。此 echo ack 是明确的示例约定，不证明生产认证、心跳、服务器业务或设备网络；实际执行仍须授权目标服务器。
 
@@ -44,7 +44,7 @@
 
 `DemoEdgeCasesView` 会实际执行 `Put(null)`、重复订阅和故意不归还引用；泄漏按钮不保留可供关闭时归还的所有者，关闭页面不能消除它。FSM 按钮只输出约束说明，没有真正触发非法跳转。`DemoReferenceView` 的 Get×100 可重复累积，Put 与关闭归还没有逐项异常恢复；某次归还抛异常时，后续引用可能仍未清理。`DemoToastView` 使用受 `Time.timeScale` 影响的延时，Dialog 业务回调抛异常也可能阻止后续关闭。这些边界示例不应直接当作生产容错实现。
 
-事件示例的池化载荷在交给 `Nova.Event.Fire` 后由事件分发链管理，回调不保留或自行归还它；入队不证明已分发。`DemoVibrateView.StopAll` 影响全局振动，关闭页面并不自动停止；数值输入只约束有限值及归一化项，时间项仍可为负。`DemoUtilView` 会显示演示明文/密文，MD5 示例也不提供身份认证；不要填真实秘密。调试器开关和日志按钮同样有全局副作用，关页不会撤回日志或恢复原调试器可见性。
+事件示例的池化载荷在交给 `Nova.Event.Fire` 后由事件分发链管理，回调不保留或自行归还它；入队不证明已分发。`DemoVibrateView` 的名称按钮使用 `PlayCustom(name)` / `PlayEmphasis(name)`，手工数值按钮使用 `PlayCustomByParams` / `PlayEmphasisByParams`；强调振动仅填写幅度、频率和前置延迟，已移除原来不生效的 interval 输入。`DemoVibrateView.StopAll` 影响全局振动，关闭页面并不自动停止；数值输入只约束有限值及归一化项，时间项仍可为负。`DemoUtilView` 会显示演示明文/密文，MD5 示例也不提供身份认证；不要填真实秘密。调试器开关和日志按钮同样有全局副作用，关页不会撤回日志或恢复原调试器可见性。
 
 ## 业务进度结构迁移
 

@@ -51,7 +51,7 @@ Plan 必须记录上述身份与命名空间期望，Execute 在任何写入前�
 1. 先确认 `VibrateComponent.Start()` 已初始化，目标区域的 Unit 与 `AssetLocation` 可由当前运行时资产链消费。数据源、Unit、地址或目标平台不明时阻断依赖该缺项的写入；触发与停止尚未实现时，在已授权项目源码补齐可达入口与唯一停止责任。真机/体感反馈缺失时继续独立本地步骤并保留 `partial`，不使用占位数据或 Editor 日志替代实际振动。
 2. 仅更新冻结的区域数据、Unit / 资源映射和既有业务入口。先检查每个区域内的 `Name`、`Order` 和字段完整性，再通过 `nova.project.vibration.export` 选择精确单文件或完整区域范围；导出失败立即停止，不清理另一地区域或无关生成物，也不退化为任意 C#、反射或临时 Pipify。
 3. 触发路径必须先在运行时完成 `await Nova.Vibrate.LoadAsync()`。`LoadAsync()==true` 只证明数据加载链返回成功，不证明组名命中、设备支持或用户已感到振动；按名 `PlayCustom` / `PlayEmphasis` 未命中会警告后静默返回，不能把调用已发生当作播放成功。
-4. 对预设需求使用 `Nova.Vibrate.Play()` 或 `Play(VibrateType)`；对已确认数据组仅使用相应的 `PlayCustom(name)` 或 `PlayEmphasis(name)`。冻结重入策略，避免未停止的组合叠加；在确认的退出、取消或替换点调用 `Nova.Vibrate.StopAll()`，不新增第二个停止责任方。
+4. 对预设需求使用 `Nova.Vibrate.Play()` 或 `Play(VibrateType)`；对已确认数据组仅使用相应的 `PlayCustom(name)` 或 `PlayEmphasis(name)`，首参是对应表的 `Name`，整组按 `Order` 完整使用行内配置，不把名称当资源地址或附加手工字段覆盖。仅当需求明确为手工数值播放时使用 `PlayCustomByParams(intensity, sharpness, preDuration, duration)` 或三参数 `PlayEmphasisByParams(amplitude, frequency, preDuration)`，这两者不读表；旧同名数值调用必须迁移，旧 Emphasis 的无效 interval 参数直接移除。冻结重入策略，避免未停止的组合叠加；在确认的退出、取消或替换点调用 `Nova.Vibrate.StopAll()`，不新增第二个停止责任方。
 5. 在目标真机上确认 `Nova.Vibrate.IsSupported` 与启用状态，执行冻结样例并由实际测试者确认体感，再验证 `StopAll()` 后不再持续振动。Editor Play Mode、日志、代码编译、导出结果或 `IsSupported` 单独都不是物理振动成功证据。
 6. 只有源数据、导出、运行时加载、正确业务触发、唯一停止生命周期和真机体感反馈均成立才报告 `success`。允许步骤已完成但没有真实设备反馈时最高为 `partial`；输入不唯一或不能安全写入时为 `blocked`；要求改 NiceVibrations / Framework API 或不属于消费端业务接入时为 `not_applicable`。
 

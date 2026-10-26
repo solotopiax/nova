@@ -139,7 +139,9 @@ Unity 映射，再按配置回退。标签由运行平台提供，若没有可�
 - 切换语言：`SetLanguageSync()` / `SetLanguageAsync()`
 - 快速文本：`HasText()` / `GetText()`
 - 类型化文本：`HasTexts<T>()` / `GetTexts<T>()`
-- 字体：`HasFontDatas()` / `GetFontDatas()`
+- 字体：`GetFontData(mark)` / `GetFontData(language, mark)` / `HasFontDatas()` / `GetFontDatas()`
+
+`GetFontData(mark)` 以当前 `Language` 查询；显式语言重载不切换当前语言。字体表实际使用 `Language + Mark`，按该语言列表的原始顺序取首个 Ordinal 精确匹配项。空标记、语言没有数据或标记未命中均返回 `null`，不回退到默认语言或其他标记，不加载字体/材质，也不改写 `AssetLocation`、`MaterialName` 或 `FontSizeScaleRatio`。`TextLocalizing.RefreshFont()` 复用此查询后沿原链加载资源。
 
 ## 关键状态
 

@@ -17,6 +17,8 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 - L3：确认后才调用源码编辑、Unity Editor/MCP 和`nova.project.ui.export`；Unity 资产写入保持单写者。
 - L4：只验证本次 View 的导出、编译和按需 Play 证据；未执行的层级保持 `partial`。
 
+打开入口先读取当前 `Docs/Runtime/Modules/UI/UIComponent.md`：普通 `OpenUIViewSync/Async` 的字符串首参只接收 UI 表 `Name`；`OpenUIViewByAssetSync/Async` 的首参只接收唯一 `AssetLocation`，泛型入口仍按类型名查表，分组、暂停与池化都来自表格；缺配置或匹配不唯一时停止，不使用旧 bool 重载覆盖配置，也不绕过注册表加载。`Name` 指配置行名称，不是 Excel 文件名；第二参数 `userData` 即使是字符串也只作业务数据，不能继续传旧分组参数。
+
 ## 冻结输入与预检
 
 确认 `viewName`、命名空间/asmdef、目标 UIGroup、Prefab 路径和资源地址、UI 注册源、布局/交互范围、池化与遮挡策略。若 UIGroup、注册源或资产目录有多个合理候选，先请求用户选择；不要猜测或顺手新增 Framework 结构。

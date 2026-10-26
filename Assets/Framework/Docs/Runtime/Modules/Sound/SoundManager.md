@@ -65,27 +65,29 @@
 
 这意味着按名称播放时，查的是扁平后的总字典，不是逐表遍历。
 
-JSON/Binary 由 DataFormat 决定。null/空 Unit 列表在异步路径返回 true；空地址跳过，Unit 元素本身为 null 则可能抛出。非空缓存构造 SoundTables 时缺 IConfigManager 或表加载失败返回 false；空缓存直接 true，不能据此证明有声音行。重载时覆盖当前表字典但不先清旧表，已从源移除的表可能仍参与扁平化；null DataList/row/Name 也没有统一守卫，构建失败可留部分新行。
+JSON/Binary 由 DataFormat 决定。null/空 Unit 列表在异步路径返回 true；空地址跳过，Unit 元素本身为 null 则可能抛出。非空缓存构造 SoundTables 时缺 IConfigManager 或表加载失败返回 false；空缓存直接 true，不能据此证明有声音行。每次加载先清旧表和名称索引，加载失败不继续使用上次行配置；新索引完整校验后才一次提交。
+
+同步路径同样检查每个有效 Unit 的读取结果；任一 `ReadDataAssetSync` 返回 false 就立即结束本轮，不再读取后续 Unit，也不把前面成功读取的缓存构建成部分声音表。此时正式表和名称索引保持为空，读取失败由日志说明；`LoadSync()` 没有 bool 返回值。
 
 表资源委托取得 TextAsset 后立即 Release 句柄，再把资产交接收器解析，后续 release 委托为空；不是解析完成后才释放，也没有复制原字节或 finally 的统一补偿。Initialize 只保存配置/依赖引用，不清旧组/加载状态；Update 为空，音频淡变由 Unity Helper 执行。
 
-### 4. 重名 `Name` 会后写覆盖前写
+### 4. 名称唯一，地址入口拒绝歧义
 
-`BuildSoundRowsFromTables()` 直接执行：
+`BuildSoundRowsFromTables()` 先构建局部索引；表未实现 `ITable<ISoundRow>`、`DataList` 为空、空行、空 `Name` 或跨表重名会记录错误并返回 false，不提交部分名称索引。`LoadAsync()` 将构建失败返回 false；`LoadSync()` 没有 bool，通过错误日志和不可用索引体现拒绝。
 
-- `m_SoundRows[row.Name] = row`
+`PlaySound(name, params)` 首参固定为 `Name`。`PlaySoundByAsset(assetLocation, params = null)` 首参固定为资源地址，使用精确且区分大小写的匹配；无行或多行匹配都返回 `-1`。多个声音名可以共用音频，但必须按名称选择所需播放配置。
 
-也就是说，多表里如果有相同 `Name`，后写入的行会覆盖前者，源码里没有额外冲突告警。
-
-### 5. 播放是“先拿 serialID，再异步加载资源”
+### 5. 播放先查表和验配置，再申请 serialID
 
 `PlaySound(...)` 的真实语义不是“同步开始播放”，而是：
 
-1. 先生成新的 `serialID`
-2. 校验声音组
-3. 记录到 `m_SoundsLoading`
-4. 异步加载 `AudioClip`
-5. 加载完成后再交给 `SoundGroup` 真正播放
+1. 按名称或唯一地址找到表行
+2. 校验行内地址、组名、声音组及代理容量；不满足时归还运行时参数并返回 `-1`
+3. 生成 `serialID` 并记录到 `m_SoundsLoading`
+4. 使用行内 `AssetLocation` 异步加载 `AudioClip`
+5. 加载完成后交给 `SoundGroup`，直接消费该行的 `Loop / Priority / Volume / SpatialBlend`，再应用进度、静音、淡入、音调和声相等表外参数
+
+没有直接指定组和地址的播放旁路；`PlaySoundParams` 不能覆盖表字段。原 `PlaySound(group, location, params)` 必须迁移到按名称或按唯一地址入口；原参数对象的 `Loop / Priority / VolumeInSoundGroup` 迁入源表并正式导出。返回非负编号仍不等于资源成功加载或实际播放。
 
 ## 声音组语义
 

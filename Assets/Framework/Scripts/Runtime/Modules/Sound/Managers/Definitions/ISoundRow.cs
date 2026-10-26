@@ -17,7 +17,7 @@ namespace NovaFramework.Runtime
     public interface ISoundRow
     {
         /// <summary>
-        /// 声音名称（主键）。
+        /// 声音名称（所有已加载声音表中唯一的主键，供 PlaySound 使用）。
         /// </summary>
         string Name { get; }
 
@@ -27,7 +27,7 @@ namespace NovaFramework.Runtime
         string Desc { get; }
 
         /// <summary>
-        /// Asset 地址。
+        /// 声音资源地址；PlaySoundByAsset 只允许唯一匹配该地址的表行。
         /// </summary>
         string AssetLocation { get; }
 

@@ -86,7 +86,10 @@
 - 语言切换：`SetLanguageSync()` / `SetLanguageAsync()`
 - 字符串查询：`GetText(string name)`
 - 类型化查询：`GetTexts<T>()` / `GetTexts(string tbName)`
-- 字体查询：`GetFontDatas(Language language)`
+- 字体单行查询：`GetFontData(string mark)` / `GetFontData(Language language, string mark)`
+- 字体列表查询：`GetFontDatas(Language language)`
+
+字体表使用 `Language + Mark` 定位配置，没有通用 `Name` 字段。`GetFontData("Main")` 查询当前语言，显式语言重载只查指定语言；两者按 `Mark` 的 Ordinal 精确匹配返回首条原始配置，空标记或未命中返回 `null`，不回退语言、不加载字体资源。原列表查询继续保留。
 
 ## 风险点 / 易错点
 

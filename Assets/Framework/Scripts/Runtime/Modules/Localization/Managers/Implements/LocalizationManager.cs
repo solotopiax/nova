@@ -324,6 +324,42 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 按字体标记获取当前语言的首条匹配配置，不加载资源或回退到其他语言。
+        /// </summary>
+        /// <param name="mark">字体表的 Mark，按 Ordinal 精确匹配；空值不匹配。</param>
+        /// <returns>原始字体配置行；标记为空、当前语言没有数据或未命中时返回 null。</returns>
+        public override ILocalizationFontRow GetFontData(string mark)
+        {
+            return GetFontData(m_Language, mark);
+        }
+
+        /// <summary>
+        /// 按语言和字体标记获取首条匹配配置，沿用字体列表的原始顺序。
+        /// </summary>
+        /// <param name="language">要查询的语言，不触发语言切换。</param>
+        /// <param name="mark">字体表的 Mark，按 Ordinal 精确匹配；空值不匹配。</param>
+        /// <returns>原始字体配置行；标记为空、语言没有数据或未命中时返回 null，不加载资源或回退。</returns>
+        public override ILocalizationFontRow GetFontData(Language language, string mark)
+        {
+            if (string.IsNullOrEmpty(mark) ||
+                !m_FontDatas.TryGetValue(language, out List<ILocalizationFontRow> fontDatas) || fontDatas == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < fontDatas.Count; i++)
+            {
+                ILocalizationFontRow row = fontDatas[i];
+                if (row != null && string.Equals(row.Mark, mark, StringComparison.Ordinal))
+                {
+                    return row;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// 检查指定语言是否存在字体数据。
         /// </summary>
         /// <param name="language">目标语言。</param>

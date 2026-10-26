@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 #if NOVA_NICEVIBRATIONS
@@ -63,16 +64,21 @@ namespace NovaFramework.Runtime
         /// <param name="dataCache">数据加载缓存容器。</param>
         /// <param name="syncLoadFunc">资产同步加载委托。</param>
         /// <param name="releaseFunc">资产释放委托。</param>
-        private void AddSyncLoadTasks(List<VibrateUnitSetting> units, LubanDataCache dataCache, DataReceiver.LoadAssetSyncFunc syncLoadFunc, DataReceiver.ReleaseAssetAction releaseFunc)
+        /// <returns>所有有效单元读取成功时返回 true，失败时不继续构建分组。</returns>
+        private bool AddSyncLoadTasks(List<VibrateUnitSetting> units, LubanDataCache dataCache, DataReceiver.LoadAssetSyncFunc syncLoadFunc, DataReceiver.ReleaseAssetAction releaseFunc)
         {
-            if (units == null) return;
+            if (units == null) return true;
             for (int i = 0; i < units.Count; i++)
             {
                 VibrateUnitSetting unit = units[i];
                 if (unit == null || string.IsNullOrEmpty(unit.AssetLocation)) continue;
-                LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
-                    .ReadDataAssetSync(unit.AssetLocation);
+                if (!LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation))
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
         /// <summary>
@@ -96,9 +102,9 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 从数据缓存直接构建 Emphasis 和 Custom 分组缓存，Tables 实例仅作局部变量使用后即释放。
+        /// 从本次加载缓存构建两路完整分组；任一路失败都保留此前缓存，不发布半组数据。
         /// </summary>
-        /// <param name="dataCache">Phase 1 写入的数据加载缓存，消费后由本方法清空。</param>
+        /// <param name="dataCache">本次资源读取产生的数据缓存。</param>
         /// <returns>是否构建成功。</returns>
         private bool BuildGroupsFromCache(LubanDataCache dataCache)
         {
@@ -111,6 +117,13 @@ namespace NovaFramework.Runtime
             const string emphasisTablesClassName = "VibrateEmphasisTables";
             const string customTablesClassName = "VibrateCustomTables";
 
+            bool hasEmphasisUnits = HasLoadableUnits(m_EmphasisUnitsSettings);
+            bool hasCustomUnits = HasLoadableUnits(m_CustomUnitsSettings);
+            if (!hasEmphasisUnits && !hasCustomUnits)
+            {
+                return TryReplaceGroupsFromTables(Array.Empty<ITable>(), Array.Empty<ITable>());
+            }
+
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             if (configManager == null)
             {
@@ -118,64 +131,104 @@ namespace NovaFramework.Runtime
                 return false;
             }
             string namespace_ = configManager.Namespace;
-            Dictionary<Type, ITable> emphasisTables = LubanRuntimeData.LoadTables(
-                m_DataFormat, emphasisTablesClassName, namespace_, dataCache, LogTag.Vibrate, "Vibrate Emphasis");
-            if (emphasisTables != null)
+            Dictionary<Type, ITable> emphasisTables = hasEmphasisUnits
+                ? LubanRuntimeData.LoadTables(m_DataFormat, emphasisTablesClassName, namespace_, dataCache, LogTag.Vibrate, "Vibrate Emphasis")
+                : new Dictionary<Type, ITable>();
+            Dictionary<Type, ITable> customTables = hasCustomUnits
+                ? LubanRuntimeData.LoadTables(m_DataFormat, customTablesClassName, namespace_, dataCache, LogTag.Vibrate, "Vibrate Custom")
+                : new Dictionary<Type, ITable>();
+            if (emphasisTables == null || customTables == null ||
+                (hasEmphasisUnits && emphasisTables.Count == 0) ||
+                (hasCustomUnits && customTables.Count == 0))
             {
-                foreach (var kv in emphasisTables)
-                {
-                    BuildGroupCacheForTable<IVibrateEmphasisRow>(kv.Value, out m_EmphasisGroups);
-                    break;
-                }
+                Log.Error(LogTag.Vibrate, "已配置的振动区域未能构建数据表，保留上次完整分组。");
+                return false;
             }
 
-            Dictionary<Type, ITable> customTables = LubanRuntimeData.LoadTables(
-                m_DataFormat, customTablesClassName, namespace_, dataCache, LogTag.Vibrate, "Vibrate Custom");
-            if (customTables != null)
+            if (!TryReplaceGroupsFromTables(emphasisTables.Values, customTables.Values))
             {
-                foreach (var kv in customTables)
-                {
-                    BuildGroupCacheForTable<IVibrateCustomRow>(kv.Value, out m_CustomGroups);
-                    break;
-                }
+                return false;
             }
 
-            int tableCount = (emphasisTables?.Count ?? 0) + (customTables?.Count ?? 0);
+            int tableCount = emphasisTables.Count + customTables.Count;
             int fileCount = (m_EmphasisUnitsSettings?.Count ?? 0) + (m_CustomUnitsSettings?.Count ?? 0);
             Log.Debug(LogTag.Vibrate, "Vibrate 成功加载了 {0} 个数据文件，共计 {1} 个表格数据。", fileCount, tableCount);
             return true;
         }
 
         /// <summary>
-        /// 从单张 ITable 构建分组缓存。
-        /// 通过 <see cref="ITable{T}"/> 协变转型直接访问 DataList，完全消除反射开销。
+        /// 先构建两路候选分组，全部通过后再一次替换可播放缓存；空区域会移除其旧分组。
+        /// </summary>
+        /// <param name="emphasisTables">本次 Emphasis 区域的全部表。</param>
+        /// <param name="customTables">本次 Custom 区域的全部表。</param>
+        /// <returns>两路分组均有效且已经替换时返回 true；失败时保留两路旧缓存。</returns>
+        private bool TryReplaceGroupsFromTables(IEnumerable<ITable> emphasisTables, IEnumerable<ITable> customTables)
+        {
+            if (!BuildGroupCacheForTables<IVibrateEmphasisRow>(emphasisTables, out var emphasisGroups) ||
+                !BuildGroupCacheForTables<IVibrateCustomRow>(customTables, out var customGroups))
+            {
+                return false;
+            }
+
+            m_EmphasisGroups = emphasisGroups;
+            m_CustomGroups = customGroups;
+            return true;
+        }
+
+        /// <summary>
+        /// 判断区域内是否存在实际参与资源加载的单元；与加载阶段使用相同过滤条件。
+        /// </summary>
+        /// <param name="units">区域单元列表，允许为空。</param>
+        /// <returns>是否至少存在一个非空且配置了 AssetLocation 的单元。</returns>
+        private static bool HasLoadableUnits(List<VibrateUnitSetting> units)
+        {
+            return units != null && units.Any(unit => unit != null && !string.IsNullOrEmpty(unit.AssetLocation));
+        }
+
+        /// <summary>
+        /// 合并区域内全部表，按 Name 分组并稳定按 Order 排序；同序号保留表和行的遍历顺序。
         /// </summary>
         /// <typeparam name="T">数据行接口类型，须实现 IVibrateRow。</typeparam>
-        /// <param name="table">目标 ITable 实例。</param>
+        /// <param name="tables">区域内本次生成的全部表。</param>
         /// <param name="groups">输出：分组缓存（组名 -> 数据行列表）。</param>
-        private static void BuildGroupCacheForTable<T>(ITable table, out Dictionary<string, List<T>> groups) where T : class, IVibrateRow
+        /// <returns>表接口及所有非空行的 Name 有效时返回 true；失败的候选缓存不可发布。</returns>
+        private static bool BuildGroupCacheForTables<T>(IEnumerable<ITable> tables, out Dictionary<string, List<T>> groups) where T : class, IVibrateRow
         {
             groups = new Dictionary<string, List<T>>();
 
-            if (!(table is ITable<T> typedTable)) return;
-
-            IReadOnlyList<T> dataList = typedTable.DataList;
-            if (dataList == null) return;
-
-            for (int i = 0; i < dataList.Count; i++)
+            foreach (ITable table in tables)
             {
-                T row = dataList[i];
-                if (row == null) continue;
-                if (!groups.TryGetValue(row.Name, out List<T> list))
+                if (!(table is ITable<T> typedTable))
                 {
-                    list = new List<T>();
-                    groups[row.Name] = list;
+                    Log.Error(LogTag.Vibrate, "振动表未实现预期行接口：{0}。", typeof(T).Name);
+                    return false;
                 }
-                list.Add(row);
+
+                IReadOnlyList<T> dataList = typedTable.DataList;
+                if (dataList == null) continue;
+
+                for (int i = 0; i < dataList.Count; i++)
+                {
+                    T row = dataList[i];
+                    if (row == null) continue;
+                    if (string.IsNullOrEmpty(row.Name))
+                    {
+                        Log.Error(LogTag.Vibrate, "振动数据行 Name 为空，无法建立可播放的分组。");
+                        return false;
+                    }
+                    if (!groups.TryGetValue(row.Name, out List<T> list))
+                    {
+                        list = new List<T>();
+                        groups[row.Name] = list;
+                    }
+                    list.Add(row);
+                }
             }
 
-            foreach (List<T> group in groups.Values)
-                group.Sort((a, b) => a.Order.CompareTo(b.Order));
+            foreach (string name in groups.Keys.ToArray())
+                groups[name] = groups[name].OrderBy(row => row.Order).ToList();
+
+            return true;
         }
 
 #if NOVA_NICEVIBRATIONS

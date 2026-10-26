@@ -272,12 +272,12 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 资源：无
 
 #### 2.13 DemoSoundView ｜ I
-- API 副标题：`Nova.Sound.PlaySound(group, location, params) / StopSound(serialID)`
+- API 副标题：`Nova.Sound.PlaySound(name, params) / PlaySoundByAsset(location) / StopSound(serialID)`
 - 主题：声音播放/停止/暂停
-- InteractionArea：声音组下拉（BGM/SFX）+ 资源 location 下拉 + Play/Stop/Pause/Resume 4 按钮 + 当前播放列表
-- 反馈样例：`> Nova.Sound.PlaySound("BGM", "bgm_main") -> SerialID=1003`
+- InteractionArea：声音组只读说明 + 资源 location 输入 + Play/Stop/Pause/Resume 4 按钮 + 当前播放列表
+- 反馈样例：`> Nova.Sound.PlaySoundByAsset("bgm_main") -> SerialID=1003`
 - 数据：xlsx `Demo_Sound`（3 行：bgm_main / sfx_click / sfx_confirm）
-- 资源：sound `bgm_main.ogg` / `sfx_click.wav` / `sfx_confirm.wav`
+- 资源：sound `bgm_main.mp3` / `sfx_click.mp3` / `sfx_confirm.mp3`
 
 #### 2.14 DemoVibrateView ｜ I
 - API 副标题：`Nova.Vibrate.Play(VibrateType.LightImpact) / PlayCustom(...) / StopAll()`

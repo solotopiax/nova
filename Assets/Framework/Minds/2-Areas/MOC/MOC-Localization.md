@@ -61,6 +61,7 @@ LauncherLocalization / LauncherLocalizedText / LauncherDialogLocalizedText
 - `ResolveLanguage()`
 - `GetTexts<T>() / GetTexts(string)`
 - `GetFontDatas(Language)`
+- `GetFontData(mark)` / `GetFontData(language, mark)`：字体使用实际 `Language + Mark` 键，不强加 Name，也不隐式切换语言
 
 ## 当前边界
 

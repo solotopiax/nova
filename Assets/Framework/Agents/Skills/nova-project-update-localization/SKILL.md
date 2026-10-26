@@ -13,6 +13,8 @@ description: Use when 项目组要正式导出已有本地化文本或字体的 
 
 修改已有译文标量、追加 Key 或语言、组件设置或绑定时，读取[表源、设置与绑定](references/source-and-binding.md)。表源复用现有 `nova_table_source.py`；仅追加 Key/语言时按该页读取 `Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md` 的 `layout=localization-texts` 分支。配置和 TMP 节点复用现有受控 settings 或共享 Unity MCP；需要更详细的 Prefab/场景保存规则时只读共享 reference。
 
+授权业务源码读取单条字体配置时，复用公开 `Nova.Localization.GetFontData(mark)` 或 `GetFontData(language, mark)`，按真实 `Language + Mark` 查询，不要求字体表补 `Name`；匹配、null、资源与显示边界见上述 reference 和匹配版本 Docs，不把查询当作字体已加载。
+
 ## 仅导出已有文本或字体的数据和代码
 
 用户仅要求正式导出已有文本/字体的 `all` / `code` 产物时，选 `taskProfiles[id=export-code-data]`，对应 `localization.export`；只允许 `target=text/font` 与 `scope=all/code`。冻结项目根、已保存活动场景、唯一 `Nova` / `LocalizationComponent`、现有 Settings、实际 Unit/源、数据格式、正式路径及当前 Action 完整写集；自动取得 `localizationExportSettingsSourcesTargetScopeAndWriteSet`，不要求 UI 绑定、业务 Owner 或 Play 语言集合。单独 `data` 和 `languages` 不属于此 profile，不能借它降低原验收要求。

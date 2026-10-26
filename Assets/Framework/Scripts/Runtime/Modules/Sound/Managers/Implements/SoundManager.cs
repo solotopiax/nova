@@ -75,10 +75,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 加载声音数据（同步）。
+        /// 同步加载声音数据；任一有效单元读取失败即拒绝整轮，不构建部分索引或沿用旧配置。
         /// </summary>
         public override void LoadSync()
         {
+            m_SoundTableDatas.Clear();
+            m_SoundRows.Clear();
             if (!ValidateSoundUnitsSettings())
             {
                 return;
@@ -95,8 +97,11 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
-                    .ReadDataAssetSync(unit.AssetLocation);
+                if (!LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation))
+                {
+                    return;
+                }
             }
 
             BuildSoundTablesFromCache(dataCache, m_SoundUnitsSettings.Count);
@@ -108,6 +113,8 @@ namespace NovaFramework.Runtime
         /// <returns>是否加载成功。</returns>
         public override async UniTask<bool> LoadAsync()
         {
+            m_SoundTableDatas.Clear();
+            m_SoundRows.Clear();
             if (!ValidateSoundUnitsSettings())
             {
                 return true;
@@ -145,78 +152,67 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 按声音名称查表播放声音（使用表中配置的默认参数）。
+        /// 按声音表 Name 播放，声音组、资源及全部表内播放配置均取自该行。
         /// </summary>
         /// <param name="name">ISoundRow.Name 主键。</param>
-        /// <returns>声音的序列编号。</returns>
+        /// <returns>请求序列编号；名称或配置无效时为 -1。</returns>
         public override int PlaySound(string name)
         {
             return PlaySound(name, null);
         }
 
         /// <summary>
-        /// 按声音名称查表播放声音。
+        /// 按声音表 Name 播放，补充本次请求的表外运行时参数。
         /// </summary>
         /// <param name="name">ISoundRow.Name 主键。</param>
-        /// <param name="playSoundParams">播放声音参数（为 null 时从行配置构造默认参数）。</param>
-        /// <returns>声音的序列编号。</returns>
+        /// <param name="playSoundParams">表外运行时参数；接受或拒绝时均由 Manager 接管并归还引用池。</param>
+        /// <returns>请求序列编号；名称或配置无效时为 -1。</returns>
         public override int PlaySound(string name, PlaySoundParams playSoundParams)
         {
-            if (string.IsNullOrEmpty(name) || !m_SoundRows.TryGetValue(name, out ISoundRow row))
+            if (string.IsNullOrWhiteSpace(name) || !m_SoundRows.TryGetValue(name, out ISoundRow row))
             {
                 Log.Warning(LogTag.Sound, "未找到名称为 '{0}' 的声音数据行，请确认表数据已加载且 Name 主键正确。", name);
-                if (playSoundParams != null)
-                {
-                    ReferencePool.Put(playSoundParams);
-                }
-                return ++m_Serial;
+                return RejectSoundRequest(playSoundParams);
             }
 
-            if (playSoundParams == null)
-            {
-                playSoundParams = PlaySoundParams.Create();
-                playSoundParams.Loop = row.Loop;
-                playSoundParams.Priority = row.Priority;
-                playSoundParams.VolumeInSoundGroup = row.Volume;
-            }
-
-            return PlaySound(row.GroupName, row.AssetLocation, playSoundParams);
+            return PlaySoundRow(row, playSoundParams);
         }
 
         /// <summary>
-        /// 播放声音。
+        /// 按资源地址唯一反查声音表后播放；不存在或多行匹配时拒绝请求。
         /// </summary>
-        /// <param name="soundGroupName">声音组名称。</param>
-        /// <param name="assetLocation">Asset 地址。</param>
-        /// <param name="playSoundParams">播放声音参数。</param>
-        /// <returns>声音的序列编号。</returns>
-        public override int PlaySound(string soundGroupName, string assetLocation, PlaySoundParams playSoundParams)
+        /// <param name="assetLocation">ISoundRow.AssetLocation，精确区分大小写。</param>
+        /// <param name="playSoundParams">表外运行时参数；调用后所有权转入 Manager。</param>
+        /// <returns>请求序列编号；地址缺失、歧义或配置无效时为 -1。</returns>
+        public override int PlaySoundByAsset(string assetLocation, PlaySoundParams playSoundParams = null)
         {
-            if (playSoundParams == null)
+            ISoundRow matchedRow = null;
+            if (!string.IsNullOrWhiteSpace(assetLocation))
             {
-                playSoundParams = PlaySoundParams.Create();
+                foreach (ISoundRow row in m_SoundRows.Values)
+                {
+                    if (!string.Equals(row.AssetLocation, assetLocation, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (matchedRow != null)
+                    {
+                        Log.Warning(LogTag.Sound, "声音资源地址 '{0}' 对应多个声音表行，请改用 PlaySound(Name) 明确选择。", assetLocation);
+                        return RejectSoundRequest(playSoundParams);
+                    }
+
+                    matchedRow = row;
+                }
             }
 
-            int serialID = ++m_Serial;
-            SoundGroup soundGroup = GetSoundGroup(soundGroupName);
-            if (soundGroup == null)
+            if (matchedRow == null)
             {
-                Log.Warning(LogTag.Sound, "声音组 '{0}' 不存在，errorCode={1}", soundGroupName, PlaySoundErrorCode.SoundGroupNotExist);
-                ReferencePool.Put(playSoundParams);
-                return serialID;
+                Log.Warning(LogTag.Sound, "未找到资源地址为 '{0}' 的声音数据行，请确认表数据已加载且 AssetLocation 正确。", assetLocation);
+                return RejectSoundRequest(playSoundParams);
             }
 
-            if (soundGroup.SoundAgentCount <= 0)
-            {
-                Log.Warning(LogTag.Sound, "声音组 '{0}' 没有足够的声音代理，errorCode={1}", soundGroupName, PlaySoundErrorCode.SoundGroupHasNotEnoughAgent);
-                ReferencePool.Put(playSoundParams);
-                return serialID;
-            }
-
-            m_SoundsLoading.Add(serialID);
-            PlaySoundInfo playSoundInfo = PlaySoundInfo.Create(serialID, soundGroup, playSoundParams);
-            LoadAndPlaySoundAsync(playSoundInfo, assetLocation).Forget();
-            return serialID;
+            return PlaySoundRow(matchedRow, playSoundParams);
         }
         
         /// <summary>

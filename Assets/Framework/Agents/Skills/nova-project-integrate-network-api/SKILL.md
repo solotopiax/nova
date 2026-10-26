@@ -29,6 +29,8 @@ HTTP先区分既有请求生命周期维护与新协议接入，并确认是否�
 
 HostKey 表的 `Value` 主域名列必须存在且有效行必须填写。`FallbackValue` 可为空，旧表缺少备用列时仍校验主域名；不要为兼容旧表批量改 schema。使用官方模板时先替换 `XXXXX` 主域名占位符，再从项目正式表源导出。模板的备用列默认空，不推测备用地址，也不把模板读取当作项目导出成功。
 
+按表内名称读取时，NetCmd 使用 `Nova.Network.ResolveNetCmdRow(cmdName)`，HostKey 使用 `ResolveHostKeyRow(hostKeyName)`；二者的名称都对应各自行的 `Name`。HostKey 查询返回已加载原始行、缺失返回 null，不自动加载、校验或改写路由；发送继续复用原路由链。旧 `GetNetCmd<T>()` / `GetNetCmd(tbName)` 同时支持 HostKey 与 NetCmd 生成表；`GetNetCmdUrl(tbName, dtName)` 的 `tbName` 是表类型短名，`dtName` 是指令行 Name，不能以空表名代替单行名查询。标准 Proto 仍先解析行再传入 `SendProtoAsync`。
+
 - 不猜测协议：Proto + AES、JSON、form、raw body 与既有业务 Kit 是不同路径。Proto Schema、生成范围或服务端字段不明确时不导出、不改写业务代码。
 - 业务代码复用已有适用 Service；缺少 Service 时可在已授权项目源中创建业务入口，使用已确认的 `Nova.Network` 公开 API。缺协议、认证、成功定义或重放语义仍阻断；没有现成 Service 不构成永久阻断。不得直接调用面向 Sibling Kit 的隐藏 `NetService` / `NetBuilder` 或身份写入接口。
 - 标准 Proto + AES 使用 `Nova.Network.SendProtoAsync`：传入正式 `HTTP_POST` NetCmd 行、仅一次且无副作用的 `Header → 正式请求` 工厂和正式响应 Parser。先完成 Start 绑定、Config 与 Network 加载；工厂显式绑定协议 Head。门面复用原主备、最近成功优先、轮数、重试、AES、解析和取消链，不自行选域名、续签、登录或重发业务错误；登录、绑定和存档优先使用已有 Kit。取消不能撤销服务端已执行状态；新增热更泛型调用还须核对 AOT 泛型、link 与业务 DLL。

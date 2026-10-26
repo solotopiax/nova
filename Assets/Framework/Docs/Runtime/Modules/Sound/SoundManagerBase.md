@@ -35,14 +35,14 @@
 
 这些都留给 `SoundManager`。
 
-### 3. 自定义实现应继承它，而不是绕开它
+### 3. 这是框架内部基类
 
-如果你要做自定义声音后端，继承 `SoundManagerBase` 比只实现 `ISoundManager` 更符合当前框架管理体系，因为它已经接好 `FrameworkManager` 的调度语义。
+`SoundManagerBase` 为 `internal abstract`，仓外自定义声音后端不能直接继承它；应实现公开的 `ISoundManager` 并满足框架管理器调度要求。播放契约包括按 `Name` 的 `PlaySound` 和按唯一 `AssetLocation` 反查表的 `PlaySoundByAsset`。
 
 ## 风险点 / 易错点
 
 - 把它当成“有半套默认行为的基类”是错的；除了优先级，它基本不提供业务默认实现。
-- 如果自定义实现不继承它，就要自己处理和 `FrameworkManager` 调度体系的契合。
+- 仓外实现需要自己处理 `FrameworkManager` 调度契约。
 
 ## 继续阅读
 

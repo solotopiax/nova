@@ -21,6 +21,8 @@ description: Use when 项目组要更新既有 Nova 业务 UIView、Prefab、布
 | 要改 Prefab、序列化引用或布局 | Unity Editor / MCP 中的目标 Prefab；不手写 YAML |
 | 页面批量本地化Key/FontMark绑定、补缺失组件 | [批量本地化绑定](references/localization-binding.md)，条件复用 `nova-project-update-localization` 与 `nova-project-edit-settings` |
 
+打开入口先读取当前 `Docs/Runtime/Modules/UI/UIComponent.md`：普通 `OpenUIViewSync/Async` 的字符串首参只接收 UI 表 `Name`；`OpenUIViewByAssetSync/Async` 的首参只接收唯一 `AssetLocation`，泛型入口仍按类型名查表，分组、暂停与池化都来自表格；缺配置或匹配不唯一时停止，不使用旧 bool 重载覆盖配置，也不绕过注册表加载。`Name` 指配置行名称，不是 Excel 文件名；第二参数 `userData` 即使是字符串也只作业务数据，不能继续传旧分组参数。
+
 ## 冻结输入
 
 确认现有 View 与 Prefab 的精确路径、目标 UIGroup、预期行为、允许改动的节点/绑定、注册源、是否需要导出，以及最低验证目标。UIGroup、注册源、布局范围或导出入口存在多个候选时先请求选择。不得覆盖未知布局、重排无关节点、改 Nova Framework、PackageCache 或生成物以外的项目资产。
