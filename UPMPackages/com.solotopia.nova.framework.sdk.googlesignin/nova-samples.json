@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Googlesignin.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/GoogleSigninDemo"
+      "devPathPrefix": "Assets/Samples/GoogleSigninDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

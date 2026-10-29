@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamesave",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "license": "MIT",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - Kit - Network - GameSave",
@@ -23,5 +23,8 @@
     "com.solotopia.unitask": "10.0.6",
     "com.solotopia.luban": "10.1.0",
     "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
+  },
+  "nova": {
+    "releaseTime": "2026-10-29T01:50:28Z"
   }
 }

@@ -17,6 +17,8 @@ description: 在 Nova 项目中接入业务存储或关键 int/long 内存防护
 
 ## 冻结输入与阻断门
 
+先按 `Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md` 的 NA-001/002 核对真实消费入口。当前 `PersistComponent.PlayerPrefs/FileFragment/SQLite` 直接返回 Manager 接口，尚无对应业务 CRUD/保存门面；以下存储调用说明用于理解既有实现和诊断，不授权新增、持有、传递或包装 Manager 的普通业务代码。需要这类入口的新增/修改分支保持 `blocked`，列出所需行为、已查接口与影响范围，待框架补齐合规入口后再继续；已经完成的独立部分可报 `partial`。普通 DTO/业务规则、只读诊断、不依赖存储的内存防护，以及合同已开放的类型化维护可按原边界继续；不因此修改存量调用或扩大维护权限。
+
 先区分内存防护接入与下述存储/维护分支。仅做内存防护时，按参考冻结业务字段及 owner、可信初值来源、当前 Config 加载责任、失败后的结算/保存边界、允许写集和隔离验证；代码路径、类型、现有调用点及配置事实由 Agent 查询，不要求用户手填。没有实际存档调用时，不要求 `classify/item`、存储选型、耐久性/删除探针或 AES/Cipher 凭据；不能为补这些输入扩大到真实存档或配置维护。缺少玩法规则或可信恢复来源时，仅阻断依赖它们的步骤。
 
 先冻结唯一项目根、当前 Platform/Channel/DevelopMode 与已导出的 `ConfigRuntimeSO`、现有 PersistComponent 可用性、业务数据模型与 `classify/item` 命名、选择的存储实现、支持平台、保存时机、清理范围、AES/SQLite 密码前置、允许写入集，以及可观察独立读写和清理结果的 Play 探针。任一项不唯一时返回 `blocked`。
@@ -29,7 +31,7 @@ SQLite Cipher 与 Privacy Key/IV 分别复用同三 Action 的独立类型化分
 
 默认只读元数据复用同 `inspect-data`：标准目标、`storage=PlayerPrefs/SQLite`、`dataScope=current-editor-global-data`，不传 `enableAES/sourceSha256`。不取 Master/Privacy、不读玩家值、不 Save/开库；成功仅限索引/HasKey 或四文件观察。其 `metadataSha256` 不是 FileFragment 迁移 SHA；SQLite 值迁移只用它作 Plan 前变化探测，真实事务另冻结逻辑摘要。PlayerPrefs 值检查使用独立 indexed scope，会内部读取已索引字符串但不输出值。各观察和写维护不能相互冒充。
 
-- 先完成 `await Nova.Config.LoadAsync();`，再完成 `await Nova.Persist.LoadAsync();`，之后才访问 `Nova.Persist.PlayerPrefs`、`FileFragment` 或 `SQLite`。不能把两者并行、倒置，或以 `Awake`/`Start` 偷跑初始化替代既有启动链。
+- 既有实现的初始化顺序是先完成 `await Nova.Config.LoadAsync();`，再完成 `await Nova.Persist.LoadAsync();`，之后才可能访问三个存储实例。不能把两者并行、倒置，或以 `Awake`/`Start` 偷跑初始化替代既有启动链；顺序正确不消除上方普通业务消费入口缺口。
 - 选型必须明确：PlayerPrefs 用于小体量键值设置；FileFragment 按 `classify` 分成 `.dat` 存档；SQLite 适用于更大、结构化的键值缓存，但 WebGL 不可用，也不向业务开放任意 SQL。SQLite 的 `CipherPassword` 是数据库级密码，与 `UseAESEncrypt` 的值级 AES 不是同一件事。
 - 启用 `UseAESEncrypt` 时，当前坐标的 Privacy AES Key/IV 必须已经随 `ConfigRuntimeSO` 可用；它们与 App AES Key/IV 独立，按 UTF-8 各为 16 字节。不得在业务源码、日志、探针或本 Skill 输入中写入明文 Key/IV。初始缺配、组件设置或配对 Runtime 导出由已授权配置 Operation 推进；已有有效 Key/IV 轮换走本 Skill 的独立 Privacy 分支，不能用普通配置 patch 代替。缺唯一来源、权限或真实旧数据范围时保持准确 `blocked`。
 - `SetXxx()` 只更新缓存并标脏，不能单独当作落盘证据；按冻结的耐久性要求使用 `Save()`、`Save(classify)`、既有自动保存或正常 Shutdown。PlayerPrefs 的分类保存底层仍是全局 Save；FileFragment 的 `RemoveAll` 和删空分类要到后续 `Save` 才物理删除；SQLite `RemoveAll` 会删除对应表。任何真实存档清理都是删除操作，必须逐一确认目标分类/条目和测试数据边界。
@@ -42,7 +44,7 @@ SQLite Cipher 与 Privacy Key/IV 分别复用同三 Action 的独立类型化分
 | 当前独立包 API、`MemoryProtectionConfigs` 隐私扩展和后端可用性；隔离测试数据 | `MemoryProtection.IsActive`、字段 `IsProtected/IsQuarantined`、`Util.Json.Serialize/Deserialize`；既有 Unity 编译/Play 通道 | 当前防护状态、普通整数 JSON 和隔离验证结果 | 无商业插件可正常存取但明确未防护；有插件验收实际状态与异常阻断；API 不是可调度 MCP Action，不读写真实存档 |
 | 已冻结的 ConfigRuntime 坐标、PersistComponent 与存储可用性 | Unity Editor 自动化通道 只读检查与现有 Inspector/ConfigWindow 事实 | 已确认的运行时加载前置 | 当前坐标、存储实现和 AES 前置一致；不修改序列化配置 |
 | 已冻结的数据模型、classify/item、选型、保存和清理语义 | `workspace-edit` | 目标业务持久化调用和本地 Play 探针 | 写入仅覆盖业务源；不手改 Config、Prefab、Scene 或生成物 |
-| 已冻结的加载、读写和耐久性契约 | `Nova.Config.LoadAsync()`、`Nova.Persist.LoadAsync()`、`Nova.Persist.PlayerPrefs` / `FileFragment` / `SQLite`、`IPersistManager.Save` / `RemoveItem` / `RemoveAll` | 已初始化且可读取的目标业务数据 | 加载顺序正确，写入与保存/清理语义符合选定实现 |
+| 既有加载、读写和耐久性调用的诊断 | 只读核对 `Nova.Config.LoadAsync()`、`Nova.Persist.LoadAsync()` 及现存存储接口调用；实际行为查当前源码/XML | 已有调用与能力缺口说明 | 初始化和落盘事实分别判断；不把 Manager 访问视为普通业务可用 Adapter |
 | 已冻结的运行验证路径 | Unity Editor 自动化通道 的脚本刷新、编译与 Play Mode 观察 | 可重复的读写/清理验证 | 不只验证同一内存缓存；保存后的独立读取或等价耐久性证据成立 |
 | 当前 Editor 默认 PlayerPrefs 托管索引或 SQLite 固定四文件及唯一目标 | 同一 `nova.project.persistence.inspect-data` 的精确 storage 分支 | 计数/存在性/大小与 `metadataSha256`，无玩家值或配置写入 | 有界双次观察、范围与漂移检查；元数据成功不证明落盘、完整数据、数据库逻辑或写维护就绪 |
 | 当前 Editor 共享 FileFragment 全集与唯一配置目标 | `nova.project.persistence.inspect-data` → `nova.project.persistence.migrate-encryption`；独立 `nova.project.persistence.recover-maintenance` | 完整原字节备份、持久 journal、集合摘要与字段保存收据 | 严格解码与逐值重读、原 Operation 绑定、全集后验；真实 Player/设备耐久性单独报告 |
@@ -54,7 +56,7 @@ SQLite Cipher 与 Privacy Key/IV 分别复用同三 Action 的独立类型化分
 
 内存防护分支遵循参考的独立验收：业务源码与编译、当前后端实际状态、失败阻断、普通整数 JSON、owner 释放及探针清场分别取证；插件缺失可完成普通存取接入，但不能宣称防护已生效。涉及正式存档读写时仍叠加原持久化边界。下述五项适用于存储接入，不因内存分支跳过而削弱真实存档维护的权限与验证。
 
-1. 先确认当前 ConfigRuntime 坐标已可加载、PersistComponent 已配置并且选择的实现支持目标平台。SQLite 目标为 WebGL 时返回 `not_applicable`；缺少当前坐标 Privacy AES 前置或需要改配置资产时返回 `blocked`。
+1. 先通过上方消费入口门，再确认当前 ConfigRuntime 坐标已可加载、PersistComponent 已配置并且选择的实现支持目标平台。入口仍缺失时不得继续新增 Manager 调用或以 Play 通过报告接入成功。SQLite 目标为 WebGL 时返回 `not_applicable`；缺少当前坐标 Privacy AES 前置或需要改配置资产时返回 `blocked`。
 2. 只编辑冻结的业务 C# 源码和本地 Play 探针；不修改 PersistComponent、ConfigMaster/ConfigRuntime、`Nova.prefab`、Prefab、Scene、存储实现、插件、密钥或生成物。任何 Unity 资产设置变更均属于独立且需确认的配置任务。
 3. 在业务读取前等待 Config 再等待 Persist；按选择的实现使用统一 `classify -> item -> value` 调用面。把保存时机写清楚：需要耐久检查点才显式 Save，不能把同一进程内的 Set 后 Get 当作落盘成功。
 4. 清理仅在已确认的测试数据范围执行：先验证 `RemoveItem` 或 `RemoveAll` 对目标分类/条目的语义，再执行该实现要求的保存或独立读取。不得以清理真实用户存档作为普通 Play 探针。

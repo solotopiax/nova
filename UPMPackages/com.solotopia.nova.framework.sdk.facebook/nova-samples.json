@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Facebook.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/FacebookDemo"
+      "devPathPrefix": "Assets/Samples/FacebookDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

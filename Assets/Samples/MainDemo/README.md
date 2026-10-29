@@ -18,7 +18,7 @@
 
 `DemoUIView` 同时跟踪本页已打开与正在加载的 Toast、Dialog 请求；负编号不记录，加载中的请求只提示“正在加载”。关闭会关闭已打开子页面，并通过 `CloseUIView(serialID)` 取消加载中的打开；实际资源加载可能继续，但迟到结果不再打开子页面。自关闭与加载失败会移除失效编号，页面关闭时解除失败订阅。逐项关闭失败会保留编号和原 UI 门面，重开时暂停新子页面请求，可用 Close All 重试；旧 Dialog 回调不能写入重开的页面。它只处理本页拥有的子页面。
 
-`DemoLocalizationView` 的五个示例标签在 Prefab 中持久绑定 `Demo_Greet`、`Demo_Confirm`、`Demo_Cancel`、`Demo_Toast_Tip`、`Demo_Switch_Lang`，由既有 `TextLocalizing` 在语言刷新事件后更新；未绑定的节点才保留 `GetText` 回退，非空错误 Key 不由回退覆盖。语言请求固定本次视图的 CTS/Token，关闭后旧请求不再执行该视图的成功反馈和手动刷新；这不会取消全局语言切换或撤回其刷新广播。当前演示支持简中和英文，自动字体适配关闭，两种语言复用现有 `AaBianYaKai-2 SDF`；字体表中的其他地址不代表已有资源，需按项目真实字体另行接入。
+`DemoLocalizationView` 的五个示例标签在 Prefab 中持久绑定 `Demo_Greet`、`Demo_Confirm`、`Demo_Cancel`、`Demo_Toast_Tip`、`Demo_Switch_Lang`，由既有 `TextLocalizing` 在语言刷新事件后更新；未绑定的节点才保留 `GetText` 回退，非空错误 Key 不由回退覆盖。语言请求固定本次视图的 CTS/Token 及操作版本，关闭或发起更新请求后旧回调不再更新反馈；完成后核对实际 Language，目标未生效时明确提示，不报成功。这不会取消全局语言切换或撤回其刷新广播。当前演示支持简中和英文，自动字体适配关闭，两种语言复用现有 `AaBianYaKai-2 SDF`；字体表中的其他地址不代表已有资源，需按项目真实字体另行接入。
 
 `DemoAssetView` 在既有滚动交互区动态提供明确 Package 输入、“清理未引用缓存”和“取消清理等待”。清理前读取已有公开 `Nova.Asset` 的当前清单版本，仅调用 `ClearUnusedCacheAsync`；不创建 Manager、不切模式或清单。取消或关闭只停止本页等待，实际清理继续独立观察，同一 Owner/Package 不重复提交。公开调用异常且终态不明时本会话保留占用，不自动重试。正常返回只说明操作返回，仍需核对当前引用保留和实际磁盘结果；默认 EditorSimulate 可以合法无删除，不能据此认定磁盘清理验收通过。
 
@@ -38,7 +38,7 @@
 
 ## 教学页面的使用边界
 
-跨模块页面保留了较短的教学实现：`DemoIntegrationUiAssetView` 在关闭时释放句柄，但异步续体读取共享 CTS，未固定每次请求的身份，也未在释放前清空 Image；快速重复加载或池化重开时不具备 `DemoAssetView` 的完整所有权保护。`DemoIntegrationUiLocalizationView` 只检查对象是否销毁，没有页面令牌；关页后仍可能完成全局切语言并更新池化页面。两页打开的 Toast 不由父页跟踪关闭，返回的编号也不证明子页面已打开。业务接入应采用对应独立模块页的生命周期写法。
+跨模块页面保留了较短的教学实现：`DemoIntegrationUiAssetView` 在关闭时释放句柄，但异步续体读取共享 CTS，未固定每次请求的身份，也未在释放前清空 Image；快速重复加载或池化重开时不具备 `DemoAssetView` 的完整所有权保护。`DemoIntegrationUiLocalizationView` 使用操作版本屏蔽关闭、重开或后发请求之前的回调，显示实际当前语言并核对目标是否生效；关闭不取消全局切换。两页打开的 Toast 不由父页跟踪关闭，返回的编号也不证明子页面已打开。业务接入应采用对应模块的生命周期与结果校验写法。
 
 `DemoIntegrationEventNetworkView` 的连接状态是本地布尔模拟，不能用来验收真实网络。`DemoTableView` 校验固定的四张示例表、十行物品与 `XXXXX` Map 行，不适合作为任意项目的通用表健康检查；管理器、流程与 HybridCLR 页面展示的也是当前固定列表或已加载程序集快照，目录或 namespace 名不能代替实际 DLL 身份。
 

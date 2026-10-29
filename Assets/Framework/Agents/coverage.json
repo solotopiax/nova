@@ -9817,7 +9817,8 @@
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "默认PP/SQLite global-data元数据仍无值/无MasterPrivacy/Save/开库；独立值AES三Action仅当前Editor已索引PP字符串与标准SQL值，PP全局Save需明确接受且只能恢复已知键，SQL登记lease/同库真实事务/受保护sqlcipher_export备份，Plan/Verify可写伴随文件；Cipher与Privacy另由同三Action独立typed分支处理macOS当前Editor限定范围；设备/其它坐标/外部消费者独立验收。源码/隔离回归不等真实full Action或设备耐久性。"
+        "默认PP/SQLite global-data元数据仍无值/无MasterPrivacy/Save/开库；独立值AES三Action仅当前Editor已索引PP字符串与标准SQL值，PP全局Save需明确接受且只能恢复已知键，SQL登记lease/同库真实事务/受保护sqlcipher_export备份，Plan/Verify可写伴随文件；Cipher与Privacy另由同三Action独立typed分支处理macOS当前Editor限定范围；设备/其它坐标/外部消费者独立验收。源码/隔离回归不等真实full Action或设备耐久性。",
+        "普通业务消费入口须先满足 Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md NA-001/002；当前存储门面缺口见 PersistComponent Docs 与接入 Skill，导航不授予 Manager 使用许可。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -13046,12 +13047,12 @@
         {
           "entry": "confirmed business persistence source and local Play probe",
           "kind": "workspace-edit",
-          "when": "只修改已冻结的项目业务数据模型、读写/保存/清理或版本化迁移方法和隔离探针；复用既有方法，不改 PersistComponent、Config、生成物或真实存档文件，真实维护运行单独冻结数据集"
+          "when": "先通过 Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md NA-001/002 的业务消费入口门；只修改已冻结的项目业务数据模型、规则及已有合规入口的调用和隔离探针。当前 PersistComponent 三个存储属性直接返回 Manager，缺少业务 CRUD/保存门面，依赖该缺口的新增/修改分支 blocked，不注入或包装 Manager 绕行；不依赖它的已授权部分继续，不改组件、Config、生成物或真实存档文件"
         },
         {
-          "entry": "Nova.Config.LoadAsync / Nova.Persist.LoadAsync / Nova.Persist.PlayerPrefs / FileFragment / SQLite / IPersistManager.Save / RemoveItem / RemoveAll",
+          "entry": "Nova.Config.LoadAsync / Nova.Persist.LoadAsync",
           "kind": "csharp-api",
-          "when": "仅描述项目既有业务实现中的公开存储调用，按 Config 后 Persist 的加载、保存/删除/迁移契约使用；不是可调度 MCP，也不允许临时 C# 或反射私有 Inspector 方法"
+          "when": "加载入口仅证明初始化；现有 PlayerPrefs/FileFragment/SQLite 属性返回 Manager，CRUD/保存/删除接口只作当前实现的只读诊断依据，不是普通业务获准使用的 Adapter。实际解析版本未补齐合规 Component 门面时阻断依赖分支；框架内部、隔离测试与已开放类型化维护按各自合同判断，不以临时 C# 或反射绕行"
         },
         {
           "entry": "confirmed persistence schema, classify/item, saved-file metadata, redacted existing logs and recovery ownership",
@@ -13093,7 +13094,8 @@
       "limitations": [
         "仅按精确源审查与实际契约导航；不把源文件、参数声明或Doc存在当作live运行完成。",
         "只在消费者真实导入对应Sample时适用；Sample演示按钮调用和厂商/真机验收分开。",
-        "导入清单由组包流程填写；开发样例配置不能直接复制为项目凭据/业务服务事实。"
+        "导入清单由组包流程填写；开发样例配置不能直接复制为项目凭据/业务服务事实。",
+        "普通业务消费入口须先满足 Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md NA-001/002；当前存储门面缺口见 PersistComponent Docs 与接入 Skill，导航不授予 Manager 使用许可。"
       ],
       "semanticInputs": [
         "Assets/Samples/GameSaveDemo/Editor/BundleCollectorSetting.asset",
@@ -13861,7 +13863,7 @@
         {
           "entry": "confirmed business persistence source and local Play probe",
           "kind": "workspace-edit",
-          "when": "只修改已冻结的项目业务数据模型、读写/保存/清理或版本化迁移方法和隔离探针；复用既有方法，不改 PersistComponent、Config、生成物或真实存档文件，真实维护运行单独冻结数据集"
+          "when": "先通过 Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md NA-001/002 的业务消费入口门；只修改已冻结的项目业务数据模型、规则及已有合规入口的调用和隔离探针。当前 PersistComponent 三个存储属性直接返回 Manager，缺少业务 CRUD/保存门面，依赖该缺口的新增/修改分支 blocked，不注入或包装 Manager 绕行；不依赖它的已授权部分继续，不改组件、Config、生成物或真实存档文件"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -16402,6 +16404,7 @@
           }
         ],
         "conditions": [
+          "先核对当前解析版本的 Component 消费入口，满足 NA-001/002 后才接入；当前三个存储属性直接返回 Manager，缺少业务 CRUD/保存门面时依赖分支 blocked，不注入、包装 Manager 或照搬存量 Sample，独立已授权部分继续。",
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口"
         ],
         "gaps": []
@@ -16553,9 +16556,10 @@
           }
         ],
         "conditions": [
+          "先核对当前解析版本的 Component 消费入口，满足 NA-001/002 后才接入；当前三个存储属性直接返回 Manager，缺少业务 CRUD/保存门面时依赖分支 blocked，不注入、包装 Manager 或照搬存量 Sample，独立已授权部分继续。",
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "冻结源/目标schema、目标账号与classify/item、冲突/默认值、恢复、版本标记和重复执行策略；只编辑项目自有源码和隔离测试数据，真实玩家数据运行另获精确授权，FileFragment不提供跨分类原子事务",
-          "当前开发仓隔离示例使用MainDemo业务入口与真实FileFragment临时根，v1原值保留，v2来源标记/版本/进度同条目保存；Play中重新创建存储独立读回并验证后续更新和幂等。该证据不授权真实数据迁移，也不推广其他存储或设备耐久性。"
+          "MainDemo 的 Manager 注入仅作存量迁移策略和隔离测试参考，不作为新增普通业务入口；真实接入须有合规门面和当次正式适配、独立读取及幂等验证，不复用历史 Play 结果，不推广其他存储或设备耐久性。"
         ],
         "gaps": []
       },
@@ -16972,7 +16976,8 @@
           }
         ],
         "conditions": [
-          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口"
+          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
+          "Sample 默认采集规则覆盖的已配置 DLL 目标须非空且已导入为 TextAsset；空目录与自动同步跳过不代表就绪，按 BundleBuilder Docs 的实际门禁核验，不提前要求首次 Player 的 AOT 副本。"
         ],
         "gaps": []
       },
@@ -18589,7 +18594,8 @@
         ],
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
-          "只针对当前已导入的一个Sample读取入口和资源绑定；只用已存在演示按钮，不自动登录、支付、发事件、权限请求或删除账号；Sample UI启动不证明厂商/服务/设备成功"
+          "只针对当前已导入的一个Sample读取入口和资源绑定；只用已存在演示按钮，不自动登录、支付、发事件、权限请求或删除账号；Sample UI启动不证明厂商/服务/设备成功",
+          "先核实际导入清单声明的生成目录已被 AssetDatabase 识别；完成标记不豁免缺失目录恢复。未声明源资产缺失仍报错，目录恢复与 Editor 启动不证明 DLL、Bundle 或 Player 就绪。"
         ],
         "gaps": []
       },

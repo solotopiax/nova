@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Aihelp.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/AIHelpDemo"
+      "devPathPrefix": "Assets/Samples/AIHelpDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

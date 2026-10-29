@@ -136,9 +136,9 @@
 
 SetKeyName/SetFontMark 的相同值直接跳过；null/空 Key 只跳过文字，不清空已有 TMP.text，方向刷新仍先执行。空 Mark、AutoFontAdapt=false 或无匹配行会递增刷新版本并停止新加载，不自动复原旧字体或材质。Mark 取当前语言首个 Ordinal 精确匹配项。
 
-字体通过 LoadAsync<Object> 加载，只在资源是 TMP_FontAsset 时应用。完成后检查 destroy 令牌、启用状态、刷新版本和当前语言；过期请求释放局部 handle，成功请求先释放旧字体 handle 再转存新 handle。资源非空但类型不匹配时不会应用，已转存 handle 仍由组件持有到后续替换/禁用。材质另行 LoadAsync<Material>，成功后替换 fontSharedMaterial；空 MaterialName 直接返回，不显式重置此前材质。
+字体通过 LoadAsync<Object> 加载，只在资源是 TMP_FontAsset 时应用。完成后检查 destroy 令牌、启用状态、刷新版本和当前语言；过期请求释放局部 handle，成功请求转存新 handle，完成字体应用后归还旧字体 handle。应用有效 TMP 字体时总是显式恢复该字体的默认材质，再归还并清空旧材质 handle；即便新旧字体相同，旧自定义材质也不会残留。资源非空但类型不匹配时不会应用，已转存 handle 仍由组件持有到后续替换/禁用。非空 MaterialName 另行 LoadAsync<Material>，成功后替换 fontSharedMaterial；空值使用刚恢复的默认材质，加载失败期间也保留该默认材质。
 
-字号始终为首次缓存字号 × FontSizeScaleRatio，没有范围或有限数检查。OnDisable 先递增版本、注销，再释放字体和材质；不保证底层请求立即中止，也不清 TMP 上已有引用。资源 Release 或事件异常可中断后续清理，不能把普通销毁流程描述为每个异常下都完成。配置已导出、语言刷新事件已发或字体行已找到，都不等于目标 UI 的字体实际显示通过。
+首次适配缓存原始字号和 Auto Size 上下限。固定字号为原始字号 × FontSizeScaleRatio；启用 Auto Size 时同时以原始上下限乘该比例，最终字号由 TMP 在缩放后的范围内排版。多次切换、禁用重开均不累积缩放，也不关闭 Auto Size；没有范围或有限数检查。OnDisable 先递增版本、注销，再释放字体和材质；不保证底层请求立即中止，也不清 TMP 上已有引用。资源 Release 或事件异常可中断后续清理，不能把普通销毁流程描述为每个异常下都完成。配置已导出、语言刷新事件已发或字体行已找到，都不等于目标 UI 的字体实际显示通过。
 
 ## RTL 内部处理边界
 

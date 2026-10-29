@@ -739,13 +739,15 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 校验语言切换请求的前置条件：语言不为 Unspecified、在已支持列表中、与当前语言不同。
-        /// 返回 true 表示校验通过可继续切换，返回 false 表示本次切换已终止。
+        /// 校验并登记语言请求；有效目标立即使旧请求失效，目标已是当前语言时不重复加载或广播。
+        /// 未指定或不支持的语言不改变版本，避免无效输入打断仍可完成的切换。
         /// </summary>
         /// <param name="language">目标语言。</param>
-        /// <returns>是否可继续切换。</returns>
-        private bool ValidateLanguageSwitch(Language language)
+        /// <param name="switchVersion">本次有效请求的版本；无效目标返回原版本。</param>
+        /// <returns>是否需要继续加载目标语言。</returns>
+        private bool TryBeginLanguageSwitch(Language language, out int switchVersion)
         {
+            switchVersion = m_LanguageSwitchVersion;
             if (language == Language.Unspecified)
             {
                 Log.Warning(LogTag.Localization, "无法切换到未指定的语言。");
@@ -758,6 +760,7 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
+            switchVersion = ++m_LanguageSwitchVersion;
             if (m_Language == language)
             {
                 Log.Debug(LogTag.Localization, "当前语言已是 '{0}'，无需切换。", language);

@@ -8,6 +8,8 @@
 - `Nova.Persist.FileFragment`
 - `Nova.Persist.SQLite`
 
+这里描述的是现有实现事实。三个属性分别直接返回 `IPlayerPrefsManager`、`IFileFragmentManager`、`ISQLiteManager`，当前 `PersistComponent` 没有对应的业务 CRUD/保存转发面；按 [NA-001/002](../../../Onboarding/DEVELOPMENT_CONSTRAINTS.md)，这属于普通业务消费入口缺口，不能因属性公开或从 Component 取得就认定合规。新增或修改业务存储调用时先核对当前版本是否已补齐 Component 入口；未补齐则记录所需读写、保存、删除和耐久语义，暂停依赖该入口的接入，不自建第二套存储或注入 Manager 绕行。现有调用只作事实诊断，未经授权不批量迁移；框架内部、隔离测试和受控维护仍按各自职责与合同判断。
+
 ## 什么时候先看这页
 
 - 你要确认三种持久化存储实现是怎么被创建和初始化的。

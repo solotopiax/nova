@@ -156,13 +156,20 @@ namespace NovaFramework.Editor
             /// </summary>
             public static void TryAutoSyncActiveSampleDlls()
             {
-                ConfigMasterSO master = Config.WorkspaceActive.Get();
-                if (master == null)
+                try
                 {
-                    return;
-                }
+                    ConfigMasterSO master = Config.WorkspaceActive.Get();
+                    if (master == null)
+                    {
+                        return;
+                    }
 
-                TryAutoSyncSampleDlls(master);
+                    TryAutoSyncSampleDlls(master);
+                }
+                catch (System.Exception e)
+                {
+                    Log.Warning(LogTag.Editor, "[HybridCLR AutoSync] 无法读取当前 Sample 配置，自动同步未完成：{0}", e.Message);
+                }
             }
         }
     }

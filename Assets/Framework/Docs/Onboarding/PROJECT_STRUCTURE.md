@@ -56,7 +56,15 @@ Sample 的源码命名空间、asmdef 名、生成 DLL、ConfigRuntime 中的入
 
 `SamplePathManifest` 的字段 getter 只是读取配置，`RewriteTargets` 返回底层列表的只读接口而非独立快照。`SamplePathRewriter` 在 Editor 域加载后延迟检查并按清单改写导入路径：它不是事务或通用安全路径工具，字符串替换不理解序列化字段，也不保证阻止相对路径越界。文件未齐时有界重试，不等于持续监听所有导入；标记只用于内部重写状态，不证明资产绑定正确。已有自动工具的资产文本写入不能成为 Agent 手工改写 YAML 的先例，实际资产维护仍经 Editor/MCP。
 
+导入准备还会先检查清单的 `GeneratedDirectories`，即使已有重写完成标记也会恢复缺失的生成目录。开发态 `nova-samples.json` 的 `generatedDirectories` 是发布声明，发布器将它写入暂存 Sample 的 `m_GeneratedDirectories`；旧清单默认空列表，不猜测或创建普通资源目录。当前各 Sample 声明 `Dlls/AOTMetas` 和 `Dlls/GameDlls`。发布仅保留这些目录的骨架、文件夹 `.meta` 与隐藏占位 `.nova-keep`，排除声明范围内的本机 DLL 输出；占位不作为 Unity 资产或 YooAsset 资源收集。其他位置的合法程序集、数据和插件保持原内容。
+
+目录准备仅限当前清单所属的 `Assets/Samples/` 根下，拒绝越界、符号链接、非法相对路径及同名文件，通过 `AssetDatabase` 注册并核验目录，不覆盖已有文件，不修改工作区绑定。该限制只约束新目录准备，不扩展为旧字符串重写器的通用安全保证。单个失效清单只报告自身问题，不阻断其他有效 Sample。目录存在仅证明 Editor 模拟采集可访问该路径；缺少普通源资产仍是错误，必需 DLL 的生成、复制、正式资源构建与 Player/设备验收仍须独立完成。
+
+公开 Sample 的隐私密钥和厂商物料为脱敏占位值。开始 Play 前，需在当前 Platform × Channel × DevelopMode 的隐私配置填写自己的 AES-Key / AES-IV（UTF-8 各 16 字节），保存并导出运行时配置；目录恢复不豁免该初始化前提。隔离验收可以使用只属于临时工程的测试配置，但不能把测试密钥写回开发真源或随包发布，也不能把厂商占位值视为真实服务可用的证据。
+
 `SampleVersionGuard` 的版本比较使用前三段数字，不是完整 SemVer 或 UPM lock 判断。某些实现按整个旧版本目录调用 `DeleteAsset`，其中可能包含同版其他 Sample 及用户改动，范围大于弹窗中提到的单个 Demo；确认前核对完整目标，失败不提供事务恢复。旧版删除询问与启动场景询问是两个独立动作，拒绝删除不表示后续不会再询问场景；场景文件存在也不证明其可运行。专用 PrefabBuilder、配置补齐或诊断桥同样只服务自己的固定 Sample，不是可泛化的任意反射/任意资产写入口。
+
+微信示例的 `DemoWechatMiniGameSetup` 先通过当前类型对应的 MonoScript 定位所属脚本，只允许 canonical 开发真源进入自动配置与显式重建。导入副本在读取配置或 Prefab 前跳过自动处理，显式 `Build` 拒绝跨根执行，避免把开发仓固定路径当作消费工程路径，或覆盖项目组已导入的配置与页面。源资产缺失仍由原开发步骤报错；消费工程通过 ConfigWindow、Pipify 与 Prefab Inspector 维护自身资产。
 
 Sample 的 `BaseDemoView` 在首次 `OnInit` 接线，池化重开不等于重新初始化。关闭默认只清本页登记的反馈行并进入 UIView 关闭链，清反馈不结束账号、取消网络或关闭厂商页面；派生类自行管理业务等待、事件、纹理和句柄。反馈最多保留 200 行并在帧末销毁旧对象，`Success` 只是显示级别，不证明下层任务成功。模板或字段缺失的静默跳过也不证明 Prefab 完整绑定。
 

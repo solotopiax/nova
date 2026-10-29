@@ -10,6 +10,7 @@
  *            展示当前支持的语言列表，并用 5 个 Demo key 展示切语言后的即时刷新。
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -80,6 +81,11 @@ namespace NovaFramework.Samples.Runtime
         private CancellationTokenSource m_Cts;
 
         /// <summary>
+        /// 当前页面的语言操作版本，防止快速点击后的旧请求回调覆盖最新反馈。
+        /// </summary>
+        private int m_LanguageSwitchVersion;
+
+        /// <summary>
         /// 视图初始化钩子，注册按钮事件，设置标题与 API 副标题。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
@@ -135,7 +141,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 异步切换全局语言，仅在请求所属的视图打开周期仍有效时刷新 Demo key 展示区并写入反馈。
+        /// 异步切换全局语言，仅当前打开周期的最新请求核对实际语言后刷新展示区并写入反馈。
         /// 关闭视图只抑制此方法后续的视图刷新，不取消或回滚本地化 Manager 的全局语言切换。
         /// </summary>
         /// <returns>按钮触发的异步操作。</returns>
@@ -173,16 +179,37 @@ namespace NovaFramework.Samples.Runtime
             }
 
             Language target = m_SupportedLanguages[selectedIndex];
+            int requestVersion = ++m_LanguageSwitchVersion;
             // 公开 API 不接收视图 Token；固定旧周期归属，避免关闭并重开后旧请求刷新新视图。
-            await Nova.Localization.SetLanguageAsync(target);
+            try
+            {
+                await Nova.Localization.SetLanguageAsync(target);
+            }
+            catch (Exception exception)
+            {
+                if (this != null && !viewToken.IsCancellationRequested && ReferenceEquals(m_Cts, viewCts) &&
+                    requestVersion == m_LanguageSwitchVersion)
+                {
+                    AppendFeedback("切换语言失败：" + exception.Message, FeedbackLevel.Error);
+                }
+                return;
+            }
 
-            if (viewToken.IsCancellationRequested || !ReferenceEquals(m_Cts, viewCts))
+            if (this == null || viewToken.IsCancellationRequested || !ReferenceEquals(m_Cts, viewCts) ||
+                requestVersion != m_LanguageSwitchVersion || Nova.Localization == null)
             {
                 return;
             }
 
             RefreshDemoTexts();
-            AppendFeedback("Nova.Localization.SetLanguageAsync(" + target + ") -> done", FeedbackLevel.Success);
+            Language actual = Nova.Localization.Language;
+            if (actual != target)
+            {
+                AppendFeedback(string.Format("未切换到 {0}，当前语言为 {1}。", target, actual), FeedbackLevel.Warn);
+                return;
+            }
+
+            AppendFeedback("语言已切换为 " + actual, FeedbackLevel.Success);
         }
 
         /// <summary>

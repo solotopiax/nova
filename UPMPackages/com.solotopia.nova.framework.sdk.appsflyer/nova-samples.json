@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Appsflyer.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/AppsflyerDemo"
+      "devPathPrefix": "Assets/Samples/AppsflyerDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

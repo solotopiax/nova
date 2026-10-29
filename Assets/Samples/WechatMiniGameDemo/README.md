@@ -10,6 +10,8 @@
 4. 在 Editor 中可以预览页面；微信 SDK 的平台初始化会跳过，平台操作按具体 API 提示不支持或不可用。仍须核对其它已启用插件、配置、资源与启动状态，不能保证任意工程均无初始化错误。
 5. 使用微信小游戏转换工具导出，并在微信开发者工具或真机中体验真实功能。
 
+导入的配置与页面直接使用随包资产，开发仓的自动生成工具不会在消费工程中重建或覆盖它们。公开配置中的密钥和厂商物料保留脱敏占位值；首次运行前，在 ConfigWindow 的当前坐标填写自己的隐私 AES-Key / AES-IV（UTF-8 各 16 字节），保存并导出运行时配置。Editor 页面预览不代表微信登录、支付或后台已可用。
+
 Demo 在首次启动的 `ProcedurePreload.OnLeave`、主资源加载完成后，通过 `WeChatMiniGamePlugin.ReportGameStart()` 单次调用原厂 `WX.ReportGameStart()`。场景中的 `DebugComponent` 同时绑定了 Sample 自带的中文 Font，避免 RuntimeDebugger 在微信小游戏中因内置 Arial 缺少中文字形而只显示英文。
 
 微信 AppID 在 ConfigWindow 的“微信小游戏”SDKConfig 中维护；Pipify 导出 Step 不提供参数区，输出目录、Development Build、CDN 及其他转换选项直接读取官方 `MiniGameConfig.asset`。

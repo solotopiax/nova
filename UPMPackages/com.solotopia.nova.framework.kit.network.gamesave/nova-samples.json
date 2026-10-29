@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Kit.Network.GameSave.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/GameSaveDemo"
+      "devPathPrefix": "Assets/Samples/GameSaveDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

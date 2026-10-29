@@ -108,7 +108,7 @@ Unity 映射，再按配置回退。标签由运行平台提供，若没有可�
 
 - 目标语言不能是 `Unspecified`
 - 必须出现在支持列表里
-- 不能与当前语言相同
+- 已是当前语言时不重复加载或广播，但会使之前尚未完成的切换失效
 
 切换成功后会：
 
@@ -125,12 +125,12 @@ Unity 映射，再按配置回退。标签由运行平台提供，若没有可�
 
 `SetLanguageAsync()` 使用 `m_LanguageSwitchVersion` 做版本保护：
 
-- 每次切换先自增版本号
+- 同步与异步入口对支持的有效目标统一自增版本号，包括选回当前语言
 - 每个请求把数据加载到自己的临时缓存
 - await 返回后如果版本已变化，旧请求直接终止，不提交临时缓存
 - 通过版本检查的请求才进入缓存提交；提交本身没有失败回滚
 
-该保护只适用于通过前置校验的异步请求。同步切换不递增版本；请求当前语言也会提前返回，不会撤销另一个在飞目标，见下文。
+只有最后一次有效目标请求可以提交异步结果。未指定或未支持的语言不会打断在飞请求；`Initialize()` 和 `Shutdown()` 也会使旧生命周期的请求失效。被覆盖的请求仍会完成底层加载和句柄归还，不保证立即中止资源 I/O。
 
 ## 高价值 API 面
 
@@ -178,7 +178,7 @@ Unity 映射，再按配置回退。标签由运行平台提供，若没有可�
 
 ## 返回值、快照与失败中间态
 
-Initialize 拒绝 null config，保存同一对象与两个单元 List 引用，null List 才新建空列表；不会清旧字典或递增切换版本，依赖不存在也不在这里报错。LoadAsync 忽略支持语言加载的 bool，字体 false 只告警，正常到末尾始终返回 true；LoadSync 没有成功返回值。两者均不加载当前语言文本，也不能证明表或字体资源完整。
+Initialize 拒绝 null config，保存同一对象与两个单元 List 引用，null List 才新建空列表；会递增切换版本使旧请求失效，但不清旧字典，依赖不存在也不在这里报错。LoadAsync 忽略支持语言加载的 bool，字体 false 只告警，正常到末尾始终返回 true；LoadSync 没有成功返回值。两者均不加载当前语言文本，也不能证明表或字体资源完整。
 
 支持语言表的 Name 以忽略大小写的 Enum.TryParse 解析，跳过 Unspecified，保留行顺序及重复值，没有 Enum.IsDefined 校验；数字字符串可进入未知枚举值。GetSupportedLanguages 暴露同一个 List 的只读接口，下一次成功加载会改变该视图。字体表先建立本次私有映射，完整构建后替换；GetFontDatas 返回该轮行列表引用，旧列表不会因后续换映射被追加或清空。有字体行只证明配置存在，不保证地址资源可加载、类型为 TMP_FontAsset 或字形齐全。
 
@@ -186,7 +186,7 @@ Initialize 拒绝 null config，保存同一对象与两个单元 List 引用，
 
 CommitLanguageTextCache 先清主缓存并复制本轮数据，再清/构表、清/扁平化字典；构表或行属性异常可能留下空表、部分新文本而 Language 仍是旧值，不提供事务回滚。扁平化跳 null 行和空 Name，Value=null 转空串，跨表重复 Name 后写覆盖；DataList=null 未统一保护。GetText(null/空串) 返回空串，缺键告警并返回键本身；HasText 只查键存在。类型化表按 typeof(T) 精确查找，字符串重载按 Type.Name 取首项，同短名跨命名空间不保证唯一，查询不自动加载。
 
-SetLanguageAsync 无 ct 参数；只有通过非 Unspecified、已支持、不同当前语言校验后才递增版本。同步切换、Initialize、Shutdown 都不递增该版本，不能据此承诺最后一次任意调用获胜。InitCurrentLanguageSync/Async 返回 Resolve 的候选，即使切换被拒或文本为空，也可能正常返回该候选；验收应核当前 Language 与目标 GetText。
+SetLanguageSync/Async 对非 Unspecified 且已支持的请求递增版本；请求当前语言仅使旧请求失效，不重新加载、保存或广播。Initialize/Shutdown 同样使旧请求失效。SetLanguageAsync 无 ct 参数，返回完成不表示目标一定生效；被覆盖或加载失败都可能正常返回，UI 应核对实际 Language 与目标 GetText，只允许当前页面打开周期的最新请求更新反馈。InitCurrentLanguageSync/Async 返回 Resolve 的候选，即使切换被拒或文本为空，也可能正常返回该候选。
 
 ApplyLanguageSwitchResult 先写 Language，再保存正式偏好/启动镜像，最后 FireNow。正式 Save 或事件链异常不回滚语言与文本；缺 EventManager 则告警且不广播。事件只能在同步回调内消费，不能持有其池对象。Shutdown 清缓存与依赖，不负责释放 TextLocalizing 已持有的字体/材质资源。
 

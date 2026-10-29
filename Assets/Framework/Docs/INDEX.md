@@ -16,6 +16,7 @@
 
 | 任务 | 必读文档（按顺序） |
 |------|-------------------|
+| **选择框架 API、审查业务边界、热更、状态、保存或异步归属** | [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md)：按 NA-001～NA-016 选择本次相关条目，再进入所属模块 Docs。 |
 | **当前 Skills 覆盖的日常 Nova 项目任务** | 用自然语言描述任务 → [Nova Project Skills](../Agents/INDEX.md)（确认匹配 Skill、影响范围与证据门）→ 该 Skill 引用的模块 Docs；全量可发现不代表全量顺序执行。 |
 | **理解 Skill、Router、Workflow、Operation、Action 与 MCP 的关系** | [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)：分别看任务拆解和请求传递，理解 Nova 为什么复用 Unity MCP。 |
 | **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
@@ -523,7 +524,7 @@
 | [EditorUtil.Draw.SourceFileTree.md](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md) | 数据源文件树绘制与命名空间列表编辑静态工具集 |
 | [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动自动检查 + `MarkSkip`/`ClearSkip` 持久化，复用 PlugPals 网络层） |
 | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) | 已安装包 CHANGELOG Important 提取、本地确认、单包/批量范围与重载补查 |
-| [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate 系列封装、AOT/业务 DLL 拷贝；由 Pipify Steps 编排流水线） |
+| [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate、严格 DLL 拷贝及 Sample Editor 自动同步；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
 | [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 37 项 |
@@ -581,7 +582,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [EditorUtil.BundleBuilder.md](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) | YooAsset 标准 AssetBundle 与可选 RawFile 构建封装 |
+| [EditorUtil.BundleBuilder.md](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) | YooAsset 标准 AssetBundle 与可选 RawFile 构建封装，标准 Sample 包构建前检查必需 DLL 目标 |
 | [PlugPalsWindow.md](Editor/Windows/PlugPalsWindow.md) | 私有 Verdaccio 仓库 UPM 包管理窗口（安装/升级/卸载/搜索/UPM 联动） |
 
 ## Editor — Inspector

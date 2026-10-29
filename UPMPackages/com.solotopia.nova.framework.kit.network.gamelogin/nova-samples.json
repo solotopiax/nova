@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Kit.Network.GameLogin.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/GameLoginDemo"
+      "devPathPrefix": "Assets/Samples/GameLoginDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

@@ -55,6 +55,16 @@ namespace NovaFramework.Runtime
         private float m_OriginalFontSize = -1f;
 
         /// <summary>
+        /// 首次字体适配前的 Auto Size 字号下限，后续缩放始终以此为基准。
+        /// </summary>
+        private float m_OriginalFontSizeMin;
+
+        /// <summary>
+        /// 首次字体适配前的 Auto Size 字号上限，避免切换语言时累积缩放。
+        /// </summary>
+        private float m_OriginalFontSizeMax;
+
+        /// <summary>
         /// 首次组件 Start 等待是否已经完成；为 false 时不能向尚待初始化的事件池订阅。
         /// </summary>
         private bool m_IsStartupComplete;

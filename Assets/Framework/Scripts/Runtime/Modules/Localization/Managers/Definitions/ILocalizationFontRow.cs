@@ -37,7 +37,7 @@ namespace NovaFramework.Runtime
         string MaterialName { get; }
 
         /// <summary>
-        /// 字体大小缩放比例（基准值为 1.0）。
+        /// 字体大小缩放比例（基准值为 1.0）；开启 TMP Auto Size 时同时缩放原始字号上下限。
         /// </summary>
         float FontSizeScaleRatio { get; }
     }

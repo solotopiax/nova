@@ -19,6 +19,8 @@ description: Use when Nova 项目组需要为已配置的 YooAsset Package 按�
 
 检查目标 Package 与 Collector 配置已经存在，所需导出物由项目提前准备。不要因为要构建 Bundle 就自动执行 Config、Table、UI 或全量 Excel 导出；缺少输入时报告具体前置缺口。
 
+当前 Sample 的标准资源构建还会检查所选 Package 默认采集规则覆盖的已配置 DLL 目标：文件须非空且已导入为 TextAsset。导入器准备的空目录只用于 Editor 演示，自动同步因缺少源产物而跳过也不等于 DLL 已就绪。缺失时按既有 HybridCLR 编译/生成与复制流程补齐，不创建占位 DLL、不将此检查提前套到首次 Player 的 AOT 生成上；自定义规则仍按原管线与当前 Action 契约验收。
+
 Package、版本策略、构建选项与首包模式先从当前配置、已保存 Batch 和工具实际状态读取，展示来源与有效值后冻结，不把可读参数转嫁给新手。完整构建授权下由组合任务复用既有配置/导出/HybridCLR Operation，先完成适用的生成代码与 DLL 目标导入，再构建 Bundle；保持本 Operation 的独立写入边界。不同平台共用 StreamingAssets 或输出目录时串行执行，分别记录本次产物，不把上一平台的首包带入下一平台。
 
 WebGL `OfflinePlayMode` 必须配套 `ClearAndCopyAll`；`HostPlayMode` 可用 `None / ClearAndCopyByTags / ClearAndCopyAll`，`None` 依赖已部署的完整 CDN 资源。`LaunchHotfixTags` 和 `WebGLAssetStrategy` 不决定首包拷贝集合。核对实际 Package、Manifest/Catalog/Bundle 与后续 Player 中的 `nova-webgl-layout.txt`，不能用 Bundle 成功推断浏览器可运行。

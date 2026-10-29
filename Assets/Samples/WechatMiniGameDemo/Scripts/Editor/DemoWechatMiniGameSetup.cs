@@ -28,10 +28,11 @@ using UnityEngine.UI;
 namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
 {
     /// <summary>
-    /// 生成入口 View 的真实 Prefab Variant，并把微信 Plugin 写入 Demo 的 Master/Runtime 配置。
+    /// 仅在开发真源中生成入口 Prefab Variant 与示例配置；消费工程导入后不自动重建已有资产。
     /// </summary>
     public static class DemoWechatMiniGameSetup
     {
+        private const string c_DevelopmentScriptPath = "Assets/Samples/WechatMiniGameDemo/Scripts/Editor/DemoWechatMiniGameSetup.cs";
         private const string c_MasterPath = "Assets/Samples/WechatMiniGameDemo/Editor/ConfigMaster.asset";
         private const string c_RuntimeConfigPath = "Assets/Samples/WechatMiniGameDemo/Configs/ConfigRuntime.asset";
         private const string c_PipifySettingsPath = "Assets/Samples/WechatMiniGameDemo/Editor/PipifySettings.asset";
@@ -40,9 +41,27 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
         private const string c_WechatAppId = "wxec64551daa21353f";
         private static bool s_Scheduled;
 
+        /// <summary>
+        /// 域加载后先定位本类型所属脚本，仅让开发真源进入原有自动配置检查。
+        /// 消费态保留随包资产和用户修改，不因开发态固定路径缺失而调度重建。
+        /// </summary>
         [InitializeOnLoadMethod]
         private static void ScheduleInitialBuild()
         {
+            ScheduleInitialBuildForScript(ResolveOwnScriptAssetPath());
+        }
+
+        /// <summary>
+        /// 按所属脚本路径隔离开发自动化；导入副本在读取任何配置和 Prefab 前返回。
+        /// </summary>
+        /// <param name="scriptPath">通过本类型 MonoScript 定位到的真实资产路径；未定位时为 null。</param>
+        private static void ScheduleInitialBuildForScript(string scriptPath)
+        {
+            if (!string.Equals(scriptPath, c_DevelopmentScriptPath, StringComparison.Ordinal))
+            {
+                return;
+            }
+
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(c_TargetPrefabPath);
             DemoWechatMiniGameView view = prefab != null ? prefab.GetComponent<DemoWechatMiniGameView>() : null;
             var serialized = view != null ? new SerializedObject(view) : null;
@@ -68,15 +87,43 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             EditorApplication.delayCall += Build;
         }
 
+        /// <summary>
+        /// 显式重建开发真源的示例配置、流水线和入口 Prefab。
+        /// 导入副本不能用此开发工具覆盖已发布资产；缺失的真实开发源资产仍由原步骤严格报错。
+        /// </summary>
         public static void Build()
         {
             s_Scheduled = false;
+            if (!string.Equals(ResolveOwnScriptAssetPath(), c_DevelopmentScriptPath, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    "微信示例自动构建器只维护开发真源。导入工程请通过 ConfigWindow、Pipify 和 Prefab Inspector 维护自己的配置。");
+            }
             ConfigureWechatPlugin();
             MigrateWechatPipifyParams();
             BuildViewPrefab();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("WechatMiniGameDemo 已生成：微信配置与 DemoWechatMiniGameView Prefab Variant 均已就绪。");
+        }
+
+        /// <summary>
+        /// 从当前类型对应的 MonoScript 定位所属 Sample，避免误用其他版本或开发工程同名目录。
+        /// </summary>
+        /// <returns>本类型脚本的实际 Assets 相对路径；找不到时返回 null，自动配置保持关闭。</returns>
+        private static string ResolveOwnScriptAssetPath()
+        {
+            string[] guids = AssetDatabase.FindAssets($"{nameof(DemoWechatMiniGameSetup)} t:MonoScript", new[] { "Assets/Samples" });
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                MonoScript script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+                if (script != null && script.GetClass() == typeof(DemoWechatMiniGameSetup))
+                {
+                    return path;
+                }
+            }
+            return null;
         }
 
         private static void ConfigureWechatPlugin()

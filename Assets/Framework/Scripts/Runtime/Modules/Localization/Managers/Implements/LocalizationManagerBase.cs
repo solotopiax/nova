@@ -107,13 +107,13 @@ namespace NovaFramework.Runtime
         public abstract Language ResolveLanguage();
 
         /// <summary>
-        /// 同步切换语言。
+        /// 同步切换语言；内置实现使旧异步请求失效，选回当前语言不重复加载或广播。
         /// </summary>
         /// <param name="language">目标语言。</param>
         public abstract void SetLanguageSync(Language language);
 
         /// <summary>
-        /// 异步切换语言。
+        /// 异步切换语言；内置实现只允许最后一次有效请求提交，完成后须核对实际 Language。
         /// </summary>
         /// <param name="language">目标语言。</param>
         /// <returns>异步任务。</returns>

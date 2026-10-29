@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.memory.protection",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "coreVersion": "0.1.0",
   "displayName": "Nova Framework - MemoryProtection",
   "description": "Nova Framework 核心内存数值防护：可选 Anti-Cheat Toolkit 适配、异常隔离与密钥轮换。",
@@ -8,8 +8,16 @@
   "unity": "6000.4",
   "unityRelease": "2f1",
   "category": "Runtime",
-  "keywords": ["nova", "framework", "memory", "protection", "anti-cheat"],
-  "author": { "name": "Solotopia" },
+  "keywords": [
+    "nova",
+    "framework",
+    "memory",
+    "protection",
+    "anti-cheat"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
   "dependencies": {
     "com.solotopia.nova.framework": "0.7.3",
     "com.unity.nuget.newtonsoft-json": "3.2.2"
@@ -21,6 +29,7 @@
         "displayName": "Anti-Cheat Toolkit",
         "purchaseUrl": "https://marketplace.unity.com/packages/tools/utilities/anti-cheat-toolkit-202695"
       }
-    }
+    },
+    "releaseTime": "2026-10-29T01:50:54Z"
   }
 }

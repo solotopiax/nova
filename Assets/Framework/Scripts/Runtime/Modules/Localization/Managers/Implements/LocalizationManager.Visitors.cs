@@ -80,7 +80,7 @@ namespace NovaFramework.Runtime
         private IEventManager m_EventManager;
 
         /// <summary>
-        /// 语言切换版本号（用于异步切换重入保护）。
+        /// 有效语言请求和管理器生命周期的版本号，用于阻止旧异步结果提交。
         /// </summary>
         private int m_LanguageSwitchVersion;
 

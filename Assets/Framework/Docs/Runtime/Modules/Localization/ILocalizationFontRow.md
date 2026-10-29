@@ -45,7 +45,7 @@ Luban 生成的字体表行只要实现这个接口，`LocalizationManager` 和 
 
 - `Language` 必须能解析成 `Language` 枚举，否则该行会被跳过。
 - `Mark` 是 `TextLocalizing` 精确匹配的关键字段，不能随意改语义。
-- `MaterialName` 为空时跳过自定义材质加载；当前实现没有显式释放或重置此前的自定义材质，不能承诺空值一定恢复默认材质。
+- 应用匹配的有效 TMP 字体时，先恢复该字体默认材质并释放旧自定义材质句柄；`MaterialName` 为空时保留默认材质，不会残留同一字体之前的材质。
 
 ## 继续阅读
 
@@ -59,4 +59,4 @@ Luban 生成的字体表行只要实现这个接口，`LocalizationManager` 和 
 - [TextLocalizing.md](TextLocalizing.md)
 - [LocalizationFontData.md](LocalizationFontData.md)
 
-接口没有属性默认值或范围校验。Mark 使用 Ordinal 精确匹配首项，空 Mark 不加载；FontSizeScaleRatio 直接乘首次缓存的字号，不累计乘法，也不拒绝负值/NaN。Language 的 TryParse 不包含 IsDefined 校验。表行存在与正式导出通过，不代表字体/材质地址、资源类型、字符覆盖或实际排版已经验收。
+接口没有属性默认值或范围校验。Mark 使用 Ordinal 精确匹配首项，空 Mark 不加载；FontSizeScaleRatio 直接乘首次缓存的字号，启用 Auto Size 时同时缩放首次缓存的字号上下限，不累计乘法，也不拒绝负值/NaN。Language 的 TryParse 不包含 IsDefined 校验。表行存在与正式导出通过，不代表字体/材质地址、资源类型、字符覆盖或实际排版已经验收。

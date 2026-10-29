@@ -213,10 +213,18 @@ namespace NovaFramework.Runtime
                     return;
                 }
 
-                m_LoadedFontHandle?.Release();
+                IAssetHandle<UnityEngine.Object> previousFontHandle = m_LoadedFontHandle;
                 m_LoadedFontHandle = fontHandle;
                 fontHandle = null;
-                ApplyFontAsset(m_LoadedFontHandle.Asset, fontData, refreshVersion, language);
+                try
+                {
+                    ApplyFontAsset(m_LoadedFontHandle.Asset, fontData, refreshVersion, language);
+                }
+                finally
+                {
+                    // TMP 已切到新字体与默认材质后，才能归还旧字体，避免旧材质仍引用已释放的图集。
+                    previousFontHandle?.Release();
+                }
             }
             catch (OperationCanceledException)
             {
@@ -230,7 +238,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 将加载完成的字体资源应用到文本组件上。
+        /// 应用新字体并先恢复其默认材质，再加载可选材质，避免同字体的旧材质残留。
         /// </summary>
         /// <param name="fontAsset">加载到的字体资源。</param>
         /// <param name="fontData">字体配置数据。</param>
@@ -251,6 +259,10 @@ namespace NovaFramework.Runtime
             if (tmpFont != null)
             {
                 m_TextMeshProUGUI.font = tmpFont;
+                // TMP 对同一字体赋值会提前返回，必须显式重设材质后再释放旧材质句柄。
+                m_TextMeshProUGUI.fontSharedMaterial = tmpFont.material;
+                m_LoadedMaterialHandle?.Release();
+                m_LoadedMaterialHandle = null;
                 ApplyFontSizeScale(fontData.FontSizeScaleRatio);
                 LoadAndApplyMaterial(fontData, refreshVersion, language).Forget();
             }
@@ -332,7 +344,8 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 应用字体大小缩放比例。
-        /// 首次调用时缓存原始字号，后续调用基于原始字号进行缩放。
+        /// 首次调用缓存原始字号及 Auto Size 上下限；后续始终按原值缩放，不累积比例。
+        /// Auto Size 开启时同步缩放上下限，防止 TMP 重建网格时覆盖配置的字号比例。
         /// </summary>
         /// <param name="scaleRatio">缩放比例（基准值为 1.0）。</param>
         private void ApplyFontSizeScale(float scaleRatio)
@@ -345,6 +358,14 @@ namespace NovaFramework.Runtime
             if (m_OriginalFontSize < 0f)
             {
                 m_OriginalFontSize = m_TextMeshProUGUI.fontSize;
+                m_OriginalFontSizeMin = m_TextMeshProUGUI.fontSizeMin;
+                m_OriginalFontSizeMax = m_TextMeshProUGUI.fontSizeMax;
+            }
+
+            if (m_TextMeshProUGUI.enableAutoSizing)
+            {
+                m_TextMeshProUGUI.fontSizeMin = m_OriginalFontSizeMin * scaleRatio;
+                m_TextMeshProUGUI.fontSizeMax = m_OriginalFontSizeMax * scaleRatio;
             }
 
             m_TextMeshProUGUI.fontSize = m_OriginalFontSize * scaleRatio;

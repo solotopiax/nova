@@ -1,7 +1,7 @@
 # Nova Framework - MemoryProtection
 
 > 包名：`com.solotopia.nova.framework.memory.protection`
-> 当前版本：`0.1.2`
+> 当前版本：`0.1.3`
 > Unity：`6000.4.x`（最低 `6000.4.2f1`）
 
 Nova 独立核心扩展包，提供 `ProtectedInt` / `ProtectedLong`、异常隔离、密钥轮换和脱敏埋点。主 Framework 不强制依赖本包；安装本包后无需增加 SDK、Component 或场景节点。
@@ -16,7 +16,7 @@ Nova 独立核心扩展包，提供 `ProtectedInt` / `ProtectedLong`、异常隔
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.memory.protection": "0.1.2"
+  "com.solotopia.nova.framework.memory.protection": "0.1.3"
 }
 ```
 

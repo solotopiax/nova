@@ -5,6 +5,8 @@
 
 YooAsset 标准 AssetBundle 与可选 RawFile 构建薄封装。两个入口使用独立 DTO、构建参数和 Pipify Step，互不改变对方语义。
 
+标准 `BuildAssetBundle` 在执行管线前，对当前 Sample 工作区增加只读 DLL 目标检查：按本次 BuildTarget 与激活 Master 的 Channel/DevelopMode 解析映射，仅核对所选 Package 中 `NormalIgnoreRule`、`EnableGroup`、`MainAssetCollector`、`CollectAll` 覆盖的目标，要求文件非空且已作为 `TextAsset` 导入。缺失时明确失败，提示完成相应平台的生成、编译与复制；导入时准备的空目录不能替代 DLL。当前发布的全部 Sample 使用这组默认规则。自定义规则继续由原管线处理，此预检不额外执行其回调；其他 Package、普通业务工作区、RawFile、Editor 模拟构建与 Player 首次生成 AOT 不增加该先决条件。AOT 副本仍应在相应 Player 构建产生裁剪产物后复制。
+
 ---
 
 ## §2 文件表

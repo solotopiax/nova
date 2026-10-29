@@ -40,4 +40,6 @@ description: Use when 项目组要检查或配置 Nova 项目的启动场景、B
 4. 仅按已确认范围更新 Build Settings，不因发现 Sample、测试或插件 Scene 扩大闭包。
 5. 通过当前 Unity 工具核对目标场景、Nova 根、必需引用和 Content 所有者；获授权后执行入口 Play smoke。只有涉及构建准备时才复用 `nova-project-preflight-build`，不以静态结果代替 Play。
 
+验证已导入 Sample 时，先按 [Sample 导入边界](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核对清单声明的生成目录是否已被 AssetDatabase 识别。重写完成标记不能代替目录检查；自动导入器只恢复声明目录，不创建缺失的普通源资产。缺少平台 DLL 的自动同步跳过不阻断普通 Editor 演示，也不能作为正式 Bundle、Player 或设备已就绪的证据。不要手工修补已安装缓存包、复制开发机 DLL 或为通过采集检查修改工作区绑定。
+
 达到本次场景保存、拓扑与绑定检查和入口 Play 证据才报告 `success`；无法进入 Unity、Content 所有者不明确或仅取得静态结果时返回 `partial` 或 `blocked`。不自动 Build Player、发布、删除场景或提交 Git。

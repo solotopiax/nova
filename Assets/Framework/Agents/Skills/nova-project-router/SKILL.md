@@ -41,7 +41,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
 | 金币 / 体力防改、关键整数内存防护 | 现有数值 owner、可信初值、int/long 类型及失败后的结算/保存边界；仅内存接入不要求存储选型、classify/item 或 AES 密钥 |
 | 加载场景 / 切换关卡 | 入口 Scene、Build Settings、Nova 资源化 Content 场景，还是普通资源/Prefab；Package、location、mode、Handle owner 与卸载时机是否已确认 |
 | Android 依赖 / EDM4U / GeneratedLocalRepo | UPM Resolve、EDM4U Force Resolve、Gradle 构建诊断还是清理缓存；当前 Android Target 与依赖图是否已确认 |
-| 登录 / 领奖 / 业务 API / HTTP取消 | 先区分新协议或路由/认证接入，与既有单URL请求/页面Owner取消维护；前者冻结真实HostKey/NetCmd、认证与账号，后者复用原请求参数、实际可取消Manager、Owner/token与受控探针，不无条件要求表导出或账号 |
+| 登录 / 领奖 / 业务 API / HTTP取消 | 先区分新协议或路由/认证接入，与既有单URL请求/页面Owner取消维护；前者冻结真实HostKey/NetCmd、认证与账号，后者复用原请求参数、`Nova.Network` 当前可用的取消重载、Owner/token与受控探针，不无条件要求表导出或账号 |
 | BGM / 背景音乐 / 点击音效 / 声音 | 真实 AudioClip、Collector、地址、Sound 表、声音组、加载入口、业务触发、停止生命周期和实际播放成功探针是否都已确认 |
 | 振动 / 震动 | Emphasis、Custom 或预设；数据源、Unit、Collector、业务触发、停止责任、目标真机和体感探针是否都已确认 |
 | 流程 / Procedure | 业务 Procedure 还是框架启动链；业务程序集、进入/离开、异步取消、下一状态和 Play 探针是否都已确认 |
@@ -72,7 +72,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
    - 业务存储、关键整数内存防护、存档诊断、值 AES、SQLite Cipher 或 Privacy 默认 AES 轮换：`nova-project-integrate-persistence`；金币/体力防改按其内存防护参考复用 Core 公开 API 与业务 owner。密码与 Privacy 分支仍复用同三 Action，限定当前macOS Editor与精确数据/配置范围，设备与外部消费者独立验收；资源密钥、App AES与业务schema分别路由。
    - 已配置 HybridCLR，且只需在当前 activeBuildTarget、DevelopmentBuild 与激活 ConfigMaster 当前坐标下完成业务 DLL 本地 compile -> copy 整批刷新：`nova-project-refresh-hotfix-dlls`；full AOT、Bundle、Player 及 CDN/运行时诊断分别路由，不扩入该 Operation。
    - 已配置 HybridCLR，且需要按当前 Target、DevelopmentBuild 与激活 ConfigMaster 当前坐标执行 `Generate All` 与 link.xml 验证：`nova-project-generate-hybridclr-artifacts`；它不 Copy DLL、不构建最终 Player，也不替代最终 Player 后的 `CopyAotDlls`。
-   - HTTP API、WebSocket 或已有普通请求的Owner取消/响应回收维护：`nova-project-integrate-network-api`。新协议或路由/认证变化才冻结相关HostKey/NetCmd、导出、账号与重放语义；既有单URL维护复用原参数、当前Manager与生命周期，不强制导表、Network加载或账号。WebSocket按连接、认证、心跳、重连与响应生命周期参考执行；可读项目事实先核，缺真实业务选择再澄清。
+   - HTTP API、WebSocket 或已有普通请求的Owner取消/响应回收维护：`nova-project-integrate-network-api`。新协议或路由/认证变化才冻结相关HostKey/NetCmd、导出、账号与重放语义；既有单URL维护复用原参数、`Nova.Network` 门面与生命周期，不强制导表、Network加载或账号。WebSocket按连接、认证、心跳、重连与响应生命周期参考执行；可读项目事实先核，缺真实业务选择再澄清。
    - 加入声音表、真实 AudioClip、Collector、地址、声音组与播放/停止行为：`nova-project-integrate-sound`；从项目发现已有加载 Owner，缺现成触发代码时在授权业务源范围补齐，缺真实资源则保留依赖缺项，不以 serialID 代替实际播放与停止。
    - 已确认 Emphasis / Custom 振动数据、Unit、地址、Collector、业务触发、唯一停止责任、目标真机和体感探针：`nova-project-integrate-vibration`；没有真机反馈时最高为 `partial`。
    - 已确认业务程序集、业务 Procedure、进入/离开职责、异步取消、下一状态和 Play 探针：`nova-project-integrate-procedure`；复用 `ProcedureLoadDll` 延迟注册，不建立第二注册器。

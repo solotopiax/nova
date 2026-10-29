@@ -64,9 +64,9 @@ SQLite 当前 Nova factory、Runtime 与 Inspector 的登记连接由 `SQLiteMai
 
 ### 开发仓业务入口与真实 FileFragment
 
-需要落实公开存储接口、实际加载/保存与Play时，复用 MainDemo 的 `DemoProgressMigration` 业务入口及 README“业务进度结构迁移”。它接收已初始化的 `IFileFragmentManager`、明确源/目标分类；v1→v2将版本、来源摘要与进度同条目保存，保留旧分类，支持独立重开读回和迁移后正常保存；重复迁移依据同一来源摘要，不把旧值覆盖回已更新的游戏进度。保存结果不确定时当前服务拒绝继续，调用方须使用新存储实例核查，不自动重放。
+MainDemo 的 `DemoProgressMigration` 及 README“业务进度结构迁移”可用于查阅现有迁移策略。它接收已初始化的 `IFileFragmentManager`，属于当前普通业务消费边界下的存量 Manager 依赖示例，不得原样复制、注入或换一层 Service 推广为新业务入口；接入先通过本 Skill 的消费入口门。其 v1→v2 将版本、来源摘要与进度同条目保存，保留旧分类，重复迁移依据同一来源摘要，不把旧值覆盖回已更新的游戏进度。保存结果不确定时拒绝继续，不自动重放；这些行为仍需本次真实适配与独立读取证据。
 
-真实隔离验证使用 `NovaFramework.Tests.Editor.DemoPersistMigrationPlayTests`：父宿主先保留场景并切换空场景，再由测试进入Play，构造自有临时根的真实FileFragment、立即精确注销仅自有实例并初始化，关闭/重开后独立读盘；不访问 `Nova.Persist` 默认存档、现有Manager、AES或数据库。该入口不要求新增Skill或Action。项目业务可在其原启动链完成后注入 `Nova.Persist.FileFragment`，但示例与隔离Play不授权真实数据执行，不推广为PlayerPrefs/SQLite、设备掉电或所有平台验收；原27例DTO/文件EditMode记录保留其原边界。
+`NovaFramework.Tests.Editor.DemoPersistMigrationPlayTests` 是隔离测试参考：父宿主保留场景并切换空场景，再进入 Play，构造自有临时根的真实 FileFragment，精确注销仅自有实例并初始化，关闭/重开后独立读盘；不访问默认存档、现有 Manager、AES 或数据库。隔离测试替身与正式业务分别判断，不因测试允许注入 Manager 就许可业务注入 `Nova.Persist.FileFragment`。该示例不授权真实数据执行，不证明 PlayerPrefs/SQLite、设备掉电或所有平台验收；测试存在也不表示本次已执行。
 
 ## 受控 FileFragment AES 分支
 

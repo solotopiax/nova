@@ -6,6 +6,8 @@
 
 所有 `nova-project-*` Skill 触发后都先读取本页。本页定义项目组消费态日常任务的共同底线；它不是需要用户手工选择或按顺序执行的 Skill。
 
+新增、修改或审查业务与框架调用时，按任务读取 [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md) 的相关 NA 条目。普通业务的公开入口是否获准使用按该页 NA-001/002 判断；下文“公开 API”和旧示例不单独构成使用许可。共同约束的存在不表示已部署自动语义检查器或完成存量整改。
+
 需要理解 Skill、Router、Workflow、Operation、Action 与 MCP 各自做什么，先读 [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)。该页把任务拆解和请求传递分别说明，并解释 Nova MCP 包如何扩展 Unity MCP。
 
 所有 `nova-project-*` Skill 的对用户输出必须先说结论，用人话、简洁直接地说明必要信息；只有确有助于决策时才补充术语、过程和细节，不啰嗦。
@@ -96,6 +98,7 @@ Nova 不再提供 Project Guard 窗口、规则 Profiles 或进入 Play 前的�
 
 ## 按任务继续阅读
 
+- [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md)：业务消费边界、热更、状态与副作用、保存、异步和验收。
 - [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md)：识别 Nova 根、单/多场景与 Content 边界。
 - [资源工作流](Onboarding/RESOURCE_WORKFLOW.md)：选择 YooAsset、BuiltIn Resources 或插件自有 Resources。
 - [验证与构建](Onboarding/VALIDATION.md)：理解只读构建预检、按任务验证与直接 Unity Build。

@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Ad.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/AdDemo"
+      "devPathPrefix": "Assets/Samples/AdDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

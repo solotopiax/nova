@@ -94,7 +94,7 @@ internal sealed class WalletState : IDisposable
 
 ## 可复用的独立 Demo 参考
 
-本包随附 `MemoryProtectionDemo`，开发态位于 `Assets/Samples/MemoryProtectionDemo`，消费态先从本包的 Samples 导入。示例命名空间是 `NovaFramework.Memory.Protection.Samples.Runtime`，入口为 `DemoMemoryProtectionView`；MainDemo 不再承载旧 `Core → 1.10` 页面。`DemoMemoryProtectionWallet` 通过已加载的 `IFileFragmentManager` 读取普通整数 DTO、构造金币/钻石字段、检查失败后停止结算和保存，并在关闭时释放。只借鉴其公开接入链，真实业务继续使用自己的存档格式、范围规则与可信恢复来源；固定演示初值不构成真实余额恢复策略。
+本包随附 `MemoryProtectionDemo`，开发态位于 `Assets/Samples/MemoryProtectionDemo`，消费态先从本包的 Samples 导入。示例命名空间是 `NovaFramework.Memory.Protection.Samples.Runtime`，入口为 `DemoMemoryProtectionView`；MainDemo 不再承载旧 `Core → 1.10` 页面。`DemoMemoryProtectionWallet` 当前通过 `IFileFragmentManager` 读取普通整数 DTO，这是存量 Manager 依赖，不是允许新业务复制的存储接线；遵守本 Skill 的消费入口门。可查阅普通 DTO、受保护字段、失败后停止结算/保存与关闭释放的策略，单独验证本次内存接入；真实业务仍使用自己的存档格式、范围规则与可信恢复来源，固定演示初值不构成真实余额恢复策略。
 
 该 Demo 的 Editor 桥会反射 Nova 自有状态，仅为本页字段模拟校验失败或执行单字段轮换；它不是消费端公开能力，不复制到业务，也不能作为 ACTk 算法篡改、自动批次轮换或 Player 验收证据。
 

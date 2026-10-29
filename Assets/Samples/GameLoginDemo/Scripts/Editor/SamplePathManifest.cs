@@ -17,24 +17,35 @@ using UnityEngine;
 namespace NovaFramework.Kit.Network.GameLogin.Samples.Editor
 {
     /// <summary>
-    /// Sample 路径自适应清单。声明开发工程下 sample 的根路径以及需要重写路径的资产文件相对路径列表。
+    /// Sample 导入清单。声明开发态根路径、待重写资产和允许在导入后准备的生成目录。
     /// </summary>
     public sealed class SamplePathManifest : ScriptableObject
     {
         /// <summary>
-        /// 开发工程下 sample 根路径（发版脚本注入），如 "Assets/Samples/LoginDemo"。
+        /// 开发工程下 sample 根路径（发版脚本注入），如 "Assets/Samples/GameLoginDemo"。
         /// 外部工程 import 后以此为字符串前缀，被替换为运行时定位到的真实根路径。
         /// </summary>
         [SerializeField]
         private string m_DevSampleRoot = "Assets/Samples/GameLoginDemo";
 
         /// <summary>
-        /// 重写完成的标记文件名，写入 sample 根目录用于防重入。
+        /// 需要重写开发态路径前缀的资产文件相对路径。
         /// </summary>
         [SerializeField]
         private List<string> m_RewriteTargets = new List<string>();
+
+        /// <summary>
+        /// 重写完成的标记文件名，写入 sample 根目录用于防重入。
+        /// </summary>
         [SerializeField]
         private string m_RewrittenMarker = ".nova-path-rewritten";
+
+        /// <summary>
+        /// 发版描述符明确声明的生成目录，相对当前 Sample 根目录；旧清单默认不创建目录。
+        /// 这里只准备文件夹，不代表 DLL 或其他构建产物已经生成。
+        /// </summary>
+        [SerializeField]
+        private List<string> m_GeneratedDirectories = new List<string>();
 
         /// <summary>
         /// 开发工程下 sample 根路径。
@@ -50,5 +61,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Samples.Editor
         /// 重写完成的标记文件名。
         /// </summary>
         public string RewrittenMarker => m_RewrittenMarker;
+
+        /// <summary>
+        /// 允许幂等准备的生成目录，只读接口不复制底层列表。
+        /// </summary>
+        public IReadOnlyList<string> GeneratedDirectories => m_GeneratedDirectories;
     }
 }

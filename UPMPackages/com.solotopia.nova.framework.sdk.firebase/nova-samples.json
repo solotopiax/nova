@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Firebase.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/FirebaseDemo"
+      "devPathPrefix": "Assets/Samples/FirebaseDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

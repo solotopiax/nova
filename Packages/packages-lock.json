@@ -336,7 +336,7 @@
         "com.solotopia.nicevibrations": "10.0.6",
         "com.solotopia.luban": "10.1.0",
         "com.solotopia.yooasset": "1.2.1",
-        "com.solotopia.nova.framework.mcp": "0.1.6"
+        "com.solotopia.nova.framework.mcp": "0.1.7"
       }
     },
     "com.solotopia.nova.framework.kit.network.gamebind": {

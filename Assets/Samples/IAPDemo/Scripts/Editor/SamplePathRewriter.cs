@@ -11,11 +11,13 @@
  *            开发工程旧路径。本脚本读取 SamplePathManifest，把所有列入
  *            清单的资产文件中的字符串前缀替换为 import 后的真实路径
  *            （形如 "Assets/Samples/Nova Framework/{version}/IAPDemo"）。
- *            通过完成标记减少重复扫描，并在包升级后重新校验待重写路径。
+ *            先按清单准备生成目录，再通过完成标记减少重复路径扫描。
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using Path = System.IO.Path;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -25,7 +27,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Editor
     /// <summary>
     /// Sample import 后路径自适应重写器。
     /// 域重载完成后延迟扫描自身所在 Sample 根目录，按 SamplePathManifest 描述的清单
-    /// 把所有目标资产中的开发工程路径前缀替换为 import 后的真实路径，完成后写入标记。
+    /// 准备清单明确声明的生成目录，再把目标资产的开发态路径前缀替换为真实导入路径。
+    /// 目录恢复不受路径重写完成标记限制，也不复制或伪造构建产物。
     /// </summary>
     [InitializeOnLoad]
     internal static class SamplePathRewriter
@@ -47,7 +50,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Editor
 
         /// <summary>
         /// 主入口：遍历当前工程中所有同类 manifest，分别重写其所属 Sample。
-        /// 旧 Sample 留存的 manifest 无效时只跳过该项，不能阻断新导入 Sample 的路径重写。
+        /// 每次检查先准备声明的目录；单个旧清单失效时跳过该项，不阻断其他有效清单。
         /// </summary>
         private static void RunRewrite()
         {
@@ -62,38 +65,48 @@ namespace NovaFramework.Sdk.IAP.Samples.Editor
                     continue;
                 }
 
-                if (manifest.RewriteTargets.Count == 0)
+                try
                 {
-                    Log.Warning(LogTag.Editor,
-                        $"[SamplePathRewriter] 重写清单为空，拒绝写入完成标记: {sampleRoot}");
-                    continue;
-                }
-
-                string markerPath = $"{sampleRoot}/{manifest.RewrittenMarker}";
-                bool hasPendingRewrite = ContainsDevSampleRoot(manifest, sampleRoot, out bool allTargetsAvailable);
-                if (File.Exists(markerPath) && !hasPendingRewrite && allTargetsAvailable)
-                {
-                    continue;
-                }
-
-                int rewrittenCount = RewriteAll(manifest, sampleRoot);
-                hasPendingRewrite = ContainsDevSampleRoot(manifest, sampleRoot, out allTargetsAvailable);
-                if (!allTargetsAvailable || hasPendingRewrite)
-                {
-                    retryRequired |= !allTargetsAvailable || hasPendingRewrite;
-                    if (allTargetsAvailable || s_DelayedRetryCount >= c_MaxDelayedRetries)
+                    // 完成标记只负责路径重写，不能跳过目录恢复。
+                    PrepareGeneratedDirectories(manifest, sampleRoot);
+                    if (manifest.RewriteTargets.Count == 0)
                     {
                         Log.Warning(LogTag.Editor,
-                            $"[SamplePathRewriter] Sample 路径尚未全部就绪，未写入完成标记: {sampleRoot}");
+                            $"[SamplePathRewriter] 重写清单为空，拒绝写入完成标记: {sampleRoot}");
+                        continue;
                     }
-                    continue;
+
+                    string markerPath = $"{sampleRoot}/{manifest.RewrittenMarker}";
+                    bool hasPendingRewrite = ContainsDevSampleRoot(manifest, sampleRoot, out bool allTargetsAvailable);
+                    if (File.Exists(markerPath) && !hasPendingRewrite && allTargetsAvailable)
+                    {
+                        continue;
+                    }
+
+                    int rewrittenCount = RewriteAll(manifest, sampleRoot);
+                    assetChanged |= rewrittenCount > 0;
+                    hasPendingRewrite = ContainsDevSampleRoot(manifest, sampleRoot, out allTargetsAvailable);
+                    if (!allTargetsAvailable || hasPendingRewrite)
+                    {
+                        retryRequired |= !allTargetsAvailable || hasPendingRewrite;
+                        if (allTargetsAvailable || s_DelayedRetryCount >= c_MaxDelayedRetries)
+                        {
+                            Log.Warning(LogTag.Editor,
+                                $"[SamplePathRewriter] Sample 路径尚未全部就绪，未写入完成标记: {sampleRoot}");
+                        }
+                        continue;
+                    }
+
+                    File.WriteAllText(markerPath, $"sampleRoot={sampleRoot}\nrewrittenCount={rewrittenCount}\n");
+
+                    Log.Debug(LogTag.Editor,
+                        $"[SamplePathRewriter] 已重写 {rewrittenCount} 个资产路径前缀: {manifest.DevSampleRoot} -> {sampleRoot}");
                 }
-
-                File.WriteAllText(markerPath, $"sampleRoot={sampleRoot}\nrewrittenCount={rewrittenCount}\n");
-                assetChanged |= rewrittenCount > 0;
-
-                Log.Debug(LogTag.Editor,
-                    $"[SamplePathRewriter] 已重写 {rewrittenCount} 个资产路径前缀: {manifest.DevSampleRoot} -> {sampleRoot}");
+                catch (Exception exception)
+                {
+                    Log.Warning(LogTag.Editor,
+                        $"[SamplePathRewriter] Sample 导入准备失败: {sampleRoot}。{exception.Message}");
+                }
             }
 
             if (assetChanged)
@@ -109,6 +122,116 @@ namespace NovaFramework.Sdk.IAP.Samples.Editor
             else
             {
                 s_DelayedRetryCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// 只准备清单声明的当前 Sample 生成目录，并确认 AssetDatabase 已识别。
+        /// 未声明的源资产目录不做补齐；目录就绪不表示生成文件已经就绪。
+        /// </summary>
+        /// <param name="manifest">当前类型对应的 Sample 导入清单。</param>
+        /// <param name="sampleRoot">由清单资产定位到的真实 Sample 根目录。</param>
+        private static void PrepareGeneratedDirectories(SamplePathManifest manifest, string sampleRoot)
+        {
+            if (manifest.GeneratedDirectories == null || manifest.GeneratedDirectories.Count == 0)
+            {
+                return;
+            }
+
+            // 限定在已导入的 Assets/Samples 内，不能由此创建或切换工程工作区。
+            if (!sampleRoot.StartsWith("Assets/Samples/", StringComparison.Ordinal)
+                || !Directory.Exists(sampleRoot))
+            {
+                throw new InvalidOperationException($"生成目录所属 Sample 无效: {sampleRoot}");
+            }
+
+            List<string[]> directories = new List<string[]>(manifest.GeneratedDirectories.Count);
+            foreach (string relative in manifest.GeneratedDirectories)
+            {
+                if (string.IsNullOrWhiteSpace(relative) || relative != relative.Trim()
+                    || Path.IsPathRooted(relative) || relative.Contains("\\") || relative.Contains(":"))
+                {
+                    throw new InvalidOperationException($"生成目录必须是 Sample 内的相对目录: {relative}");
+                }
+
+                string[] segments = relative.Split('/');
+                foreach (string segment in segments)
+                {
+                    if (string.IsNullOrWhiteSpace(segment) || segment == "." || segment == ".."
+                        || segment.StartsWith(".", StringComparison.Ordinal)
+                        || segment.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                    {
+                        throw new InvalidOperationException($"生成目录含无效路径段: {relative}");
+                    }
+                }
+                directories.Add(segments);
+            }
+
+            // 不沿符号链接写入 Sample 外部；也检查 Sample 根路径的所有现有父目录。
+            string current = string.Empty;
+            foreach (string segment in sampleRoot.Split('/'))
+            {
+                current = string.IsNullOrEmpty(current) ? segment : $"{current}/{segment}";
+                RejectLinkedDirectory(current);
+            }
+
+            if (!AssetDatabase.IsValidFolder(sampleRoot))
+            {
+                AssetDatabase.ImportAsset(sampleRoot, ImportAssetOptions.ForceSynchronousImport);
+            }
+            if (!AssetDatabase.IsValidFolder(sampleRoot))
+            {
+                throw new IOException($"AssetDatabase 尚未识别 Sample 根目录: {sampleRoot}");
+            }
+
+            foreach (string[] segments in directories)
+            {
+                current = sampleRoot;
+                foreach (string segment in segments)
+                {
+                    string parent = current;
+                    current = $"{parent}/{segment}";
+                    RejectLinkedDirectory(current);
+                    if (File.Exists(current))
+                    {
+                        throw new IOException($"生成目录被同名文件占用: {current}");
+                    }
+
+                    if (!Directory.Exists(current))
+                    {
+                        if (File.Exists($"{current}.meta"))
+                        {
+                            // 空目录可能被打包器省略；保留随包文件夹元数据并重新注册。
+                            Directory.CreateDirectory(current);
+                        }
+                        else if (string.IsNullOrEmpty(AssetDatabase.CreateFolder(parent, segment)))
+                        {
+                            throw new IOException($"无法创建生成目录: {current}");
+                        }
+                    }
+
+                    if (!AssetDatabase.IsValidFolder(current))
+                    {
+                        AssetDatabase.ImportAsset(current, ImportAssetOptions.ForceSynchronousImport);
+                    }
+                    if (!AssetDatabase.IsValidFolder(current))
+                    {
+                        throw new IOException($"AssetDatabase 尚未识别生成目录: {current}");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 拒绝经符号链接或重解析点准备目录，防止声明路径落到当前 Sample 之外。
+        /// </summary>
+        /// <param name="path">已存在或即将创建的项目相对目录。</param>
+        private static void RejectLinkedDirectory(string path)
+        {
+            if ((Directory.Exists(path) || File.Exists(path))
+                && (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+            {
+                throw new IOException($"生成目录不能经过符号链接: {path}");
             }
         }
 

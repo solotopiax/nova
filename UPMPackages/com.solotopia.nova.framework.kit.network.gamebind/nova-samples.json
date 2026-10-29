@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Kit.Network.GameBind.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/GameBindDemo"
+      "devPathPrefix": "Assets/Samples/GameBindDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

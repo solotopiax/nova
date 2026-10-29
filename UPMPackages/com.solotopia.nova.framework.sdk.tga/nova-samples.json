@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Sdk.Tga.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/TGADemo"
+      "devPathPrefix": "Assets/Samples/TGADemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

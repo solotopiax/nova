@@ -252,8 +252,9 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 自动补齐 sample ConfigMaster 对应的 DLL 副本。
-            /// 仅当 master 位于 Assets/Samples/ 下且目标文件缺失/过期时执行；失败只记 Warning。
+            /// 按 AOT 与业务两组独立同步当前 Sample 的 DLL 副本。
+            /// 导入目录由 SamplePathRewriter 准备；没有源产物时只说明跳过，不把空目录当作 DLL 就绪。
+            /// 配置与复制错误仅记 Warning，不能中断普通 Editor 启动或连带阻止另一组同步。
             /// </summary>
             /// <param name="master">当前激活的 ConfigMasterSO。</param>
             private static void TryAutoSyncSampleDlls(ConfigMasterSO master)
@@ -264,31 +265,76 @@ namespace NovaFramework.Editor
                     return;
                 }
 
-                var hybrid = ResolveHybridCLRForCurrentCoord(master);
-                bool needsAot = NeedsCopy(hybrid.AotMetadataDlls);
-                bool needsGame = NeedsCopy(hybrid.StartupGameDlls) || NeedsCopy(hybrid.RunningGameDlls);
-                if (!needsAot && !needsGame)
-                {
-                    return;
-                }
-
                 try
                 {
-                    if (needsAot)
-                    {
-                        CopyDllEntries(hybrid.AotMetadataDlls, "AOT 元数据");
-                    }
+                    var hybrid = ResolveHybridCLRForCurrentCoord(master);
+                    TryAutoSyncDllGroup(hybrid.AotMetadataDlls, "AOT 元数据", masterPath);
 
-                    if (needsGame)
-                    {
-                        CopyGameDllEntries(hybrid);
-                    }
-
-                    Log.Debug(LogTag.Editor, "[HybridCLR AutoSync] 已补齐 sample DLL 副本：{0}", masterPath);
+                    // 业务两份列表仍按同一批校验与复制，保留显式 CopyGameDlls 的跨列表冲突语义。
+                    ValidateGameDllLists(hybrid.StartupGameDlls, hybrid.RunningGameDlls);
+                    var gameEntries = new List<DllMasterAssetEntry>();
+                    gameEntries.AddRange(hybrid.StartupGameDlls);
+                    gameEntries.AddRange(hybrid.RunningGameDlls);
+                    TryAutoSyncDllGroup(gameEntries, "业务热更新 DLL", masterPath);
                 }
                 catch (Exception e)
                 {
-                    Log.Warning(LogTag.Editor, "[HybridCLR AutoSync] sample DLL 自动同步失败：{0}\n{1}", masterPath, e.Message);
+                    Log.Warning(LogTag.Editor, "[HybridCLR AutoSync] Sample 配置错误，自动同步未完成：{0}\n{1}", masterPath, e.Message);
+                }
+            }
+
+            /// <summary>
+            /// 自动同步单组 DLL：源缺失时跳过整组，配置错误与真实复制失败单独告警。
+            /// 本方法只用于 Sample 自动处理；正式 CopyAotDlls/CopyGameDlls 继续使用严格整批检查。
+            /// </summary>
+            /// <param name="entries">当前组完整的源到目标映射。</param>
+            /// <param name="tag">用于区分 AOT 与业务组的日志标识。</param>
+            /// <param name="masterPath">当前 Sample 的 ConfigMaster 资产路径。</param>
+            private static void TryAutoSyncDllGroup(
+                IReadOnlyList<DllMasterAssetEntry> entries,
+                string tag,
+                string masterPath)
+            {
+                try
+                {
+                    var missingSources = new List<string>();
+                    foreach (DllMasterAssetEntry entry in entries)
+                    {
+                        if (string.IsNullOrWhiteSpace(entry.SourceLocation) || string.IsNullOrWhiteSpace(entry.TargetLocation))
+                        {
+                            throw new InvalidOperationException(
+                                $"DLL 映射缺少源或目标路径：SourceLocation='{entry.SourceLocation}' TargetLocation='{entry.TargetLocation}'。");
+                        }
+
+                        string source = Path.GetFullPath(Path.Combine(SettingsUtil.ProjectDir, ResolvePathPlaceholders(entry.SourceLocation)));
+                        // 即便源不存在，也先校验目标路径格式，避免把真实配置错误误报成缺少构建产物。
+                        Path.GetFullPath(Path.Combine(SettingsUtil.ProjectDir, ResolvePathPlaceholders(entry.TargetLocation)));
+                        if (!File.Exists(source))
+                        {
+                            missingSources.Add(source);
+                        }
+                    }
+
+                    if (missingSources.Count > 0)
+                    {
+                        Log.Debug(LogTag.Editor,
+                            "[HybridCLR AutoSync][{0}] 跳过同步：缺少 {1} 个源产物，DLL 尚未就绪；普通 Editor 演示可继续。ConfigMaster={2}\n{3}",
+                            tag, missingSources.Count, masterPath, string.Join("\n", missingSources));
+                        return;
+                    }
+
+                    if (!NeedsCopy(entries))
+                    {
+                        return;
+                    }
+
+                    CopyDllEntries(entries, tag);
+                    Log.Debug(LogTag.Editor, "[HybridCLR AutoSync][{0}] 已同步 {1} 个 DLL：{2}", tag, entries.Count, masterPath);
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(LogTag.Editor,
+                        "[HybridCLR AutoSync][{0}] 配置或复制错误，本组未完成：{1}\n{2}", tag, masterPath, e.Message);
                 }
             }
 

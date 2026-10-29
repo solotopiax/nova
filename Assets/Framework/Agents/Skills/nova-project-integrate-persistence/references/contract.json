@@ -20,12 +20,12 @@
     {
       "kind": "workspace-edit",
       "entry": "confirmed business persistence source and local Play probe",
-      "when": "只修改已冻结的项目业务数据模型、读写/保存/清理或版本化迁移方法和隔离探针；复用既有方法，不改 PersistComponent、Config、生成物或真实存档文件，真实维护运行单独冻结数据集"
+      "when": "先通过 Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md NA-001/002 的业务消费入口门；只修改已冻结的项目业务数据模型、规则及已有合规入口的调用和隔离探针。当前 PersistComponent 三个存储属性直接返回 Manager，缺少业务 CRUD/保存门面，依赖该缺口的新增/修改分支 blocked，不注入或包装 Manager 绕行；不依赖它的已授权部分继续，不改组件、Config、生成物或真实存档文件"
     },
     {
       "kind": "csharp-api",
-      "entry": "Nova.Config.LoadAsync / Nova.Persist.LoadAsync / Nova.Persist.PlayerPrefs / FileFragment / SQLite / IPersistManager.Save / RemoveItem / RemoveAll",
-      "when": "仅描述项目既有业务实现中的公开存储调用，按 Config 后 Persist 的加载、保存/删除/迁移契约使用；不是可调度 MCP，也不允许临时 C# 或反射私有 Inspector 方法"
+      "entry": "Nova.Config.LoadAsync / Nova.Persist.LoadAsync",
+      "when": "加载入口仅证明初始化；现有 PlayerPrefs/FileFragment/SQLite 属性返回 Manager，CRUD/保存/删除接口只作当前实现的只读诊断依据，不是普通业务获准使用的 Adapter。实际解析版本未补齐合规 Component 门面时阻断依赖分支；框架内部、隔离测试与已开放类型化维护按各自合同判断，不以临时 C# 或反射绕行"
     },
     {
       "kind": "workspace-inspection",
@@ -207,7 +207,7 @@
       "change storage implementation, automatic save policy, UseAESEncrypt, SQLite CipherPassword, Privacy AES Key/IV, PersistComponent, ConfigMasterSO or ConfigRuntimeSO",
       "delete or migrate persisted data, target non-test data, build Bundle or Player, install to device, external write, credential use, Git commit or push"
     ],
-    "rule": "按metadata、内部值检查、业务实现、值AES、Cipher和Privacy独立scope区分授权。读取真实参数来源/default/当前状态冻结精确Plan；SQL逻辑Plan/Verify真实事务可改伴随文件，Privacy检查的Plan/Execute/Verify也会在SQLite AES已启用且主库存在时打开既有库并BEGIN IMMEDIATE/ROLLBACK，取得写事务锁且可能改变WAL/SHM；不转换/提交玩家值或保存配置不表示物理零写，默认SQLite metadata仍不开库，lease只约束Nova登记连接。PP值维护与Privacy轮换显式ackGlobalSave=true，承认无关dirty可能落盘且恢复不能撤销；Privacy另双scope ack=true，限当前Editor/default消费者，不能冒全平台全存档。Cipher/Privacy仅macOSnativeVault封存重读后写入，generated为默认便捷策略，preset必须已有合法projecthandle。仅执行当前Gateway token，已有同范围授权不重复询问，漂移重新冻结；秘密不输出，提交后partial保现场，独立恢复不重放。内存防护是独立业务源码分支，只冻结实际适用输入：现有路径/类型/入口由Agent查询，未使用存档时不强求classify/item/Save/AES或耐久性输入。只写授权业务、必要Runtime程序集引用和隔离探针，不调用三项存档维护Action，不购买/安装商业插件或改配置、真实存档及Framework/本包实现；独立包安装复用既有包管理Operation和既有精确授权，不由字段接入隐含。已有同范围业务授权持续有效，缺少后端如实报告普通兼容和未防护。"
+    "rule": "普通业务存储接入先满足 NA-001/002；接口公开或由 Component 返回不能单独作为许可。当前 Manager 访问缺口只阻断依赖它的新增/修改分支，不阻断只读诊断、独立内存防护或既有类型化维护，也不授权迁移存量。按metadata、内部值检查、业务实现、值AES、Cipher和Privacy独立scope区分授权。读取真实参数来源/default/当前状态冻结精确Plan；SQL逻辑Plan/Verify真实事务可改伴随文件，Privacy检查的Plan/Execute/Verify也会在SQLite AES已启用且主库存在时打开既有库并BEGIN IMMEDIATE/ROLLBACK，取得写事务锁且可能改变WAL/SHM；不转换/提交玩家值或保存配置不表示物理零写，默认SQLite metadata仍不开库，lease只约束Nova登记连接。PP值维护与Privacy轮换显式ackGlobalSave=true，承认无关dirty可能落盘且恢复不能撤销；Privacy另双scope ack=true，限当前Editor/default消费者，不能冒全平台全存档。Cipher/Privacy仅macOSnativeVault封存重读后写入，generated为默认便捷策略，preset必须已有合法projecthandle。仅执行当前Gateway token，已有同范围授权不重复询问，漂移重新冻结；秘密不输出，提交后partial保现场，独立恢复不重放。内存防护是独立业务源码分支，只冻结实际适用输入：现有路径/类型/入口由Agent查询，未使用存档时不强求classify/item/Save/AES或耐久性输入。只写授权业务、必要Runtime程序集引用和隔离探针，不调用三项存档维护Action，不购买/安装商业插件或改配置、真实存档及Framework/本包实现；独立包安装复用既有包管理Operation和既有精确授权，不由字段接入隐含。已有同范围业务授权持续有效，缺少后端如实报告普通兼容和未防护。"
   },
   "minimumEvidence": "static",
   "resultStates": [

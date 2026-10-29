@@ -109,6 +109,12 @@ public static void CompileDllActiveBuildTarget()
 
 `CopyAotDlls` / `CopyGameDlls` 不调用全局 `AssetDatabase.Refresh()`。每个文件复制完成后，只有解析后的目标路径位于 `Assets/` 时才调用 `AssetDatabase.ImportAsset(assetRelative, ImportAssetOptions.ForceSynchronousImport)`；其他项目内目标只做文件复制。
 
+### Sample 的 Editor 自动同步
+
+域重载与 Single 场景切换后的 `TryAutoSyncActiveSampleDlls()` 只处理当前激活、位于 `Assets/Samples/` 下的 ConfigMaster。目录准备由各 Sample 的 `SamplePathRewriter` 按发布清单先行完成，与 DLL 复制分开。自动同步把 AOT 与业务 DLL 作为两个独立批次：源产物缺失时明确记录本组跳过及 DLL 尚未就绪，继续检查另一组；源齐全且目标缺失/过期时才复制。业务的 Startup/Running 并集仍须通过原跨列表冲突校验。空映射字段、路径异常、配置解析与真实复制错误报告 Warning，不中断普通 Editor 演示，也不把已准备的空目录报告为同步成功。
+
+该容错仅用于 Sample 自动处理。显式 `CopyAotDlls()`、`CopyGameDlls()` 保留完整源集合的严格失败与整批复制语义；正式 Sample 标准 Bundle 还检查本包默认采集规则覆盖的 DLL 目标。Player 首次生成 AOT 与 Player 后的 AOT 复制顺序保持不变。普通 Editor 启动成功不代表 AOT、热更、Bundle 或 Player 已就绪。
+
 ### link.xml 校验与补全（ValidateAndPatchLinkXml）
 
 1. 通过当前激活 Master 的当前三维坐标解析 `LinkXmlTargetPath`；为空时回退 `Assets/link.xml`，再与 `SettingsUtil.ProjectDir` 拼接为绝对路径。
@@ -307,6 +313,6 @@ WebGL Generate 另绑定当前 Unity 安装根下准确 `Resources/Scripting/Man
 
 DLL 身份去重依据裁剪 .dll 的地址文本和规范化目标路径，不读取程序集元数据；只检查 Startup/Running 跨列表冲突，不完整检查各列表内部重复。源存在预检之后的复制、目录创建和 ImportAsset 仍可部分失败，无文件事务。导入条件依据解析后的 TargetLocation 文本是否以 Assets/ 开头，工程内绝对路径不会因物理位置相同自动导入。路径工具不提供项目边界或符号链接授权。
 
-Sample 自动同步只依缺失/mtime 判断，不比正文 Hash，同时间损坏目标无法发现；NeedsCopy 和配置解析可在复制 catch 外抛，不能笼统认为所有失败仅告警。MethodBridge DEVELOPMENT 解析要求精确行格式，不校多个矛盾标记或 ABI；Validate 不生成桥。
+Sample 自动同步只依缺失/mtime 判断，不比正文 Hash，同时间损坏目标无法发现；当前自动入口捕获配置解析与同步异常并告警，缺少源产物单独记录为跳过。显式复制入口仍传播失败。MethodBridge DEVELOPMENT 解析要求精确行格式，不校多个矛盾标记或 ABI；Validate 不生成桥。
 
 缺失 WebGL PROJECT 模板的临时 scope 只查目录存在，不核 index.html 或路径安全；正常 using 顺序恢复原值，重复 Dispose 会再次写原值，不核用户中途修改。所有 Generate/Copy 原语没有 Action 的计划、权限或收据门，包工具的异常与已生成物保留。

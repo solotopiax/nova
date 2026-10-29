@@ -38,6 +38,8 @@ namespace NovaFramework.Runtime
                 throw new ArgumentNullException(nameof(config));
             }
 
+            // 新生命周期不得接受上一次初始化期间尚未完成的语言请求。
+            m_LanguageSwitchVersion++;
             m_Config = config;
             m_TextUnitSettings = config.TextUnitSettings ?? new List<LocalizationTextUnitSetting>();
             m_FontUnitSettings = config.FontUnitSettings ?? new List<LocalizationFontUnitSetting>();
@@ -62,6 +64,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void Shutdown()
         {
+            m_LanguageSwitchVersion++;
             m_SupportedLanguages.Clear();
             m_LanguageTexts.Clear();
             m_FontDatas.Clear();
@@ -169,12 +172,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 同步切换语言。
+        /// 同步切换语言；有效请求会使尚未完成的旧异步切换失效，目标已是当前语言时只撤销旧请求。
         /// </summary>
         /// <param name="language">目标语言。</param>
         public override void SetLanguageSync(Language language)
         {
-            if (!ValidateLanguageSwitch(language))
+            if (!TryBeginLanguageSwitch(language, out _))
             {
                 return;
             }
@@ -190,19 +193,16 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步切换语言；仅通过前置校验的异步请求递增版本，同步切换及同当前语言请求不使旧请求过期。
+        /// 异步切换语言；只有最后一次有效语言请求可以提交，同当前语言请求也会撤销旧切换。
         /// </summary>
         /// <param name="language">目标语言。</param>
         /// <returns>异步任务。</returns>
         public override async UniTask SetLanguageAsync(Language language)
         {
-            if (!ValidateLanguageSwitch(language))
+            if (!TryBeginLanguageSwitch(language, out int currentVersion))
             {
                 return;
             }
-
-            m_LanguageSwitchVersion++;
-            int currentVersion = m_LanguageSwitchVersion;
 
             LubanDataCache loadedCache = await LoadLanguageTextCacheAsync(language);
 

@@ -30,6 +30,7 @@ namespace NovaFramework.Editor
             /// 内部行为与 BundleBuilderWindow → ScriptableBuildPipelineViewer 完全一致：
             /// 输出根目录 = 项目根 /Bundles，BundledFileRoot = 默认 BuiltinRoot；
             /// EnableSharePackRule = true，VerifyBuildingResult = true。
+            /// Sample 的默认采集规则覆盖到已配置 DLL 时，构建前要求目标已生成、复制并导入；空目录不代表 DLL 就绪。
             /// </summary>
             /// <param name="args">构建参数。</param>
             /// <returns>YooAsset 构建结果。</returns>
@@ -45,6 +46,7 @@ namespace NovaFramework.Editor
                 }
 
                 BuildTarget target = args.Target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : args.Target;
+                ValidateSampleDllTargets(args.PackageName, target);
                 string version = string.IsNullOrEmpty(args.BuildVersion) ? GetDefaultPackageVersion() : args.BuildVersion;
                 ResolveBundledCopy(
                     target,

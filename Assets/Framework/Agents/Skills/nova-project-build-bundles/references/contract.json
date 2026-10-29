@@ -30,7 +30,8 @@
     },
     {
       "name": "packageName",
-      "required": true
+      "required": true,
+      "constraint": "既存Package与Collector；Sample默认规则覆盖的DLL目标须非空且已导入TextAsset，空生成目录或AutoSync跳过不表示就绪。缺失时按既有HybridCLR链处理，不创建占位DLL，不要求首次Player之前存在AOT副本；自定义规则保留原管线与Action契约。"
     },
     {
       "name": "buildVersion",

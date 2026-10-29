@@ -8,7 +8,11 @@
       "expectedNamespace": "NovaFramework.Memory.Protection.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",
-      "devPathPrefix": "Assets/Samples/MemoryProtectionDemo"
+      "devPathPrefix": "Assets/Samples/MemoryProtectionDemo",
+      "generatedDirectories": [
+        "Dlls/AOTMetas",
+        "Dlls/GameDlls"
+      ]
     }
   ]
 }

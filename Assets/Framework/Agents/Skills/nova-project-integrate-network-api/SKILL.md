@@ -9,6 +9,8 @@ description: Use when 项目组要正式导出已有 HostKey、NetCmd 或已确�
 
 ## 渐进式披露
 
+业务统一使用 `Nova.Network` / `NetworkComponent` 当前已提供的入口；下文 Manager 接口文档仅用于核对底层契约与实现能力，不授权业务取得、持有、传递或转换 Manager。缺少合规门面时按共同约束 NA-001/002 报告具体缺口，保留不依赖它的已授权工作。
+
 再读取 `references/contract.json`。执行确定性导出时先通过 `nova_project_action` 对 `nova.project.network.export` 执行 `describe`；只有 Action 报告配置问题时才读取对应 Exporter 文档。仅在检查 HostKey、NetCmd 源和导出边界时读 `Docs/Editor/DataPipeline/Implements/Networks/NetworkExporter.md`；更新 Inspector 设置时读 `Docs/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md`；运行时加载、路由和 HTTP 验证时读 `Docs/Runtime/Modules/Network/NetworkComponent.md` 与 `Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md`。不要递归加载全部 Network、Proto 或 Pipify 文档。
 
 先从用户目标选择仅导出或业务接入。业务接入再从现有调用确认HTTP或WebSocket。仅在目标是长连接、推送消息、认证/心跳/重连时读取 [WebSocket业务接入](references/websocket-integration.md)，直接在授权项目业务源中复用`Nova.Network`公开长连接接口；下列HostKey/NetCmd、HTTP方法和主备规则仅适用于HTTP及确实使用这些表的业务。WebSocket按精确`ws/wss`地址、通道类型和消息协议冻结，不套用HTTP路由，不为每个transport新建Skill。
