@@ -1,18 +1,24 @@
 # Nova Framework - SDK - IAP - ThirdPay
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.thirdpay`
-> 当前版本：`0.1.2`
+> 当前版本：`0.1.3`
 
-Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar InAppAuto 的加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 当前调用 Unity Purchasing 5.4.4 的 `ExternalBillingProgramClient` 外部结算接口。平台计划资格和现行选择、披露及上报要求须另行核对。
+Nova 的应用内第三方支付 Store。客户端生成订单号与加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 当前调用 Unity Purchasing 5.4.4 的 `ExternalBillingProgramClient` 外部结算接口。平台计划资格和现行选择、披露及上报要求须另行核对；迁移旧 Solar 后端还须核对当前商品协议和商户映射，不能由支付页格式推断协议兼容。
 
-业务按需使用 `IIAPThirdPayConfigCapable`、`IIAPThirdPayProductCapable`、`IIAPThirdPayCheckoutCapable`，分别依赖配置状态与关闭原因、商品查询和结算展示能力。
+业务按需使用 `IIAPThirdPayConfigCapable`、`IIAPThirdPayProductCapable`、`IIAPThirdPayCheckoutCapable`，分别依赖配置状态与关闭原因、商品查询和结算展示能力；购买前补单查询的运行时开关与窗口由独立的 `IIAPThirdPayOrderRecoveryCapable` 提供。
+
+Android 重复点击购买时，默认在首次建单后的 30 分钟内先查询已支付但尚未校验的订单；查询命中后只补单，查询失败不创建新订单。配置可关闭该查询或调整零至三十分钟窗口，运行时通过 `IIAPThirdPayOrderRecoveryCapable` 控制。多笔补单通过原订单事件逐笔反馈，单次购买返回的批次完成结果不再授予额外发货资格；见 [详细规则](./Nova/Doc/ThirdPayStore.md#android-重复点击补单查询)。
 
 ## 安装
+
+在 Unity 中打开 `Nova/Open PlugPals`，从外网仓库查找并安装 `com.solotopia.nova.framework.sdk.iap.thirdpay`。外网仓库默认入口为 [upm.solotopiax.com](https://upm.solotopiax.com)，实际使用窗口中保存的仓库地址。
+
+当前包声明依赖 Nova Framework `0.7.3`、IAP `0.2.2`、UniTask `10.0.6`、Unity Purchasing `5.4.4` 和 `com.onevcat.uniwebview` `5.11.1`。UniWebView 是商业依赖，须先取得有效授权；通过 PlugPals 的「内部云仓库」取得该依赖时还须有对应仓库访问权限。内部云仓库地址由项目在 PlugPals 工具栏配置，不以本包外网可见代替商业库授权。安装后核对 UPM 实际解析结果，再配置和导出 Runtime；下方仅是已配置相应 registry 后的依赖片段。
 
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.2"
+    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.3"
   }
 }
 ```

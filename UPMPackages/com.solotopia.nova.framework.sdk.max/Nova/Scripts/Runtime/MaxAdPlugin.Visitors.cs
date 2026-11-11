@@ -11,6 +11,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AdPlugin.Runtime;
 
@@ -91,9 +92,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private MaxSdkBase.AdViewPosition m_BannerPosition = MaxSdkBase.AdViewPosition.BottomCenter;
 
         /// <summary>
-        /// 已创建 native Banner view 的广告位集合；Destroy 后移除，允许后续重新创建。
+        /// 已创建 native Banner view 的身份记录；同 ID 重建会获得新标识，拒绝已入队的旧回调。
+        /// 原厂回调可来自后台线程，身份读取使用并发字典。
         /// </summary>
-        private readonly HashSet<string> m_CreatedBannerPlacementIds = new HashSet<string>();
+        private readonly ConcurrentDictionary<string, object> m_CreatedBannerViews = new();
 
         /// <summary>
         /// 业务层当前是否期望 Banner 保持可见；用于加载失败后再次成功时恢复显示。

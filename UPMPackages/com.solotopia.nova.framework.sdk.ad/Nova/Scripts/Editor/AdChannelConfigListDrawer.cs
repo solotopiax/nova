@@ -46,6 +46,11 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         /// </summary>
         private const string c_CountryCodeWaitTimeoutFieldName = "m_CountryCodeWaitTimeoutSeconds";
 
+        /// <summary>
+        /// AdPluginConfig 中 广告收益上报 NetCmd 字段名。
+        /// </summary>
+        private const string c_RevenueReportCmdNameFieldName = "m_RevenueReportCmdName";
+
         /// <inheritdoc/>
         protected override string HeaderTitle => "渠道列表";
 
@@ -75,7 +80,7 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             float y = startY;
 
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_EnableBidding", "竞价模式");
-            y = DrawIntSliderWithHelp(position, y, lineH, lineStep, property, "m_BannerIlrdInterval", "Banner上报ILRD间隔");
+            y = DrawIntSliderWithHelp(position, y, lineH, lineStep, property, "m_BannerIlrdInterval", "Banner收益累计次数");
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_MuteAd", "广告静音");
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_GroupRetryIntervalsSeconds", "广告组重试间隔（秒）");
             SerializedProperty countryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property);
@@ -88,6 +93,16 @@ namespace NovaFramework.SDK.AdPlugin.Editor
                 typeof(AdPluginConfig),
                 c_CountryCodeWaitTimeoutFieldName,
                 "国家码等待超时(秒)");
+            SerializedProperty revenueReportCmdName = FindSiblingProperty(property, c_RevenueReportCmdNameFieldName);
+            y = DrawFieldWithHelp(
+                position,
+                y,
+                lineH,
+                lineStep,
+                revenueReportCmdName,
+                typeof(AdPluginConfig),
+                c_RevenueReportCmdNameFieldName,
+                "广告收益上报NetCmd");
 
             y += c_GlobalSectionSpacing;
             return y - startY;
@@ -100,8 +115,9 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         {
             float lineStep = EditorGUIUtility.singleLineHeight + 2f;
             bool hasCountryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property) != null;
+            bool hasRevenueReportCmdName = FindSiblingProperty(property, c_RevenueReportCmdNameFieldName) != null;
             SerializedProperty retryIntervals = property.FindPropertyRelative("m_GroupRetryIntervalsSeconds");
-            float h = lineStep * (hasCountryCodeWaitTimeout ? 4f : 3f) + c_GlobalSectionSpacing;
+            float h = lineStep * (3f + (hasCountryCodeWaitTimeout ? 1f : 0f) + (hasRevenueReportCmdName ? 1f : 0f)) + c_GlobalSectionSpacing;
             if (retryIntervals != null)
             {
                 h += EditorGUI.GetPropertyHeight(retryIntervals, true) + 2f;
@@ -116,6 +132,10 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             if (hasCountryCodeWaitTimeout)
             {
                 h += CalcTooltipHeight(typeof(AdPluginConfig), c_CountryCodeWaitTimeoutFieldName, availableWidth);
+            }
+            if (hasRevenueReportCmdName)
+            {
+                h += CalcTooltipHeight(typeof(AdPluginConfig), c_RevenueReportCmdNameFieldName, availableWidth);
             }
             return h;
         }
@@ -239,6 +259,15 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         /// <param name="channelConfigsProperty">当前渠道配置列表属性。</param>
         /// <returns>国家码等待超时属性；路径不匹配时返回 null。</returns>
         private static SerializedProperty FindCountryCodeWaitTimeoutProperty(SerializedProperty channelConfigsProperty)
+            => FindSiblingProperty(channelConfigsProperty, c_CountryCodeWaitTimeoutFieldName);
+
+        /// <summary>
+        /// 从 AdPluginConfig.m_ChannelConfigs 定位同级字段。
+        /// </summary>
+        /// <param name="channelConfigsProperty">当前渠道配置列表属性。</param>
+        /// <param name="fieldName">同级字段名。</param>
+        /// <returns>同级属性；路径不匹配时返回 null。</returns>
+        private static SerializedProperty FindSiblingProperty(SerializedProperty channelConfigsProperty, string fieldName)
         {
             if (channelConfigsProperty == null)
             {
@@ -252,7 +281,7 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             }
 
             string siblingPath = path.Substring(0, path.Length - c_ChannelConfigsFieldName.Length)
-                                 + c_CountryCodeWaitTimeoutFieldName;
+                                 + fieldName;
             return channelConfigsProperty.serializedObject.FindProperty(siblingPath);
         }
     }

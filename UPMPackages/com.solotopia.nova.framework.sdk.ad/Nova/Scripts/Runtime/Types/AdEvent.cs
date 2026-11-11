@@ -14,9 +14,10 @@ using NovaFramework.Runtime;
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
     /// <summary>
-    /// 广告变现埋点事件载荷，由 AdPlugin.Events.RevenuePaid 事件携带。
-    /// 业务层在 AdPlugin.Events.RevenuePaid 订阅回调中接收此载荷；具体上报路径由业务层自行决定（扇出到变现埋点插件或直接记录）。
-    /// 不变量：Revenue 单位为 USD，值 >= 0；Timestamp 为 UTC 时间。
+    /// 广告变现事件载荷，由 AdPlugin.Events.RevenuePaid 事件携带。
+    /// 渠道在收益派发处显式调用 StartRevenueReport；RaiseRevenue 仅更新状态和发布原始业务通知。
+    /// 业务层可订阅 AdPlugin.Events.RevenuePaid 做业务记录，不应因此重复发送收益协议或渠道已派发的分析事件。
+    /// 当前 MAX / AdMob 使用非负美元收益；本数据类不校验字段，也不自动生成时间戳。
     /// </summary>
     public sealed class AdEvent
     {
@@ -58,7 +59,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public string Precision;
 
         /// <summary>
-        /// 事件发生的 UTC 时间戳。
+        /// 渠道填写的事件时间；AdMob 收益通知使用当前 UTC 时间，MAX 原始收益通知未填写时保持默认值。
+        /// 不由数据类自动生成，也不随当前收益 Proto 传输。
         /// </summary>
         public DateTime Timestamp;
     }

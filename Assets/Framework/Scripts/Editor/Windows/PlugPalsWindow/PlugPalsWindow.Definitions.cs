@@ -26,6 +26,11 @@ namespace NovaFramework.Editor
             public bool IsInternal;
 
             /// <summary>
+            /// 发起本轮列表请求时的仓库地址，供后台补查时间使用，避免地址输入变更后串源。
+            /// </summary>
+            public string RegistryUrl;
+
+            /// <summary>
             /// registry 对应的包展示条目；失败时为空列表。
             /// </summary>
             public List<EditorUtil.PlugPals.PackageDisplayEntry> Entries;

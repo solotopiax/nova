@@ -26,6 +26,11 @@
       "kind": "csharp-api",
       "entry": "Nova.UI.OpenUIViewSync<T> / OpenUIViewAsync<T> / OpenUIViewSync(string uiViewName, object userData = null) / OpenUIViewAsync(string uiViewName, object userData = null) / OpenUIViewByAssetSync / OpenUIViewByAssetAsync",
       "when": "在已授权业务源码接入中按类型、UI表Name或唯一AssetLocation选择配置；所有打开先加载UI注册表，分组、暂停与池化以表为准，缺失或歧义返回-1；旧bool重载仅供迁移且不再覆盖表格"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova-project-edit-settings confirmed UIComponent Inspector editing",
+      "when": "仅适配计划确需更改项目自有 UIComponent 时，按所选 Operation 冻结精确配置资产、原值/目标值、override、保存与读回；不修改包内 canonical Prefab，不把此路由当作新 MCP Action；方向修改须另核对当前宿主实际Player Settings编辑能力，不冒称patch-target支持任意ProjectSettings。"
     }
   ],
   "inputs": [
@@ -52,6 +57,11 @@
     {
       "name": "uiRegistrationSource",
       "required": true
+    },
+    {
+      "name": "screenAdaptationPlan",
+      "required": true,
+      "constraint": "按 Docs/Runtime/Modules/UI/UIComponent.md 的屏幕适配与安全区章节由Agent读取并冻结；创建页面必需，更新/Workflow仅布局、画布、方向或安全区分支必需。包含平台方向、设计尺寸/比例和支持范围、缩放/安全区唯一拥有者、有效配置/原目标值、变化刷新与验收；纯数据/事件且布局不变记录沿用及影响范围，不要求用户重复填写可读事实。"
     }
   ],
   "effects": [
@@ -65,14 +75,16 @@
       "confirmed target Prefab",
       "confirmed UI registration source",
       "generated UI output for this registration",
-      "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions"
+      "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
+      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
       "handwritten Prefab or Scene YAML",
       "unrelated generated output",
-      "manual edits to generated UI output"
+      "manual edits to generated UI output",
+      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes"
     ]
   },
   "locks": [
@@ -102,6 +114,7 @@
     "目标源文件和注册源 diff",
     "Unity 创建的 Prefab 与序列化绑定",
     "选定 UI 导出结果",
-    "Unity 编译或 Play 证据"
+    "Unity 编译或 Play 证据",
+    "布局分支实施前已有 screenAdaptationPlan，实际 UIComponent/CanvasScaler 配置与唯一安全区拥有者符合计划；实际入口的参考/边界比例、安全区、支持方向及重开 Play 布局证据，移动端交付按目标补 Player/设备证据，缺失保持 partial。纯数据/事件且布局不变不扩大验收。"
   ]
 }

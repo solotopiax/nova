@@ -809,11 +809,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 验单完成后的最终处理：假单时触发失败事件并清理记录；真单时更新订阅/非消耗品存档，
-        /// 发送支付成功事件，区分 replenish 与正常购买路由结果通知。
+        /// 按商品类型与订单来源派发支付成功或恢复通知，并完成对应的支付或恢复等待点。
         /// </summary>
         /// <param name="record">已完成验单的订单记录。</param>
         /// <param name="product">对应的 Unity IAP Product 对象（可为 null）。</param>
-        /// <param name="canDeliver">服务端确认本次需要客户端发货时为 true；已补发或已发货时为 false。</param>
+        /// <param name="canDeliver">本次结果是否允许业务发货；Verified/Delivered 为 true，Reissued 为 false。</param>
         /// <param name="expireMs">订阅到期 Unix 毫秒时间戳；非订阅商品传 0。</param>
         /// <param name="isSubscription">当前商品是否为订阅类型。</param>
         /// <param name="isFake">服务端判定为无效订单时为 true。</param>
@@ -1014,7 +1014,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 服务端验单通过后确认平台 PendingOrder，通知平台业务侧已完成发货处理。
+        /// 服务端验单通过后向平台确认 PendingOrder；实际业务发货由调用方负责，本方法不验证发货结果。
         /// </summary>
         /// <param name="record">已通过服务端验单的订单记录。</param>
         private void ConfirmPendingPlatformOrder(MobileOrderRecord record)

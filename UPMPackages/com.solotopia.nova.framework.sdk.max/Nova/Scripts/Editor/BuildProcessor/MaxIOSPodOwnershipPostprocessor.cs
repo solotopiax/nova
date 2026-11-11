@@ -55,7 +55,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
 
             PackageInfo[] packages = PackageInfo.GetAllRegisteredPackages();
             string lineXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.line.ios", "3010102.0.0");
-            string unityAdsXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.unityads.ios", "4200001.0.0");
+            string unityAdsXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.unityads.ios", "4210001.0.0");
 
             // 使用有效 pod 启动器自己的 Ruby 与 gem 环境，不固定 Homebrew 路径、不修改全局环境。
             // 相对 require 使包安装路径含空格时也可加载；RUBYOPT 只覆盖本次子进程并由脚本在 CLI 前退出。

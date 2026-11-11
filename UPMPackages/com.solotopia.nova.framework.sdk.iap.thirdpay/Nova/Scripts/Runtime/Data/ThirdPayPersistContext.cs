@@ -39,12 +39,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public ThirdPayPersistData Data => m_Data;
 
         /// <summary>
+        /// 获取账号上下文版本；重置和释放均推进，防止旧异步响应写入新账号。
+        /// </summary>
+        public long Version { get; private set; }
+
+        /// <summary>
         /// 切换当前账号存档并重建订单仓储。
         /// </summary>
         /// <param name="data">当前账号存档。</param>
         /// <param name="save">完整存档保存回调。</param>
         public void Reset(ThirdPayPersistData data, Action<ThirdPayPersistData> save)
         {
+            Version++;
             m_Data = data ?? throw new ArgumentNullException(nameof(data));
             m_Save = save;
             m_Data.EnsureInitialized();
@@ -56,6 +62,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         public void Clear()
         {
+            Version++;
             m_OrderRepository = null;
             m_Data = null;
             m_Save = null;
@@ -125,6 +132,53 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public void UpsertOrder(ThirdPayOrderRecord order)
         {
             m_OrderRepository?.Upsert(order);
+        }
+
+        /// <summary>
+        /// 保存新建订单并首次记录该业务键的 UTC 秒，作为同一次完整存档写入。
+        /// </summary>
+        /// <param name="order">当前新建订单。</param>
+        /// <param name="utcSeconds">创建时的 UTC 秒时间戳。</param>
+        public void UpsertCreatedOrder(ThirdPayOrderRecord order, long utcSeconds)
+        {
+            if (m_Data == null || order == null || string.IsNullOrEmpty(order.ClientOrderId))
+            {
+                throw new ArgumentException("当前账号存档或新订单无效。", nameof(order));
+            }
+
+            string key = ThirdPayOrderKey.Build(order);
+            if (!string.IsNullOrEmpty(key) && !m_Data.OrderRecoveryCreateTimes.ContainsKey(key))
+            {
+                m_Data.OrderRecoveryCreateTimes[key] = utcSeconds;
+            }
+
+            m_OrderRepository.Upsert(order);
+        }
+
+        /// <summary>
+        /// 判断当前账号和业务键是否仍在购买前查询窗口内，不刷新时间记录。
+        /// </summary>
+        /// <param name="tableId">商品表行 ID。</param>
+        /// <param name="receiptParam">业务票据透传参数。</param>
+        /// <param name="windowMinutes">窗口分钟数。</param>
+        /// <param name="utcSeconds">本次点击的 UTC 秒时间戳。</param>
+        /// <returns>时间有效且包含起点、未到上限时返回 true。</returns>
+        public bool IsOrderRecoveryWithinWindow(long tableId, string receiptParam, int windowMinutes, long utcSeconds)
+        {
+            int minutes = Math.Max(0, Math.Min(30, windowMinutes));
+            return minutes > 0 && m_Data != null
+                && m_Data.OrderRecoveryCreateTimes.TryGetValue(ThirdPayOrderKey.Build(tableId, receiptParam), out long created)
+                && created > 0 && utcSeconds >= created && utcSeconds - created < minutes * 60L;
+        }
+
+        /// <summary>
+        /// 移除当前业务键的查询时间；调用方在清理订单后统一保存。
+        /// </summary>
+        /// <param name="tableId">商品表行 ID。</param>
+        /// <param name="receiptParam">业务票据透传参数。</param>
+        public void ClearOrderRecoveryTime(long tableId, string receiptParam)
+        {
+            m_Data?.OrderRecoveryCreateTimes.Remove(ThirdPayOrderKey.Build(tableId, receiptParam));
         }
 
         /// <summary>

@@ -2,6 +2,8 @@
 
 示例使用 `DemoFirebaseView` 演示 Firebase 标识、事件参数及 Push Task。登录按钮调用 `Nova.Network.Kit<Login>().Async(...)`；GameLogin 在合法成功响应中已向 SDK 交付注册或登录，页面只更新反馈与 Push Task 按钮，不再次调用 `Nova.SDK.Login`。
 
+Firebase 因谷歌服务不可用等原因初始化失败时，只记录警告并清理原厂状态，Nova 插件完成接入后仍可正常获取。`IsAvailable` 表示插件可获取，原厂是否就绪查看 `IsInitialized`；未就绪时原厂调用安全跳过，`GetTokenAsync` 返回空 Token，登录标识上报不再持续等待。本地 Push Task 缓存仍可写入，发送需等原厂与用户身份就绪；插件未启用或公共层初始化受阻时，`Get` 仍可能抛异常。公共 SDK 层和热更新开关行为不变，缺少谷歌服务仍无法使用 FCM 推送。
+
 页面提供一个默认空的 Topic 输入框，以及独立“订阅 Topic”“退订 Topic”按钮，绑定字段分别为 `m_TopicInput`、`m_SubscribeTopicButton`、`m_UnsubscribeTopicButton`。输入完整 Topic 名称后显式点击，页面裁剪首尾空白并调用现有 `FirebasePlugin.SetTopicSubscribed(topic, true/false)`；空输入只给普通提示。打开页面和关闭页面只接线或解绑按钮，不自动订阅或退订。
 
 `SetTopicSubscribed` 返回 `void`，页面“请求已派发”不代表成功；Android/iOS 必须等 SDK 实际订阅或退订回执，Editor 的平台空操作不能作为真实验收。每次显式点击都会派发一次，应先等回执再执行反向操作；关闭页面不会取消已派发的 SDK 请求。手动操作不改默认 Topic 的 `FirebaseDefaultTopics/BaseState`、`CountryState` 自动管理快照；手动退订默认 Topic 后，不应把旧快照或恢复原 APK 当作远端订阅已自动恢复。测试清理应对本轮实际新增 Topic 显式退订并核 SDK 回执，不清除其它订阅、Token 或账号。

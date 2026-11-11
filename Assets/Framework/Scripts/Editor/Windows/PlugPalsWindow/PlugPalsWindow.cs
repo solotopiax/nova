@@ -96,36 +96,32 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制窗口界面。
+        /// 绘制窗口界面；仅在公网包列表请求未结束时显示等待提示，保留工具栏，后台时间查询不阻塞交互。
         /// </summary>
         private void OnGUI()
         {
             EnsureStyles();
             DrawMainTitle();
             DrawToolbar();
+
+            if (IsFetchingExternalRegistry)
+            {
+                DrawLoadingMessage("正在拉取公网仓库信息，请稍等...");
+                return;
+            }
+
             DrawCategoryTabs();
             EditorUtil.Draw.Space(2f);
 
             if (m_IsFetching && (m_FilteredPackages == null || m_FilteredPackages.Count == 0))
             {
-                EditorUtil.Draw.Layout.Vertical(() =>
-                {
-                    GUILayout.FlexibleSpace();
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        GUILayout.FlexibleSpace();
-                        EditorUtil.Draw.Label("正在加载包列表，请稍等...", false);
-                        GUILayout.FlexibleSpace();
-                    });
-                    GUILayout.FlexibleSpace();
-                });
-                Repaint();
+                DrawLoadingMessage("正在加载包列表，请稍等...");
                 return;
             }
 
             if (m_IsFetching)
             {
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "正在加载其余仓库，已返回的包列表可先浏览；加载完成后开放安装与卸载操作。" }, false);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "正在加载其余仓库，已返回的包可正常使用。" }, false);
             }
 
             if (!string.IsNullOrEmpty(m_ErrorMessage) && (m_FilteredPackages == null || m_FilteredPackages.Count == 0))

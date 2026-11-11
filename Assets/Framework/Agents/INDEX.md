@@ -81,6 +81,7 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 | `nova-project-export-tables` | Operation | 直接导出当前 TableSettings 的全部或指定代码、数据 | 编译 |
 | `nova-project-integrate-table` | Operation | 接入已确认 Luban 表并验证运行时读取 | Play |
 | `nova-project-update-localization` | Operation | 更新或追加本地化 Key、语言、字体与绑定，复用同一源表 CLI 并切换语言验证 | Play |
+| `nova-project-psd2ugui` | Operation | 从 PSD/PSB 制作 uGUI，查询或修改配置/编辑树、同步来源、导图及 AI 识别应用；业务页面另接既有 UI Skill | 精确资产/产物与本次视觉证据；业务接入另验 |
 | `nova-project-ui-create-view` | Operation | 创建并注册业务 UIView、Prefab 与 UI 导出项 | 编译 |
 | `nova-project-update-ui-view` | Operation | 定向更新已注册 UIView、Prefab 或注册内容 | 编译 |
 | `nova-project-data-driven-ui` | Workflow | 编排表接入和页面创建，完成数据驱动 UI 闭环 | Play |
@@ -103,13 +104,13 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 | `nova-project-preflight-build` | Operation | 构建前只读检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置 | 静态规则 |
 | `nova-project-resolve-android-dependencies` | Operation | 冻结 EDM4U 图并受控重建、核验 Android 依赖输出 | 解析状态与产物摘要 |
 
-当前 Catalog 共 33 项。Table 标量源修改复用随包 `nova_table_source.py`，单次导出由 `nova-project-export-tables` 调用受控 Action；完整表接入由 `nova-project-integrate-table` 负责。普通对象配置、三维 Master 配置与 Pipify Batch 使用各自既有入口，参数、渠道和平台差异进入同一 Skill 的 reference，不逐项新增 Skill。Framework 自升级由包外 UPM 宿主跨 reload 执行，其余包复用通用包管理。HybridCLR 两项分别处理业务 DLL compile/copy/import 与 Generate All/link.xml，最终 Player 后的 `CopyAotDlls` 仍独立。CDN 部署复用 Pipify 与平台部署参考；更大的 Workflow 只在实际操作稳定后按依赖组合。
+当前 Catalog 共 34 项。Table 标量源修改复用随包 `nova_table_source.py`，单次导出由 `nova-project-export-tables` 调用受控 Action；完整表接入由 `nova-project-integrate-table` 负责。普通对象配置、三维 Master 配置与 Pipify Batch 使用各自既有入口，参数、渠道和平台差异进入同一 Skill 的 reference，不逐项新增 Skill。Framework 自升级由包外 UPM 宿主跨 reload 执行，其余包复用通用包管理。HybridCLR 两项分别处理业务 DLL compile/copy/import 与 Generate All/link.xml，最终 Player 后的 `CopyAotDlls` 仍独立。CDN 部署复用 Pipify 与平台部署参考；更大的 Workflow 只在实际操作稳定后按依赖组合。
 
 ## 当前限制
 
 - Skill 定义与 Framework UPM 同版本发布，不维护独立 Skill 版本。
 - 自动同步遇到冲突或来源问题时只做安全项，并以 `partial` 提示项目组处理；不要把受管同步副本当作可反向编辑的来源。
-- 当前包含 33 个实验性 Skill；新增 Skill 前先复用领域 API、已有 Action/CLI/Pipify、Operation 参数/reference 和 Workflow，只有独立目标与风险确实无法容纳时才新增。
+- 当前包含 34 个实验性 Skill；新增 Skill 前先复用领域 API、已有 Action/CLI/Pipify、Operation 参数/reference 和 Workflow，只有独立目标与风险确实无法容纳时才新增。
 - 静态检查、Unity 编译、Play 验证和真机/服务端证据彼此独立；报告必须标明实际达到的层级。
 
 ## 功能、参数与复用入口

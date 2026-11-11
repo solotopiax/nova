@@ -3,7 +3,7 @@
 > 最后更新：2026-08-17
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/**`
 
-**类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener`
+**类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener, ISDKLoginReceiver, ISDKInitializationDependencies`
 **命名空间**：`NovaFramework.SDK.IAP.Runtime`
 **获取方式**：通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取；没有独立 `Nova.IAP` 静态门面。
 
@@ -36,10 +36,10 @@
 | 属性 | 说明 |
 |---|---|
 | `DisplayName` | 固定为 `IAP 支付` |
-| `EnableAlwaysPaySucceed` | Editor 调试开关；为 true 时 Editor 下 Store 可直接返回成功，非 Editor 编译态强制关闭 |
+| `EnableAlwaysPaySucceed` | 默认 false；为 true 时 Editor 下 Store 可直接返回成功，非 Editor 编译态强制关闭 |
 | `EnableIAPLog` | 详细日志开关，默认开启；初始化时会传入 `IAPLog.SetEnabled` 控制 IAP 日志统一网关 |
 | `RetryValidateMaxNum` | Store 共享的首次验单重试次数配置，默认 3；具体 Store 可按验单来源覆盖，例如 ThirdPay 明确支付成功会覆盖完整重试间隔序列，关闭/返回等不明确场景最多 3 次 |
-| `SkipLoadingForReplenish` | 补单是否跳过 Loading |
+| `SkipLoadingForReplenish` | 默认 false；补单是否跳过 Loading，实际显示仍由 Store 与 LoadingGuard 决定 |
 | `LoadingPanelPrefab` | 支付期 Loading 面板 Resources 路径，默认 `IAP/IAPLoadingPanel` |
 | `StoreConfigs` | `[SerializeReference]` Store 配置只读列表 |
 | `Products` | 内联商品表只读列表 |
@@ -72,18 +72,20 @@ IAP Products 支持在 Inspector 中通过 Excel 批量维护：
 | `m_RuntimeTaskCts` | `CancellationTokenSource` | IAPPlugin 运行期后台任务取消源，Dispose 时取消登录后自动补单等后台任务 |
 | `ProductTable` | `IIAPProductTable` | 商品表只读视图；初始化前或商品表为空时为 null |
 | `Events` | `IAPPluginEvents` | 业务层订阅支付、初始化、Restore 事件 |
-| `m_EventManager` | `IEventManager` | 用于订阅 `SDKEventData.UserLogin` 并自动广播 UID |
+| `InitializationDependencies` | `IReadOnlyList<SDKInitializationDependency>` | 可选等待已启用的 `ITrackPlugin`；缺失或失败不按必需依赖阻断支付 |
 
 ## 4. 公开 API
 
 ```csharp
 public override string Name => "IAPPlugin"
 public override int Priority => 70
+public IReadOnlyList<SDKInitializationDependency> InitializationDependencies { get; }
 public IIAPProductTable ProductTable { get; }
 public IAPPluginEvents Events { get; }
 
 public void OnPause(bool isPaused)
 public void OnFocus(bool hasFocus)
+public void OnSDKLogin(string userId, long sessionId)
 public void SetUserId(string uid)
 public UniTask<T> PayAsync<T>(IIAPRequest request, CancellationToken ct = default)
     where T : class, IIAPResult
@@ -106,6 +108,18 @@ public readonly ReplayEvent<IReadOnlyList<IAPResult>> NonConsumeRestored
 
 `PaySuccess` / `PayFailed` / Restore 事件中的 `IAPResult.StoreType` 表示结果所属商店，可用于区分 `Mobile`、`ThirdPay`、`Voucher`。失败结果未显式传入时会从 `ErrorSource` 推断；`IAPStoreBase.PayGuardAsync` 的公共 guard 失败会由具体 Store 补齐 `StoreType`。
 
+### 支付返回值与发货资格
+
+| 结果 | 业务处理 |
+|---|---|
+| `IsSuccess=true` 且 `CanDeliver=true` | 存在可履约订单；交给项目已有的订单幂等处理入口 |
+| `IsSuccess=true` 且 `CanDeliver=false` | 本次流程成功结束，但该结果不允许再次发货，例如已发货订单或补单批次完成 |
+| `IsSuccess=false` | 展示或记录 `ErrorDesc`，结合 `ErrorSource + ErrorCode` 判断失败；不能据此撤销其他已成功的历史订单 |
+
+Android ThirdPay 购买前查询可能命中当前商品的多笔历史订单。各笔可发货订单沿 `PaySuccess` 返回，全部验单成功后，当前 `PayAsync` 返回 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空` 的批次完成结果；其本身不是另一笔交易，不能拿空订单号发货或建立订单去重记录。部分订单成功、部分仍未完成时，已发布的成功事件保留，当前调用可汇总返回失败。完整时序见 [ThirdPay 购买前补单规则](../../../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询)。
+
+`PaySuccess`、返回值及恢复结果应复用项目已有的订单幂等消费者。Replay 事件订阅时也可能立即重放已有结果；`IsRecoveredOrder` 只表示来源，不能单独决定是否发货。
+
 ## 5. 生命周期
 
 ### 初始化
@@ -120,10 +134,14 @@ OnInitializeAsync(config, ct)
   ├── BuildStoreConfigMap(config)
   ├── m_PurchasesTable = new IAPProductTableService(config.Products)
   ├── DiscoverAndInitializeStoresAsync(ct)
-  └── 订阅 SDKEventData.UserLogin
+  └── 返回后由 SDKManager 标记插件 Ready，并补交当前登录账号
 ```
 
 `DiscoverAndInitializeStoresAsync` 会扫描全部程序集。`config.Enabled == false` 的 Store 会加入 `m_Stores` 但跳过初始化，后续 `SetStoreEnabled(..., true)` 时懒初始化。
+
+初始化顺序由 `ISDKInitializationDependencies` 决定；`Priority=70` 只用于稳定遍历与释放顺序。当前仅声明 `new SDKInitializationDependency(typeof(ITrackPlugin), false)`，等待已启用埋点插件的初始化结果，不要求项目必须安装、启用或成功初始化埋点插件。
+
+游戏后端登录成功后调用 `Nova.SDK.Login(uid, userProperties)`。SDKManager 会向已经 Ready 的 IAP 交付账号；若 IAP 更晚就绪，则补交最新账号。`OnSDKLogin` 只调用 `SetUserId(userId)`，没有在 IAP 内部订阅或注销 `SDKEventData.UserLogin`。同步 UID 本身不会无条件补单，业务仍需调用 `CheckLocalOrdersAsync`；登录前已请求过扫描时才自动补执行。
 
 Store 的 `InitializeAsync` 只保证该 Store 已完成自己的启动阶段，不统一保证渠道已经可支付。Mobile Store 会在该方法内启动运行期后台连接后返回，因此 `Nova.SDK.InitializeTask` 不等待 Google Play / App Store 连接；业务若关心 Mobile 就绪结果，应订阅 `IAPPlugin.Events.InitResult`，支付入口本身也会通过 Store Ready 门禁拦截未连接状态。
 
@@ -138,7 +156,6 @@ Store 的 `InitializeAsync` 只保证该 Store 已完成自己的启动阶段，
 ```
 OnDisposeAsync(ct)
   ├── 取消 IAPPlugin 运行期后台任务
-  ├── 注销 SDKEventData.UserLogin
   ├── 清空账号 UID 与延后执行事件缓存状态
   ├── 逐个 await store.DisposeAsync(ct)
   ├── 清空 Store、Context、ConfigMap、ProductTable 引用
@@ -156,18 +173,18 @@ SDKComponent sdk = FrameworkComponentsGroup.GetComponent<SDKComponent>();
 if (!sdk.TryGet<IAPPlugin>(out IAPPlugin iap))
     return;
 
-iap.Events.PaySuccess.Subscribe(result =>
+// 保存订阅句柄，在所属界面/业务退出时 Dispose，避免重复订阅。
+IDisposable paySubscription = iap.Events.PaySuccess.Subscribe(result =>
 {
     IAPStoreType storeType = result.StoreType;
     if (result.CanDeliver)
         Deliver(result.TableId, result.OrderId, result.CustomData);
 });
 
-// IAPPlugin 会监听 SDKEventData.UserLogin 自动同步 UID；
-// 手动切账号或登录事件尚未触达时可显式调用。
-iap.SetUserId(userId);
+// 由 SDKManager 交付或在插件 Ready 后补交 UID。
+Nova.SDK.Login(userId);
 
-// 如果这行早于 SetUserId 调用，IAPPlugin 会缓存一次延后执行事件，并在 SetUserId 后自动补执行。
+// 如果此时 UID 尚未交付，插件会缓存一次请求，在 SetUserId 后自动补执行。
 await iap.CheckLocalOrdersAsync(ct);
 
 var request = new IAPMobileRequest
@@ -193,7 +210,7 @@ if (!result.IsSuccess)
 
 当失败发生在 `IAPStoreBase.PayGuardAsync` 公共 guard（禁用、未就绪、重入、商品表缺失）时，`ErrorSource.PluginRouter` 表示错误码属于 `IAPPluginErrorCode`。具体 Store 若需要把 guard 失败映射到自己的打点错误码域，应保留原始 `(ErrorSource, ErrorCode)` 到 `nova_reason_detail`，不要只按整数值解释。
 
-`IAPStoreBase.PayGuardAsync` 会先派发 `PayFailed` 事件，再按 `ShouldTrackPayGuardFailure` 决定是否由基类直接补打失败点。MobileStore 覆写该钩子返回 `false`，因为它需要在 `PayAsync` 返回边界把所有失败 `IAPResult` 统一映射到 `IAPMobileErrorCode` 后上报；其他 Store 默认仍由基类直接上报 guard 失败。
+`IAPStoreBase.PayGuardAsync` 会先派发 `PayFailed` 事件，再按 `ShouldTrackPayGuardFailure` 决定是否由基类直接补打失败点。MobileStore 和 ThirdPayStore 均覆写该钩子返回 `false`，在各自 `PayAsync` 返回边界按所属错误码及细分上下文上报；未覆写该钩子的 Store 仍由基类直接上报 guard 失败。
 
 对于已经发送到服务端并取得明确拒绝结果的订单，Store 可以在失败 `IAPResult` 中同时保留 `OrderId` 和 `IsRecoveredOrder`。业务层仍以 `IsSuccess`、`ErrorDesc` 和 `(ErrorSource, ErrorCode)` 判断失败，不应因为存在订单号就视为支付成功。
 
@@ -230,3 +247,5 @@ Excel 单元格统一裁剪首尾空白，列名和商品类型名区分大小�
 Store 配置同类型重复时保留首条；发现顺序没有排序，`FindStore` 和 `TryGetCapability<T>` 取首个匹配实例，能力查询不额外验证启用或 Ready。反射只扫描当前已加载程序集；某程序集 `GetTypes` 出现 `ReflectionTypeLoadException` 时会跳过整个程序集。Store 类型检查不证明可构造、裁剪后仍存在或已经可支付。
 
 `PayAsync<T>` 使用 `as T` 转换结果，T 与实际结果不兼容时可能返回 null。Restore 只聚合能转换成 T 的结果。`SetStoreEnabled` 先改运行期开关再尝试懒初始化，初始化抛错不会自动恢复开关；它不改配置源，也不取消既有交易。后台任务入口只通知取消并捕获任务异常，不等待所有任务退场、不自动重试；取消回调、Store Dispose、事件监听或打点抛错仍可能中断后续收尾。账号切换、交易取消、平台退出及发货是不同动作，不能由一个入口正常返回互相推定。
+
+当前 `OnSDKLogin` 未使用 `sessionId`，IAP 也未实现 `ISDKLoginSessionEndReceiver`。`Nova.SDK.EndLoginSession()` 结束框架账号会话后，不会自动清除 IAP/Store 中保留的 UID，也不取消旧账号支付或验单任务；传空 UID 同样不会完成这些动作。切号和登出须结合各 Store 的实际在途交易边界处理。

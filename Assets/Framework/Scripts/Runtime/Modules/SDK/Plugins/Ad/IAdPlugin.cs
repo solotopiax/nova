@@ -16,7 +16,7 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// IAA 广告聚合调度层唯一业务接口。
-    /// 内部持有多个 IAdInternalPlugin，RequestAsync 并行广播，ShowAsync 选 Revenue 最高渠道执行。
+    /// 当前聚合持有多个 IAdInternalPlugin，RequestAsync 并行广播；展示启用竞价时选收益最高渠道，否则按配置顺序选择。
     /// 继承 IBannerControl 聚合 Banner 专属展示控制（ShowBanner/HideBanner 等）；所有方法主线程调用。
     /// Banner 格式的加载通过 RequestAsync(AdFormat.Banner) / IsReady(AdFormat.Banner) 走通用路径，
     /// 展示与控制由 IBannerControl 方法负责。
@@ -70,7 +70,7 @@ namespace NovaFramework.Runtime
         /// <param name="format">广告格式。</param>
         /// <param name="customProps">自定义属性字典，透传到渠道层 fill/fill_fail 打点；可为 null。</param>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>首个完成的加载结果；全部失败时返回最后一次失败结果。</returns>
+        /// <returns>当前聚合在首个渠道成功时返回成功结果；全部失败时返回最后一次失败结果。</returns>
         UniTask<AdLoadResult> RequestAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace NovaFramework.Runtime
         bool IsReady(AdFormat format);
 
         /// <summary>
-        /// 展示指定格式广告，选 Revenue 最高的就绪渠道执行。
+        /// 展示指定格式广告；当前聚合启用竞价时选收益最高的就绪渠道，否则按配置顺序选择首个就绪渠道。
         /// AdFormat.Banner 不适用此方法，Banner 展示请使用 IBannerControl.ShowBanner()。
         /// </summary>
         /// <param name="format">广告格式。</param>

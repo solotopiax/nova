@@ -26,7 +26,10 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
 
 | 用户词 | 必须确认 |
 |---|---|
-| 页面 / 界面 | 只建 View，还是还需 Prefab、UI 注册、入口与运行验证 |
+| 新建 Nova 项目 / 开始做游戏 / 开工准备 | 按 PROJECT_STRUCTURE 的默认启动基线先评估并准备环境、MainDemo 固定 Resources、配置/导出与最小启动闭环，再进入依赖业务；已有项目先识别事实。HybridCLR 包、安装、启用、产物和运行分别判断 |
+| PSD / PSB / PSD2UGUI / AI 转界面 | 查询、设计源同步、树编辑、生成或导图、AI识别/应用分别定位；先读取包与配置来源、persistentId和输出记录，普通生成不默认运行AI；业务UIView接入继续既有页面Skill |
+| 新游戏 / 页面 / 界面 | 只建 View，还是还需 Prefab、UI 注册、入口与运行验证；布局实施前按 UIComponent 文档发现并冻结屏幕适配方案，不能直接套用 Demo |
+| Unity 无响应 / 工具超时 / 启动弹窗 | 先按共同入口检查真实窗口、编译/导入进度和进程归属；只读路由仅报告，已授权开发由后续执行步骤及时处理窗口，不以反复重启替代诊断 |
 | 功能清单 / 参数解释 / Inspector 或 Window 选项 | 查询源码声明与默认值，还是当前项目有效值与配置修改；查询结果不证明已运行或已自动化 |
 | 表 / 配置 | Luban、UI、Localization、Network、Sound、Vibrate、ConfigMaster，还是项目自有SO/Prefab字段；表源修改不等于生成物修改 |
 | 日常流程 / 批量自动化 / Pipify | 维护已保存Batch配置，还是实际运行；目标Settings、Step顺序、字段与运行副作用分别冻结 |
@@ -65,6 +68,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
    - 只需导出当前TableSettings、修改已有非敏感xlsx/csv标量，或给已有自描述xlsx追加普通字段后正式导出：`nova-project-export-tables`；源修改与普通字段追加复用同一 `nova_table_source` CLI 的明确分支。字段类型、行键与默认值从真实表确认，复杂Schema不扩入该分支。
    - 已确认 Luban 表源、导出和运行时读取链，含已有自描述xlsx普通字段追加并在游戏读取：`nova-project-integrate-table`；复用源CLI和正式导出，不手改生成代码，不把Sample表当未知业务目标。
    - 已有文本/字体修改、明确追加 Key/语言或语言切换：`nova-project-update-localization`；源结构追加复用其共享 CLI 严格分支，删除/改名及复杂字体不扩入该分支。给明确页面集合补齐 `TextLocalizing` 与引用则复用 `nova-project-update-ui-view` 的本地化绑定参考，逐对象保存并覆盖本次请求语言集合验证。
+   - PSD/PSB 转 uGUI、PSD2UGUI 配置/来源查询、树同步与节点调整、图片导出、AI识别及应用：`nova-project-psd2ugui`；先由 inspect 发现实际目标，写入按 run 的固定 Schema。它独立管理设计源到生成物的转换，需要 Nova 业务页面时再接已有 create/update-view；缺商业授权或AI CLI只阻断相应分支。
    - 新建或注册业务 `UIView`：`nova-project-ui-create-view`。
    - 已注册 View、Prefab 或 UI 注册内容的定向调整：`nova-project-update-ui-view`。
    - 已有数据表驱动业务页面并从现有入口打开：`nova-project-data-driven-ui`。

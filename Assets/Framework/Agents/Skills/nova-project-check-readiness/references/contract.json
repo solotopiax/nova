@@ -49,6 +49,16 @@
     {
       "name": "installedSdkOrKitPackageScope",
       "required": false
+    },
+    {
+      "name": "existingEditorWindowEvidence",
+      "required": false,
+      "constraint": "Unity已打开或工具首次超时分支，按 Docs/Onboarding/VALIDATION.md 只读检查工程/版本/进程归属、当前原生窗口及编译/导入进度；缺原生UI能力保留缺口，不靠重复超时或重启归因。本Operation不点击窗口、不重启；已有开发授权的窗口处置在诊断外按共同约束执行。"
+    },
+    {
+      "name": "startupPreparationInventory",
+      "required": false,
+      "constraint": "新项目/开工准备分支必需，由Agent按 Docs/Onboarding/PROJECT_STRUCTURE.md 读取平台与工具、固定Resources、配置/导出、资源映射、业务身份和HybridCLR事实，逐项已就绪/待准备/不适用及依据、依赖和负责Operation；当前阶段必需项未齐不放行业务，不要求尚未开发玩法预先完成，不新增Action请求字段。"
     }
   ],
   "effects": [
@@ -84,6 +94,9 @@
     "项目拓扑和托管范围",
     "已安装 Nova SDK/Kit 的 package id、版本、source、INDEX 路径及 Config/路由/资源/平台前置证据缺口",
     "nova.project.config.inspect-plugin-types 的只读类型发现证据（取得时）",
-    "静态、Unity、Play 证据的明确分级"
+    "静态、Unity、Play 证据的明确分级",
+    "Editor分支分别记录模态阻塞、普通设置窗口、正常忙碌、编译失败和进程故障的直接证据或未知项；窗口处置/关闭提示不代表底层错误已修复，不能无证据将重启归因弹窗。",
+    "新项目或目标含UI布局时记录现有适配方案、UIComponent/CanvasScaler有效配置、安全区拥有者及待补缺项；在写入Operation制作布局前补齐，不在只读检查中改设置。",
+    "新项目开工清单的每项状态、依据与后续Operation；固定启动资源及完整依赖/唯一键、正式配置与导出、最小启动证据分别核对；只读评估完整交付不等于工程整体ready。"
   ]
 }

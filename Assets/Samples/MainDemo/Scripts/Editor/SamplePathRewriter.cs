@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using Path = System.IO.Path;
 using NovaFramework.Runtime;
 using UnityEditor;
@@ -54,6 +55,12 @@ namespace NovaFramework.Samples.Editor
         /// </summary>
         private static void RunRewrite()
         {
+            // 首次导入时先等非代码资源就绪，避免脚本已加载但配置清单还不可发现。
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                EditorApplication.delayCall += RunRewrite;
+                return;
+            }
             IReadOnlyList<SamplePathManifest> manifests = LocateManifests();
             bool assetChanged = false;
             bool retryRequired = false;
@@ -300,14 +307,15 @@ namespace NovaFramework.Samples.Editor
             bool containsDevSampleRoot = false;
             foreach (string relative in manifest.RewriteTargets)
             {
-                string full = $"{sampleRoot}/{relative}";
+                string full = ResolveRewritePath(sampleRoot, relative);
                 if (!File.Exists(full))
                 {
                     allTargetsAvailable = false;
                     continue;
                 }
 
-                if (File.ReadAllText(full).Contains(manifest.DevSampleRoot))
+                string text = File.ReadAllText(full);
+                if (RewritePathPrefixes(text, manifest.DevSampleRoot, sampleRoot) != text)
                 {
                     containsDevSampleRoot = true;
                 }
@@ -330,19 +338,14 @@ namespace NovaFramework.Samples.Editor
 
             foreach (string relative in manifest.RewriteTargets)
             {
-                string full = $"{sampleRoot}/{relative}";
+                string full = ResolveRewritePath(sampleRoot, relative);
                 if (!File.Exists(full))
                 {
                     continue;
                 }
 
                 string text = File.ReadAllText(full);
-                if (!text.Contains(oldPrefix))
-                {
-                    continue;
-                }
-
-                string replaced = text.Replace(oldPrefix, newPrefix);
+                string replaced = RewritePathPrefixes(text, oldPrefix, newPrefix);
                 if (replaced == text)
                 {
                     continue;
@@ -353,6 +356,55 @@ namespace NovaFramework.Samples.Editor
             }
 
             return count;
+        }
+
+        /// <summary>
+        /// 解析清单资产的实际位置，兼容可选插件把数据收进 Authoring~ 或恢复到原位。
+        /// 两处同时存在时拒绝猜测；缺文件仍交给既有重试处理，不复制或覆盖编辑数据。
+        /// </summary>
+        private static string ResolveRewritePath(string sampleRoot, string relative)
+        {
+            string root = Path.GetFullPath(sampleRoot).Replace('\\', '/').TrimEnd('/');
+            string declared = Path.GetFullPath(Path.Combine(root, relative)).Replace('\\', '/');
+            if (!declared.StartsWith(root + "/", StringComparison.Ordinal))
+                throw new IOException($"重写目标超出当前 Sample：{relative}");
+
+            string logical = declared.Replace("/Authoring~/", "/");
+            var candidates = new HashSet<string>(StringComparer.Ordinal);
+            if (File.Exists(declared)) candidates.Add(declared);
+            if (File.Exists(logical)) candidates.Add(logical);
+            string parent = Path.GetDirectoryName(logical).Replace('\\', '/');
+            while (parent == root || parent.StartsWith(root + "/", StringComparison.Ordinal))
+            {
+                string parked = parent + "/Authoring~/" + logical.Substring(parent.Length + 1);
+                if (File.Exists(parked)) candidates.Add(parked);
+                if (parent == root) break;
+                parent = Path.GetDirectoryName(parent).Replace('\\', '/');
+            }
+            if (candidates.Count > 1)
+                throw new IOException($"发现多份编辑数据，请先处理冲突再重写路径：{relative}");
+            foreach (string candidate in candidates) return candidate;
+            return declared;
+        }
+
+        /// <summary>
+        /// 只替换完整目录前缀，兼容 Unity 正斜杠、Windows 反斜杠与 JSON 转义。
+        /// 已是目标前缀或名称相似的其它目录保持原值，重复导入不会继续追加路径。
+        /// </summary>
+        private static string RewritePathPrefixes(string text, string oldPrefix, string newPrefix)
+        {
+            if (oldPrefix == newPrefix) return text;
+            const string boundary = @"(?=$|[/\\""',}\]\r\n]|[ \t]+(?:\r?\n|$))";
+            foreach (string separator in new[] { "/", "\\", "\\\\" })
+            {
+                string source = oldPrefix.Replace("/", separator);
+                string target = newPrefix.Replace("/", separator);
+                string pattern = @"(?<lead>^[ \t]*|[\r\n][ \t]*(?:-[ \t]+)?|[:""'][ \t]*)(?<path>"
+                    + Regex.Escape(target) + "|" + Regex.Escape(source) + ")" + boundary;
+                text = Regex.Replace(text, pattern, match => match.Groups["path"].Value == source
+                    ? match.Groups["lead"].Value + target : match.Value);
+            }
+            return text;
         }
     }
 }

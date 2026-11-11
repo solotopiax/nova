@@ -70,6 +70,7 @@
     "目标 BuildTarget、activeBuildTarget 与 Build Support 规则",
     "启用场景、Globals ConfigMaster 绑定、三维坐标与 ConfigRuntimeSO 一致性规则",
     "YooAsset Settings、Collector、目标 Package 与 HybridCLR 前置规则",
-    "data.ready、错误/警告计数、逐条规则及未执行任何修复或构建的边界"
+    "data.ready、错误/警告计数、逐条规则及未执行任何修复或构建的边界",
+    "HybridCLR包、本地安装、启用策略与所需产物分别说明；禁用分支预检未阻断不表示已安装或热更可用，不改开关绕过。data.ready仅覆盖当前探针范围，不替代全部新项目开工与运行验收。"
   ]
 }

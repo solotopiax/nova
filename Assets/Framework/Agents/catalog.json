@@ -31,6 +31,7 @@
     ],
     "ui": [
       "nova-project-router",
+      "nova-project-psd2ugui",
       "nova-project-ui-create-view",
       "nova-project-update-ui-view",
       "nova-project-data-driven-ui",
@@ -315,6 +316,25 @@
         "generated-output"
       ],
       "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-psd2ugui",
+      "path": "Skills/nova-project-psd2ugui",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "ui"
+      ],
+      "effects": [
+        "read",
+        "workspace-write",
+        "unity-write",
+        "generated-output",
+        "external-write",
+        "credential"
+      ],
+      "minimumEvidence": "static"
     },
     {
       "id": "nova-project-ui-create-view",

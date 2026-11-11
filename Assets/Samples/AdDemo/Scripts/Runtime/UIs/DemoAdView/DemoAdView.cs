@@ -29,11 +29,13 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         {
             base.OnOpen(userData);
 
+            BindLoginButton();
+
             m_AdViewCts?.Cancel();
             m_AdViewCts?.Dispose();
             m_AdViewCts = new CancellationTokenSource();
             SubscribeAdEvents();
-            AppendFeedback("Ad 演示已打开，可在 Debug UI 中请求、检查和播放广告。");
+            AppendFeedback("Ad 演示已打开，请先登录后再请求、检查和播放广告。");
         }
 
         /// <summary>
@@ -48,6 +50,11 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
             m_AdViewCts?.Dispose();
             m_AdViewCts = null;
             UnsubscribeAdEvents();
+
+            m_LoggedIn = false;
+            m_LoginInProgress = false;
+            SetAuthenticatedContentActive(false);
+            SetLoginButtonState(true, "登录");
 
             base.OnClose(isShutdown, userData);
         }

@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-psd2ugui",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.7.6"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.psd2ugui.inspect",
+      "when": "只读发现当前项目候选、已安装可选包及固定桥、配置来源、PSD/PSB、编辑树persistentId与来源、输出/AI状态；未指定路径时先发现，不创建配置或执行AI"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.psd2ugui.run",
+      "when": "仅执行live Schema支持的prepare/sync/patch-nodes/generate/export-images/apply-ai/run-ai/configure/nine-slice固定操作；冻结精确源和写集，经Plan/Execute/Verify；run-ai只识别，成功Verify后绑定本轮jobId单独apply-ai，再检查并按目标generate"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true,
+      "constraint": "由当前Unity工程与工具连接读取；不要求用户复述路径或GUID"
+    },
+    {
+      "name": "operationAndTargets",
+      "required": false,
+      "constraint": "查询可空目标先发现；写入必需固定operation及inspect核实的psdAssetPath/configAssetPath和本次需要的输出、Sprite或AI身份，严格按live Schema传参"
+    },
+    {
+      "name": "nodeChanges",
+      "required": false,
+      "constraint": "patch-nodes使用inspect返回的persistentId字符串作为nodes[].id，禁止按名称模糊定位；name/uiType/referenceKind/referenceKey分别核对，不把改名当重新分配PSD来源；markToExport只有hasMarkToExport明确时修改且仅影响批量导图"
+    },
+    {
+      "name": "configurationChanges",
+      "required": false,
+      "constraint": "configure仅当前Schema开放的项目配置字段；GUIType/AiMode按inspect和实际枚举取精确值；forceUseTMP与nineSliceBorderTolerance须相应has标志表达修改，copyPromptTemplates只复制缺失不覆盖；不可用值不猜测或调用私有字段"
+    },
+    {
+      "name": "screenAdaptationPlan",
+      "required": false,
+      "constraint": "创建或调整布局前必需，按UIComponent文档读取现有适配、方向、比例及唯一缩放/安全区拥有者；纯查询/图层导图不扩大为页面运行验收"
+    },
+    {
+      "name": "aiIntentAndJob",
+      "required": false,
+      "constraint": "只有明确AI意图且实际许可证、CLI/登录及外部处理授权具备才run-ai；只读Verify成功后apply-ai绑定Receipt本轮jobId；缓存应用可能覆盖人工编辑，不自动重试服务请求"
+    }
+  ],
+  "effects": [
+    "read",
+    "workspace-write",
+    "unity-write",
+    "generated-output",
+    "external-write",
+    "credential"
+  ],
+  "writeScope": {
+    "allow": [
+      "本次Plan冻结的项目自有PSD2UGUI编辑资产、配置、节点与已记录输出",
+      "本次生成或导图的准确输出目录与资源及必要.meta",
+      "当前configure支持且已授权的配置字段及只复制缺失的提示模板",
+      "本次nine-slice支持且已冻结的Sprite导入设置",
+      "明确AI识别使用的输入、结果和本轮job；apply-ai仅该轮目标树"
+    ],
+    "deny": [
+      "Packages、Library/PackageCache或商业插件源码与包内模板",
+      "手写Prefab/Scene/asset YAML、任意C#、反射参数、类型或方法字符串",
+      "按同名节点猜选、未经计划重建或删除PSD/编辑资产/.meta/生成记录",
+      "将markToExport当作生成或显隐开关、清空uiFormGUID强制另存为",
+      "未经授权的AI调用、凭据变更、提供方切换或自动重发",
+      "覆盖无关编辑器草稿、模板或用户人工节点修改",
+      "Action未开放的清理、配置或九宫格分支；不以通用字段patch绕过"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-scene",
+    "prefab-stage",
+    "psd2ugui-assets",
+    "psd2ugui-output",
+    "psd2ugui-ai"
+  ],
+  "idempotency": "orchestrate",
+  "confirmation": {
+    "requiredFor": [
+      "未被当前明确意图覆盖的资产覆盖或人工树调整替换",
+      "AI输入传给外部CLI/服务、账号或凭据范围变更",
+      "删除或清理精确目标、复制/另存和来源重建",
+      "超出原目标的配置、共享模板或输出目录变更"
+    ],
+    "rule": "已有同范围授权持续有效；每次写入绑定当前PlanId、精确operation/目标/写集，漂移重新计划；AI使用意图不授权无边界重试。run-ai识别成功后可在本次完整AI制作授权内编排一次apply-ai，仍须新Plan并绑定原jobId。重载只按Receipt/recovery_token只读Verify，不重放Execute。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "当前包与桥身份、live Schema及inspect取得的配置/源/树/输出关系；未安装和不兼容分别报告",
+    "Plan写集与实际持久资产/节点/产物一致，Verify只读且非目标内容受保护",
+    "节点persistentId、类型/名称/引用与PSD来源分别读回；sync后新增/失效来源显式核对",
+    "生成或导图的真实路径、图片/字体引用和本次要求的视觉证据；九宫格同时核Image.Type与Sprite.Border",
+    "AI本次运行状态与结果、准确jobId应用后状态，不能把CLI退出/缓存存在当应用完成；失败不自动重试",
+    "需要Nova业务页面时继续既有create/update-view契约的注册/导出/编译/Play及条件设备证据，纯插件产物不冒充业务运行",
+    "临时验证物及本轮辅助窗口已清场；PSD/编辑资产/meta/正式输出与生成记录保留",
+    "effects列出本Skill全部模式的副作用上界；非run-ai分支以Plan/回执证明本次未启动外部CLI或外传，不要求AI账号或远端结果。仅run-ai须核验真实已授权外部执行及本轮结果；仍保留各Action自身保护。"
+  ]
+}

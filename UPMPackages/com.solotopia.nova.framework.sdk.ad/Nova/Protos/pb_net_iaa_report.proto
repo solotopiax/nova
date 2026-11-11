@@ -1,0 +1,36 @@
+// =====================================================================
+// 广告 IAA 收益上报
+// =====================================================================
+syntax = "proto3";
+package NovaFramework.SDK.AdPlugin.Runtime;
+
+option csharp_namespace = "NovaFramework.SDK.AdPlugin.Runtime";
+
+import "pb_net_header.proto";
+
+// POST /v1/taijiv2/report
+// 客户端 NetCmd 建议配置为 AdRevenueReport；协议消息名保持 PbNetIAAReportReq / PbNetIAAReportResp。
+
+// IAA 广告收益上报的嵌套数据。网络重试必须复用 report_id，以便服务端按日幂等。
+message PbIAAReportData {
+    string report_id = 1;  // 单次收益或 Banner 累计批次的稳定上报 ID
+    string ad_type = 2;    // 广告类型，例如激励视频或插屏
+    string ad_id = 3;      // 广告或广告位 ID；Banner 累计使用最后一次回调的 ID
+    double price_usd = 4;  // 本次上报收入，Banner 为累计金额；单位为美元，0 也有效
+}
+
+// IAA 广告收入上报请求。客户端公共 Header 映射服务端 dto.PbNetReqHeaderV1。
+message PbNetIAAReportReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;
+    string ad_channel = 2;   // 广告渠道，仅用于请求日志记录
+    PbIAAReportData iaa = 3;  // 固定为 IAA 的广告收入数据
+}
+
+// IAA 广告收入上报响应。客户端公共 Header 映射服务端 dto.PbNetRespHeader。
+message PbNetIAAReportResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;
+    string iaa_report_id = 2;  // 回显本次 IAA 请求中的业务 ID
+    string utc_day = 3;        // 实际计入统计的 UTC 日期，格式为 YYYY-MM-DD
+    bool duplicate = 4;        // 同一来源业务 ID 当日重复计数时为 true
+    int32 error_code = 100;    // 兼容旧 Tiny App 的直出业务码
+}

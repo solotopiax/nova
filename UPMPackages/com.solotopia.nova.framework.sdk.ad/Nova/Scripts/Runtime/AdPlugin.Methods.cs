@@ -20,6 +20,21 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     public sealed partial class AdPlugin
     {
         /// <summary>
+        /// 检查渠道仍属于本轮有效业务列表；不以刷新期 Ready 瞬时状态作废既有显示归属。
+        /// </summary>
+        /// <param name="channel">待检查渠道。</param>
+        /// <returns>聚合存活且渠道仍登记为有效时为 true。</returns>
+        private bool IsBannerChannelAvailable(IAdInternalPlugin channel)
+            => !m_ChannelsDisposed && channel != null && m_ChannelPlugins.Contains(channel) && (!m_ChannelRegistrations.TryGetValue(channel, out var registration) || registration.Active);
+
+        /// <summary>
+        /// Banner 控制优先投递给显示归属，仅首次显示前使用预加载候选；不在隐藏或销毁时重新比价。
+        /// </summary>
+        /// <returns>有效控制渠道；没有既有目标时为 null。</returns>
+        private IAdInternalPlugin GetBannerControlChannel()
+            => IsBannerChannelAvailable(m_ActiveBannerChannel) ? m_ActiveBannerChannel : IsBannerChannelAvailable(m_PreparedBannerChannel) ? m_PreparedBannerChannel : null;
+
+        /// <summary>
         /// 按渠道配置顺序读取第一个明确的广告隐私授权结果。
         /// 单个渠道查询异常时记录警告并继续查询后续渠道。
         /// </summary>
@@ -282,7 +297,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
                 initializationToken.ThrowIfCancellationRequested();
                 if (m_ChannelsDisposed || !registration.Active) return;
                 if (channel is AdChannelPluginBase channelBase)
-                    channelBase.ApplyGlobalConfig(adConfig.ChannelConfigs);
+                    channelBase.ApplyGlobalConfig(adConfig.ChannelConfigs, adConfig.RevenueReportCmdName);
                 initializationToken.ThrowIfCancellationRequested();
                 if (m_ChannelsDisposed || !registration.Active) return;
                 WireChannelEvents(channel, registration);
@@ -336,7 +351,9 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
                 foreach (var entry in registrations) entry.Value.Active = false;
                 m_ChannelRegistrations.Clear();
                 m_ChannelPlugins.Clear();
+                m_BannerControlVersion++;
                 m_ActiveBannerChannel = null;
+                m_PreparedBannerChannel = null;
                 m_RuntimeConfig = null;
                 // Cancel 可能同步唤起初始化或业务续体，关闭门和所有权快照必须先准备完成。
                 try { m_ChannelLifetimeCts.Cancel(); }

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.max",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "8.6.6",
   "displayName": "Nova Framework - SDK - MAX",
@@ -19,7 +19,7 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.ad": "1.2.1",
+    "com.solotopia.nova.framework.sdk.ad": "1.2.3",
     "com.solotopia.nova.framework": "0.7.3",
     "com.applovin.mediation.ads": "8.6.6",
     "com.applovin.mediation.adapters.bidmachine.android": "3080001.0.0",
@@ -63,6 +63,7 @@
           "com.applovin.mediation.dsp"
         ]
       }
-    ]
+    ],
+    "releaseTime": "2026-11-11T02:27:49Z"
   }
 }

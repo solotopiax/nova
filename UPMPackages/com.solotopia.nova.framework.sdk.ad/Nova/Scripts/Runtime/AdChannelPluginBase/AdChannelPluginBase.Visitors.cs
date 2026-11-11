@@ -24,6 +24,16 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private IReadOnlyList<ITrackPlugin> m_TrackPlugins;
 
         /// <summary>
+        /// 广告收益上报使用的 NetCmd 名称；为空时保持旧配置兼容并跳过网络上报。
+        /// </summary>
+        private string m_RevenueReportCmdName = string.Empty;
+
+        /// <summary>
+        /// 广告收益上报网络 Service；请求参数由基类按渠道和收益事件传入。
+        /// </summary>
+        private readonly AdRevenueReportNetService m_RevenueReportNetService = new();
+
+        /// <summary>
         /// 初始化时缓存的文件片段管理器；存档读写前由启动流程完成 Persist.LoadAsync()。
         /// </summary>
         private IFileFragmentManager m_BannerIlrdPersistManager;
@@ -51,7 +61,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         internal bool EnableBidding { get; private set; } = true;
 
         /// <summary>
-        /// Banner ILRD 上报间隔次数；0 或负数表示不上报。AdPlugin 初始化时通过 ApplyGlobalConfig 写入。
+        /// Banner 的 ad_ilrd 与后台收益协议共用累计次数；0 或负数停止对应累计上报。
+        /// AdPlugin 初始化时通过 ApplyGlobalConfig 写入，收益打点和后台协议共用同一批次。
         /// </summary>
         protected internal int BannerIlrdInterval { get; private set; } = 5;
 

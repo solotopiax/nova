@@ -16,7 +16,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// <summary>
     /// uid + tableId + receiptParam 与 GUID 字符串互转工具类。
     /// uid / receiptParam 为十六进制字符串槽位，由 MobilePurchaseService.TryValidatePassthroughParams 校验长度、字符集和前导零；
-    /// tableId 为数值槽位，编码时按十六进制定长左补 0。
+        /// 编码保留 uid / receiptParam 原字母大小写，订单键与主动支付匹配另行对 receiptParam 转大写。
+        /// tableId 为数值槽位，编码时按十六进制定长左补 0；iOS UUID 平台往返不保证原字符串大小写。
     /// 购买时把三者编码为 GUID 写入平台账号字段（Android: ObfuscatedAccountId/ProfileId；iOS: AppAccountToken），
     /// 随平台票据回传，支付回调 / 补单 / 恢复时解码还原，并可供服务端从票据解出。
     ///
@@ -39,7 +40,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 将 uid、tableId、receiptParam 编码为 GUID 格式字符串。
-    /// uid / receiptParam 按已经校验的十六进制字符串写入定长槽；tableId 直接编码。
+        /// uid / receiptParam 保留原大小写写入已经校验的定长槽；tableId 按数值编码。
         /// </summary>
         /// <param name="uid">用户唯一 ID（≤8 位十六进制；非空值不能以 0 开头）。</param>
         /// <param name="tableId">商品配置表行 ID（数值，≤8 位）。</param>
@@ -115,18 +116,18 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 value = 0L;
             }
 
-            return Convert.ToString(value, 16).ToUpperInvariant().PadLeft(width, '0');
+            return Convert.ToString(value, 16).PadLeft(width, '0');
         }
 
         /// <summary>
-        /// 把字符串写入固定宽度槽位，不足位左补 0。
+        /// 保留字符串大小写写入固定宽度槽位，不足位左补 0。
         /// </summary>
         /// <param name="value">待编码字符串。</param>
         /// <param name="width">目标槽位宽度。</param>
         /// <returns>定长字符串槽位。</returns>
         private static string ToFixedSlot(string value, int width)
         {
-            return string.IsNullOrEmpty(value) ? new string('0', width) : value.ToUpperInvariant().PadLeft(width, '0');
+            return string.IsNullOrEmpty(value) ? new string('0', width) : value.PadLeft(width, '0');
         }
 
         /// <summary>

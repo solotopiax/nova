@@ -23,6 +23,8 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 
 确认 `viewName`、命名空间/asmdef、目标 UIGroup、Prefab 路径和资源地址、UI 注册源、布局/交互范围、池化与遮挡策略。若 UIGroup、注册源或资产目录有多个合理候选，先请求用户选择；不要猜测或顺手新增 Framework 结构。
 
+**布局前置**：按 `Docs/Runtime/Modules/UI/UIComponent.md` 的“屏幕适配与安全区”冻结 `screenAdaptationPlan`，从项目读取方向、设计尺寸/比例、匹配策略、实际根 CanvasScaler、安全区唯一拥有者及验证范围。已有方案直接复用；新项目在授权内确定并告知合理默认，实质歧义才澄清。方案未确定不能先写布局或另加根缩放脚本。确需改 UIComponent 时复用 `nova-project-edit-settings`；方向修改按 UIComponent 文档核对宿主真实可用的 Player Settings 编辑通道。先冻结精确目标、原值/目标值与写入范围，不能隐式改全局配置或包内 Prefab。
+
 确认现有场景和导出链能够承载 UI：活动场景中的 Nova/UIComponent、UIGroup 的存在性、项目使用的 UI Excel/Collector/导出入口。只有用户明确要求时才启动 Unity；缺少 Unity 时只交付计划，不宣称页面已创建成功。
 
 ## 实施顺序
@@ -32,8 +34,8 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 3. 仅在用户确认的 UI 注册源中登记 `Name`、`AssetLocation`、`UIGroupName`、`PauseCoveredUIView` 和 `InObjectPools` 等实际需要的字段。
 4. 通过 `nova.project.ui.export` 执行本次必要导出。全量传 `scope=all/code/data`；定向导出传精确 `sourcePath`，只允许 `code` 或 `data`。先 Plan 核对全部 Excel、已保存的场景/`UISettings`、命名空间及写入集，再用当前 `PlanId` 确认一次 Execute。单文件代码仍会更新共享 `UITables.cs`，所有模式会更新 `_configs`；计划同时展示反格式或同源完整过期代码的删除范围。单文件 `all` 不支持，不拼接两次调用伪装事务。`code-only` 的 Map 属性要求已有正式 JSON；新注册先完成 `data`，再 Plan `code`。
    Execute 返回 `partial + Receipt`，等待本次 Unity 编译、代码重载后只读 Verify；跨重载用 `recovery_token`，不重放 Execute。缺少有效所有权、来源漂移、脏场景或定制配置无法冻结时停止；没有受控 Action 时保持 `partial`。导出失败立即停止，不顺带执行全量 Excel 导出、Config 导出或 Build。
-5. 先收集编译证据，再在明确授权且可用的 Unity 环境中验证目标 UIGroup 的打开/关闭。若只完成代码与静态检查，返回 `partial`。
+5. 先收集编译证据，再在明确授权且可用的 Unity 环境中验证目标 UIGroup 的打开/关闭；涉及实际布局必须覆盖已冻结的比例、安全区及支持的方向，读回运行时缩放配置。验证和恢复按 UIComponent 文档执行，缺少必要布局/设备证据保持 `partial`。
 
 ## 完成边界
 
-达到 `unity-compile` 才能报告 `success`；若用户要求实际打开，则还必须返回 Play 证据或明确标为 `partial`。已有同名 View、Prefab 或注册行内容冲突时保持 `blocked`，不覆盖猜测。删除、替换非生成资产、外部发布、Git 操作均不属于本 Skill 的授权范围。
+达到 `unity-compile` 且满足本次分支的绑定和布局证据才能报告 `success`；涉及布局或用户要求实际打开时，还必须返回对应 Play 证据，移动端交付缺必要目标 Player/设备证据时明确标为 `partial`。已有同名 View、Prefab 或注册行内容冲突时保持 `blocked`，不覆盖猜测。删除、替换非生成资产、外部发布、Git 操作均不属于本 Skill 的授权范围。

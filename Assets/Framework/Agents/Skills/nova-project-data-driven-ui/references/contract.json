@@ -105,6 +105,11 @@
       "name": "sourceCellEdits",
       "required": false,
       "constraint": "仅用户同时要求表源调整时传递：原标量为source/sourceHash/sourceRoots/generatedRoots及1至256个已有非敏感单元格/唯一rowKey/key/column/type/beforeValue/value；严格table-fields追加为唯一自描述xlsx/SchemaHash映射、全部原键、普通类型/注释及明确default或全键values，相邻空列最多8192新格。不插删行、不改外部Schema/行键/公式/宏/复杂类型；追加字段必须同描述scope=all和编译后再UI绑定；纯页面绑定或既有表复核不要求此分支。"
+    },
+    {
+      "name": "screenAdaptationPlan",
+      "required": false,
+      "constraint": "按 Docs/Runtime/Modules/UI/UIComponent.md 的屏幕适配与安全区章节由Agent读取并冻结；创建页面必需，更新/Workflow仅布局、画布、方向或安全区分支必需。包含平台方向、设计尺寸/比例和支持范围、缩放/安全区唯一拥有者、有效配置/原目标值、变化刷新与验收；纯数据/事件且布局不变记录沿用及影响范围，不要求用户重复填写可读事实。"
     }
   ],
   "effects": [
@@ -125,7 +130,8 @@
       "generated UI output for this registration",
       "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
       "confirmed Luban schema through its dedicated editor; existing project-owned xlsx/csv non-sensitive scalar cells or strict table-fields append-only ordinary fields in self-described xlsx through shared nova_table_source.py",
-      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON",
+      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope"
     ],
     "deny": [
       "Nova Manager and UIManager implementation",
@@ -138,7 +144,8 @@
       "manual edits to generated UI output",
       "manual edits to generated table output",
       "unrelated Luban project, export description or output",
-      "macro/formula modification, row insertion/deletion, duplicate key cells, arbitrary source/generated boundaries or secret/identity field edits through the generic source CLI"
+      "macro/formula modification, row insertion/deletion, duplicate key cells, arbitrary source/generated boundaries or secret/identity field edits through the generic source CLI",
+      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes"
     ]
   },
   "locks": [
@@ -175,6 +182,8 @@
     "精确表导出结果、UI 导出和 Unity 编译",
     "表加载与公开 API 可用性",
     "字段绑定与入口行为",
-    "打开、显示、关闭的 Play smoke"
+    "打开、显示、关闭的 Play smoke",
+    "布局分支实施前已有 screenAdaptationPlan，实际 UIComponent/CanvasScaler 配置与唯一安全区拥有者符合计划；实际入口的参考/边界比例、安全区、支持方向及重开 Play 布局证据，移动端交付按目标补 Player/设备证据，缺失保持 partial。纯数据/事件且布局不变不扩大验收。",
+    "将 screenAdaptationPlan 和布局验收透传所选 create/update Operation；表/数据验证不能替代布局证据。UIComponent配置只经页面分支与edit-settings的精确写集；方向修改另核对宿主真实Player Settings通道及授权，不假装普通资产Action覆盖任意ProjectSettings。"
   ]
 }

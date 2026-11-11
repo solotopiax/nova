@@ -23,6 +23,8 @@ description: Use when 已配置 HybridCLR 的 Nova 消费项目需要按明确 a
 
 ## 冻结与预检
 
+先按 `Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md` 的安装与验收确认实际解析包、本地安装结果/版本及 Unity 匹配、启用策略。包存在、旧环境缓存或关闭 HybridCLR 后的普通 APK 不构成本 Operation 前置；缺必要安装证据保持 `blocked/partial`，不在 Generate 中安装、伪造版本标记或改设置绕过。
+
 执行前读取并冻结：消费项目根、当前 `EditorUserBuildSettings.activeBuildTarget`、期望 `DevelopmentBuild`、当前激活 ConfigMaster 的稳定身份及其 `Platform/Channel/DevelopMode`、Build Settings 中已启用场景闭包、HybridCLR 安装/启用状态、解析后的生成输出集合、最终 link.xml 路径和执行入口。
 
 必须确认目标平台模块与 IL2CPP/HybridCLR 生成前提可用，当前 active Target 与冻结值一致，启用场景非空。分别解析 HybridCLR `outputLinkFile` 与当前坐标 `LinkXmlTargetPath`（空值按 `Assets/link.xml`）；两者均须为合法项目内路径。HybridCLR 生成热更引用保留表，Framework 在 Master 路径补全 AOT metadata 条目，两条路径可不同；Plan 分别冻结并声明写入，Receipt 分别核验，相同路径只计一次，不修改配置来迎合本 Operation。`DevelopMode` 不能代替 `EditorUserBuildSettings.development`。

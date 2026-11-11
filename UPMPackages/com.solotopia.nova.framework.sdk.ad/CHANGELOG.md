@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-11
+
+### Added
+
+- 新增后台广告收益上报，提供 PbNetIAAReportReq/Resp、RevenueReportCmdName 配置与 AdRevenueReportNetService；MAX、AdMob 在收益派发入口显式调用 StartRevenueReport，自定义渠道如需上报须自行接入，原有原始收益业务通知保持。
+
+### Changed
+
+- 同步广告基础包、MAX、AdMob 与 AdDemo 文档，统一说明 AdRevenueReport 命令、PbNetIAAReport 协议、AdRevenueReportNetService 以及 RevenuePaid 与网络成功的边界。
+
+- AdDemo 增加游戏账号登录前置：登录成功后开放广告请求、就绪检查、展示和 Banner 操作；页面关闭后丢弃旧登录任务的界面结果。
+
+- IAA 收益上报发送前打印业务参数，收到结果后打印网络状态和解析后的响应数据，便于按 report_id 核对；请求认证头不输出。
+
+- MAX Banner 后台收益协议随 ad_ilrd 派发，共用一份渠道累计及存档（默认 5 次），使用相同金额与最后一次回调的广告位；全部打点目标不可用时保留批次且不发协议，派发后清批，不等待网络确认。网络失败只警告，不新增持久重试队列；非 Banner 随单次收益派发，ad_impression 保持逐次上报，协议条数按批次计数。
+
+### Fixed
+
+- 修复 Banner 请求失败或取消等待后后台加载成功仍无法显示、重复请求改变显示归属的问题；新增 TryShowBanner 反馈，显示失败仅记录警告，Demo 不再无条件提示成功。
+
+- 补全广告收益上报诊断：初始化记录实际路由与未启用状态，收益到达、跳过、准备发送和网络结果可关联查询；缺少路由或参数无效明确警告，正常生命周期取消不影响广告回调。
+
+- 补齐 AdDemo 对 GameLogin 的示例依赖声明与安装说明；仅运行广告基础包时不强制安装登录 Kit。
+
 ## [1.2.2] - 2026-10-29
 
 ### Fixed

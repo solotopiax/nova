@@ -8,6 +8,7 @@
  * descrip:   MaxAdPlugin Banner 广告逻辑与基类虚方法重写
  ***************************************************************/
 
+using System;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AdPlugin.Runtime;
 using UnityEngine;
@@ -17,6 +18,12 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
     public sealed partial class MaxAdPlugin
     {
 #if NOVA_APPLOVIN_MAX
+        /// <summary>
+        /// Banner 控制固定操作配置首个 ID，就绪和收益查询必须使用同一广告位。
+        /// </summary>
+        /// <returns>配置首个 Banner ID；未配置时返回空字符串，避免选择其他槽位。</returns>
+        protected override string GetBannerControlPlacementId() => BannerPlacementId ?? string.Empty;
+
         /// <summary>
         /// 创建并配置 Banner 广告位。
         /// </summary>
@@ -28,12 +35,12 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 return;
             }
 
-            if (m_CreatedBannerPlacementIds.Add(placementId))
+            if (m_CreatedBannerViews.TryAdd(placementId, new object()))
             {
                 MaxSdk.CreateBanner(placementId, new MaxSdkBase.AdViewConfiguration(m_BannerPosition));
                 MaxSdk.SetBannerBackgroundColor(placementId, Color.white);
             }
-            else if (m_BannerDesiredVisible)
+            else if (m_BannerDesiredVisible && placementId == BannerPlacementId)
             {
                 Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={placementId}。");
                 MaxSdk.ShowBanner(placementId);
@@ -41,14 +48,37 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 显示 Banner 广告。
+        /// 显示 Banner 广告；不可用或原厂调用失败时只记录警告。
         /// </summary>
-        public override void ShowBanner()
+        public override void ShowBanner() => TryShowBanner();
+
+        /// <summary>
+        /// 尝试显示配置首个 Banner，失败时恢复可见期望，不向业务调用方抛异常。
+        /// </summary>
+        /// <returns>成功发出原厂显示调用时为 true，不表示已产生曝光。</returns>
+        public override bool TryShowBanner()
         {
+            string placementId = BannerPlacementId;
+            if (!m_IsSdkInitialized || string.IsNullOrEmpty(placementId) || !m_CreatedBannerViews.ContainsKey(placementId))
+            {
+                Log.Warning(LogTag.Max, "MAX Banner 尚未创建或渠道不可用，请先请求 Banner。");
+                return false;
+            }
+            bool previousVisible = m_BannerDesiredVisible;
             m_BannerDesiredVisible = true;
-            StartBannerAutoRefresh();
-            Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={BannerPlacementId}。");
-            MaxSdk.ShowBanner(BannerPlacementId);
+            try
+            {
+                StartBannerAutoRefresh();
+                Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={placementId}。");
+                MaxSdk.ShowBanner(placementId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                m_BannerDesiredVisible = previousVisible && m_CreatedBannerViews.ContainsKey(placementId);
+                Log.Warning(LogTag.Max, $"MAX Banner 显示失败：placement={placementId}，{ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -67,9 +97,11 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         public override void DestroyBanner()
         {
             m_BannerDesiredVisible = false;
-            MaxSdk.DestroyBanner(BannerPlacementId);
-            m_CreatedBannerPlacementIds.Remove(BannerPlacementId);
-            MarkBannerHidden(BannerPlacementId);
+            string placementId = BannerPlacementId;
+            if (string.IsNullOrEmpty(placementId)) return;
+            bool created = m_CreatedBannerViews.TryRemove(placementId, out _);
+            MarkBannerHidden(placementId);
+            if (created) MaxSdk.DestroyBanner(placementId);
         }
 
         /// <summary>
@@ -85,7 +117,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <summary>
         /// 更新 Banner 屏幕坐标位置。
         /// </summary>
-        /// <param name="position">目标屏幕坐标（像素）。</param>
+        /// <param name="position">目标原生坐标；Android 使用 dp，iOS 使用 points，当前直接取整传给 MAX。</param>
         public override void UpdateBannerPosition(Vector2 position)
             => MaxSdk.UpdateBannerPosition(BannerPlacementId, (int)position.x, (int)position.y);
 
@@ -112,7 +144,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <summary>
         /// 设置 Banner 宽度。
         /// </summary>
-        /// <param name="width">目标宽度（像素）。</param>
+        /// <param name="width">目标原生宽度；Android 使用 dp，iOS 使用 points，当前直接取整传给 MAX。</param>
         public override void SetBannerWidth(float width)
             => MaxSdk.SetBannerWidth(BannerPlacementId, (int)width);
 
@@ -154,8 +186,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">厂商加载响应，回调返回前复制。</param>
         private void OnBannerLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"Banner 加载成功回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"收到原厂 Banner 加载成功回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(info))}，precision={info?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerLoaded))) return;
+            if (!m_CreatedBannerViews.TryGetValue(adUnitId, out object view)) return;
             var snapshot = new MaxAdInfoSnapshot(info);
             var result = new AdLoadResult
             {
@@ -169,8 +202,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             };
             PostAdCallbackToMainThread(() =>
             {
+                // 入队后可能销毁并重建同 ID 视图，只有原身份仍有效时才接受结果。
+                if (!m_CreatedBannerViews.TryGetValue(adUnitId, out object current) || !ReferenceEquals(current, view)) return;
                 RaiseAdLoaded(result);
-                if (m_BannerDesiredVisible)
+                if (m_BannerDesiredVisible && adUnitId == BannerPlacementId && m_CreatedBannerViews.TryGetValue(adUnitId, out current) && ReferenceEquals(current, view))
                 {
                     Log.Debug(LogTag.Max, $"Banner 发起原厂展示：format={AdFormat.Banner}，placement={adUnitId}。");
                     MaxSdk.ShowBanner(adUnitId);
@@ -217,7 +252,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">厂商收益响应，立即复制后使用。</param>
         private void OnBannerRevenuePaid(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"Banner 收益回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Banner 收益回调：format={AdFormat.Banner}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(info))}，precision={info?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Banner, adUnitId, nameof(OnBannerRevenuePaid))) return;
             var snapshot = new MaxAdInfoSnapshot(info);
             RaiseRevenueImmediately(new AdEvent

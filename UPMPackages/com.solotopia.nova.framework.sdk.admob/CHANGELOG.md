@@ -16,9 +16,17 @@
 
 - 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
 
+- 同步 AdMob README、文档索引与插件说明，明确收益回调复用 AdChannelPluginBase 的 IAA 上报链路及 AdRevenueReport 配置。
+
+- 对齐基础广告包 RevenueReport 命名、配置与收益上报诊断文档，服务端协议保持不变。
+
+- 收益协议在 Paid 的显式收益入口发送；Banner 使用共享渠道累计入口及唯一存档（默认 5 次），非 Banner 按次上报，原始收益通知不重复发送协议。当前尚未接入独立分析 ad_ilrd。
+
 ### Fixed
 
 - 移除已被实际实现取代的“仅骨架、无构建处理器”旧说明；明确 UMP 年龄配置、展开 ID 独立并发重试、统一组间隔和释放后不可复用，MAX 构建处理器不读取独立 AdMob 配置。
+
+- Banner 就绪和收益查询统一使用实际控制的首个配置 ID；对象未创建、已销毁或显示调用异常时仅记录警告并反馈失败，避免虚假显示成功。
 
 ### Breaking
 

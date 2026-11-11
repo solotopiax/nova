@@ -32,7 +32,7 @@
     {
       "name": "userGoal",
       "required": true,
-      "constraint": "开始游戏/结算/重开/回大厅先定位实际业务入口、项目Service与Procedure/FSM；暂停/恢复/倍速区分Nova.Self全局速度缓存和局/页面业务拥有者，按精确目标路由，不推断所有计时/输入/网络停止"
+      "constraint": "开始游戏/结算/重开/回大厅先定位实际业务入口、项目Service与Procedure/FSM；暂停/恢复/倍速区分Nova.Self全局速度缓存和局/页面业务拥有者，按精确目标路由，不推断所有计时/输入/网络停止；PSD/PSB设计源转换和AI识别先路由psd2ugui，业务UIView注册/运行仍路由create/update-view，查询不自动生成或运行AI"
     },
     {
       "name": "projectRoot",
@@ -68,6 +68,9 @@
     "明确区分ConfigMaster面板字段/维度及独立normalize-master归一锚点、项目自有SO/Prefab字段、Pipify配置/执行和已有xlsx/csv标量源编辑；按最窄Skill路由，未支持复杂参数不冒充可执行",
     "WebGL构建失败归diagnose-build；已有浏览器页面启动失败归diagnose-startup的只读loader/Wasm/data→Unity/Nova分层；新本机预览或运行归build-player，诊断不自动serve/刷新/清存储。",
     "摘要查询保准确身份、导航与源/审查/执行/验收状态，过滤分页基于完整记录；只对选中精确id展开full，不把summary当执行或验收许可",
-    "游戏开始/结算/重开/回大厅复用integrate-procedure的business-flow参考和项目真实Service/Procedure/FSM；暂停/恢复/倍速按全局Nova.Self或业务拥有者消歧，分别路由edit-settings或integrate-procedure；无Nova.Game门面，Router本身不plan、不创建业务实现、不提升验收状态"
+    "游戏开始/结算/重开/回大厅复用integrate-procedure的business-flow参考和项目真实Service/Procedure/FSM；暂停/恢复/倍速按全局Nova.Self或业务拥有者消歧，分别路由edit-settings或integrate-procedure；无Nova.Game门面，Router本身不plan、不创建业务实现、不提升验收状态",
+    "Unity无响应/弹窗先按共同入口分清窗口、编译/导入进度与进程故障，Router只读不点击或重启；新项目/UI布局在实施前将适配方案及验收要求传给既有页面Operation，不新增重复适配实现。",
+    "新建项目优先路由check-readiness、setup-entry-scene固定资源分支、configure-runtime及所需导出/资源/Procedure/HybridCLR步骤；依据PROJECT_STRUCTURE前置清单完成最小启动后再开展依赖业务，Router仍只读，不把整个MainDemo强加给已有项目。",
+    "PSD2UGUI按设计源/编辑树/生成物与Nova业务页面分层路由；inspect先发现真实目标和来源，nodes[].id来自persistentId，AI意图和许可证/CLI状态准确传给所选Skill，Router不plan或执行。"
   ]
 }

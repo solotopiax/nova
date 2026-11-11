@@ -14,7 +14,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 {
     /// <summary>
     /// 广告展示操作结果数据类，由 AdPlugin.Events 的展示、失败与关闭事件发布。
-    /// 不变量：Success=false 时 ErrorMessage 非空；Revenue 单位为 USD，保证非负。
+    /// 字段由渠道填充；本数据类不强制校验错误信息、金额或币种，未填字段保持默认值。
     /// </summary>
     public sealed class AdResult
     {
@@ -24,7 +24,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public bool Success;
 
         /// <summary>
-        /// 用户是否满足激励广告的完成条件；MAX 以官方奖励回调状态为准。
+        /// 用户是否满足激励广告的完成条件；MAX / AdMob 在激励关闭时取官方奖励回调状态。
         /// 仅 AdFormat.Rewarded 有意义；其他格式固定为 false。
         /// </summary>
         public bool UserCompleted;

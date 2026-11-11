@@ -2,7 +2,7 @@
 
 > 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
 >
-> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 33 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
+> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 34 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
 >
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -18,6 +18,7 @@
 |------|-------------------|
 | **选择框架 API、审查业务边界、热更、状态、保存或异步归属** | [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md)：按 NA-001～NA-016 选择本次相关条目，再进入所属模块 Docs。 |
 | **当前 Skills 覆盖的日常 Nova 项目任务** | 用自然语言描述任务 → [Nova Project Skills](../Agents/INDEX.md)（确认匹配 Skill、影响范围与证据门）→ 该 Skill 引用的模块 Docs；全量可发现不代表全量顺序执行。 |
+| **从 PSD/PSB 制作 uGUI、同步来源或 AI 识别** | [nova-project-psd2ugui](../Agents/Skills/nova-project-psd2ugui/SKILL.md) → 当前已安装商业插件的 README / `Nova/Docs/`；Agent 先查询配置、树与输出，按模式调用受控操作，业务 UIView 继续既有页面接入。 |
 | **理解 Skill、Router、Workflow、Operation、Action 与 MCP 的关系** | [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)：分别看任务拆解和请求传递，理解 Nova 为什么复用 Unity MCP。 |
 | **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
 | **检查场景 / Resources 边界或构建前置条件** | [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
@@ -70,7 +71,9 @@
 | **WebSocket 长连接（认证/心跳/重连）** | [NetworkComponent.md · ConnectServer/SendMessage](Runtime/Modules/Network/NetworkComponent.md) → [WebSocketManager.md · 状态机+协程链](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) |
 | **NetCmd URL 路由配置（Host+Path）** | [NetworkManager.md · Luban 加载+URL 路由算法](Runtime/Modules/Network/NetworkManager/NetworkManager.md) → [NetworkSettings.md · HostKeySettings/NetCmdSettings](Runtime/Modules/Network/Definitions/NetworkSettings.md) |
 | **新增 SDK 插件**（UPM 拔插式） | [SDK/INDEX.md · 模块入口与目录导航](Runtime/Modules/SDK/INDEX.md) → [ARCHITECTURE.md · 当前结构与分层](Runtime/Modules/SDK/ARCHITECTURE.md) → [Definitions/SDKPluginBase.md · 纯C#抽象基类+模板方法](Runtime/Modules/SDK/Definitions/SDKPluginBase.md) → [SDKComponent.md · InitializeAsync+使用示例](Runtime/Modules/SDK/SDKComponent.md) → [Definitions/ISDKPlugin.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPlugin.md) |
-| **接入第三方支付**（ThirdPay） | [ThirdPay 包文档入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/INDEX.md) → [接入与验收顺序](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#接入与验收顺序) → [Store 配置](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStoreConfig.md) |
+| **接入第三方支付**（ThirdPay） | [ThirdPay 包文档入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/INDEX.md) → [接入与验收顺序](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#接入与验收顺序) → [购买前补单与升级说明](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询) → [Store 配置](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStoreConfig.md) |
+| **支付、多商店恢复与发货判断** | [IAP 核心入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md) → [结果与发货资格](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md#支付返回值与发货资格)；官方内购与金券分别查 [Mobile](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/INDEX.md)、[Voucher](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.voucher/Nova/Doc/INDEX.md) |
+| **广告请求、展示、Banner 与收益上报** | [广告聚合入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md) → [配置](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginConfig.md) → [事件语义](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginEvents.md)；渠道差异查 [MAX](../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/INDEX.md)、[AdMob](../../../UPMPackages/com.solotopia.nova.framework.sdk.admob/Nova/Doc/INDEX.md) |
 | **触觉振动反馈**（NiceVibrations） | [VibrateComponent.md · Play/StopAll/LoadAsync](Runtime/Modules/Vibrate/VibrateComponent.md) → [VibrateManager.md · 链式播放+CTS](Runtime/Modules/Vibrate/VibrateManager.md) |
 | **播放声音 / 管理声音组**（Sound） | [SoundComponent.md · PlaySound+LoadAsync](Runtime/Modules/Sound/SoundComponent.md) → [SoundManager.md · 优先级抢占+按name查表算法](Runtime/Modules/Sound/SoundManager.md) → [PlaySoundParams.md · 参数池化](Runtime/Modules/Sound/PlaySoundParams.md) |
 | 理解框架启动顺序 / Manager 优先级 | [ARCHITECTURE.md · 启动与销毁顺序](ARCHITECTURE.md) → [Nova.md](Runtime/Modules/Nova/Nova.md) |
@@ -527,7 +530,7 @@
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate、严格 DLL 拷贝及 Sample Editor 自动同步；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
-| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 37 项 |
+| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 39 项 |
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
 | [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
 | [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 `Find<T>` / `CreateAt<T>` / `LoadAt<T>`） |

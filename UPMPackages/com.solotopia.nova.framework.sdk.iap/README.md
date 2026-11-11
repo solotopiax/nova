@@ -1,23 +1,25 @@
 ﻿# Nova Framework - SDK - IAP
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 当前版本：`0.2.4`
+> 当前版本：`0.2.5`
 
 Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运行期查询、SKU Excel 导入/模板导出、支付事件桥接、Loading 防重入与通用持久化模板。具体渠道能力由子包提供，例如 `com.solotopia.nova.framework.sdk.iap.mobile`。
 
 ## 安装
 
-通过 Nova 私域 UPM 注册表以 UPM 依赖形式接入：
+已接入 Nova Framework 的项目可打开 `Nova → Open PlugPals → 外网仓库`，搜索并安装 `com.solotopia.nova.framework.sdk.iap`。手动配置 UPM 时使用 `https://upm.solotopiax.com`，scope 为 `com.solotopia`：
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap": "0.2.4"
+  "com.solotopia.nova.framework.sdk.iap": "0.2.5"
 }
 ```
 
+本包支持 Unity `6000.4.x`，最低 `6000.4.2f1`；清单依赖为 `com.solotopia.nova.framework@0.7.3`、`com.solotopia.unitask@10.0.6` 和 `com.solotopia.nova.framework.kit.network.gamelogin@0.1.18`，由 UPM 解析。核心包本身不提供平台收银能力，还需按目标支付渠道安装对应 Store 子包。
+
 ## 当前公开入口
 
-- `IAPPlugin`：SDK 插件入口，通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取；统一接收 SDK Pause/Focus 生命周期并转发给有需要的 Store。
+- `IAPPlugin`：SDK 插件入口，通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取；统一接收 SDK Pause/Focus 生命周期并转发给有需要的 Store。通过 `ISDKLoginReceiver` 接收框架交付的账号 UID；可选等待已启用的 `ITrackPlugin`，不以 `Priority` 保证初始化顺序。
 - `IAPPluginConfig`：Inspector 序列化配置，只保存配置数据和内联商品表。
 - `IAP Products Excel`：Inspector 支持导出模板并导入工作簿；校验通过后全量覆盖 `IAPPluginConfig.Products`，不接入 Luban。
 - `IAPProductCatalogProtocol` / `IAPProductCatalogUploader`：Editor-only 商品目录快照与共享上传入口；请求使用明文 Head 和 App AES 加密 Body，按 Debug/Release 选择固定测试/正式上传地址，商品列表手动按钮和 Pipify 的 `iap.product_catalog.upload` Step 共用同一上传实现。
@@ -29,6 +31,14 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 - `IAPInitResult`：统一初始化结果；错误码均为 `int`，核心层和各 Store 分别定义自己的错误码枚举。
 
 `IAPPluginConfig.EnableIAPLog` 默认开启；插件初始化时会把该值应用到统一日志网关，同时控制核心与各渠道 Store 的 Debug、Warning、Error 输出。
+
+配置 Store 和商品后，须从 ConfigMaster 正式导出当前坐标的 `ConfigRuntimeSO`；Excel 导入只更新配置源，不自动导出。后端登录成功时调用 `Nova.SDK.Login(uid, userProperties)`，插件尚未就绪时由框架在就绪后补交最新 UID；业务仍需在适当时机调用 `CheckLocalOrdersAsync`。
+
+## 支付结果与补单
+
+`IsSuccess` 表示本次调用或订单校验成功，发货还须检查 `CanDeliver`，并由业务按真实订单号幂等处理。返回值与 `PaySuccess` 事件可能对应同一笔订单，事件也可能重放，不应分别直接发奖。
+
+Android 第三方支付默认在首次建单后的三十分钟内，重复点击时先查询成功未验订单；命中后只补单，查询失败停止新购。各笔可发货历史订单通过原成功事件反馈，`PayAsync` 的批次完成结果不再授予发货资格。开关、窗口和升级行为见 [ThirdPay 购买前补单规则](../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询)。
 
 ## 文档
 

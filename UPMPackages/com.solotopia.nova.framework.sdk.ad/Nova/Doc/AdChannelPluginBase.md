@@ -22,6 +22,8 @@
 | `AdChannelPluginBase.Methods.cs` | 单 ID 注册入口、真实 Ready 候选、原厂调用异常处理及展示收尾 |
 | `AdChannelPluginBase.Threading.cs` | 回调快照、Unity 主线程 FIFO 队列和即时收益入口 |
 | `AdChannelPluginBase.Track.cs` | `Raise*` 入口、通用打点、属性合并和 Banner 累计持久化 |
+| `AdChannelPluginBase.RevenueReport.cs` | 收益回调后的 收益上报调度、生命周期取消和结果日志 |
+| `Services/AdRevenueReportNetService.cs` | 收益请求参数校验、`PbNetIAAReportReq` 构造和 `NetService` 发送 |
 | `AdChannelConfigList.cs` | 渠道配置列表、全局开关和共享重试间隔配置 |
 
 所有文件均位于上述源码目录。
@@ -60,13 +62,15 @@ classDiagram
 | `m_AdCallbackGeneration` | `int` | 释放时失效已排队动作的版本号 |
 | `m_TrackPlugins` | `IReadOnlyList<ITrackPlugin>` | 初始化时从 `SDKComponent.GetAll<ITrackPlugin>()` 缓存的通用打点目标 |
 | `m_BannerIlrdPersistManager` | `IFileFragmentManager` | 初始化时获取，累计回调复用，释放时清除 |
+| `m_RevenueReportCmdName` | `string` | 广告收益上报 NetworkCmd 名称；为空时跳过自动上报 |
+| `m_RevenueReportNetService` | `AdRevenueReportNetService` | 统一构造并发送广告收益上报请求 |
 
 ### 配置与派生类属性
 
 | 属性 | 可见性 | 默认值 / 行为 |
 |---|---|---|
 | `EnableBidding` | internal | `true`；聚合层开启后按渠道收益选择，否则按渠道配置顺序；渠道内仍按最高收益选择槽位 |
-| `BannerIlrdInterval` | protected internal | `5`；按收益回调次数累计；小于等于 0 时停止 Banner ILRD 累计上传并清除批次 |
+| `BannerIlrdInterval` | protected internal | `5`；MAX 的 ad_ilrd 与后台收益协议共用一份渠道累计及存档；小于等于 0 时停止累计上传并清除批次 |
 | `MuteAd` | protected internal | `false`；渠道初始化时向原厂应用静音设置 |
 | `GroupRetryIntervalsSeconds` | internal | `[2, 4, 8, 16, 32]` 秒；所有组使用同一配置序列，各组独立推进下标 |
 | `IsChannelInitialized` | protected virtual | 默认 `true`；具备异步原厂初始化的渠道应重写，以真实成功结果开放加载 |
@@ -106,6 +110,7 @@ public abstract string Name { get; }
 public abstract AdChannelType Channel { get; }
 
 public void ApplyGlobalConfig(AdChannelConfigList globals);
+public void ApplyGlobalConfig(AdChannelConfigList globals, string revenueReportCmdName);
 public UniTask InitializeAsync(IAdChannelConfig config, CancellationToken ct);
 public UniTask DisposeAsync(CancellationToken ct);
 
@@ -191,12 +196,15 @@ public UniTask<AdResult> ShowAsync(AdFormat format, Dictionary<string, object> c
 public bool IsAdPlaying(AdFormat format);
 
 protected virtual bool OnIsReady(AdFormat format, string placementId);
+protected virtual string GetBannerControlPlacementId();
 protected virtual UniTask OnRequestAsync(AdFormat format, string placementId, CancellationToken ct);
 protected virtual UniTask<AdResult> OnShowAsync(AdFormat format, string placementId, CancellationToken ct);
 protected virtual UniTask WaitForGroupRetryAsync(float seconds, CancellationToken ct);
 ~~~
 
 - `RequestAsync` 启动空闲组、观察正在加载的组轮次。首个被观察组成功即返回；全部被观察轮失败时返回最后一次实际失败，后台组重试继续。
+- `GetBannerControlPlacementId()` 默认返回 null，兼容旧派生渠道的任意 Ready 项选择；固定控制某个 Banner ID 的渠道应重写，`IsReady(Banner)` 和 `GetMaxRevenue(Banner)` 只查询该 ID。MAX / AdMob 均限定为配置首 ID；其他 ID 加载成功不代表控制目标就绪。未配置时返回空字符串以排除全部候选。
+- `public virtual bool TryShowBanner()` 默认调用旧 `ShowBanner()` 并在正常返回后返回 true，兼容已有派生类。能校验原厂对象的渠道应重写该方法，不能显示或调用异常时记录 Warning 并返回 false；MAX / AdMob 的旧 void 入口也复用该逻辑。true 不是曝光凭证。
 - 若已有真实 Ready 缓存，仍先启动其他空闲组，再返回首个按注册顺序找到的缓存结果。缓存返回不是最高收益选择；最高收益由展示候选和 `GetMaxRevenue` 选择。
 - `IsReady`、默认 `GetMaxRevenue` 和 `ShowAsync` 候选都同时检查本地 Ready 与 `OnIsReady`。查询发现失效缓存会重置该组；单纯查询不会发 Load。
 - `GetMaxRevenue` 无候选时返回 0，保持 virtual 签名，允许外部渠道重写。
@@ -263,6 +271,7 @@ protected void RaiseAdLoaded(AdLoadResult e);
 protected void RaiseAdLoadFailed(AdLoadResult e);
 protected void RaiseRevenue(AdEvent e);
 protected void RaiseRevenueImmediately(AdEvent e, Action immediateAction = null);
+protected void StartRevenueReport(AdEvent revenue);
 protected void PostAdCallbackToMainThread(Action action);
 
 protected void RaiseShowCompleted(AdResult result);
@@ -279,7 +288,7 @@ protected void RaiseAdCacheReplaced(AdFormat format, string placementId, double 
 
 `PostAdCallbackToMainThread` 用于还需操作渠道字段、原厂 API 或完成源的回调。已在正式 FIFO drain 内的嵌套 `Raise*` 会同步推进，便于渠道先结束状态再完成自己的展示等待。传入空 action 会抛异常。
 
-`RaiseRevenueImmediately` 先在原 SDK 回调线程执行 `immediateAction`，再让 `RaiseRevenue` 排入主线程写槽位收益和派发业务事件。即时操作异常有日志并继续收益通知；即时操作不应访问 Unity 状态或存储接口。`RaiseRevenue` 本身不代替渠道上传原厂特有的 `ad_ilrd / ad_impression`。
+`RaiseRevenueImmediately` 先在原 SDK 回调线程执行 `immediateAction`，再让 `RaiseRevenue` 排入主线程写槽位收益和派发业务事件。即时操作异常有日志并继续收益通知；即时操作不应访问 Unity 状态或存储接口。`RaiseRevenue` 不上传原厂特有的 `ad_ilrd / ad_impression`，也不自动发送收益协议。派生渠道在自身收益派发处调用 `StartRevenueReport`；传入单笔或已累计金额，本入口不做第二次累计或存档，后台线程调用会先冻结载荷并转主线程。
 
 `RaiseAdCacheReplaced` 用于原厂自主过期重载，具体采纳边界见 §9。
 
@@ -374,6 +383,22 @@ Ready
 业务广告事件本身通过普通 C# 委托同步调用，不会逐个隔离订阅者异常。某个订阅者抛错会跳过同次委托后续订阅者及当前队列动作尚未执行的语句；外层 FIFO 记录该动作异常后继续处理后续动作。不要将“队列继续”解释为当前通知已完整交付或全部业务回调都成功。
 
 纯收益即时上传保留原 SDK 线程路径。Banner 累计、存档及阈值派发在主线程执行。初始化缓存存储引用不等于加载存档，启动链必须先完成 `Persist.LoadAsync()`。
+
+### 广告收益上报
+
+渠道在自身收益派发入口显式调用受保护方法 `StartRevenueReport(AdEvent)`，不需要拼接协议或访问 Network Manager。MAX 在 `TrackMaxAdIlrd` 已向至少一个打点目标尝试派发后调用，Banner 传入同一批累计金额；AdMob 在 `Paid` 的显式收益入口调用。`RaiseRevenue` / `RaiseRevenueImmediately` 只更新收益状态和逐次业务通知，不再自动触发协议。基类将后台线程载荷冻结并转到 Unity 主线程，生成一次 `report_id`，由 `Services/AdRevenueReportNetService` 构造 `iaa` 请求并调用 `NetService.SendAsync`。自定义派生渠道须在自身收益派发处接入 `StartRevenueReport`，只调用原始通知入口不会发送协议。
+
+请求字段固定映射为：`AdFormat.ToString()` 写入 `ad_type`，`AdChannelType.ToString()` 写入 `ad_channel`，`PlacementId` 映射到 `ad_id`，`Revenue` 映射到 `price_usd`。仅接受 USD、非负有限金额和非空广告位；所有已定义的渠道和广告格式都按枚举字符串上报。`duplicate=true` 是幂等成功确认，不视为失败；Network 层 `NetResponse.ErrorCode` 与响应体的 `error_code` 分开处理。
+
+收益日志的实际级别、字段和排查顺序统一见[收益日志排查](./INDEX.md#收益日志排查)。配置生效使用 Info，收益进入入口、Service 参数和网络结果使用 Debug，参数或请求失败使用 Warning；当前没有单独的 Info“准备发送”日志。原厂收益回调、入口日志、网络请求和服务端入账是不同阶段，不能互相替代。
+
+实际传输是 Protobuf 二进制经应用 AES 加密后 POST，回复先解密并解析统一外层，再解析收益业务体；字段号、公共身份头和传输头区别见[协议与网络发送方式](./INDEX.md#广告收益上报-proto-协议层)。`PbNetIAAReportResp.ToString()` 输出的 JSON 可能省略默认值，不保证明确打印 false / 0。
+
+业务名称统一使用 RevenueReport；`PbNetIAAReportReq/Resp`、`PbIAAReportData`、`iaa` 与 `iaa_report_id` 是服务端协议契约，继续保留。Service 不再提供未生效的 SetDebugMode 覆盖。
+
+网络请求绑定 `ChannelLifetimeToken`，释放时取消尚未完成的请求；发送失败、路由缺失和参数无效只记录警告，不向原厂回调抛出异常。MAX 非 Banner 协议随单次 `ad_ilrd` 派发；Banner 与 `ad_ilrd` 共用 `BannerIlrdInterval`（默认 5）、累计金额和存档，达到阈值后使用同一批金额及最后一次回调的广告位发送。1 为逐次，0 或负数停止累计并清理旧批次。`ad_impression` 和收益业务通知仍逐次触发。AdMob 尚无独立分析 `ad_ilrd`，在 `Paid` 处使用同一渠道累计入口，非 Banner 直接派发协议。
+
+MAX Banner 所有打点目标均不可用时，`ad_ilrd` 不派发，后台协议也不触发，原累计继续保存；插件恢复后，下一笔收益进入同一批再尝试派发，不由独立定时器补发。非 Banner 没有持久补发队列。协议不维护第二套累计或存档；批次清理沿用 ILRD 的“已尝试派发”口径，插件调用抛异常也可能已接收，因此不会以该异常证明未派发。网络失败只记录警告，不恢复已经清理的批次。同一网络请求的传输候选复用该批次 report_id；重新进入收益派发入口会生成新 ID。协议条数代表收益批次数，不携带真实曝光次数；多广告位合并金额归到最后一次回调的广告位。
 
 ---
 
@@ -470,7 +495,7 @@ loaded 回调必须确认原厂真实 Ready；首次查询不可播时等待一�
 
 `RaiseAdCacheReplaced` 仅在原厂真实 Ready 时采纳：同组当前 Ready 项，或无活动加载 / 展示的 Idle / WaitingRetry 项。成功采纳后更新当前缓存、取消旧 timer 并归零间隔下标；不完成主动加载轮、不复活已结束批次，也不虚构 request / fill。
 
-Loading / Showing 时的 expiry 仅用于诊断，不当作主动 Load 终态。MAX 8.6.4 的 Load 回调只有真实 ID，没有请求 token 或 CancelLoad：托管 `RoundId` 能过滤旧 timer、排队动作和业务观察，无法识别所有同 ID 跨轮迟到回调，也不能禁止原厂自主 expiry / mediation 请求。MAX 原厂细节见 [MaxAdPlugin.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md)。
+Loading / Showing 时的 expiry 仅用于诊断，不当作主动 Load 终态。当前 MAX 适配的 Load 回调只有真实 ID，没有加载请求 token，Nova 也没有撤销原厂加载的入口：托管 `RoundId` 能过滤旧 timer、排队动作和业务观察，无法识别所有同 ID 跨轮迟到回调，也不能禁止原厂自主 expiry / mediation 请求。MAX 原厂细节见 [MaxAdPlugin.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md)。
 
 Banner 每组只含一个真实 ID，多组可以并行；不进行组内多 ID waterfall，也不参加全屏互斥；主动单 ID 加载失败仍走组重试间隔。MAX 的 Banner 视图刷新由原厂驱动：被动成功可更新已注册缓存并派发 fill，被动失败因没有当前主动 Loading 项而不发起 Nova 重试。重复 Request 已创建视图不保证触发一次新的原厂加载。
 
@@ -479,6 +504,7 @@ Banner 每组只含一个真实 ID，多组可以并行；不进行组内多 ID 
 - 所有存储读写、删除只通过初始化缓存的 `IFileFragmentManager`，并在 Unity 主线程执行；启动链先完成 `Persist.LoadAsync()`。
 - MAX 使用不带 ID 的累计入口，同渠道全部 Banner 共用次数和金额；默认第 5 次收益回调尝试派发 `ad_ilrd`。不同渠道隔离，上传广告信息来自触发阈值的回调，收益为整批累计值。
 - 分类为 `NovaAdBannerIlrd`；渠道汇总键为 `Nova.Ad.BannerIlrd.{Name}.Count` 和 `Nova.Ad.BannerIlrd.{Name}.Revenue`。
+- 后台收益协议在渠道收益派发入口复用这一批累计金额，不再单独累计或存档；MAX 的 `ad_ilrd` 未派发时不会提前发送协议。
 - 带 ID 重载使用 `Nova.Ad.BannerIlrd.{Name}.{placementId}.Count / Revenue`，保持按广告位累计语义；它与渠道汇总批次独立，不自动合并旧数据。
 - 次数存 int，金额按 decimal 累计并使用 `InvariantCulture` 文本保存。未满阈值或 `trackAction` 未派发时保存当前批次，并调用 `Save(classify)`。
 - 已派发，或间隔小于等于 0 时清除批次，再调用无参数 `Save()` 处理待删分类及备份，避免重启恢复旧批次。

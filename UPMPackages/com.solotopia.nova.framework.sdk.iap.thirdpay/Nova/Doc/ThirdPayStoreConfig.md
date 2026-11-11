@@ -2,21 +2,40 @@
 
 | 字段 | 说明 |
 |---|---|
-| `Enabled` | 是否启用 ThirdPay Store |
-| `SkipPaymentInformationScreen` | 是否默认跳过当前 Google 外部结算接口的信息页；该开关不代表允许跳过目标计划强制的选择、披露或家长控制步骤 |
+| `Enabled` | 是否默认启用 ThirdPay Store，默认 `true` |
+| `AndroidOrderRecoveryEnabled` | Android 重复点击购买前是否查询成功未验订单，默认 `true`；关闭后清理当前业务旧记录再正常支付，不影响独立后台补单 |
+| `AndroidOrderRecoveryWindowMinutes` | 查询窗口分钟数，默认 `30`，限制 `0～30`；`0` 表示不查询，达到窗口上限或时间回拨均不查询 |
+| `SkipPaymentInformationScreen` | 是否默认跳过当前 Google 外部结算接口的信息页，默认 `false`；该开关不代表允许跳过目标计划强制的选择、披露或家长控制步骤 |
 | `ExternalBrowserReturnValidateDelaySeconds` | 外部浏览器未收到成功回调时，返回 App 后兜底验单前的等待秒数，非正配置回落为 `2.5` |
 | `PaymentConfigCmdName` | 获取第三方支付配置信息的 NetCmd，默认 `ThirdGetPaymentConfig` |
-| `QueryPendingOrderCmdName` | 查询支付成功但客户端尚未校验订单的 NetCmd |
-| `VerifyIapCmdName` | 批量验证第三方订单的 NetCmd |
+| `QueryPendingOrderCmdName` | 查询支付成功但客户端尚未校验订单的 NetCmd，默认 `ThirdQueryPendingOrder`；设为空不回落默认名 |
+| `VerifyIapCmdName` | 批量验证第三方订单的 NetCmd，默认 `ThirdVerifyIap`；设为空不回落默认名 |
 | `GoogleApiTimeoutSeconds` | Google 外链结算网络类操作的超时秒数，非正配置回落为 `15`；用户信息页不受此超时限制 |
 
 第三方支付可用性、商品、`payment_customer_ids` 和 HTTPS 支付页地址统一由 `PaymentConfigCmdName` 对应协议返回。客户端不再分别配置商品、渠道参数和支付页 URL 的 NetCmd。
+
+`PaymentConfigCmdName` 为空时仍回落为 `ThirdGetPaymentConfig`，与另外两条命令不同。命令名只用于查找当前 Network 配置，不是已部署服务地址；须完成 Host/NetCmd 的正式导出及当前平台 Runtime 引用。修改持久配置后保存 ConfigMaster 并重新导出，在重新初始化 Store 后核对生效；直接改编辑器工作副本不会更新已运行的 Store。
 
 国家码不从 `ThirdPayStoreConfig` 读取。Store 初始化时并发查询 Billing、iOS Storefront 和 AD 国家码，但登录前不会锁定结果或发送用户态配置协议；登录后首次有效自动解析结果会写入 Lock，并在当前 Store 生命周期及重新登录后持续复用。运行时可通过 `SetDebugCountryCode` 显式覆盖当前读取结果，但不会重写既有 Lock。全部来源均无有效值时 `ThirdGetPaymentConfig` 不会发送，网络协议层也会返回 `PARAM_ERROR`。服务端负责白名单、黑名单和国家策略判断，客户端只消费 `enabled` 与整数 `disabled_reason`，不保存策略明细。
 
 支付页打开方式由平台固定决定：Android 使用外部浏览器链，iOS 使用 UniWebView Safe Browsing，Editor 使用嵌入式 UniWebView。
 
 `Enabled` 是 Store 配置开关；`IsPaymentConfigReady`、`IsPaymentAvailable` 和 `PaymentDisabledReason` 是运行时公开配置能力，分别表示统一配置是否就绪、服务端是否允许当前上下文支付及服务端关闭原因。读取原因码前先检查就绪状态；统一配置的 `client_config` 当前仅供包内快照使用，没有对应的公开配置能力。
+
+## 运行时调整购买前查询
+
+查询设置由 Store 初始化时复制到运行时状态，后续通过 `IIAPThirdPayOrderRecoveryCapable.SetAndroidThirdPayOrderRecoveryEnabled` / `SetAndroidThirdPayOrderRecoveryWindowMinutes` 即时修改；运行时修改不回写 ConfigMaster 或导出的资产。默认值也适用于缺少新字段的旧配置；保存 ConfigMaster 并正式导出后写入新字段。时间记录按账号和业务键隔离，完整分流、升级及批量回调语义见 [Android 重复点击补单查询](ThirdPayStore.md#android-重复点击补单查询)。
+
+通过 `IAPPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recovery)` 获取能力；未取得时不要直接构造内部 Store。该能力的成员如下：
+
+| 成员 | 作用 |
+|---|---|
+| `SetAndroidThirdPayOrderRecoveryEnabled(bool isEnabled)` | 改变后续点击的查询决策；关闭后在下次购买时清理当前业务旧记录再正常支付 |
+| `SetAndroidThirdPayOrderRecoveryWindowMinutes(int windowMinutes)` | 改变后续点击的窗口，超出范围时限制到 `0～30`；不刷新已有订单的时间起点 |
+| `IsAndroidThirdPayOrderRecoveryEnabled` | 读取当前运行时开关 |
+| `AndroidThirdPayOrderRecoveryWindowMinutes` | 读取当前运行时窗口分钟数 |
+
+建议在 Store 初始化完成后设置；初始化会重新读取配置，初始化前设置的值会被覆盖。设置仅影响之后开始的判断，不撤销已发送的查询、支付或验单。非 Android 仍使用原购买前本地验单逻辑；独立后台补单不受该开关限制。
 
 ## 国家状态与配置缓存边界
 

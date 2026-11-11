@@ -111,11 +111,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 关闭并清理 UI 管理器。
+        /// 关闭并清理 UI 管理器，同时释放打开失败事件的订阅者引用。
         /// </summary>
         public override void Shutdown()
         {
             m_IsShutdown = true;
+            OnOpenUIViewFail = null;
             CloseAllLoadingUIViews();
             CloseAllLoadedUIViews();
             m_UIViewIndex.Clear();

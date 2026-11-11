@@ -1,17 +1,17 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.2.1`
+> 当前版本：`0.2.2`
 
 MAX 广告聚合插件，提供广告展示服务。
 
 本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads@8.6.6` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 `package.json` 统一声明为 AppLovin 官方 UPM 依赖。
 
-Unity Ads Android adapter 固定为 `4200101.0.0`（AppLovin adapter `4.20.1.1`、Unity Ads SDK `4.20.1`），iOS adapter 固定为 `4200001.0.0`（`4.20.0.1`、Unity Ads SDK `4.20.0`），LINE iOS adapter 固定为 `3010102.0.0`（`3.1.1.2`、LINE SDK `3.1.1`）。Android 官方修复包移除了错误的 iOS SPM 版本占位符；两个 iOS 官方包使用真实三段 tag，解决 Xcode 读取旧四段版本时崩溃。
+当前 `package.json` 将 Unity Ads Android / iOS adapter 均固定为 `4210001.0.0`，LINE iOS adapter 固定为 `3010102.0.0`。这些是 UPM adapter 包版本，不能直接当作其原生 SDK 版本。
 
-iOS 构建时，Nova 自有顺序 `44` 后处理会将上述 LINE、Unity Ads 原生 adapter 统一交给 CocoaPods，避免其他 MAX Pods 和两项 SPM adapter 同时生产 `AppLovinSDK.framework`。Firebase 等其他 SDK 保留原有 SPM 配置，两个 iOS 原生 SDK 版本保持不变。该步骤随包自动执行，要求可运行的 CocoaPods；未知版本或工程结构会明确令构建失败，修复后重新导出。普通回写异常恢复原始两文件，超时或强制中断时必须重新导出，具体边界见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
+iOS 构建的 Nova 顺序 `44` 后处理将 LINE、Unity Ads 原生 adapter 统一交给 CocoaPods，避免两项 SPM adapter 与其他 MAX Pods 同时生产 `AppLovinSDK.framework`，并保留 Firebase 等其他 SDK 的 SPM 配置。处理器按官方 XML 严格核对 Unity Ads iOS 的 UPM / SPM `4210001.0.0` 与 Pod `4.21.0.1`，LINE 的 UPM / SPM `3010102.0.0` 与 Pod `3.1.1.2`；未知版本、XML 或工程引用图变化仍会阻断构建。升级后应重新导出工程，再核对 Pods 并执行 Xcode 编译；版本对齐不代表平台验收已经通过。精确契约与恢复边界见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
-Android 构建时，若 Unity 为 `6000.4.4f1` 及以上且 AppLovin Integration Manager 开启 Quality Service（不论是否勾选 Custom Launcher Manifest），临时修复 `MaxSafeDKLauncherManifestFix` 会向生成的 launcher manifest 补写 `android:name="com.safedk.android.SafeDKApplication"`，不改动项目模板；已有其他自定义 Application 时保留并告警。MAX 修复后删除该文件即可，详见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#android-safedk-launcher-manifest-临时修复)。
+Android 构建不再由 Nova 额外改写 SafeDK launcher manifest；Quality Service 的 launcher Application 配置依赖项目实际安装的 Unity / AppLovin 构建链。MAX 构建处理器保留官方设置注入、ProGuard、iOS 依赖归属和 SKAdNetwork 处理，详见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md)。
 
 ## 安装
 
@@ -20,12 +20,14 @@ Android 构建时，若 Unity 为 `6000.4.4f1` 及以上且 AppLovin Integration
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.max": "0.2.1"
+    "com.solotopia.nova.framework.sdk.max": "0.2.2"
   }
 }
 ```
 
-本包固定依赖 Ad `1.2.1`、Framework `0.7.3` 和 MAX `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
+本包固定依赖 Ad `1.2.3`、Framework `0.7.3` 和 MAX `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
+
+项目组在 Nova PlugPals 使用内部云仓库安装本 Nova 包，需有对应内部 registry 的访问权限；窗口入口见 [PlugPals](../../Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md)。下方 AppLovin 与 OpenUPM 是原厂依赖的外网 registry，与 Nova 内部仓库分别配置，安装和原生依赖解析都需要相应网络可达。
 
 Nova PlugPals 会把本包 `nova.scopedRegistries` 写到工程顶层 manifest；通过 Unity 原生 Package Manager 或直接改 manifest 安装时，需要合并以下 registry，保留项目已有条目：
 
@@ -50,7 +52,9 @@ Nova PlugPals 会把本包 `nova.scopedRegistries` 写到工程顶层 manifest�
 }
 ```
 
-实际原生广告支持 Android/iOS；Editor 和其他平台使用 MAX 的 Editor 门面，不能视为真机广告验证。配置 `AdPluginConfig.ChannelConfigs.Items` 中的 MAX 项并导出 `ConfigRuntimeSO` 后，由当前 `AdPlugin` 聚合层为新建的每个 MAX 渠道实例初始化一次，初始化完成不自动预载。AppKey 与 AdMob 平台 App ID 在构建期写入官方 `AppLovinSettings.asset`；当前构建处理器不校验广告组语法，运行时会跳过无效格式。完整构建链见 [构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md)。
+实际原生广告支持 Android/iOS；Editor 和其他平台使用 MAX 的 Editor 门面，不能视为真机广告验证。由于 Editor 门面不提供真实 ILRD 收益，Nova 会把 MAX 返回的未知/负收益占位值统一暴露为 `0`；Android/iOS Player 的正常正收益保持原值。配置 `AdPluginConfig.ChannelConfigs.Items` 中的 MAX 项并导出 `ConfigRuntimeSO` 后，由当前 `AdPlugin` 聚合层为新建的每个 MAX 渠道实例初始化一次，初始化完成不自动预载。AppKey 与 AdMob 平台 App ID 在构建期写入官方 `AppLovinSettings.asset`；当前构建处理器不校验广告组语法，运行时会跳过无效格式。完整构建链见 [构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md)。
+
+MAX 的收益协议通过父包 `AdChannelPluginBase.StartRevenueReport` 发送。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，在 `TrackMaxAdIlrd` 已派发分支调用；Banner 直接共享原 ILRD 累计金额和存档，无可用打点目标时协议同步等待。原始收益业务通知仍逐次触发，不重复发送协议。非 Banner 无可用 ILRD 目标时不发后台协议，也不保留补发队列。协议由 `AdRevenueReportNetService` 构造 `PbNetIAAReportReq`；`RevenuePaid` 不表示网络成功，详见 [Ad 基础包收益上报文档](../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
 
 ## 当前行为
 

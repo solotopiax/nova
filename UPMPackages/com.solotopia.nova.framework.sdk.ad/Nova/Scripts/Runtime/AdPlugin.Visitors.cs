@@ -103,10 +103,21 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 最近一次 RequestAsync(AdFormat.Banner) 成功后记录的活跃 Banner 渠道。
-        /// ShowBanner / HideBanner 等 Banner 控制方法委托给此渠道。
+        /// 已发起显示的 Banner 所属渠道；隐藏后保留，销毁或释放时清除。
+        /// 后台预加载不得替换此归属，避免隐藏和销毁操作错投其他渠道。
         /// </summary>
         private IAdInternalPlugin m_ActiveBannerChannel;
+
+        /// <summary>
+        /// 最近一次预加载成功的候选，供首次显示前设置 Banner 属性使用。
+        /// 首次显示仍重新查询就绪状态，不依赖此缓存。
+        /// </summary>
+        private IAdInternalPlugin m_PreparedBannerChannel;
+
+        /// <summary>
+        /// 销毁或释放时递增，阻止旧请求及同步重入的显示调用恢复已清除的归属。
+        /// </summary>
+        private int m_BannerControlVersion;
 
 
         /// <summary>

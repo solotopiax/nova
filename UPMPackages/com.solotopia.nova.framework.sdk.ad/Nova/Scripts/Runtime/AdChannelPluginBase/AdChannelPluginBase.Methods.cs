@@ -158,8 +158,10 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             RequireAdMainThread();
             if (m_IsDisposed || !IsChannelInitialized || m_AdConfigFailures.ContainsKey(format) || !m_AdUnits.TryGetValue(format, out var units)) return null;
             AdUnit best = null;
+            string bannerPlacementId = format == AdFormat.Banner ? GetBannerControlPlacementId() : null;
             foreach (var unit in units)
             {
+                if (bannerPlacementId != null && unit.PlacementId != bannerPlacementId) continue;
                 bool ready = IsUnitReallyReady(unit);
                 if (ready && (best == null || unit.Revenue > best.Revenue)) best = unit;
             }

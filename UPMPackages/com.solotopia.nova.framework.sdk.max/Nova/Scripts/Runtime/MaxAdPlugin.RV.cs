@@ -62,7 +62,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">厂商响应，返回前复制所需字段。</param>
         private void OnRVLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"Rewarded 加载成功回调：format={AdFormat.Rewarded}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Rewarded 加载成功回调：format={AdFormat.Rewarded}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(info))}，precision={info?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Rewarded, adUnitId, nameof(OnRVLoaded))) return;
             var snapshot = new MaxAdInfoSnapshot(info);
             var result = new AdLoadResult
@@ -245,7 +245,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">厂商收益响应，立即复制后使用。</param>
         private void OnRVRevenuePaid(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"Rewarded 收益回调：format={AdFormat.Rewarded}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Rewarded 收益回调：format={AdFormat.Rewarded}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(info))}，precision={info?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Rewarded, adUnitId, nameof(OnRVRevenuePaid))) return;
             var snapshot = new MaxAdInfoSnapshot(info);
             RaiseRevenueImmediately(new AdEvent
@@ -267,9 +267,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="newInfo">替换广告信息，收益从此响应复制。</param>
         private void OnRVExpiredAdReloaded(string adUnitId, MaxSdkBase.AdInfo expiredInfo, MaxSdkBase.AdInfo newInfo)
         {
-            Log.Debug(LogTag.Max, $"Rewarded 过期广告重载回调：format={AdFormat.Rewarded}，placement={adUnitId}，expiredNetwork={expiredInfo?.NetworkName}，expiredRevenueUSD={FormatRevenue((decimal)(expiredInfo?.Revenue ?? 0d))}，expiredPrecision={expiredInfo?.RevenuePrecision}，network={newInfo?.NetworkName}，revenueUSD={FormatRevenue((decimal)(newInfo?.Revenue ?? 0d))}，precision={newInfo?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Rewarded 过期广告重载回调：format={AdFormat.Rewarded}，placement={adUnitId}，expiredNetwork={expiredInfo?.NetworkName}，expiredRevenueUSD={FormatRevenue((decimal)GetMaxRevenue(expiredInfo))}，expiredPrecision={expiredInfo?.RevenuePrecision}，network={newInfo?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(newInfo))}，precision={newInfo?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Rewarded, adUnitId, nameof(OnRVExpiredAdReloaded))) return;
-            double revenue = newInfo?.Revenue ?? 0d;
+            double revenue = GetMaxRevenue(newInfo);
             PostAdCallbackToMainThread(() => RaiseAdCacheReplaced(AdFormat.Rewarded, adUnitId, revenue));
         }
 #endif

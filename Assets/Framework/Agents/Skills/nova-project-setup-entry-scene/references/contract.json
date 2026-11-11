@@ -16,6 +16,11 @@
       "kind": "csharp-api",
       "entry": "Nova.Asset.LoadSceneAsync / ISceneHandle.UnloadAsync",
       "when": "Content 场景已确认采用 Nova 资源系统的 Additive 加载与卸载"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "current Unity Editor/MCP supported Sample asset import, dependency inspection and copy, plus project-owned ProcedureComponent LauncherSettings editing",
+      "when": "新项目或已授权固定启动资源准备，冻结实际来源/依赖/项目目标与序列化绑定后按当前Provider真实Schema串行执行；UI或配置字段编辑条件复用edit-settings，不手写YAML、不假装新增Project Action。"
     }
   ],
   "inputs": [
@@ -38,6 +43,21 @@
     {
       "name": "targetBuildTargetAndValidationIntent",
       "required": true
+    },
+    {
+      "name": "startupPreparationInventory",
+      "required": false,
+      "constraint": "新项目/开工准备分支必需，由Agent按 Docs/Onboarding/PROJECT_STRUCTURE.md 读取平台与工具、固定Resources、配置/导出、资源映射、业务身份和HybridCLR事实，逐项已就绪/待准备/不适用及依据、依赖和负责Operation；当前阶段必需项未齐不放行业务，不要求尚未开发玩法预先完成，不新增Action请求字段。"
+    },
+    {
+      "name": "fixedStartupResourcesSourceTargetsDependenciesAndLauncherBindings",
+      "required": false,
+      "constraint": "新项目默认或已授权补启动资源分支必需：实际安装版本MainDemo正式导入来源、项目自有目标、三面板/启动JSON/字体材质贴图及依赖、Resources键冲突处理、LauncherSettings原/目标值、保存与实际显示探针。可读事实由Agent取得，已有建项授权持续有效；不套用整个Demo、不依赖开发机路径、不修改包缓存。"
+    },
+    {
+      "name": "sampleImportWriteSetAndEffects",
+      "required": false,
+      "constraint": "仅启动资源来源尚未正式导入时必需：实际已安装MainDemo的官方Sample来源、精确导入目录/全部文件与编译、自动导入辅助工具已知写入/弹窗范围；独立冻结授权与读回，完成后才复制。不能以三面板复制隐含整Sample导入，范围无法冻结时保持具体来源缺口。"
     }
   ],
   "effects": [
@@ -49,7 +69,10 @@
       "confirmed entry scene",
       "confirmed canonical Nova.prefab connected instance",
       "confirmed Build Settings scene entries and order",
-      "confirmed Content ownership source"
+      "confirmed Content ownership source",
+      "confirmed project-owned fixed startup Resources assets and dependency copies through Unity asset tools",
+      "confirmed project-owned ProcedureComponent LauncherSettings fields and saved scene/Prefab overrides through Unity editing",
+      "optional official MainDemo Sample import exact source directory, files and known import-helper outputs only when independently frozen and authorized before startup asset copying"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -57,7 +80,9 @@
       "handwritten Prefab or Scene YAML",
       "unconfirmed Sample, test, plugin or alternative entry scene",
       "automatic Content loading or unloading",
-      "Player build, external publish, scene deletion or Git operation"
+      "Player build, external publish, scene deletion or Git operation",
+      "unconfirmed whole Sample import/overwrite or source deletion, fixed Resources key collisions or bootstrap dependencies on later business DLL/Bundle",
+      "manual asset YAML or PackageCache edits used to prepare startup resources"
     ]
   },
   "locks": [
@@ -65,7 +90,8 @@
     "asset-database",
     "active-scene",
     "build-settings",
-    "scene-topology"
+    "scene-topology",
+    "fixed-startup-resources-and-launcher-bindings"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -75,7 +101,7 @@
       "replace non-generated Prefab or alter existing scene ownership",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认入口、运行拓扑、Build Settings 闭包、Content 责任和最小写入集；输入或范围改变后旧确认失效。"
+    "rule": "确认入口、运行拓扑、Build Settings 闭包、Content 责任和最小写入集；输入或范围改变后旧确认失效。 新项目已有同范围授权覆盖明确的启动资源准备；来源/目标、键冲突处理或覆盖范围不明确时先冻结，不重复询问可读事实，不自动覆盖原资产。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -88,6 +114,9 @@
     "入口场景中的 canonical Nova.prefab connected instance",
     "启用 Build Settings 场景与顺序",
     "Content 的显式加载和卸载责任",
-    "实际场景层级、组件与引用检查，对象路径和入口 Play smoke"
+    "实际场景层级、组件与引用检查，对象路径和入口 Play smoke",
+    "新项目固定资源来源/目标、全部实际依赖、Resources键唯一和项目LauncherSettings保存读回；真实入口启动面板/文本实际加载显示及当前阶段模块可用，字段非空或进度完成不能代替。",
+    "新项目基础环境/配置/必要导出未齐时保留依赖缺口，按相应Operation继续准备；局部场景操作不代表整套环境已就绪。",
+    "若需先导入Sample：独立冻结的精确导入写集、编译/自动辅助工具副作用及完成读回；导入完成不替代随后资源独立依赖、唯一键和实际显示验收。"
   ]
 }

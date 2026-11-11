@@ -40,7 +40,7 @@ AdPlugin 事件容器，持有 7 个 ObservableEvent 字段，汇聚当前聚合
 
 AdLoaded和AdLoadFailed描述已接受的单个广告ID加载结果。A1失败会发布AdLoadFailed，但同组仍可尝试A2；其他组也继续运行。RequestAsync的await结果由独立批次观察决定：任意可播成功即完成，全体观察轮失败后返回最近实际失败一次。后台新轮可以继续发布新事件，不能再次完成已经失败或取消的旧观察者。Sticky补发是历史最后一条事件，不能用它代替IsReady的原厂真实Ready查询。
 
-基类渠道的加载、展示、关闭、收益状态写和业务事件通知在Unity主线程串行执行；MAX的ad_impression及非Banner ad_ilrd纯上报可在收益回调原线程即时执行。Banner累计存档与业务通知仍在主线程。RevenuePaid供业务观察，不替代渠道收益上报，也不用于推导激励奖励资格。
+基类渠道的加载、展示、关闭、收益状态写和业务事件通知在Unity主线程串行执行；MAX的ad_impression及非Banner ad_ilrd纯上报可在收益回调原线程即时执行。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，渠道在收益派发处显式调用 `StartRevenueReport`，由 `AdRevenueReportNetService` 发送 `PbNetIAAReportReq`；MAX Banner 与 ad_ilrd 共用同一累计批次和存档，协议发送切回主线程。RevenuePaid 仍逐次通知原始收益，不自动触发协议，不代表网络成功，也不用于推导激励奖励资格。
 
 聚合 Request 的 ct 结束本次业务等待，不清已经发出的原厂 Loading；基类渠道的 Show 同样只取消外层等待，原生展示占用保留。IsAdPlaying 读取基类渠道的占用，在 Show 发出后保持对应全屏格式为 true，直到匹配 hidden / displayFailed 或渠道释放。基类重复终态只收口一次；Busy 失败不会结束正在播放的原广告。ShowCompleted 只表示 displayed，不能把它当作关闭或激励完成。
 
@@ -66,6 +66,8 @@ AdLoaded和AdLoadFailed描述已接受的单个广告ID加载结果。A1失败�
 基类关闭入口保留渠道传入的 `AdResult.RewardGranted`；`RaiseAdClosed` 的 `rewarded` 参数只写入埋点属性 `nova_can_get_reward`。MAX 激励通过 `OnAdReceivedRewardEvent` 设置奖励状态，单独收到 `OnAdRevenuePaidEvent` 不会把激励奖励资格改为 true。
 
 插屏展示成功和关闭都携带奖励资格，业务应选定其中一个入口发奖。Replay 会向新订阅者补发近期记录，业务发奖应使用自己的展示请求标识防止重复处理。它是容量为 32 的内存缓冲，不保证超出容量或进程退出后的交付。
+
+独立 AdMob 与 MAX 的插屏奖励约定不同：AdMob 全屏打开时只设置 `Success=true`，`UserCompleted` / `RewardGranted` 均为 false；激励官方奖励回调只记录本次资格，到关闭时两个字段才一同取该状态。AdMob 插屏、开屏关闭时不授予奖励资格。聚合会选择不同渠道，业务不能把 MAX 插屏的 `RewardGranted=true` 约定泛化到所有渠道。
 
 `nova_ad_impression_id` 是埋点属性，不是 `AdResult` 字段；当前 MAX 会将它传到全屏关闭埋点，供分析平台串联同次展示。
 
@@ -93,6 +95,8 @@ AdLoaded和AdLoadFailed描述已接受的单个广告ID加载结果。A1失败�
 | `Revenue` / `Currency` | `double` / `string` | 收益和货币；当前 MAX 填原厂收益与 USD |
 | `Precision` | `string` | 原厂收益精度，如 exact、estimated、publisher_defined |
 | `Timestamp` | `DateTime` | 事件时间字段；当前 MAX 未赋值，保持默认值，不能当作自动生成的 UTC 曝光时间 |
+
+上表描述 `RevenuePaid` 的原始业务载荷。AdMob 在 `Paid` 中填写 `DateTime.UtcNow`；MAX 原始通知不填时间戳，但为收益协议新建的内部载荷会填写当前 UTC 时间。这两种载荷不能混为同一对象，而且收益 Proto 本身不传 `Timestamp`、`Precision` 或 `Network`，协议接收日期以响应 `utc_day` 为准。
 
 `AdEventType` 为 `Revenue=0`、`Loaded=1`、`LoadFailed=2`、`Displayed=3`、`Clicked=4`、`Closed=5`。它不对应七个事件字段的一一映射，当前 `AdPluginEvents` 没有独立点击业务事件；点击由渠道埋点入口处理。默认数值、布尔字段为 0 / false，引用字段为 null，未填的 `Format` 默认为 Rewarded。
 

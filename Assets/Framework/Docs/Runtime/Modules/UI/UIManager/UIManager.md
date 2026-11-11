@@ -203,6 +203,9 @@ DefaultSafeAreaProvider 直接从 Screen.safeArea 给出 Left=xMin、Right=xMax�
 - `CloseAllLoadedUIViews(...)`
 - `CloseAllLoadingUIViews()`
 
+`Shutdown()` 先清空 `OnOpenUIViewFail` 订阅，再取消加载中请求、关闭已打开视图，
+避免组件先销毁导致迟到退订无法转发时，管理器继续持有业务页面的回调引用。
+
 ### 4. 查询与状态
 
 - `GetUIGroup(...)`

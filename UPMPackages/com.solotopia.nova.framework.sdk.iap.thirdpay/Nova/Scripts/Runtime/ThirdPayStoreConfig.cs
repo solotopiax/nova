@@ -27,6 +27,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private bool m_Enabled = true;
 
         /// <summary>
+        /// Android 重复购买时是否先查询支付成功但尚未校验的订单。
+        /// </summary>
+        [SerializeField, InspectorName("启用安卓重复点击补单查询"), Tooltip("启用安卓第三方支付重复点击补单查询；查询失败时不会创建新订单")]
+        private bool m_AndroidOrderRecoveryEnabled = true;
+
+        /// <summary>
+        /// Android 购买前补单查询窗口，单位为分钟；零表示跳过查询。
+        /// </summary>
+        [SerializeField, InspectorName("安卓补单查询窗口（分钟）"), Range(0, 30), Tooltip("安卓第三方支付补单查询窗口（分钟），0 表示不查询，最大 30 分钟")]
+        private int m_AndroidOrderRecoveryWindowMinutes = 30;
+
+        /// <summary>
         /// 是否跳过 Google 第三方支付信息页。
         /// </summary>
         [SerializeField, Tooltip("是否跳过 Google 第三方支付信息页，直接进入 ThirdPay 支付页")]
@@ -71,6 +83,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 获取是否默认启用 ThirdPay Store。
         /// </summary>
         public bool Enabled => m_Enabled;
+
+        /// <summary>
+        /// 获取 Android 购买前补单查询开关；非 Android 不改变原购买流程。
+        /// </summary>
+        public bool AndroidOrderRecoveryEnabled => m_AndroidOrderRecoveryEnabled;
+
+        /// <summary>
+        /// 获取限制在零至三十分钟的 Android 购买前查询窗口。
+        /// </summary>
+        public int AndroidOrderRecoveryWindowMinutes => Math.Max(0, Math.Min(30, m_AndroidOrderRecoveryWindowMinutes));
 
         /// <summary>
         /// 获取是否默认跳过 Google 第三方支付信息页。

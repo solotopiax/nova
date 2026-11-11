@@ -38,11 +38,11 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private bool m_EnableBidding = true;
 
         /// <summary>
-        /// Banner ILRD（广告收入回调）上报间隔次数，默认 5 次上报一次。
-        /// 值为 1 表示每次展示都上报；值为 0 或负数时视为不上报。
+        /// Banner 的 ad_ilrd 与后台收益协议共用的累计次数，默认 5 次收益回调上报一次。
+        /// MAX 两条上报链共用同一份渠道累计和存档；1 表示每次派发，0 或负数停用并清理累计。
         /// </summary>
         [SerializeField]
-        [Tooltip("Banner 广告收入回调的上报间隔，单位：次。默认 5 表示每 5 次展示上报一次；1 = 每次都上报；0 或负数 = 不上报。")]
+        [Tooltip("Banner 的收益打点与后台协议共用一份累计。默认 5 表示每 5 次收益回调派发累计金额；1 = 每次派发；0 或负数 = 停用并清理累计。ad_impression 不受影响。")]
         private int m_BannerIlrdInterval = 5;
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public bool EnableBidding => m_EnableBidding;
 
         /// <summary>
-        /// Banner ILRD 上报间隔次数；0 或负数表示不上报。
+        /// Banner 的 ad_ilrd 与后台收益协议共用累计次数；0 或负数表示停止对应上报。
         /// </summary>
         public int BannerIlrdInterval => m_BannerIlrdInterval;
 

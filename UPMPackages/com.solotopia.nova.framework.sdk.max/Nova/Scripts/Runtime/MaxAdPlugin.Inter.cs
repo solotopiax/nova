@@ -61,7 +61,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">厂商响应，返回前复制所需字段。</param>
         private void OnInterLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"Interstitial 加载成功回调：format={AdFormat.Interstitial}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Interstitial 加载成功回调：format={AdFormat.Interstitial}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(info))}，precision={info?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Interstitial, adUnitId, nameof(OnInterLoaded))) return;
             var snapshot = new MaxAdInfoSnapshot(info);
             var result = new AdLoadResult
@@ -223,7 +223,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">厂商收益响应，立即复制后使用。</param>
         private void OnInterRevenuePaid(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            Log.Debug(LogTag.Max, $"Interstitial 收益回调：format={AdFormat.Interstitial}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)(info?.Revenue ?? 0d))}，precision={info?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Interstitial 收益回调：format={AdFormat.Interstitial}，placement={adUnitId}，network={info?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(info))}，precision={info?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Interstitial, adUnitId, nameof(OnInterRevenuePaid))) return;
             var snapshot = new MaxAdInfoSnapshot(info);
             RaiseRevenueImmediately(new AdEvent
@@ -245,9 +245,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="newInfo">替换广告信息，收益从此响应复制。</param>
         private void OnInterExpiredAdReloaded(string adUnitId, MaxSdkBase.AdInfo expiredInfo, MaxSdkBase.AdInfo newInfo)
         {
-            Log.Debug(LogTag.Max, $"Interstitial 过期广告重载回调：format={AdFormat.Interstitial}，placement={adUnitId}，expiredNetwork={expiredInfo?.NetworkName}，expiredRevenueUSD={FormatRevenue((decimal)(expiredInfo?.Revenue ?? 0d))}，expiredPrecision={expiredInfo?.RevenuePrecision}，network={newInfo?.NetworkName}，revenueUSD={FormatRevenue((decimal)(newInfo?.Revenue ?? 0d))}，precision={newInfo?.RevenuePrecision}。");
+            Log.Debug(LogTag.Max, $"Interstitial 过期广告重载回调：format={AdFormat.Interstitial}，placement={adUnitId}，expiredNetwork={expiredInfo?.NetworkName}，expiredRevenueUSD={FormatRevenue((decimal)GetMaxRevenue(expiredInfo))}，expiredPrecision={expiredInfo?.RevenuePrecision}，network={newInfo?.NetworkName}，revenueUSD={FormatRevenue((decimal)GetMaxRevenue(newInfo))}，precision={newInfo?.RevenuePrecision}。");
             if (!AcceptMaxCallback(AdFormat.Interstitial, adUnitId, nameof(OnInterExpiredAdReloaded))) return;
-            double revenue = newInfo?.Revenue ?? 0d;
+            double revenue = GetMaxRevenue(newInfo);
             PostAdCallbackToMainThread(() => RaiseAdCacheReplaced(AdFormat.Interstitial, adUnitId, revenue));
         }
 #endif

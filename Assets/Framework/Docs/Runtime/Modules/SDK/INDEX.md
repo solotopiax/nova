@@ -75,6 +75,14 @@ find UPMPackages Packages Library/PackageCache -ipath '*/Nova/doc*/INDEX.md' -pr
 | [Plugins/Ad/IBannerControl.md](./Plugins/Ad/IBannerControl.md) | Banner 专属控制接口 |
 | [Plugins/Ad/AdLoadEvent.md](./Plugins/Ad/AdLoadEvent.md) | 广告加载统一结果载荷 |
 
+### IAP 公共层
+
+支付公共层保留 `IIAPPlugin`、`IIAPRequest`、`IIAPResult` 与 `IAPErrorSource`，具体 Store、事件、配置和结果扩展由实际安装的支付包提供：
+
+- `IIAPRequest` 只暴露商品表行 `TableId`；`IIAPPlugin` 提供 `SetUserId`、`PayAsync<T>` 和 `RestorePurchasesAsync<T>`。
+- `IIAPResult` 只包含商品、成功状态、错误域/码/描述与订单号；`CanDeliver`、`IsRecoveredOrder`、`ReceiptParam` 和 `StoreType` 等由包内 `IAPResult` 承载，不能假定最小接口具备这些成员。
+- Store 特有能力与补单扫描分别由包内 `IAPPlugin.TryGetCapability<T>`、`CheckLocalOrdersAsync` 提供。按上方包文档发现流程读取当前 IAP、Mobile、ThirdPay 或 Voucher 文档，不把通用接口说明当作具体渠道验收。
+
 ### Account / Cloud / Device
 
 | 文档 | 说明 |

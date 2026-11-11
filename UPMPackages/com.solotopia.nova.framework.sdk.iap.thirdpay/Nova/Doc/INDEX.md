@@ -4,8 +4,8 @@
 
 | 文档 | 内容 |
 |---|---|
-| [ThirdPayStore.md](./ThirdPayStore.md) | 接入与验收顺序、国家码锁定时序、统一配置、订单状态和平台支付行为 |
-| [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) | Store 配置字段 |
+| [ThirdPayStore.md](./ThirdPayStore.md) | 接入与验收顺序、Android 重复点击补单与升级变化、错误处理、订单状态和平台支付行为 |
+| [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) | Store 配置字段、购买前查询运行时能力及生效时机 |
 | [PlatformPaymentPolicy.md](./PlatformPaymentPolicy.md) | Google Play / Apple App Store 第三方支付政策、当前实现边界与上线验收 |
 
 主要公开类型：
@@ -13,9 +13,17 @@
 - `IIAPThirdPayConfigCapable`：国家码覆盖、当前国家码、支付配置可用状态及服务端关闭原因码。
 - `IIAPThirdPayProductCapable`：第三方商品快照查询。
 - `IIAPThirdPayCheckoutCapable`：Google 信息页策略与 WebView 文案控制。
+- `IIAPThirdPayOrderRecoveryCapable`：Android 购买前补单查询开关与零至三十分钟窗口。
 - `IAPThirdPayRequest`：支付请求；可选的 `FirstRechargeReward` 与 `ExtraBonusReward` 仅随当前加密支付 URL 传给网页，WebView 展示由 ThirdPay 内部全屏处理。
 - `IAPThirdPayRewardItem`：网页奖励物品；`ItemId` 与 `Quantity` 均要求为正数。
-- `ThirdIapNetService`：与 Mobile IAP 同层的商品列表、渠道参数、待补发订单和批量验单协议封装。
+- `ThirdIapNetService`：统一支付配置、成功未验订单查询和批量验单协议封装；商品与渠道参数随统一配置返回。
+
+## 常用入口
+
+- [重复点击时何时补单、何时允许新购](ThirdPayStore.md#android-重复点击补单查询)
+- [如何处理批次完成、查询失败与取消](ThirdPayStore.md#购买前补单的返回与失败处理)
+- [升级后需要调整什么](ThirdPayStore.md#升级与行为变化)
+- [运行时调整查询开关和窗口](ThirdPayStoreConfig.md#运行时调整购买前查询)
 
 ## 支付请求参数
 

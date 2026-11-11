@@ -29,7 +29,9 @@ related:
 
 # RES-005：PSD2UGUI 商业插件内部 UPM 改造与升级重放记录
 
-## 来源与边界
+## 最初封装基线与边界
+
+以下版本、DLL 校验值和早期验证描述记录的是 2026-08-26 的封装基线，不代表当前工作区或内部云仓库状态。后续官方升级、兼容补丁和当前输入/输出校验值以内部包的 `Nova/Docs/UPGRADE_GUIDE.md` 为准；已发布版本须实时查询内部 registry，不能由本条历史记录推断。
 
 - 官方交付物：`PSD2UGUI_PRO_2026.8.6.unitypackage`。
 - 内部包：`../Nova-internal/UPMPackages/cn.efunstudio.psd2ugui`。

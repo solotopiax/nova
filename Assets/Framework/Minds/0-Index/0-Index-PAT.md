@@ -109,7 +109,7 @@ auto_generated: true
 - [PAT-141 封装第三方 SDK 时源目录只读，文件完整搬入不增删改](../2-Areas/Patterns/PAT-141-vendor-source-readonly.md) — 第三方源码默认只读，确需修改时必须先取得用户明确授权
 - [PAT-143 厂商 SDK 缺公开 API 时，接入层用现有 public 方法在 Nova 层补口](../2-Areas/Patterns/PAT-143-vendor-sdk-missing-api-nova-layer-fill.md) — 源只读下用现有 public API 组合补厂商缺失能力
 - [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
-- [PAT-148 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-148-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
+- [PAT-148 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-148-ad-revenue-track-callback-boundary.md) — 收益打点与协议共用批次，曝光通知按次
 - [PAT-158 SDK UPM 包必须自带官方 Console 与 Readme 菜单入口](../2-Areas/Patterns/PAT-158-sdk-package-official-url-menu-entry.md) — SDK 包自带官方后台与文档菜单入口
 - [PAT-160 Mobile IAP 商店连接、商品拉取与后台任务边界](../2-Areas/Patterns/PAT-160-mobile-iap-product-fetch-background-task-boundary.md) — 连接不阻塞启动，商品成功态单向收敛，后台任务仅管取消与异常
 - [PAT-164 Firebase 默认 Topic 分层同步与差异存档](../2-Areas/Patterns/PAT-164-firebase-default-topic-sync.md) — 默认Topic分层同步并存档差异
@@ -154,6 +154,7 @@ auto_generated: true
 - [PAT-152 RuntimeInitialize 跨阶段启动 UniTask](../2-Areas/Patterns/PAT-152-runtime-initialize-unitask-cross-stage.md) — 同阶段回调无序时跨阶段启动 UniTask
 - [PAT-153 第三方回调响应必须在回调返回前物化](../2-Areas/Patterns/PAT-153-third-party-callback-response-materialization.md) — 回调拥有响应生命周期时须在返回前复制正文与字节
 - [PAT-166 Editor 重载期 ScriptableObject 配置惰性初始化](../2-Areas/Patterns/PAT-166-editor-reload-scriptableobject-lazy-initialization.md) — 重载期不预热全部配置，同步异步入口共用惰性初始化
+- [PAT-170 UI 适配先定拥有者与坐标空间](../2-Areas/Patterns/PAT-170-ui-adaptation-owner-and-coordinate-space.md) — 根画布统一缩放，安全区查询与内容布局分开接线
 - [PAT-29 FrameworkComponentsGroup.GetComponent<T> 必须缓存到成员，禁止热路径反复调用](../2-Areas/Patterns/PAT-29-cache-component-lookup-on-init.md) — Component依赖在Init一次缓存禁运行查找
 - [PAT-67 全局禁 UnityEngine.UI.Text，UI 文字一律 TMP](../2-Areas/Patterns/PAT-67-no-ui-text-only-tmp.md) — UI 文字一律 TMP，禁 UGUI Text
 - [PAT-68 Reference 与 ObjectPool 辐射使用原则](../2-Areas/Patterns/PAT-68-pool-reference-spread.md) — 数据走 ReferencePool 组件走 ObjectPool
@@ -193,4 +194,4 @@ auto_generated: true
 
 
 ---
-_共 127 条，分布于 18 个 category。_
+_共 128 条，分布于 18 个 category。_

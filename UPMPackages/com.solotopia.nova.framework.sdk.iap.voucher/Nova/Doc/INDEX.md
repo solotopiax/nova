@@ -2,6 +2,8 @@
 
 本包提供“服务端钱包 → 客户端不可变报价 → 单阶段幂等扣减”的 Voucher Store。
 
+从 [接入与验收顺序](VoucherStore.md#接入与验收顺序) 开始；安装本包不会自动部署服务端钱包、幂等扣减或业务发货。[配置页](VoucherStoreConfig.md) 列出默认空路由与正式导出生效要求，[返回与发货](VoucherStore.md#返回错误与发货) 区分待恢复、明确拒绝和可发货成功。
+
 ## 业务侧公开 API
 
 | 类型 | 说明 |
@@ -12,8 +14,10 @@
 | `VoucherTestGrantResult` | 测试发放结果与当前钱包快照 |
 | `VoucherWalletSnapshot` | 不含券唯一码的只读聚合钱包 |
 | `VoucherQuote` | 绑定账号 generation 与钱包版本的只读报价 |
+| `VoucherQuoteStatus` | 本地报价 Ready、钱包未就绪、价格无效或无法精确覆盖 |
 | `VoucherRefreshResult` | 钱包刷新结果 |
 | `IAPVoucherRequest` | 只能由 Ready 报价构造的支付请求 |
+| `IAPVoucherErrorCode` | Voucher 刷新、测试发放与支付的错误域；支付还可能返回 PluginRouter 错误 |
 
 `VoucherStore` 必须保持 public 并保留 `[IAPStore]`，以满足 IAP 启动期反射扫描。它与 Mobile、ThirdPay Store 使用一致的 Attribute 表面；业务层仍通过 `IAPPlugin` 和 capability 使用。
 

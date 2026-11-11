@@ -27,6 +27,8 @@ description: Use when 项目组要把已接入或已明确表源的 Nova 数据�
 
 已有 View、Prefab、注册和入口保持复用；只改变数据绑定时不重复创建页面或注册条目。`requires` 登记可组合 Operation 的依赖闭包，不要求把创建与更新两条分支都执行。选择页面分支后仍按对应 Operation 的保存、导出和验证契约完成。
 
+创建页面或涉及布局、画布、方向、安全区时，必须在 UI 实施前透传所选页面 Operation 的 `screenAdaptationPlan` 与对应验收要求；纯数据绑定且布局不变时记录沿用现有方案及影响范围，不重新设计适配。本 Workflow 不另建缩放器或安全区实现，也不能以表导出/Play 数据正确跳过布局验收。
+
 ## 依赖图
 
 ```text

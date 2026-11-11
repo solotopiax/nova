@@ -135,7 +135,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         }
 
         /// <summary>
-        /// Firebase 初始化必须等待依赖检查完成后才返回，避免 SDKPluginBase 过早把插件标记为可用。
+        /// Firebase 初始化必须等待依赖检查；失败清理并警告返回，不能继续订阅或抛普通初始化异常。
         /// </summary>
         [Test]
         public void FirebasePlugin_AwaitsDependencyCheckBeforeInitialized()
@@ -146,7 +146,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             StringAssert.Contains(".CheckAndFixDependenciesAsync()", methodsSource);
             StringAssert.Contains(".AsUniTask()", methodsSource);
             StringAssert.Contains(".AttachExternalCancellation(ct)", methodsSource);
-            StringAssert.Contains("throw new InvalidOperationException", methodsSource);
+            StringAssert.DoesNotContain("throw new InvalidOperationException", methodsSource);
             StringAssert.DoesNotContain("TaskContinueWithOnMainThread", methodsSource);
 
             int dependencyStatusIndex = methodsSource.IndexOf("dependencyStatus != Firebase.DependencyStatus.Available", StringComparison.Ordinal);
@@ -156,6 +156,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             Assert.GreaterOrEqual(dependencyStatusIndex, 0);
             Assert.Greater(subscribeIndex, dependencyStatusIndex);
             Assert.Greater(initOverIndex, subscribeIndex);
+
+            string failureBranch = methodsSource.Substring(dependencyStatusIndex, subscribeIndex - dependencyStatusIndex);
+            StringAssert.Contains("CleanupRuntimeState();", failureBranch);
+            StringAssert.Contains("Log.Warning(LogTag.Firebase", failureBranch);
+            StringAssert.Contains("return;", failureBranch);
         }
 
         /// <summary>

@@ -8,11 +8,11 @@ Nova Project Skill 负责理解项目组自然语言任务、冻结输入和组�
 
 当前基线：
 
-- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 33 项，统一使用 `nova-project-*`。
+- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 34 项，统一使用 `nova-project-*`。
 - Skill 发现 Catalog：`Assets/Framework/Agents/catalog.json`。它只路由 Skill，不复制 Action Descriptor。
 - Action 唯一执行真相：运行中的 C# Registry Descriptor；所有已注册 Project Action 都进入显式 MCP 白名单，并通过 `describe` 渐进读取 Schema。
-- 已注册 Action：36 个。
-- 当前 MCP 明确开放：36 个。
+- 已注册 Action：39 个。
+- 当前 MCP 明确开放：39 个。
 - Registry 与显式白名单必须完全一致；任一遗漏或陈旧 ID 都会使 Gateway 整体 fail-closed。
 - 原 47 项不是实施 KPI；经源码审计后分成“已实现、需前置能力、已合并、不产品化、封闭”五类。
 
@@ -161,7 +161,7 @@ UPMPackages/com.solotopia.nova.framework.mcp/
 
 正式消费链还要求每个依赖版本及其 registry scope 在安装 Framework 之前就可解析。当前默认依赖为 `com.coplaydev.unity-mcp@10.2.0`，由 NovaSpark 预先配置 OpenUPM 精确 scope 后按 Nova MCP 包的 semver 传递依赖解析；正式发布前必须用真实消费工程验证该来源。开发工程中另外安装的 Provider 只用于开发态验证，不改变对外包默认适配 Unity MCP 的事实。
 
-33 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
+34 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
 
 唯一 Tool：
 

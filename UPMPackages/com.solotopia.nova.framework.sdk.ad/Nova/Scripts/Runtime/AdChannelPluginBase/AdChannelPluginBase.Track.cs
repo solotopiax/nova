@@ -262,7 +262,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 收益状态与业务事件在主线程更新，纯收益打点仍由即时入口在原厂线程执行。
+        /// 只在主线程更新收益状态和业务通知；协议由渠道收益派发入口显式调用，避免重复上报。
         /// </summary>
         /// <param name="e">收益载荷，将复制后排队。</param>
         protected void RaiseRevenue(AdEvent e)

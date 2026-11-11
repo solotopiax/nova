@@ -86,6 +86,11 @@
       "name": "businessSessionOperationIdentityRepeatedTriggerAndDependencyOwnership",
       "required": false,
       "description": "游戏控制分支必需；明确局/账号/操作身份、重复并发/幂等、暂停/重开数据、资源/事件/持久化与退出取消；仅条件复用命中Operation"
+    },
+    {
+      "name": "businessPreloadDependencyPlanAndPreparationEvidence",
+      "required": false,
+      "constraint": "新项目/业务预加载分支必需：参考当前MainDemo ProcedurePreload按实际Persist/Localization/Network/SDK/Table/UI/Sound/Vibrate依赖冻结保留/跳过理由、结果判定、失败重试/取消/代际与Launcher收尾；所需环境/Resources/配置/正式导出先由对应Operation准备。普通既有Procedure或游戏Service局改不扩大。"
     }
   ],
   "effects": [
@@ -147,6 +152,7 @@
     "Play Mode 中跳转到精确下一 Procedure 的证据",
     "游戏控制分支时真实可达入口、现有Service公开调用、输入/结果/错误、合法状态、局/账号/操作身份、重复/取消、数据及资源/事件拥有者源码证据",
     "游戏控制分支编译与原入口Play实际行为，不以API存在、Ready或Mock证明外部服务；必要Unity绑定/生成/持久化链由选中Operation独立验证",
-    "本轮探针/runner/meta/日志/测试态数据清场、必要Refresh与原入口/场景及目标写集核对"
+    "本轮探针/runner/meta/日志/测试态数据清场、必要Refresh与原入口/场景及目标写集核对",
+    "预加载分支逐模块实际成功/可用、失败不进入业务、重试/取消/代际与启动UI收尾证据；Demo八步/100%或未检查bool不能当准备就绪，场景/配置/资源写入由匹配Operation承担。"
   ]
 }

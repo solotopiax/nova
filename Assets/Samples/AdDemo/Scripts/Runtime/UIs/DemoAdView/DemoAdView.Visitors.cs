@@ -12,6 +12,7 @@ using System.Threading;
 using NovaFramework.SDK.AdPlugin.Runtime;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace NovaFramework.Sdk.Ad.Samples.Runtime
 {
@@ -20,6 +21,11 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
     /// </summary>
     public sealed partial class DemoAdView
     {
+        /// <summary>
+        /// 登录成功前显示的游戏账号登录按钮。
+        /// </summary>
+        [SerializeField] private Button m_LoginButton;
+
         /// <summary>
         /// 插屏广告回传数据输入框。
         /// </summary>
@@ -39,6 +45,16 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// Banner 回传数据输入框。
         /// </summary>
         [SerializeField] private TMP_InputField m_BannerCustomDataInput;
+
+        /// <summary>
+        /// 当前页面打开会话是否已完成登录。
+        /// </summary>
+        private bool m_LoggedIn;
+
+        /// <summary>
+        /// 当前页面是否正在等待登录结果，防止重复请求。
+        /// </summary>
+        private bool m_LoginInProgress;
 
         /// <summary>
         /// Debug UI 当前选择的广告渠道。

@@ -16,8 +16,8 @@ begin
   adapters = [
     {xml: ENV.fetch('NOVA_MAX_IOS_LINE_XML'), pod: 'AppLovinMediationLineAdapter', version: '3.1.1.2',
      url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-Line.git', spm: '3010102.0.0'},
-    {xml: ENV.fetch('NOVA_MAX_IOS_UNITYADS_XML'), pod: 'AppLovinMediationUnityAdsAdapter', version: '4.20.0.1',
-     url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-UnityAds.git', spm: '4200001.0.0'}
+    {xml: ENV.fetch('NOVA_MAX_IOS_UNITYADS_XML'), pod: 'AppLovinMediationUnityAdsAdapter', version: '4.21.0.1',
+     url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-UnityAds.git', spm: '4210001.0.0'}
   ]
   adapters.each do |adapter|
     document = REXML::Document.new(File.binread(adapter[:xml]))

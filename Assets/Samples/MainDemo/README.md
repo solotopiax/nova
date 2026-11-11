@@ -4,6 +4,8 @@
 
 使用入口见本目录的 [DEMO-INDEX.md](DEMO-INDEX.md)。[DESIGN.md](DESIGN.md) 保留建设时的设计背景；实际 API、配置与演示状态以当前源码和随包 Docs 为准。消费项目无需主仓的 Minds 或开发工具。
 
+`PSD2UGUI/` 制作示例（原 `PSD2UGUIDemo`）随 MainDemo 提供，插件源码和 DLL 不包含在其中。未安装插件时自动收起其专用编辑数据，普通 uGUI 产物仍可使用；它不参与 MainDemo 启动。导入后路径会调整到当前 Sample 目录，详见 [PSD2UGUI 使用说明](PSD2UGUI/README.md)，卸载插件前先保存并关闭编辑树。
+
 ---
 
 异步与池化示例遵守各自所有权：`DemoNetworkView` 每次打开创建HTTP令牌源，GET/POST传入令牌末位重载，关闭或销毁时主动取消并释放令牌源；旧任务继续取得最终响应并在 `finally` 唯一归还 `HttpResponse`，旧代际不会更新重开的页面。取消驱动物理Abort，不代表服务端回滚；`DemoAssetView` 每次加载独立持有 CTS/代际，取消、替换或关闭后的结果自行释放。`DemoObjectPoolView` 按 `"DemoBullet"` 取用，纯 C# 占位对象以自身提供唯一 Target，当前对象未归还时不再覆盖；`DemoSoundView` 在 Stop、替换旧 SerialID 或关闭页面时，先调用 `StopSound(serialID, 0f)`，再调用 `ReleaseAssetBySerialID(serialID)` 结束本页面持有的声音请求。已加载声音仅 Stop 或自然结束不会释放资源，仍需显式释放；加载中的请求会登记停止，异步结果到达后由 Manager 释放且不播放。Pause/Resume 保留 SerialID 与资源，自然结束后也保留本页面的释放责任，直到显式结束、替换或关闭。声音 SerialID 只证明已发起请求，实际声音资源与播放仍需运行验证；`PlaySoundParams` 交给 SoundManager 后不自行重复归还。按表内名称播放使用 `PlaySound(name)`；地址输入使用 `PlaySoundByAsset(location)`，地址必须唯一对应已加载的表行，声音组显示为只读说明。组、循环、优先级、音量和空间混合度均来自声音表；带参数示例仅设置本次淡入时长。

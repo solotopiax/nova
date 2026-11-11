@@ -16,6 +16,8 @@
 
 ## 当前 Inspector 模型
 
+商店与广告渠道的多态配置列表由 `SerializeReferenceListDrawer` 共用绘制：同一展开项按最长字段显示名调整标签列，并为右侧输入控件至少保留八十像素；绘制结束恢复外层标签宽度，避免长标签被控件遮挡或影响后续面板。
+
 ### BaseComponentInspector 的职责
 
 `BaseComponentInspector` 当前只负责这些基础能力：

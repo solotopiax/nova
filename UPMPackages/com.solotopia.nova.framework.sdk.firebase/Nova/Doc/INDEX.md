@@ -13,7 +13,8 @@
 
 ## 当前能力
 
-- 初始化门槛：SDK 初始化任务会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；`IsAvailable == true` 表示 Firebase 依赖已可用且 Messaging 事件已注册
+- 初始化门槛：SDK 初始化任务仍等待 `FirebaseApp.CheckAndFixDependenciesAsync()`；`IsAvailable` 表示 Nova 插件可获取，原厂服务是否真正就绪由 `IsInitialized` 表示
+- 原厂初始化失败：只记警告、清理后正常返回，插件仍可获取；原厂调用由内部就绪检查保护，Token 获取返回空值，登录标识上报跳过，本地推送任务仍可缓存。取消和公共 SDK 获取规则保持不变，详见 [初始化语义](./FirebasePlugin.md#3-初始化语义)
 - Analytics 事件上报：`TrackEvent(...)`
 - 用户标识与属性：`SetUserId(...)`、`SetUserProperty(...)`
 - FCM 推送：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`

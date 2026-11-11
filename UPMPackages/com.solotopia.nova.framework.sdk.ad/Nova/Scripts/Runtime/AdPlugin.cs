@@ -171,7 +171,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 向所有渠道并行预加载并记录请求入口，返回成功或错误详情；首个成功后按既有规则更新活跃 Banner 渠道。
+        /// 向所有渠道并行预加载并记录请求入口，返回成功或错误详情；Banner 成功仅更新预加载候选，不替换显示归属。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <param name="customProps">自定义属性字典，透传到渠道层打点；可为 null。</param>
@@ -179,13 +179,14 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <returns>首个完成的加载结果；全部失败时返回最后一次失败结果。</returns>
         public async UniTask<AdLoadResult> RequestAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default)
         {
+            int bannerVersion = m_BannerControlVersion;
             Log.Debug(LogTag.AD, $"业务准备请求广告：format={format}，渠道数={m_ChannelPlugins.Count}。");
             try
             {
                 var result = await BroadcastRequestAsync(format, customProps, ct);
-                if (format == AdFormat.Banner && result != null && result.Success)
+                if (format == AdFormat.Banner && result != null && result.Success && !m_ChannelsDisposed && bannerVersion == m_BannerControlVersion)
                 {
-                    m_ActiveBannerChannel = SelectBestChannel(format);
+                    m_PreparedBannerChannel = SelectBestChannel(format);
                 }
                 return result;
             }
@@ -253,68 +254,115 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 显示 Banner 广告，委托给活跃 Banner 渠道。
+        /// 显示 Banner；首次显示选择当前就绪渠道，已显示或隐藏的实例保持原归属。
+        /// 无可用渠道或原厂调用异常时记录警告并跳过。
         /// </summary>
-        public void ShowBanner()
+        public void ShowBanner() => TryShowBanner();
+
+        /// <summary>
+        /// 尝试向当前 Banner 所属渠道发起显示；首次显示重新选择就绪渠道，支持后台重试或取消等待后的加载结果。
+        /// 返回 true 仅代表显示调用正常发出且归属仍有效，不代表实际曝光；失败只记录警告并返回 false。
+        /// </summary>
+        /// <returns>已发出调用且未被同步销毁或释放时为 true；无就绪渠道或生命周期失效时为 false。</returns>
+        public bool TryShowBanner()
         {
-            Log.Debug(LogTag.AD, $"业务准备显示 Banner：format={AdFormat.Banner}，channel={m_ActiveBannerChannel?.Channel.ToString() ?? "未选择"}。");
-            m_ActiveBannerChannel?.ShowBanner();
+            if (m_ChannelsDisposed)
+            {
+                Log.Warning(LogTag.AD, "Banner 显示已跳过：广告聚合已释放。");
+                return false;
+            }
+            var previous = m_ActiveBannerChannel;
+            IAdInternalPlugin channel = null;
+            int version = m_BannerControlVersion;
+            try
+            {
+                channel = IsBannerChannelAvailable(previous) ? previous : SelectBestChannel(AdFormat.Banner);
+                if (!IsBannerChannelAvailable(channel))
+                {
+                    Log.Warning(LogTag.AD, "Banner 显示已跳过：当前没有就绪的 Banner 渠道。");
+                    return false;
+                }
+                // 调用前临时登记，使渠道同步回调中的 Hide/Destroy 也能操作同一实例；失败时按版本回滚。
+                m_ActiveBannerChannel = channel;
+                if (channel is AdChannelPluginBase bannerChannel)
+                {
+                    if (!bannerChannel.TryShowBanner())
+                    {
+                        if (!m_ChannelsDisposed && version == m_BannerControlVersion && ReferenceEquals(m_ActiveBannerChannel, channel)) m_ActiveBannerChannel = previous;
+                        return false;
+                    }
+                }
+                else channel.ShowBanner();
+                if (m_ChannelsDisposed || version != m_BannerControlVersion || !ReferenceEquals(m_ActiveBannerChannel, channel)) return false;
+                Log.Debug(LogTag.AD, $"Banner 显示调用已发出：channel={channel.Channel}。");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (!m_ChannelsDisposed && version == m_BannerControlVersion && ReferenceEquals(m_ActiveBannerChannel, channel)) m_ActiveBannerChannel = previous;
+                Log.Warning(LogTag.AD, $"Banner 显示调用失败：channel={channel?.GetType().Name ?? "未选择"}，{ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
-        /// 隐藏 Banner 广告，委托给活跃 Banner 渠道。
+        /// 隐藏 Banner，保留显示归属；首次显示前可使用预加载候选，无目标时跳过。
         /// </summary>
-        public void HideBanner() => m_ActiveBannerChannel?.HideBanner();
+        public void HideBanner() => GetBannerControlChannel()?.HideBanner();
 
         /// <summary>
-        /// 销毁 Banner 广告，委托给活跃 Banner 渠道并清空记录。
+        /// 销毁显示归属或预加载候选对应的 Banner，并清除二者；旧请求不能恢复候选。
         /// </summary>
         public void DestroyBanner()
         {
-            m_ActiveBannerChannel?.DestroyBanner();
+            var channel = GetBannerControlChannel();
+            m_BannerControlVersion++;
             m_ActiveBannerChannel = null;
+            // 销毁结束一次控制周期；清除候选，旧请求返回也不能再次建立候选。
+            m_PreparedBannerChannel = null;
+            channel?.DestroyBanner();
         }
 
         /// <summary>
-        /// 通过枚举更新 Banner 停靠位置，委托给活跃 Banner 渠道。
+        /// 通过枚举更新 Banner 停靠位置，优先使用显示归属，其次使用预加载候选。
         /// </summary>
         /// <param name="position">Banner 停靠位置。</param>
-        public void UpdateBannerPosition(BannerPosition position) => m_ActiveBannerChannel?.UpdateBannerPosition(position);
+        public void UpdateBannerPosition(BannerPosition position) => GetBannerControlChannel()?.UpdateBannerPosition(position);
 
         /// <summary>
-        /// 通过像素坐标更新 Banner 位置，委托给活跃 Banner 渠道。
+        /// 通过像素坐标更新 Banner 位置，优先使用显示归属，其次使用预加载候选。
         /// </summary>
         /// <param name="position">Banner 屏幕坐标（逻辑像素）。</param>
-        public void UpdateBannerPosition(Vector2 position) => m_ActiveBannerChannel?.UpdateBannerPosition(position);
+        public void UpdateBannerPosition(Vector2 position) => GetBannerControlChannel()?.UpdateBannerPosition(position);
 
         /// <summary>
-        /// 开启 Banner 自动刷新，委托给活跃 Banner 渠道。
+        /// 开启 Banner 自动刷新，优先使用显示归属，其次使用预加载候选。
         /// </summary>
-        public void StartBannerAutoRefresh() => m_ActiveBannerChannel?.StartBannerAutoRefresh();
+        public void StartBannerAutoRefresh() => GetBannerControlChannel()?.StartBannerAutoRefresh();
 
         /// <summary>
-        /// 停止 Banner 自动刷新，委托给活跃 Banner 渠道。
+        /// 停止 Banner 自动刷新，优先使用显示归属，其次使用预加载候选。
         /// </summary>
-        public void StopBannerAutoRefresh() => m_ActiveBannerChannel?.StopBannerAutoRefresh();
+        public void StopBannerAutoRefresh() => GetBannerControlChannel()?.StopBannerAutoRefresh();
 
         /// <summary>
-        /// 设置 Banner 宽度，委托给活跃 Banner 渠道。
+        /// 设置 Banner 宽度，优先使用显示归属，其次使用预加载候选。
         /// </summary>
         /// <param name="width">Banner 宽度（逻辑像素）。</param>
-        public void SetBannerWidth(float width) => m_ActiveBannerChannel?.SetBannerWidth(width);
+        public void SetBannerWidth(float width) => GetBannerControlChannel()?.SetBannerWidth(width);
 
         /// <summary>
-        /// 获取 Banner 自适应高度，委托给活跃 Banner 渠道；无活跃渠道时返回 -1。
+        /// 获取 Banner 自适应高度，优先使用显示归属，其次使用预加载候选；无目标时返回 -1。
         /// </summary>
         /// <param name="width">指定宽度，-1 表示屏幕宽度。</param>
-        /// <returns>自适应高度（逻辑像素）；无活跃渠道时返回 -1。</returns>
+        /// <returns>自适应高度（逻辑像素）；无显示归属或候选时返回 -1。</returns>
         public float GetAdaptiveBannerHeight(float width = -1f)
-            => m_ActiveBannerChannel?.GetAdaptiveBannerHeight(width) ?? -1f;
+            => GetBannerControlChannel()?.GetAdaptiveBannerHeight(width) ?? -1f;
 
         /// <summary>
-        /// 设置 Banner 背景色，委托给活跃 Banner 渠道。
+        /// 设置 Banner 背景色，优先使用显示归属，其次使用预加载候选。
         /// </summary>
         /// <param name="color">背景颜色。</param>
-        public void SetBannerBackgroundColor(Color color) => m_ActiveBannerChannel?.SetBannerBackgroundColor(color);
+        public void SetBannerBackgroundColor(Color color) => GetBannerControlChannel()?.SetBannerBackgroundColor(color);
     }
 }

@@ -24,6 +24,7 @@ related:
   - "[[PAT-77-base-demo-view-three-zone-template|PAT-77]]"
   - "[[PAT-80-demo-view-pure-color-style|PAT-80]]"
   - "[[ADR-033-maindemo-isolated-topology|ADR-033]]"
+  - "[[PAT-170-ui-adaptation-owner-and-coordinate-space|PAT-170]]"
 ---
 
 # PAT-79：Demo View 竖屏布局铁律
@@ -32,6 +33,8 @@ related:
 
 - 新建或修改任何 BaseDemoView 派生的 DemoXxxView Prefab。
 - 修改 BaseDemoView.prefab 基础骨架。
+
+本条的固定尺寸和 width-match 仅适用于上述 Demo 骨架，不是所有 Nova 项目或业务 UIView 的默认方案。正式业务先核对自身方向、设计比例、根缩放及安全区拥有者，见 [[PAT-170-ui-adaptation-owner-and-coordinate-space|PAT-170]]；当前实现与验收以 [UIComponent 文档](../../../Docs/Runtime/Modules/UI/UIComponent.md#屏幕适配与安全区) 为准。
 
 ## 核心做法（What & How）
 

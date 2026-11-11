@@ -5,7 +5,7 @@
 
 推送通知接口，抽象 Firebase Cloud Messaging / APNs 等平台推送能力。
 
-接口不规定默认超时。当前 Firebase 实现等待非空 token 或调用方取消，得到的 `PushToken` 包含 `Provider = "FCM"` 与 Value；token 就绪不等于用户已经授予通知权限。`SetTopicSubscribed` 发起内部后台任务，void 返回不表示服务端订阅成功，失败由实现日志报告。
+接口不规定默认超时。当前 Firebase 在原厂未就绪或已释放时返回空 Value；已就绪才等待非空 token，等待中失去就绪状态或释放也返回空值，调用方取消仍结束等待。`PushToken.Provider = "FCM"`，业务须检查 Value 非空后再上报；插件可获取不代表 Firebase 原厂已就绪，token 就绪也不等于用户已经授予通知权限。`SetTopicSubscribed` 发起内部后台任务，void 返回不表示服务端订阅成功，失败由实现日志报告。
 
 ---
 
@@ -47,7 +47,10 @@ if (Nova.SDK.TryGet<IPushPlugin>(out var pushPlugin))
     try
     {
         var token = await pushPlugin.GetTokenAsync(ct);
-        await ServerApi.RegisterPushToken(token.Value, token.Provider, ct);
+        if (!string.IsNullOrEmpty(token.Value))
+        {
+            await ServerApi.RegisterPushToken(token.Value, token.Provider, ct);
+        }
     }
     catch (Exception e)
     {

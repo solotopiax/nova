@@ -59,6 +59,11 @@
       "name": "existingWebglBrowserTargetAndEvidenceWindow",
       "required": false,
       "constraint": "仅WebGL浏览器分支必需：已有tab/URL、失败时间窗、本次build身份与当前只读browser能力；目标或构建关联未知不得归因Nova。重新访问/复现或网络请求不是默认只读步骤。"
+    },
+    {
+      "name": "existingEditorWindowEvidence",
+      "required": false,
+      "constraint": "Unity已打开或工具首次超时分支，按 Docs/Onboarding/VALIDATION.md 只读检查工程/版本/进程归属、当前原生窗口及编译/导入进度；缺原生UI能力保留缺口，不靠重复超时或重启归因。本Operation不点击窗口、不重启；已有开发授权的窗口处置在诊断外按共同约束执行。"
     }
   ],
   "effects": [
@@ -96,6 +101,7 @@
     "可复现入口和最早失败阶段",
     "文件、场景对象路径或日志位置",
     "已验证事实、推断与未验证项的分级",
-    "WebGL current page/build identity and earliest loader→Wasm/data→Unity→Nova failure; existing Console/Network/response MIME/encoding/thread-isolation evidence and missing host browser capability separate"
+    "WebGL current page/build identity and earliest loader→Wasm/data→Unity→Nova failure; existing Console/Network/response MIME/encoding/thread-isolation evidence and missing host browser capability separate",
+    "Editor分支分别记录模态阻塞、普通设置窗口、正常忙碌、编译失败和进程故障的直接证据或未知项；窗口处置/关闭提示不代表底层错误已修复，不能无证据将重启归因弹窗。"
   ]
 }

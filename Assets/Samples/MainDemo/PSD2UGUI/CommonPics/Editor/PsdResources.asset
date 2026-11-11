@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1667776453, guid: a6c1e4c70b6d4cf5b4c7b8f61a236f90, type: 3}
+  m_Name: PsdResources
+  m_EditorClassIdentifier: cn.efunstudio.psd2ugui.dll::UGF.EditorTools.Psd2UGUI.PsdResourceRegistry
+  entries:
+  - key: ButtonBule
+    assetGuid: 35c6d98181f60424cb4f5294aaf5e7db
+    ownerDocument: 09ce33b8e6c34812bf2504ef83400b24
+    contentHash: BD15D8F012A8F6159932A1EE454DE679A4E0B8FA878959FF03ADBE93D327ABA0
+    prefab: 0
+    sourceLayerId: 5
+  - key: VbarBG
+    assetGuid: 4bcfc9d7d01d1489a9b3cf75f59c500e
+    ownerDocument: 09ce33b8e6c34812bf2504ef83400b24
+    contentHash: B8EBEE00A8D83E8CC8903A423EE5CFEDA28EF534EDA25AEF7048A7CA9CF2A18D
+    prefab: 0
+    sourceLayerId: 255
+  - key: VbarFill
+    assetGuid: c5f7722db7f884ef2a67b4f8ec772a74
+    ownerDocument: 09ce33b8e6c34812bf2504ef83400b24
+    contentHash: B97C7653E3E4C983E06646199C9CA87D07AD5FBC253891325BAD0E7D1A26B2B5
+    prefab: 0
+    sourceLayerId: 420

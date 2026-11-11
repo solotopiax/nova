@@ -15,7 +15,6 @@
 | `Nova/Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs` | `MaxAdPluginBuildProcessor` | 全部定义 |
 | `Nova/Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs` | `MaxSkAdNetworkPlistCompleter` | 离线枚举网络，联网获取并增量补齐 SKAdNetwork ID |
 | `Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs` | `MaxIOSPodOwnershipPostprocessor` | 顺序 44 统一 MAX iOS 原生依赖归属 |
-| `Nova/Scripts/Editor/BuildProcessor/MaxSafeDKLauncherManifestFix.cs` | `MaxSafeDKLauncherManifestFix` | Unity 6000.4.4f1+ 且 Quality Service 开启时补写 SafeDKApplication（临时修复） |
 | `Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnership.rb` | 固定 Ruby 脚本，无自定义函数 | 使用 CocoaPods 的 `xcodeproj` 公开对象 API 定向回写生成工程 |
 
 ---
@@ -105,10 +104,14 @@ iOS 后处理会在 Pods 中寻找名单里的 5 项候选 xcframework，将实�
 
 EDM4U `1.2.188` 在顺序 `35` 写入 SPM、`40` 生成 Podfile、`50` 安装 Pods。Nova MAX 在 `44` 回写两项 adapter，Nova 部署下限在 `45` 保持既有 Podfile 规则；随后 `NovaBuildPostprocessor` 从修正后的工程读取上下文，继续常规后处理。
 
-| 已审官方 UPM 包 | 被移除的直接 SPM repository/product | 恢复到 `UnityFramework` 的 Pod |
+| 当前处理器允许的官方 UPM 契约 | 被移除的直接 SPM repository/product | 恢复到 `UnityFramework` 的 Pod |
 |---|---|---|
 | `com.applovin.mediation.adapters.line.ios@3010102.0.0` | `AppLovin-MAX-Swift-Package-Line.git` / `AppLovinMediationLineAdapter` | `AppLovinMediationLineAdapter`, `3.1.1.2` |
-| `com.applovin.mediation.adapters.unityads.ios@4200001.0.0` | `AppLovin-MAX-Swift-Package-UnityAds.git` / `AppLovinMediationUnityAdsAdapter` | `AppLovinMediationUnityAdsAdapter`, `4.20.0.1` |
+| `com.applovin.mediation.adapters.unityads.ios@4210001.0.0` | `AppLovin-MAX-Swift-Package-UnityAds.git` / `AppLovinMediationUnityAdsAdapter` | `AppLovinMediationUnityAdsAdapter`, `4.21.0.1` |
+
+上表版本来自当前官方 adapter 的 `package.json` 与 `Editor/Dependencies.xml`，并同时固定在 `MaxIOSPodOwnershipPostprocessor.cs` 和随包 `MaxIOSPodOwnership.rb` 中。XML 的 SPM 版本分别为 LINE `3010102.0.0`、Unity Ads `4210001.0.0`，product 名必须与对应 Pod 名相同，`replacesPod` 指向该 Pod，`target` 为 `All`。这里只接受已核对的完整契约，不接受任意新版本；未来升级必须重新核对 UPM、Pod、SPM 和引用图。版本对齐不代表 CocoaPods 安装、Xcode 编译或真机运行已通过，升级后须重新导出并执行平台验收。
+
+维护者后续更换这两项 adapter 时，必须一并核对本包 `package.json` 的 UPM 版本、原厂 `Editor/Dependencies.xml` 的 Pod / SPM 版本，以及 C# / Ruby 的严格名单。只改依赖声明或只改其中一份名单都不算完成；还须定向验证正确契约可回写、未知契约仍拒绝，最后在目标工程重新导出并核对原生构建结果。
 
 两个 SPM adapter 会传递引入 `AppLovinSDK`，其他 MAX Pods 也会引入同名 framework。在当前混合图下，Xcode 会因同名 framework 的两个生产者报 `Multiple commands produce`；版本相同也不能消除双生产者。本处理只让 MAX 的两项 adapter 回到 CocoaPods，让 MAX 继续使用 Podfile 既有的 `AppLovinSDK` 版本；保留 Firebase SPM、其他 Pods、部署版本 block、其他 target 和配置，不关闭全局 SPM，不改官方 XML。
 
@@ -118,16 +121,9 @@ EDM4U `1.2.188` 在顺序 `35` 写入 SPM、`40` 生成 Podfile、`50` 安装 Po
 
 验收须分清 Unity 导出和 Xcode 原生构建：导出成功后核对两项 Pod、保留的 SPM 图、`Podfile.lock` 和最终 `SKAdNetworkItems`；再实际编译链接。未做签名、设备安装或运行时，不能把原生编译成功当作真机验证。
 
-## Android SafeDK Launcher Manifest 临时修复
+## Android SafeDK 兼容性
 
-`MaxSafeDKLauncherManifestFix`（`IPostGenerateGradleAndroidProject`，`callbackOrder=1000`，晚于 AppLovin 自身 Gradle 后处理）在 `UNITY_ANDROID && NOVA_APPLOVIN_MAX` 下自动运行，代码标记 `[MaxSafeDK-LauncherManifest-Fix]`。同时满足以下条件时，向本次生成的 Gradle 工程 `launcher/src/main/AndroidManifest.xml` 的 `<application>` 写入 `android:name="com.safedk.android.SafeDKApplication"`：
-
-| 条件 | 判断方式 |
-|---|---|
-| Unity 版本 ≥ `6000.4.4f1` | 解析 `Application.unityVersion` 的主/次/补丁号 |
-| AppLovin Quality Service 已开启 | `AppLovinSettings.Instance.QualityServiceEnabled == true` |
-
-不论是否勾选 Custom Launcher Manifest 均生效：未勾选时 Unity 用内置模板生成 launcher manifest，同样包含 `<application>`。只改生成工程，不改 `Assets/Plugins/Android/LauncherManifest.xml`。Unity 版本不足或 Quality Service 未开启时输出 Debug 日志后跳过；找不到生成的 manifest / `<application>` 节点、`<application>` 已是 SafeDKApplication，或已声明其他 `android:name`（保留原值）时输出带 `[MaxSafeDKLauncherManifestFix]` 前缀的 Warning，均不令构建失败；写入成功输出 Debug 日志。该问题属 MAX 版本缺陷，官方修复后删除 `Nova/Scripts/Editor/BuildProcessor/MaxSafeDKLauncherManifestFix.cs` 及其 `.meta` 即可。
+Nova 当前不实现或注入 SafeDK launcher manifest，也不修改 `Assets/Plugins/Android/LauncherManifest.xml`；旧临时处理器已从本包移除。Quality Service 是否正确生成 launcher Application 配置，须以目标项目实际 Unity / AppLovin 版本、生成 Manifest 和 Android 构建结果核对，不能从 Nova 不再注入推断所有上游版本都已修复。
 
 ### 验证边界
 

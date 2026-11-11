@@ -1,0 +1,7 @@
+{
+  "name": "NovaFramework.Samples.Psd2Ugui.Editor",
+  "rootNamespace": "NovaFramework.Samples.Psd2Ugui.Editor",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": false
+}

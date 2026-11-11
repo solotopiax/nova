@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.iap",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - IAP",
@@ -25,6 +25,6 @@
   },
   "nova": {
     "requiredFrameworkApiVersion": "0.7.0",
-    "releaseTime": "2026-10-29T01:53:41Z"
+    "releaseTime": "2026-11-11T02:27:19Z"
   }
 }

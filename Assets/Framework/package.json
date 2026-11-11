@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "license": "MIT",
   "displayName": "Nova Framework",
   "description": "基于 Unity 引擎深度定制的游戏客户端通用解决方案",
@@ -19,7 +19,7 @@
     "com.solotopia.nicevibrations": "10.0.6",
     "com.solotopia.luban": "10.1.0",
     "com.solotopia.yooasset": "1.2.1",
-    "com.solotopia.nova.framework.mcp": "0.1.7"
+    "com.solotopia.nova.framework.mcp": "0.1.8"
   },
   "samples": [
     {
@@ -49,7 +49,7 @@
         "displayName": "Nice Vibrations"
       }
     },
-    "releaseTime": "2026-10-29T01:49:25Z"
+    "releaseTime": "2026-11-11T02:25:13Z"
   },
   "author": {
     "name": "Solotopia"

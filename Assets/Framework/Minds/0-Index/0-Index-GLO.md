@@ -52,6 +52,7 @@ auto_generated: true
 
 - [GLO-07 AssetLocation / Asset 地址](../2-Areas/Glossary/GLO-07-asset-location.md) — AssetLocation 统一称为 Asset 地址
 - [GLO-09 运行平台、运营渠道与第三方登录提供方](../2-Areas/Glossary/GLO-09-channel-and-third-login-provider.md) — 区分运行平台、运营渠道与登录提供方
+- [GLO-22 Nova 协作体系](../2-Areas/Glossary/GLO-22-nova-collaboration-system.md) — Nova 规范约束、执行指导与知识联动的统一称谓
 
 ## runtime
 
@@ -62,4 +63,4 @@ auto_generated: true
 
 
 ---
-_共 20 条，分布于 10 个 category。_
+_共 21 条，分布于 10 个 category。_

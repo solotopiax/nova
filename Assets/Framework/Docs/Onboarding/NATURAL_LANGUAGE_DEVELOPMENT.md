@@ -39,6 +39,7 @@ python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . describe 
 | 用户目标 | 复用任务入口 | 必须完成的链路 |
 |---|---|---|
 | 新项目首次运行 | readiness、entry scene、runtime configuration | 环境/包 → 当前场景与 Nova 根 → 配置 → 编译 → Play |
+| PSD/PSB 制作界面 | psd2ugui，再按目标接 UI create/update | 当前设计源/配置 → 编辑树与来源 → 生成或导图 → 资源/视觉证据；AI按本轮识别→应用→检查，业务页面另接注册/导出/入口 |
 | 大厅或设置页 | UI create/update、event、persistence | View/Prefab → 表注册 → 导出 → 资源地址与绑定 → 入口/交互 → 保存恢复 → Play |
 | 关卡或列表数据 | integrate table、data-driven UI | 权威表源 → 正式导出 → 生成访问代码 → Config/组件引用 → 页面/关卡消费 |
 | 声音、多语言、振动 | 各领域已有 Operation | 源表与真实资源 → 导出 → Collector/绑定 → 触发/停止或切换 → 实际效果 |

@@ -9,17 +9,23 @@
 
 ## 安装
 
+在 Unity 中打开 `Nova/Open PlugPals`，从外网仓库安装 `com.solotopia.nova.framework.sdk.iap.voucher`；默认外网入口为 [upm.solotopiax.com](https://upm.solotopiax.com)，实际以窗口中保存的地址为准。本包声明依赖 Nova Framework `0.7.3`、IAP `0.2.2` 和 `com.solotopia.unitask` `10.0.6`，不要求安装 Mobile、ThirdPay、UniWebView 或 Unity Purchasing。下方是已配置对应 registry 后的依赖片段。
+
 ```json
-"dependencies": {
-  "com.solotopia.nova.framework.sdk.iap.voucher": "0.0.1"
+{
+  "dependencies": {
+    "com.solotopia.nova.framework.sdk.iap.voucher": "0.0.1"
+  }
 }
 ```
 
-## 核心保证
+安装后还须登记并启用 `VoucherStoreConfig`、配置实际商品和钱包/扣减路由、保存 ConfigMaster 并正式导出当前平台 Runtime。登录后自动开始一次钱包刷新与本地订单恢复；业务在钱包就绪后报价、支付。完整准备及验收见 [VoucherStore.md](./Nova/Doc/VoucherStore.md#接入与验收顺序)。
 
-- 客户端在发送前生成并持久化唯一 `game_order_id` 和完整扣减 payload。
+## 交易与履约边界
+
+- 客户端在发送前生成唯一 `game_order_id`，并先调用存档保存完整扣减 payload；跨进程恢复依赖当前账号的 PersistManager 确实可用并成功保存。
 - 网络失败、取消或结果未知时保留原订单；所有恢复发送复用相同订单号与 payload。
-- 服务端按 `app_id + user_id + game_order_id` 幂等，并以服务端钱包余额为权威。
+- 服务端必须按 `app_id + user_id + game_order_id` 幂等，并以服务端钱包余额为权威；客户端实现不能单独证明后端已满足该契约。
 - 本地终态事件可能因崩溃恢复重复派发，消费方必须按 `IAPResult.OrderId` 去重。
 - Voucher 资产必须精确覆盖商品价格；余额不足时不做现金补差。
 

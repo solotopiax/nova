@@ -120,7 +120,7 @@ Verify 使用独立的 `Nova.ProjectActions.VerifyJobs.v1` SessionState 命名�
 
 ## 当前开放边界
 
-Adapter 目前显式允许 Registry 中全部 37 个 Action：
+Adapter 目前显式允许 Registry 中全部 39 个 Action：
 
 - `nova.project.upm.manage-latest`
 - `nova.project.upm.uninstall-direct`
@@ -146,6 +146,8 @@ Adapter 目前显式允许 Registry 中全部 37 个 Action：
 - `nova.project.tracks.generate-registry`
 - `nova.project.iap.upload-product-catalog`
 - `nova.project.ui.export`
+- `nova.project.psd2ugui.inspect`
+- `nova.project.psd2ugui.run`
 - `nova.project.network.export`
 - `nova.project.sound.export`
 - `nova.project.vibration.export`
@@ -160,7 +162,7 @@ Adapter 目前显式允许 Registry 中全部 37 个 Action：
 - `nova.project.persistence.migrate-encryption`
 - `nova.project.persistence.recover-maintenance`
 
-Nova Project Skills 与 MCP Tool 不是一张清单：33 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
+Nova Project Skills 与 MCP Tool 不是一张清单：34 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
 
 能力发现继续使用 `describe`；原能力总览视图专用的 `NovaProjectActionGateway.GetExposureSnapshot` 与 `NovaProjectActionExposureSnapshot` 已移除，外部 C# 调用方需改用现有 `describe` 协议。
 

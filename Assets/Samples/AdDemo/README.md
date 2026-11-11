@@ -2,6 +2,12 @@
 
 本 Sample 展示广告聚合插件的请求、就绪查询、全屏展示与 Banner 控制，业务 View 为 `NovaFramework.Sdk.Ad.Samples.Runtime.DemoAdView`。当前渠道选项固定为 MAX。独立 AdMob 包已有 UMP、原厂初始化、四格式加载、展示及 Ready 实现，但本 Sample 未接入该渠道；其官方 SDK 安装条件与展开 ID 的调度限制见独立包文档。
 
+## 先登录，再操作广告
+
+页面打开时只显示交互区的“登录”按钮，广告渠道、请求、就绪检查、展示及 Banner 控件全部隐藏。点击登录会调用 `Nova.Network.Kit<Login>().Async(string.Empty, string.Empty, false)`；成功后隐藏登录按钮并显示广告控件，失败时保留登录按钮供重试。标题栏与反馈区仍可使用。关闭再打开页面需要重新点击登录；关闭页面不会取消 GameLogin 的身份请求，旧页面的迟到结果不会修改新页面。
+
+本示例需要安装 `com.solotopia.nova.framework.kit.network.gamelogin`，可从 `Nova → Open PlugPals → 外网仓库` 安装。该依赖在 Sample 描述符和 Runtime asmdef 中声明，不是广告基础包的强制依赖；直接通过 Unity Package Manager 导入 Sample 时仍须确认已经安装。`ConfigMaster` / `ConfigRuntime` 的 `LoginKitConfig.LoginCmdName` 使用 `GameAccountLogin`，对应 NetworkCmd 表源、正式 JSON 和生成访问属性中的 `HTTP_POST /v1/user/loginV1`；沿用现有 `GameServer`。Prefab 的 `m_LoginButton` 已绑定 `LoginButton`，广告交互区默认隐藏。广告 SDK 初始化仍由现有预加载流程负责。维护预制体时，登录按钮须正确赋给 `m_LoginButton`，且为 `m_InteractionRoot` 的直接子节点；代码以这个关系互斥显示登录按钮和其他广告控件，不能只新增脚本字段而漏掉 Prefab 绑定。
+
 ## 广告组配置
 
 在广告聚合面板的 MAX 中，`RVPlacementGroups`（激励）、`InterPlacementGroups`（插屏）、`AppOpenPlacementGroups`（开屏）都是 List，每项是一组，项内用英文逗号 `,` 或竖线 `|` 分隔串行尝试的真实 ID，两种分隔符同义。没有广告组选择模式。
@@ -14,13 +20,35 @@
 
 当前 Runtime 配置使用启用的 MAX 渠道，激励、插屏和 Banner 各保留一个真实 ID，开屏列表为空。Master 中广告聚合面板当前按 Platform 取数（`ByPlatform=1`，`ByChannel=0`，`ByDevelopMode=0`）；修改时仍应核对当前编辑坐标和实际导出结果。正式配置不包含示例多组广告 ID。
 
+## 广告收益上报
+
+MAX Banner 后台协议与 ad_ilrd 共用一份累计和存档，当前阈值为 5：前四次保存，第五次在 `TrackMaxAdIlrd` 派发时上传同一批总金额，广告位取本次回调 ID。全部打点目标不可用时保留累计，后台请求同步等待；恢复后只随一次 ILRD 派发触发协议。批次清理不等待网络确认，网络失败只记录警告。AdMob 尚无独立分析 ad_ilrd，在 Paid 处显式使用共享累计入口。非 Banner 不受阈值影响，ad_impression 和原始收益通知仍逐次触发。协议条数按批次计，不携带曝光次数。
+
+收益上报与广告加载、预载相互独立。当前 Sample 初始化完成后不会自动请求 Rewarded、Interstitial 或 AppOpen，Banner 也不会因初始化自动创建；业务仍需显式调用 `RequestAsync`，再按事件和 `IsReady` 结果决定展示。
+
+当前 `Editor/ConfigMaster.asset` 的广告全局配置已将 `m_RevenueReportCmdName` 设置为 `AdRevenueReport`。渠道在自己的收益派发入口显式调用基类 `StartRevenueReport`：MAX 为 `TrackMaxAdIlrd`，AdMob 为 `TrackAdMobRevenue`。基类生成稳定的 `report_id`，由 `Services/AdRevenueReportNetService.cs` 发送 `PbNetIAAReportReq`；业务页面无需直接调用网络接口。`RaiseRevenue` / `RaiseRevenueImmediately` 只通知原始收益。
+
+请求中的字段映射为：`AdFormat.ToString()` → `iaa.ad_type`，`AdChannelType.ToString()` → `ad_channel`，真实广告位 → `iaa.ad_id`，美元收益 → `iaa.price_usd`。协议类型固定为 `PbIAAReportData`、`PbNetIAAReportReq` 和 `PbNetIAAReportResp`，客户端命令名使用 `AdRevenueReport`，不改写为太极 V2 类型名；服务端路由仍以协议源注释的 `POST /v1/taijiv2/report` 为准。
+
+`AdPlugin.Events.RevenuePaid` 只是 Unity 主线程收益业务通知，表示收益事件已经进入广告聚合层，不表示网络请求已成功或服务端已经计入。网络失败、业务 `error_code`、`duplicate` 等结果以收益上报 Service 日志和响应为准；旧资产将 `m_RevenueReportCmdName` 留空时保持兼容并跳过自动上报。
+
+安装包按实际日志顺序核对：“广告收益上报配置 / 未启用”（Info）→“收到广告收益 / 已跳过”（Debug）→“广告收益上报参数”（Debug）→“广告收益上报网络结果”（Debug）。当前没有单独的 Info“准备发送”日志；关闭 Debug 时只看到初始化 Info 和异常 Warning，并不意味着协议一定没有发出。响应 JSON 可能省略 false / 0，外层状态和 `data.iaa_report_id / utc_day / duplicate / error_code` 需分开核对。MAX 原厂日志开关不能替代 Nova Debug 与 Player 日志配置。旧字段自动迁移；更新 Runtime 后还须更新设备实际使用的配置 Bundle、首包或热更新版本。完整发送与错误边界见[收益协议与日志](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+
+## 独立协议测试页
+
+主仓根目录的 `AdRevenueReportTest.html` 与 `AdRevenueReportTestServer.cjs` 是维护者本地协议工具，不属于 Sample 或 UPM 包的运行依赖。页面固定测试身份与应用 AES 参数，广告类型绑定生成时 `ConfigRuntime` 中的真实 ID；这是配置快照，修改运行时配置后不会自动刷新 HTML。每次点击发送都是新 report_id，没有自动重试；页面参数预览是 JSON，实际发送与客户端一致的加密 Protobuf，并解密解析统一外层及收益响应。
+
+浏览器页面通过同源本地服务原样转发请求字节和客户端业务头；本地文件会跳转到测试服务。部署到网站时须部署同源转发，或由收益接口允许对应域名及 `POST / OPTIONS` 和业务请求头，不能仅靠移动 HTML 或 `no-cors` 解决。Key / IV 写在源码中不代表浏览器不可读取；测试页不要作为公开配置或正式账号入口。维护者工具的固定身份、端口和本地服务运行状态不属于广告模块契约。
+
+独立页面能检查路由、加密和收益协议响应，不能证明 MAX 原厂 ILRD 已触发、Banner 的五次累计已执行、Demo 登录或真机广告链路已通过。原始日志、客户端发包、业务响应和服务端计入仍需按各自阶段核对。
+
 ## 入口与依赖
 
 [AdDemo.unity](./AdDemo.unity) 是本地演示场景。`ProcedurePreload` 按顺序加载 Persist、Localization、Network，等待 `Nova.SDK.InitializeTask`，再加载 Table、UI、Sound、Vibrate，之后进入 `ProcedurePlaying` 并通过 `Nova.UI.OpenUIViewAsync<DemoAdView>()` 打开页面。
 
 当前源码通过 `Nova.SDK.TryGet(out AdPlugin adPlugin)` 获取聚合插件；找不到时在反馈区提示不可用。等待聚合 SDK 初始化任务结束，仅表示配置和聚合初始化步骤已执行，不能替代 MAX 原厂初始化或 `IsReady(format)` 检查。
 
-当前仓内声明为 `sdk.ad@1.1.16` 与 `sdk.max@0.1.13`；MAX 包依赖 `com.applovin.mediation.ads@8.6.4` 及其原厂适配器，实际原生依赖由消费工程解析。本 Sample Runtime asmdef 为 `NovaFramework.Sdk.Ad.Samples.Runtime`，`autoReferenced=false`，排除 WebGL 并声明 `!UNITY_WEBGL`。本 Sample 不提供 WebGL 广告运行验证。
+当前仓内包清单为 `sdk.ad@1.2.2` 与 `sdk.max@0.2.1`；MAX 包依赖 `com.applovin.mediation.ads@8.6.6` 及其原厂适配器，实际原生依赖由消费工程解析。iOS 接入前还须核对 [MAX 构建处理器](../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPluginBuildProcessor.md) 中适配器声明与 Pod/SPM 归属脚本的一致性，当前版本差异不能用 Editor 初始化成功代替。本 Sample Runtime asmdef 为 `NovaFramework.Sdk.Ad.Samples.Runtime`，`autoReferenced=false`，排除 WebGL 并声明 `!UNITY_WEBGL`。本 Sample 不提供 WebGL 广告运行验证。
 
 ## 业务调用与参数
 
@@ -31,8 +59,8 @@
 | 请求激励 / 插屏 / 开屏 | `RequestAsync(format, customProps, token)` | 返回 `AdLoadResult`；页面按 `Success` 显示成功或本轮失败 |
 | 查询激励 / 插屏 / 开屏就绪 | `IsReady(format)` | 返回当前任一渠道是否有该格式可播广告 |
 | 展示激励 / 插屏 / 开屏 | `ShowAsync(format, customProps, token)` | 返回 `UniTask`，页面只显示“播放调用完成”；实际展示与奖励看事件 |
-| 请求 Banner | `RequestAsync(AdFormat.Banner, customProps, token)` | 成功后由聚合层记录活跃 Banner 渠道 |
-| 显示 / 隐藏 / 销毁 Banner | `ShowBanner()` / `HideBanner()` / `DestroyBanner()` | 无参数同步转发；无活跃 Banner 渠道时不执行原厂操作 |
+| 请求 Banner | `RequestAsync(AdFormat.Banner, customProps, token)` | 成功后记录预加载候选，不改变已显示实例归属 |
+| 显示 / 隐藏 / 销毁 Banner | `TryShowBanner()` / `HideBanner()` / `DestroyBanner()` | 首次显示重新选择就绪渠道，之后固定控制该实例；Hide 保留归属，Destroy 清除 |
 
 `BuildAdCustomProps` 每次构造新的 `Dictionary<string, object>`，字段如下：
 
@@ -48,6 +76,8 @@
 本轮所观察的全部有效广告组失败会返回失败，已启动的组继续后台重试；配置错误、格式未配置或渠道不可用不代表存在正在运行的组。单次 `AdLoadFailed` 只代表某个 ID 的尝试失败，后续 ID 仍可能继续成功。
 
 任一全屏广告仍在原生展示时，新全屏 `ShowAsync` 会发布 `ShowFailed`（`Busy(-12)`）并正常返回；没有就绪渠道时会记录警告并跳过。因此页面的“播放调用完成”或 Banner 按钮反馈不能作为原厂广告已展示的证明。
+
+Banner 显示按钮仅在 `TryShowBanner()` 返回 true 时提示“已发出 Banner 显示调用”；返回 false 时给出警告，不再无条件提示成功。首次请求失败后的后台重试或取消等待后加载成功仍可由该按钮发现。MAX / AdMob 只有首个配置 Banner ID 就绪才可被选择，其他 ID 的原厂 loaded 日志不能证明该首 ID 或聚合显示归属已准备好。
 
 ## 事件与生命周期
 

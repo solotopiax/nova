@@ -5,6 +5,9 @@
       "description": "com.solotopia.nova.framework.sdk.ad 演示示例：BaseDemoView 三段式骨架的 sample 工程",
       "sampleName": "AdDemo",
       "sourceDir": "Assets/Samples/AdDemo",
+      "sampleDependencies": [
+        "com.solotopia.nova.framework.kit.network.gamelogin"
+      ],
       "expectedNamespace": "NovaFramework.Sdk.Ad.Samples.Runtime",
       "expectedEntranceProcedure": "ProcedurePreload",
       "sampleManifestRelative": "Editor/SamplePathManifest.asset",

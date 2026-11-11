@@ -50,7 +50,8 @@ namespace NovaFramework.SDK.IAP.Runtime
         public bool IsRecoveredOrder { get; }
 
         /// <summary>
-        /// 是否可以发货；false 表示验单流程尚未完成或服务器拒绝。
+        /// 本结果是否允许业务发货，须与 IsSuccess 一起判断；
+        /// 成功但已补发的订单或仅表示补单批次完成的结果也可为 false。
         /// </summary>
         public bool CanDeliver { get; }
 

@@ -44,6 +44,7 @@ related:
 | 场景 GameObject | 测试期间临时挂的 `__TestRunner__` / 临时调试节点 / 测试 GO 全部删除 |
 | Inspector 数据 | 只恢复本轮测试改动，回到测试前实际值与原有脏状态；不得一律重置默认值或保存用户未保存的编辑 |
 | Editor 菜单状态 | 临时切换的构建路径、配置开关、运行模式回滚 |
+| 辅助窗口 | 按 [NA-014](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 完成操作后关闭与交付前复查，具体步骤见 [窗口处理与恢复顺序](../../../Docs/Onboarding/VALIDATION.md#unity-窗口处理与恢复顺序) |
 | PlayerPrefs/EditorPrefs | 恢复本轮涉及键的测试前存在性和实际值；只删除本轮新建且已确认归属的临时键 |
 | 临时执行器 | 一次性 runner、菜单入口、辅助脚本及自动生成的 `.meta` 全部删除 |
 | 临时文件 | marker、测试结果、日志、临时可执行文件、临时目录及测试专用构建物全部清理 |

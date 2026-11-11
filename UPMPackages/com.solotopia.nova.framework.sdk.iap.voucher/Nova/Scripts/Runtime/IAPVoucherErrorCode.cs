@@ -66,12 +66,12 @@ namespace NovaFramework.SDK.IAP.Runtime
         ProtocolError = 9,
 
         /// <summary>
-        /// 异步响应所属账号已经切换，结果未发布。
+        /// 测试发放所属账号已经切换，钱包结果未发布；普通钱包刷新迟到响应当前返回 StaleQuote。
         /// </summary>
         StaleAccount = 10,
 
         /// <summary>
-        /// 测试发放协议未配置或当前环境不允许使用。
+        /// 测试发放协议未配置或路由不可用；服务端明确拒绝测试发放时返回 ServerRejected。
         /// </summary>
         TestGrantUnavailable = 11,
     }

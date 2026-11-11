@@ -12,7 +12,9 @@
 IAPPlugin（父包）
   └── MobileStore : IAPStoreBase,
                     IIAPMobileQueryCapable,
-                    IIAPMobileSubscriptionCapable
+                    IIAPMobileSubscriptionCapable,
+                    IIAPStorePauseListener,
+                    IIAPStoreFocusListener
         └── MobileServiceHub
               ├── MobileIapNetService
               ├── MobileExtendedService
@@ -61,7 +63,7 @@ IAPPlugin（父包）
 | 服务 | 访问性 | 核心职责 |
 |---|---|---|
 | `MobileIapNetService` | `public sealed` | 查询服务端未完成订单、发送 Google / Apple 普通与订阅批量验单 |
-| `MobileExtendedService` | `internal sealed partial` | `StoreController` 唯一持有者，封装平台调用和事件注册 |
+| `MobileExtendedService` | `internal sealed partial` | `StoreController` 平台调用与事件注册的统一入口；Init 的 RuntimeContext 另保留控制器状态引用 |
 | `MobileStoreService` | `internal sealed partial` | Unity IAP `On*` 回调统一入口，只做路由 |
 | `MobileInitService` | `internal sealed partial` | Unity IAP 初始化、连接状态、初始化结果上报、商品拉取协调器委托入口 |
 | `MobileProductService` | `internal sealed partial` | Receipt 缓存、Product 查询、平台商品信息查询、权益状态辅助 |
@@ -146,7 +148,7 @@ StoreController 事件
 
 ## 7. StoreController 收口
 
-`MobileExtendedService` 是唯一持有 `StoreController` 的服务。其他服务不得缓存或直接访问 Controller。
+`MobileExtendedService` 是 `StoreController` 平台调用与事件注册的统一入口。初始化阶段 `MobileRuntimeContext.Controller` 也保留同一个控制器引用；其他服务通过 ExtendedService 操作平台，不绕过它直接调用 Controller。
 
 | 操作 | 方法 |
 |---|---|
@@ -195,9 +197,11 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 | 4 | `Delivered` | 服务端已处理过订单；删除订单，成功且 `CanDeliver=true`，客户端仍按本地幂等规则补发奖 |
 | 5 | `Invalid` | 无效订单；删除订单并派发失败 |
 
-上表 `Verified` / `Reissued` / `Delivered` 的「删除订单」经 `FinalizeVerifiedOrderRecord` 收尾：验单成功即刻完成业务发货与订阅到期更新；若该订单仍持有平台 `PendingOrder`，先把本地记录置为 `AwaitingConfirm`（本地状态 4）并落盘，再发起 `ConfirmPurchase`，待平台 ack（`OnPurchaseConfirmed → ConfirmedOrder`）到达后由 `TryCompleteAwaitingConfirm` 删除记录；ack 失败（`FailedOrder`）则保留 `AwaitingConfirm` 记录，等待下次 `FetchPurchases` 重新拉取到 `PendingOrder`，经 `TryReconfirmAwaitingOrder` 直接重试确认、跳过重复验单。无待确认平台订单（token 补单 / 历史单）时验单成功后直接删除。启动本地扫描跳过 `AwaitingConfirm`，不重发服务端验单。
+上表 `Verified` / `Reissued` / `Delivered` 的「删除订单」经 `FinalizeVerifiedOrderRecord` 收尾：验单成功后先更新本地权益；若该订单仍持有平台 `PendingOrder`，先把本地记录置为 `AwaitingConfirm`（本地状态 4）并落盘，再发起 `ConfirmPurchase`，待平台 ack（`OnPurchaseConfirmed → ConfirmedOrder`）到达后由 `TryCompleteAwaitingConfirm` 删除记录；ack 失败（`FailedOrder`）则保留 `AwaitingConfirm` 记录，等待下次 `FetchPurchases` 重新拉取到 `PendingOrder`，经 `TryReconfirmAwaitingOrder` 直接重试确认、跳过重复验单。无待确认平台订单（token 补单 / 历史单）时验单成功后直接删除。启动本地扫描跳过 `AwaitingConfirm`，不重发服务端验单。正常路径随后派发业务结果，不等待平台 ack；客户端不执行项目实际发货，状态写入、平台确认与业务履约也不构成事务。
 
-`PaySuccess` 只表达业务需要感知的本地发奖成功。普通商品与补单商品在 `CanDeliver=true` 且当前运行期未派发过同一 `tableId + ReceiptParam` 订单键时触发；订阅商品只有当前主动 `PayAsync` 对应的订单才触发，后台补单、Restore 和订阅刷新不走全局 `PaySuccess`。订阅 Restore 通知通过 `SubscriptionRestored` 表达：订阅订单服务端返回 `Verified` 或 `Delivered` 时会收集到 `SubscriptionRestored` 结果列表；`Reissued` 仅更新本地终态和完成 Restore 计数，不进入 `SubscriptionRestored`。如果服务端 QueryPendingOrder 先完成，随后 Unity IAP 又回调同一笔 PendingOrder，客户端按 `tableId + ReceiptParam` 合并本地订单并继续走验单终态处理，避免把平台交易号作为业务判断依据。当前服务端验单响应主要按 tableId 匹配；当同一批次存在重复 tableId 时，客户端会拆成单笔验单，避免同 SKU 多 ReceiptParam 订单响应错配。
+`PaySuccess` 是可交给业务履约的成功通知，不证明奖励已实际到账。`CanDeliver=true` 且当前运行期尚未派发过同一订单键时，消耗品主动购买和补单均可触发；非消耗品只在主动购买时触发；订阅还要求当前主动支付等待点存在。订阅和非消耗品补单/恢复分别使用 `SubscriptionRestored` / `NonConsumeRestored`，没有协调 Restore 正在执行时也会就地派发单条恢复通知。订阅只收集 `Verified` / `Delivered`，`Reissued` 仅更新本地终态和完成计数；非消耗品恢复可包含 `CanDeliver=false` 的 `Reissued`，业务仍须检查发货资格。如果服务端 QueryPendingOrder 先完成，随后 Unity IAP 又回调同一笔 PendingOrder，客户端按 `tableId + ReceiptParam` 合并本地订单并继续走验单终态处理，避免把平台交易号作为业务判断依据。当前服务端验单响应主要按 tableId 匹配；当同一批次存在重复 tableId 时，客户端会拆成单笔验单，避免同 SKU 多 ReceiptParam 订单响应错配。
+
+透传编码保留 UID 和 `ReceiptParam` 原字母大小写；存档键、队列及主动支付匹配仍统一使用 `ReceiptParam.ToUpperInvariant()`，不含 UID，也不比较平台交易号。iOS 使用 `Guid` 写入 `AppAccountToken`，平台往返可能重新格式化大小写。该编码调整没有改变订单身份：只差字母大小写的透传参数仍视为同一业务键。格式限制与旧布局边界见 [MobileUtils.md](./MobileUtils.md)。
 
 ## 10. 埋点边界
 

@@ -183,7 +183,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制所有 entry 行（折叠头 + 删除按钮 + 展开字段 + Tooltip HelpBox）。
+        /// 绘制所有 entry 行，按展开字段的最长标签分配标签宽度，结束后恢复外层绘制状态。
         /// </summary>
         /// <param name="position">Inspector 完整矩形。</param>
         /// <param name="y">当前绘制起始 y。</param>
@@ -221,26 +221,35 @@ namespace NovaFramework.Editor
 
                 if (entryProp.isExpanded && entryProp.managedReferenceValue != null)
                 {
-                    object target = entryProp.managedReferenceValue;
-                    SerializedProperty child = entryProp.Copy();
-                    SerializedProperty end = entryProp.GetEndProperty();
-                    bool enterChildren = true;
-                    while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
+                    float previousLabelWidth = EditorGUIUtility.labelWidth;
+                    try
                     {
-                        float childHeight = EditorGUI.GetPropertyHeight(child, true);
-                        Rect childRect = new Rect(position.x + c_FieldIndent, y, position.width - c_FieldIndent, childHeight);
-                        EditorUtil.Draw.PropertyField(childRect, child, child.displayName, includeChildren: true);
-                        y += childHeight + 2f;
-
-                        string tooltip = EditorUtil.Reflect.GetFieldTooltip(target, child.name);
-                        if (!string.IsNullOrEmpty(tooltip))
+                        EditorGUIUtility.labelWidth = GetEntryLabelWidth(entryProp, position.width - c_FieldIndent);
+                        object target = entryProp.managedReferenceValue;
+                        SerializedProperty child = entryProp.Copy();
+                        SerializedProperty end = entryProp.GetEndProperty();
+                        bool enterChildren = true;
+                        while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
                         {
-                            float helpHeight = EditorUtil.Draw.CalcHelpBoxHeight(MessageType.Info, tooltip, position.width - c_FieldIndent);
-                            Rect helpRect = new Rect(position.x + c_FieldIndent, y, position.width - c_FieldIndent, helpHeight);
-                            EditorUtil.Draw.HelpBox(helpRect, MessageType.Info, tooltip);
-                            y += helpHeight + 4f;
+                            float childHeight = EditorGUI.GetPropertyHeight(child, true);
+                            Rect childRect = new Rect(position.x + c_FieldIndent, y, position.width - c_FieldIndent, childHeight);
+                            EditorUtil.Draw.PropertyField(childRect, child, child.displayName, includeChildren: true);
+                            y += childHeight + 2f;
+
+                            string tooltip = EditorUtil.Reflect.GetFieldTooltip(target, child.name);
+                            if (!string.IsNullOrEmpty(tooltip))
+                            {
+                                float helpHeight = EditorUtil.Draw.CalcHelpBoxHeight(MessageType.Info, tooltip, position.width - c_FieldIndent);
+                                Rect helpRect = new Rect(position.x + c_FieldIndent, y, position.width - c_FieldIndent, helpHeight);
+                                EditorUtil.Draw.HelpBox(helpRect, MessageType.Info, tooltip);
+                                y += helpHeight + 4f;
+                            }
+                            enterChildren = false;
                         }
-                        enterChildren = false;
+                    }
+                    finally
+                    {
+                        EditorGUIUtility.labelWidth = previousLabelWidth;
                     }
                 }
 
@@ -248,6 +257,29 @@ namespace NovaFramework.Editor
             }
 
             return y;
+        }
+
+        /// <summary>
+        /// 按同层可见字段的最长显示名统一标签列，至少为右侧输入控件保留八十像素。
+        /// </summary>
+        /// <param name="entryProp">当前展开的列表元素。</param>
+        /// <param name="availableWidth">字段行扣除缩进后的可用宽度。</param>
+        /// <returns>当前元素各字段共用的标签宽度，不改变全局绘制状态。</returns>
+        private static float GetEntryLabelWidth(SerializedProperty entryProp, float availableWidth)
+        {
+            float width = EditorGUIUtility.labelWidth;
+            float indentWidth = EditorGUI.IndentedRect(new Rect(0f, 0f, availableWidth, 0f)).x;
+            SerializedProperty child = entryProp.Copy();
+            SerializedProperty end = entryProp.GetEndProperty();
+            bool enterChildren = true;
+            while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
+            {
+                float textWidth = EditorStyles.label.CalcSize(new GUIContent(child.displayName)).x;
+                width = Mathf.Max(width, textWidth + indentWidth + 20f);
+                enterChildren = false;
+            }
+
+            return Mathf.Min(width, Mathf.Max(0f, availableWidth - 80f));
         }
 
         /// <summary>

@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Runtime`
 **全局访问**：`Nova.SDK.Get<IAdPlugin>()`
 
-IAA 广告聚合调度层唯一业务接口，内部持多个渠道。RequestAsync 并行广播并观察各渠道本轮结果；基类渠道使用广告组调度。ShowAsync 对当前基类渠道按 EnableBidding 选择最高真实 Ready 收益，关闭比价时选择配置序首个可播渠道；非基类自定义渠道边界见下文。
+广告聚合调度层唯一业务接口，内部持多个渠道。RequestAsync 并行广播并观察各渠道本轮结果；基类渠道使用广告组调度。ShowAsync 对当前基类渠道按 EnableBidding 选择最高真实 Ready 收益，关闭比价时选择配置序首个可播渠道；非基类自定义渠道边界见下文。广告收益上报不是 IAdPlugin 的独立业务调用入口，配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后由渠道在收益派发处显式调用基类 `StartRevenueReport`；MAX 与 ad_ilrd 共用同一批次，原始收益业务通知不自动发送协议。
 
 ---
 
@@ -24,7 +24,7 @@ ISDKPlugin
         └── AdPlugin（sealed partial，UPM 包内唯一实现）
 ```
 
-`IBannerControl` 提供 Banner 展示控制（ShowBanner / HideBanner 等），由 `AdPlugin` 委托给活跃 Banner 渠道。
+`IBannerControl` 提供 Banner 展示控制（ShowBanner / HideBanner 等）。`AdPlugin` 首次显示选择当前就绪渠道，显示后保持实例归属，隐藏不清除、销毁时清除。具体类另有 `TryShowBanner()` 提供调用是否发出的反馈，无广告或调用失败只记录 Warning；接口签名保持不变，返回 true 不代表实际曝光。首次显示前的属性控制使用预加载候选，详见 [AdPlugin](./AdPlugin.md)。
 
 事件订阅通过具体类型 `AdPlugin` 的 `Events` 属性访问；接口层不暴露 `Events`，需要 `Nova.SDK.Get<AdPlugin>()` 或自行持有 `IAdPlugin` 并向下转型后访问。
 

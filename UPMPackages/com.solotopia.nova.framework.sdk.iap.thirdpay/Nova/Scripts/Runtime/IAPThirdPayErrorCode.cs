@@ -64,5 +64,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 服务端订单仍在处理中。
         /// </summary>
         OrderPending = 9,
+
+        /// <summary>
+        /// 购买前历史订单查询或补单未完成；本次未创建新订单。
+        /// </summary>
+        OrderRecoveryFailed = 10,
     }
 }

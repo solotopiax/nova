@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.SDK.AdPlugin.Runtime`
 **全局访问**：`Nova.SDK.Get<AdPlugin>()` / `Nova.SDK.Get<IAdPlugin>()`
 
-IAA 广告聚合调度层；初始化时按配置反射创建渠道实例，RequestAsync 并行广播给所有渠道，ShowAsync 按 EnableBidding 选择最高收益或配置序首个就绪渠道执行，渠道事件统一桥接到 Events 容器。
+广告聚合调度层；初始化时按配置反射创建渠道实例，RequestAsync 并行广播给所有渠道，ShowAsync 按 EnableBidding 选择最高收益或配置序首个就绪渠道执行，渠道事件统一桥接到 Events 容器。配置 `AdPluginConfig.RevenueReportCmdName`（建议 `AdRevenueReport`）后，MAX / AdMob 在各自收益派发处显式调用基类 `StartRevenueReport`；原始收益业务通知不触发协议，自定义渠道也须显式接入。派发不表示服务端已接收，完整边界见[收益上报说明](./INDEX.md#广告收益上报-proto-协议层)。
 
 ---
 
@@ -33,7 +33,9 @@ SDKPluginBase
 | 字段 / 属性 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `m_ChannelPlugins` | `List<IAdInternalPlugin>` | 空列表（OnInitializeAsync 重建） | 所有已注册渠道插件列表 |
-| `m_ActiveBannerChannel` | `IAdInternalPlugin` | `null` | RequestAsync(Banner) 成功后记录的活跃 Banner 渠道；Banner 控制方法委托到此渠道 |
+| `m_ActiveBannerChannel` | `IAdInternalPlugin` | `null` | 首次显示时确定的归属渠道；隐藏和后台加载不改变归属，销毁或释放时清除 |
+| `m_PreparedBannerChannel` | `IAdInternalPlugin` | `null` | 请求成功后保存的预加载候选，仅在首次显示前用于控制属性 |
+| `m_BannerControlVersion` | `int` | `0` | 销毁或释放时递增，阻止旧请求续体恢复候选及同步回调恢复显示归属 |
 | `m_RuntimeConfig` | `AdPluginConfig` | `null` | SDKManager 注入的广告运行时配置，提供国家码等待超时时间 |
 | `m_ChannelRegistrations` | `Dictionary<IAdInternalPlugin, ChannelRegistration>` | 空字典 | 持有全部已构造实例，保存有效门、精确退订动作及准备/初始化退出信号；失败实例也保留释放所有权 |
 | `m_ChannelDisposalCompletion` | `UniTaskCompletionSource` | `null` | 首次释放创建；重复调用等待同一次实际清理完成 |
@@ -52,7 +54,7 @@ SDKPluginBase
 
 ```csharp
 /// 向所有渠道并行发起预加载请求；返回 AdLoadResult，Success=true 表示成功，Success=false 时携带错误详情。
-/// Banner 格式在首个成功结果后更新 m_ActiveBannerChannel。
+/// Banner 格式在首个成功结果后更新预加载候选，不改变已显示实例的归属。
 public async UniTask<AdLoadResult> RequestAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
 
 /// 查询是否有任意渠道的指定格式广告已就绪可立即展示。
@@ -83,16 +85,17 @@ public async UniTask ShowAsync(AdFormat format, Dictionary<string, object> custo
 ### IBannerControl 委托实现
 
 ```csharp
-// 全部委托给 m_ActiveBannerChannel；Banner 控制前须先 RequestAsync(AdFormat.Banner) 完成预加载。
+// 首次显示重新选择当前就绪渠道；其后固定控制该实例，Hide 后可再次显示。
 public void ShowBanner();
+public bool TryShowBanner();  // AdPlugin 具体类新增入口；未加入 IAdPlugin / IBannerControl
 public void HideBanner();
-public void DestroyBanner();   // 销毁后同时清空 m_ActiveBannerChannel
+public void DestroyBanner();   // 销毁后同时清空显示归属和预加载候选
 public void UpdateBannerPosition(BannerPosition position);
 public void UpdateBannerPosition(Vector2 position);
 public void StartBannerAutoRefresh();
 public void StopBannerAutoRefresh();
 public void SetBannerWidth(float width);
-public float GetAdaptiveBannerHeight(float width = -1f);   // 无活跃渠道时返回 -1
+public float GetAdaptiveBannerHeight(float width = -1f);   // 无显示归属或候选时返回 -1
 public void SetBannerBackgroundColor(Color color);
 ```
 
@@ -155,6 +158,10 @@ ShowAsync 按 EnableBidding 选择最高收益渠道或配置序首个 Ready 渠
 
 渠道事件桥接只检查聚合释放状态和 ChannelRegistration.Active，直接在渠道触发事件的线程转发。基类已经统一主线程派发；非基类自定义渠道应自行保证线程、Ready 和回调终态语义。
 
+Banner 的预加载候选与显示归属分别保存。首次 `ShowBanner` / `TryShowBanner` 按当前竞价开关选择就绪渠道，因此请求失败后的后台重试成功、取消等待后的加载成功仍可被发现。显示后即固定归属，后续更高收益加载和重复请求不切换它；刷新期间暂时不 Ready 也不会丢失归属。Hide 保留归属，Destroy 清除归属与候选，后续须重新请求被销毁的实例。
+
+位置、宽度、刷新和隐藏等控制优先作用于显示归属，首次显示前可使用请求成功时的候选；没有目标时不调用原厂，高度返回 -1。首次显示会重新选择渠道，预先设置候选的属性不保证转移到新选渠道。需要固定属性时可在显示调用后设置。`TryShowBanner` 无就绪渠道、渠道拒绝调用或同步销毁/释放时返回 false；显示异常记录 Warning 并返回 false。true 只说明调用正常完成，不证明曝光。MAX / AdMob 通过基类可选返回值入口确认原厂调用；仅实现旧 void 入口的自定义渠道只能确认该方法正常返回。
+
 ### 本地请求与展示日志
 
 常规流程日志使用现有 `LogTag.AD` 与渠道的 `LogTag.Max`，只记录请求和展示的关键节点；Warning / Error 异常诊断保留。
@@ -163,7 +170,7 @@ ShowAsync 按 EnableBidding 选择最高收益渠道或配置序首个 Ready 渠
 |---|---|
 | 准备请求 | 业务 `RequestAsync` 入口记录 `format` 和渠道数 |
 | 实际调用渠道请求 | 基类调用渠道加载入口前记录渠道名及 `format / group / round / reason / placement / item`，其中 `placement` 是本次真实广告 ID |
-| 准备展示 | 业务 `ShowAsync` 入口记录 `format`；准备显示 Banner 时记录活跃渠道 |
+| 准备展示 | 业务 `ShowAsync` 入口记录 `format`；Banner 正常发出调用后记录归属渠道，无就绪渠道或调用失败记录 Warning |
 | 发起原厂展示与回调 | MAX 实际 `Show*` 调用前记录 `format / placement`，原厂加载、展示、点击、奖励、关闭、收益及过期重载回调由渠道记录 |
 | 广告组准备新一轮加载 | 仅展示后补量（`reason=AutoRefill`）和自动重试（`reason=Retry`）时记录渠道名及 `format / group / round / reason / placement / items`，新轮从本组首项开始；手动或默认业务请求不额外记录新轮 |
 
@@ -207,7 +214,7 @@ ShowAsync 按 EnableBidding 选择最高收益渠道或配置序首个 Ready 渠
 - **误区：通过 `IAdPlugin` 访问 `Events`**：`Events` 属性不在接口上；须 `Nova.SDK.Get<AdPlugin>().Events` 或显式转型后访问。
 - **误区：Banner 用 `ShowAsync`**：Banner 走 `RequestAsync(AdFormat.Banner)` 预加载后用 `ShowBanner()` 展示。
 - **误区：从 `ShowAsync` 读取 `AdResult`**：`ShowAsync` 返回 `UniTask`，展示成功、失败和关闭结果分别通过 `Events.ShowCompleted`、`Events.ShowFailed`、`Events.AdClosed` 发布；激励奖励以 `AdClosed.UserCompleted` 为准。
-- **误区：直接调 Banner 控制方法而不先 RequestAsync**：`m_ActiveBannerChannel` 在 `RequestAsync(Banner)` 成功后才会被赋值；未预加载时所有 Banner 控制方法为无操作。
+- **误区：一次请求失败或取消后永远不能显示 Banner**：底层加载和后台重试可能继续，首次显示会重新查询就绪渠道；无可用广告时 `TryShowBanner()` 返回 false 并记录警告。它不会自动创建广告或证明曝光。
 - **误区：调 `Supports(format)` 检查格式**：`Supports` 方法已全链路删除；直接 `RequestAsync`，未注册该格式的渠道 fail-soft 返回 `Success=false`，不抛异常。
 - **误区：从 `IAdPlugin` 同步查询国家码**：国家码只能通过 `GetCountryCodeAsync(ct)` 异步获取；广告模块只负责等待运行时数据，超时返回空字符串，不负责持久化兜底。
 - **误区：只检查 `HasUserConsent()`**：明确拒绝、尚未设置和渠道不支持查询都会返回 `false`，必须结合 `IsUserConsentSet()`。
@@ -303,7 +310,7 @@ void OnDestroyed()
 ## §13 关联文档
 
 - [IAdPlugin.md](./IAdPlugin.md) — 业务公开接口定义
-- [AdPluginConfig.md](./AdPluginConfig.md) — 配置，包含 ChannelConfigs（渠道列表 + 全局开关）
+- [AdPluginConfig.md](./AdPluginConfig.md) — 配置，包含 ChannelConfigs（渠道列表 + 全局开关）及 收益上报 NetCmd
 - [AdPluginEvents.md](./AdPluginEvents.md) — 事件容器（7 个 ObservableEvent 字段）
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道插件抽象基类
 - [IBannerControl.md](./IBannerControl.md) — Banner 控制接口

@@ -1,6 +1,5 @@
 # MaxAdPlugin
 
-> 最后更新：2026-10-15
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/**`
 
 **类签名**：`[AdChannel(typeof(MaxAdChannelConfig))] public sealed partial class MaxAdPlugin : AdChannelPluginBase`
@@ -8,6 +7,8 @@
 **业务入口**：通过 `Nova.SDK.Get<IAdPlugin>()` 获取广告聚合接口；`MaxAdPlugin` 是聚合层创建的 MAX 渠道实例，不是该查询的返回类型。需要订阅结果时使用 `Nova.SDK.Get<AdPlugin>().Events`。
 
 AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏/Banner/开屏的加载与展示，以及收入回调上报。
+
+收益网络协议由父包 `AdChannelPluginBase.StartRevenueReport` 统一发送。当 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 时，MAX 在 `TrackMaxAdIlrd` 已向至少一个打点目标尝试派发后调用，直接传入该次 ILRD 的金额和广告位；Banner 共用原累计及存档，未派发 ILRD 不触发协议。`RaiseRevenue` / `RaiseRevenueImmediately` 仅负责逐次业务通知。协议字段及 `RevenuePaid` 与网络成功的边界见 [Ad 基础包收益上报文档](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
 
 ---
 
@@ -43,11 +44,13 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 
 `MaxSdk`、`MaxSdkBase`、`MaxSdkCallbacks`、`MaxSdkUtils` 均来自官方 AppLovin UPM 包 `com.applovin.mediation.ads`。`com.solotopia.nova.framework.sdk.max` 的 `package.json` 必须声明该依赖，Runtime 程序集引用 `MaxSdk.Scripts`，Editor 程序集引用 `MaxSdk.Scripts.IntegrationManager.Editor`。
 
-Mediation adapters 也由 [package.json](../../package.json) 固定版本声明为 AppLovin 官方 UPM 包，按平台拆为 `.android` / `.ios` 依赖。当前声明 BidMachine、ByteDance、Chartboost、Facebook、Fyber、Google、Google Ad Manager、InMobi、IronSource、Mintegral、Moloco、UnityAds、Vungle、Line 的双平台包，以及 Yandex Android 包；未声明 Yandex iOS。旧 `Core/MaxSdk/Mediation/**/Dependencies.xml` 不再作为依赖来源。Google / Google Ad Manager 当前固定 Android `25030000.0.0`、iOS `13040000.0.0`，不表示安装时自动追踪最新版。
+Mediation adapters 也由 [package.json](../../package.json) 固定版本声明为 AppLovin 官方 UPM 包，按平台拆为 `.android` / `.ios` 依赖。当前声明 BidMachine、ByteDance、Chartboost、Facebook、Fyber、Google、Google Ad Manager、InMobi、IronSource、Mintegral、Moloco、UnityAds、Vungle、Line 的双平台包，以及 Yandex Android 包；未声明 Yandex iOS。旧 `Core/MaxSdk/Mediation/**/Dependencies.xml` 不再作为依赖来源。Google / Google Ad Manager 当前固定 Android `25050000.0.0`、iOS `13110000.0.0`；Unity Ads 双平台为 `4210001.0.0`，不表示安装时自动追踪最新版。
 
-本包依赖 Ad 基础包 `1.2.1`、Framework `0.7.3`、MAX SDK `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）。官方 SDK 还传递依赖 EDM4U；消费工程必须同时提供 AppLovin 与 EDM4U registry，安装示例见 [README](../../README.md#安装)。Nova PlugPals 会处理本包 `nova.scopedRegistries` 元数据；Unity 原生 Package Manager 不会自动把该元数据写入工程 manifest。
+当前 iOS 依赖归属处理器严格接受 Unity Ads iOS 的 UPM / SPM `4210001.0.0` 与 Pod `4.21.0.1`，与本包声明及官方 XML 一致。LINE iOS 仍为 UPM / SPM `3010102.0.0` 与 Pod `3.1.1.2`。该处理独立于广告位配置和运行时初始化；未知版本或原厂契约变化仍令构建失败，升级后须重新导出并完成原生构建验收，详见[iOS 原生依赖归属](./MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
-两个 asmdef 均通过官方包版本定义生成 `NOVA_APPLOVIN_MAX`（表达式 `8.5.0`）；Runtime 不限制平台，MAX 门面在 Android/iOS 使用 native SDK，在 Editor 和其他平台使用原厂 Editor 实现，不能据此视为桌面或 WebGL 真广告支持。Editor 程序集仅在 Editor 且非 `UNITY_WEBGL` 时参与编译。宏缺失时渠道初始化报告失败，广告能力不可用。
+本包依赖 Ad 基础包 `1.2.3`、Framework `0.7.3`、MAX SDK `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）。官方 SDK 还传递依赖 EDM4U；消费工程必须同时提供 AppLovin 与 EDM4U registry，安装示例见 [README](../../README.md#安装)。Nova PlugPals 会处理本包 `nova.scopedRegistries` 元数据；Unity 原生 Package Manager 不会自动把该元数据写入工程 manifest。
+
+两个 asmdef 均通过官方包版本定义生成 `NOVA_APPLOVIN_MAX`（表达式 `8.5.0`）；Runtime 不限制平台，MAX 门面在 Android/iOS 使用 native SDK，在 Editor 和其他平台使用原厂 Editor 实现，不能据此视为桌面或 WebGL 真广告支持。Editor 门面不提供真实 ILRD 收益，MAX 返回的未知/负收益占位值在 Nova MAX 边界统一转换为 `0`；Player 收到的正常正收益不改写。Editor 程序集仅在 Editor 且非 `UNITY_WEBGL` 时参与编译。宏缺失时渠道初始化报告失败，广告能力不可用。
 
 本包不再提交 AppLovin MAX SDK 本体文件；`UPMPackages/com.solotopia.nova.framework.sdk.max/Core/MaxSdk` 应保持为空或不存在。
 
@@ -83,7 +86,7 @@ IAdChannelConfig  <── MaxAdChannelConfig  (配置值对象，非插件本体
 | `m_AppOpenTcs` | `UniTaskCompletionSource<AdResult>` | `null` | 开屏展示挂起句柄；`ShowAppOpenAsync` 创建，`OnAppOpenHidden`/`OnAppOpenDisplayFailed` 完成 |
 | `m_RVRewarded` | `bool` | `false` | 激励视频奖励标记；`OnRVReceivedReward` 置 `true`，`OnRVHidden` 读取后清零 |
 | `m_BannerPosition` | `MaxSdkBase.AdViewPosition` | `BottomCenter` | Banner 当前位置；`UpdateBannerPosition` 同步更新 |
-| `m_CreatedBannerPlacementIds` | `HashSet<string>` | 空集合 | 已创建 native Banner view 的广告位集合，用于避免重复 `CreateBanner` |
+| `m_CreatedBannerViews` | `ConcurrentDictionary<string, object>` | 空字典 | 广告位与当前 native Banner 身份标识，避免重复创建并过滤已入队的旧实例回调 |
 | `m_BannerDesiredVisible` | `bool` | `false` | 业务是否期望 Banner 可见；加载恢复后据此决定是否重新显示 |
 | `m_CountryCode` | `string` | `null` | MAX SDK 初始化完成后由 `SdkConfiguration.CountryCode` 返回的国家代码；`GetCountryCode()` 对外返回该缓存值 |
 | `m_IsUserConsentSet` | `bool` | `false` | MAX SDK 初始化完成时缓存用户是否已明确作出广告隐私授权决定 |
@@ -265,6 +268,9 @@ protected override UniTask<AdResult> OnShowAsync(AdFormat format, string placeme
 // 显示配置列表中的首个 Banner，并启动 MAX 自动刷新
 public override void ShowBanner()
 
+// 返回是否正常发出原厂显示调用；失败记录 Warning，true 不代表曝光
+public override bool TryShowBanner()
+
 // 隐藏配置列表中的首个 Banner，并停止 MAX 自动刷新；不销毁，可再次 ShowBanner
 public override void HideBanner()
 
@@ -322,7 +328,7 @@ InitChannelSDKAsync（聚合层创建渠道后只调用一次）
 
 全部 30 个已注册广告回调（Rewarded 9、Interstitial 8、AppOpen 8、Banner 5）均在方法入口先调用 `Log.Debug(LogTag.Max, ...)`，再过滤回调、复制快照或派发到主线程，便于诊断未知广告位、重复或释放后到达的回调。加载与收益日志包含格式、广告位、网络、`revenueUSD` 和精度，失败日志包含错误码和消息，过期重载日志包含旧、新广告信息与 `expiredRevenueUSD / revenueUSD`。日志正文以 Rewarded / Interstitial / AppOpen / Banner 格式名开头，渠道由 `LogTag.Max` 标识，不重复写 MAX 前缀。日志与实际调用的输出边界见下文；`MaxAdChannelConfig.LogEnable` 仅控制 MAX 原厂详细日志。
 
-当该 Debug 调用编入当前程序时，收益日志插值中的 `double → decimal` 转换发生在回调过滤及即时收益上报的保护范围之前；NaN、Infinity 或越界收入可能在这里抛出异常。即时上报的 try/catch 不能覆盖此前的格式化，不能据此宣称所有原厂异常收入都已隔离。
+收益日志先通过 `GetMaxRevenue` 将负数、NaN、Infinity 和缺失收益归零，再进行 `double → decimal` 格式化。格式化仍发生在回调过滤及即时收益上报的保护范围之前；超出 decimal 范围的有限正数仍可能在此抛错。即时上报的 try/catch 不覆盖此前的日志格式化，不能据此宣称所有异常金额都已隔离。
 
 **线程说明：** MAX 广告状态回调先快照再排 Unity 主线程，加载状态、组批次及展示完成源均在主线程推进。RaiseRevenueImmediately 保留纯收益打点 SDK 原线程即时派发，收益槽位和业务事件进入主线程；Banner 累计持久化同样在主线程。displayed 不补载，hidden/displayFailed 匹配当前格式和真实 ID 后只收尾一次。
 
@@ -356,18 +362,22 @@ MAX 所继承的基类释放先关闭回调代际和主线程队列，取消渠�
 
 ### 收益打点插件的按需获取
 
+- MAX 原厂 `AdInfo.Revenue` 在 Editor 门面缺少 `revenue` 字段时会返回负值占位符；Nova 在快照边界将负数、非有限值和缺失值统一转换为 `0`，再用于加载结果、Ready 收益比较、展示/收益事件及 `ad_ilrd` / `ad_impression`。这表示 Editor 收益未知，不表示真实负收益；Player 的有效正收益保持原值。
 - 初始化阶段不获取收益打点插件。实际派发 `ad_ilrd` / `ad_impression` 时分别调用三个获取方法：有缓存直接返回，缓存为空才向 SDK 管理器查询，成功后保存引用，仍不可用时记录警告。
 - 插件查询沿用 `ISDKManager.TryGet` 的可用性规则。三个获取方法不判断当前线程，缓存为空时直接查询；查询失败或抛异常时逐目标 Warning，继续处理其他目标，不再排入主线程重试。底层 SDKManager 的集合没有并发同步，本适配层的异常隔离不等于为管理器提供线程安全保证。
 - 直接查询后仍缺失时，逐目标记录包含事件名、接口名和原因的 Warning，并跳过该目标本次事件；下一次事件继续尝试。此路径不等待 SDK 初始化，也不额外存储失败事件补发。
 - 释放渠道时清空缓存并结束会话，后续派发不再复用旧插件；已经进入插件的调用不撤回。
 - 单插件异常继续隔离。派发返回值仍表示至少已尝试调用一个插件，不表示分析后台确认接收。Banner ILRD 聚合入口仍在主线程累计和查询，全缺失时保留既有累计批次，至少向一个目标尝试派发后按既有规则清空，不单独为缺失目标保留批次。
-- 三种收益能力分别查询与派发；同一插件若同时实现多种能力，当前链路不按实例去重，可能收到多次调用。跨能力收口应按实际消费插件核对，不能据“每能力一次”宣称“每实例一次”。
+- 三种收益能力分别查询与派发；同一插件若同时实现多种能力，当前链路不按实例去重，可能收到多次调用。跨能力收口应按实际消费插件核对，不能据“每能力一次”宣称“每实例一次”。后台收益协议在三个目标派发之后统一触发一次，不会按目标数量重复发送；两个目的地都接收到同一收入也不等于向同一服务器重复发了协议。
+
+协议字段、Protobuf / AES 传输和实际日志级别统一见[广告收益上报](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。本节只说明 MAX 的原厂回调和派发边界。
 
 ### Banner 收益打点
 
 - `ad_impression` 在每次 MAX Banner 收益回调中派发，不因 Banner 刷新频繁而节流；非 Banner 同样逐次派发。插件在当前回调线程按需获取并派发。
 - MAX 全部 Banner 广告位的 `ad_ilrd` 共用同一组次数和收益累计，通过基类不带 `placementId` 的 `TrackBannerIlrdAggregated` 在主线程处理；默认值 `5` 表示总计第 5 次 Banner 收益回调时上传，已尝试派发后清空批次。上传载荷的广告位和网络信息来自触发阈值的那次回调。`BannerIlrdInterval=1` 表示逐次派发，`0` 或负数会停止 Banner ILRD 并清除旧累计；`ad_impression` 仍逐次派发。
 - 未达到间隔的 Banner 累计次数和累计金额由 `AdChannelPluginBase` 通过渠道初始化时缓存的 `IFileFragmentManager` 写入 `NovaAdBannerIlrd` 分类的 `Nova.Ad.BannerIlrd.Max.Count` / `Nova.Ad.BannerIlrd.Max.Revenue` 条目；SDK 后台回调会切回主线程进行累计、保存和清理。启动链仍须先完成 `Persist.LoadAsync()`；原 `PlayerPrefs` 和旧的按广告位累计条目不自动合并。
+- 后台收益协议在 `TrackMaxAdIlrd` 的已派发分支调用 `StartRevenueReport`，直接使用本次 ILRD 的金额、格式和广告位，不重复累计或存档。全部打点目标不可用时保留原批次且不发协议；至少一个目标尝试派发后清批，不等待网络确认，网络失败只警告。非 Banner 同样随各次 ad_ilrd 派发触发协议；所有目标不可用时不发后台协议，也不缓存全屏收益用于后续补发。
 - `ad_impression` 保留平台字段 `ad_format`，并补充与 Nova 广告事件一致的 `nova_ad_format`，便于跨事件统一筛选；`ad_ilrd.publisher_revenue` / `ad_ilrd.value` 为数值，`ad_ilrd.af_revenue` 为文本；未满间隔的内部存档金额使用 invariant decimal 字符串保存。
 
 ### 全屏广告曝光关联
@@ -407,16 +417,16 @@ MAX 所继承的基类释放先关闭回调代际和主线程队列，取消渠�
 
 - MAX Banner native view 按 placementId 幂等创建；同一个 placement 未 Destroy 前，后续 `RequestAsync(AdFormat.Banner)` 不重复 `CreateBanner`。
 - 创建集合在原厂 Create 之前登记；Create 同步抛异常时该 ID 可能仍在集合中，后续请求不保证自动重新创建。`OnIsReady` 对已注册 Banner 返回 true，仍依赖基类本地 Ready，未查询原厂 Banner 对象是否存在。异常与 Destroy 后重建需要实际核对原厂资源状态。
-- `ShowBanner()` 会记录业务期望 Banner 保持可见；`HideBanner()` / `DestroyBanner()` 会清除该期望。
+- `ShowBanner()` 委托 `TryShowBanner()`，先检查 SDK 初始化、首 ID 与已创建集合；不可用时只记录 Warning 并返回 false，不抛异常。原厂显示调用异常同样警告并回滚可见期望，避免后续加载成功意外显示。`HideBanner()` / `DestroyBanner()` 清除可见期望。
 - `ShowBanner()` 会先调用 `StartBannerAutoRefresh()`，`HideBanner()` 会先调用 `StopBannerAutoRefresh()`；启动时先对当前首个 Banner ID 写入 `ad_refresh_seconds`，再调用 MAX 自动刷新接口。
-- `OnBannerLoaded` 成功后，如果业务期望仍为可见，会再次调用 `MaxSdk.ShowBanner(adUnitId)`，用于恢复加载失败后又成功的 Banner 展示。
-- `DestroyBanner()` 会从已创建集合中移除 placementId；Destroy 后下一次 `RequestAsync(AdFormat.Banner)` 会重新创建 native view。
-- Banner 专属控制方法固定操作 `m_BannerPlacementIds` 的首个 ID；虽然加载阶段支持多个真实 Banner ID 并行创建，业务配置应把实际展示用 ID 放在首位。当前有效聚合仅在最近一次 Banner 请求成功后记录活跃渠道；业务应先请求并检查结果，再从该聚合调用控制方法。MAX 的低层控制方法会直接调用原厂，没有额外的空首项或已释放旧引用保护，不作为绕过聚合的业务入口。
+- `OnBannerLoaded` 先记录“收到原厂 Banner 加载成功回调”，该日志早于回调校验与主线程状态推进，不能证明聚合已就绪。主线程处理会过滤已销毁的 ID；只有配置首 ID 且业务期望仍为可见，才再次调用 `MaxSdk.ShowBanner(adUnitId)` 恢复显示，其他已加载 ID 不自动显示。
+- `DestroyBanner()` 先移除已创建记录并作废本地状态，再销毁原厂视图；重复销毁不重复调用原厂。loaded 入队时保存当前视图身份，执行前及恢复显示前比对，因此销毁或同 ID 重建不会接受已经入队的旧实例结果。原厂只提供广告位 ID，若旧回调直到重建之后才首次到达，则无法仅凭回调区分原厂视图代次，仍是设备验证边界。
+- Banner 控制固定操作 `m_BannerPlacementIds` 首 ID，`GetBannerControlPlacementId()` 将基类 `IsReady(Banner)` / `GetMaxRevenue(Banner)` 限定到同一 ID。其他 ID 可以加载，但不能代替首 ID 参与聚合显示选择。聚合首次显示重新选当前就绪渠道，之后固定归属，Hide 保留、Destroy 清除；后台重试成功无需依赖旧 Request 等待仍存活。业务仍从聚合控制 Banner，其余低层属性方法直接调用原厂，不作为绕过聚合的业务入口。
 - Banner 自动刷新仍由 MAX 驱动。被动加载成功可以更新已注册 Banner 缓存并上报 fill；没有主动 Loading 的刷新失败不启动 Nova 全屏组轮或额外 fallback。重复请求已创建视图只恢复可见性或跳过创建，不保证发出新的原厂加载。
 
 ### MAX SDK 参数边界
 
-- 当前实现不调用 `SetBannerExtraParameter(..., "adaptive_banner", "true")`；调用高度查询也不会启用自适应广告。MAX 8.6.4 的高度 helper 注明自适应能力来自 AdMob / Google Ad Manager，不能泛化为所有 mediation 网络已支持。
+- 当前实现不调用 `SetBannerExtraParameter(..., "adaptive_banner", "true")`；调用高度查询也不会启用自适应广告。高度查询存在不表示当前广告已使用自适应尺寸，也不证明每个 mediation 网络均支持该能力。
 - `ad_refresh_seconds` 使用 `MaxAdChannelConfig.BannerAutoRefreshIntervalSeconds`，默认 `10` 秒；Inspector 字段范围为 `10–120`，getter 实际为 `5–120`。原厂是否采纳额外参数仍由 SDK 决定，不能以 getter 的 5 秒下限证明 native 已支持 5 秒刷新。
 - `SetBannerWidth` 与坐标 API 直接把整数传给原厂；宽度是 Android dp / iOS points。高度 helper 也没有密度换算，当前默认又直接使用 Unity 的 `Screen.width`，不要将返回值直接当作 Canvas 像素高度；应在目标平台按实际布局核对。
 - 当前实现没有设置禁用 MAX SDK 自动重试的 extra parameter，也没有向 MAX SDK 注入禁用 B2B 的非 Banner 广告位 ID 列表。若业务依赖这两项能力，需要先在 Runtime 适配层实现，不能仅靠配置字段生效。
@@ -587,6 +597,8 @@ adPlugin.DestroyBanner();
 
 ### 开屏广告
 
+开屏也由业务显式请求和展示；当前适配层不监听应用前后台切换来自动弹出广告，项目须自行确定合适的展示时机，并遵守同一全屏占用检查。
+
 ```csharp
 var adPlugin = Nova.SDK.Get<AdPlugin>();
 var subscriptions = new List<IDisposable>();
@@ -625,7 +637,7 @@ finally
 
 初始化回调的实际 `IsSuccessfullyInitialized` 驱动加载门；启动中或失败时请求返回 `-11`，无自动预载。渠道初始化由聚合层对每个新实例调用一次，不额外提供重复初始化结果缓存；旧实例释放后不可复用，下一轮在 SDKManager 的新初始化周期使用新聚合及新渠道并重建业务订阅。`OnIsReady` 对接 MAX 三种全屏真实查询，缓存复用、收益比较与展示候选都只接收仍可播放的缓存。全屏 `Show` 互斥，第二次调用返回 Busy 且不覆盖原生完成源；单个业务等待取消不取消原生展示，占用保留到匹配 `hidden`、`displayFailed` 或 `Dispose`。基类不创建未 `displayed` 的诊断等待，也不以超时合成关闭、补载或解锁；MAX 原厂 `void Show` 内部静默拒绝仍无法保证自动恢复，业务仅能用自己的令牌结束等待。
 
-Rewarded、Interstitial、AppOpen 的 expiry 重载事件只在无活动加载的 Idle / Waiting，或同一 Ready 缓存时采纳，并复查原厂 Ready；采纳后取消旧 timer、成功归零间隔下标，不结算旧业务请求批次。Loading / Showing 不作为主动加载终态，另一 Ready ID 也不会被替换。MAX 8.6.4 没有 Load 请求 token / Cancel Load，原厂自主 reload 不属于 Nova 主动组内串行保证。
+Rewarded、Interstitial、AppOpen 的 expiry 重载事件只在无活动加载的 Idle / Waiting，或同一 Ready 缓存时采纳，并复查原厂 Ready；采纳后取消旧 timer、成功归零间隔下标，不结算旧业务请求批次。Loading / Showing 不作为主动加载终态，另一 Ready ID 也不会被替换。当前适配回调没有 Load 请求 token，Nova 也没有撤销原厂加载的入口；原厂自主 reload 不属于 Nova 主动组内串行保证。
 
 MAX 8.6.6 的 iOS 原厂 `MAUnityAdManager.m` 已将奖励重载事件名修正为 `"OnExpiredRewardedAdReloadedEvent"`，与 C# `MaxSdkCallbacks` 使用的事件名一致。缓存失效仍通过真实 Ready 检查识别；奖励重载事件的设备表现须在目标工程验证。
 

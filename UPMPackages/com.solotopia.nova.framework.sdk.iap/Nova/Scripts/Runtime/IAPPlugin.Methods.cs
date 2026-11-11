@@ -326,10 +326,11 @@ namespace NovaFramework.SDK.IAP.Runtime
         void IIAPStoreEventBridge.RaiseNonConsumeRestored(IReadOnlyList<IAPResult> results) => Events.NonConsumeRestored.Invoke(results);
 
         /// <summary>
-        /// SDKEventData.UserLogin 事件回调，自动将登录 UID 广播给所有 store。
+        /// 接收 SDKManager 在插件就绪或账号变化后交付的 UID，并广播给所有商店。
+        /// 当前只转发 UID，不使用会话编号隔离在途支付或验单任务。
         /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">事件数据，须为 SDKEventData.UserLogin 类型。</param>
+        /// <param name="userId">当前登录用户 UID。</param>
+        /// <param name="sessionId">框架登录会话编号；当前实现未使用。</param>
         public void OnSDKLogin(string userId, long sessionId)
         {
             SetUserId(userId);

@@ -21,7 +21,7 @@
 | `PlugPalsWindow.cs` | `Open()`、`Open(bool)`、`OnEnable`、`OnGUI`、`OnDestroy` |
 | `PlugPalsWindow.Visitors.cs` | 仓库地址、菜单路径、分类/筛选/样式状态 |
 | `PlugPalsWindow.Methods.cs` | 请求包列表、过滤、绘制工具栏、表头、卡片与操作按钮 |
-| `PlugPalsWindow.Definitions.cs` | 当前为空；历史上放内部数据类，现已迁到 `EditorUtil.PlugPals` |
+| `PlugPalsWindow.Definitions.cs` | 单仓库列表请求结果，保存本轮来源地址、展示条目及错误状态；包元数据模型仍归工具层 |
 | `PlugPalsMissingRequiredLibrariesWindow.cs` | 安装前依赖预检发现缺失库时弹出的购买/内部云仓库引导提示窗口 |
 
 ## 当前公开入口
@@ -41,8 +41,9 @@ public static void OpenInternalRegistry();
 
 ## 当前窗口职责
 
-- 并发调用 `EditorUtil.PlugPals.FetchRemotePackagesAsync(...)` 拉取外网仓库与内部云仓库数据；任一仓库先返回时立即展示其列表，不等待另一侧完成。
-- 另一侧仍在加载时允许浏览已返回列表，但暂时禁用安装、升级、卸载和一键升级，避免依赖预检或 registry 清理使用不完整的仓库数据。
+- 并发调用 `EditorUtil.PlugPals.FetchRemotePackagesAsync(...)` 的三参数入口，仅拉取公网仓库与内部云仓库包列表；各自返回后立即构建并展示条目，不等待发布时间。
+- 已配置的公网包列表尚未返回时，页签及包列表所在内容区只显示居中的“正在拉取公网仓库信息，请稍等...”；上方标题和工具栏保持显示、可操作，支持修改仓库地址并保存，保存后取消旧请求并按新地址重新拉取。未保存的地址输入不改变当前请求的等待状态。公网列表请求成功、返回空列表或失败后恢复内容区，失败沿用现有错误提示。公网地址为空时不进入此等待态。
+- 仅内部云仓库仍在加载时，不限制窗口交互，已返回条目可正常浏览、安装、升级、卸载和一键升级；操作使用当前已返回的仓库数据，不承诺尚未返回的依赖信息完整。
 - 调用 `EditorUtil.PlugPals.BuildDisplayEntries(...)` 组装本地/远端版本对比结果。
 - 提供搜索、分类筛选、内部云仓库筛选、已安装筛选。
 - 触发 `EditorUtil.PlugPals.InstallPackage(...)` / `UninstallPackage(...)`。
@@ -70,7 +71,8 @@ public static void OpenInternalRegistry();
 - 详情区布局、按钮区结构、展开卡片格式与普通条目保持一致。
 - 展开详情后，`Local Version` 与 `Latest Version` 只显示版本号。`Release Time` 独立显示最新版本的发布时间，位于 `Core Version` 下方、`Description` 上方；没有 `Core Version` 时紧跟 `Latest Version`。时间采用编辑器本地时区、`yyyy/MM/dd HH:mm:ss` 格式和 24 小时制。
 - 优先读取最新版本 `package.json` 的 `nova.releaseTime`。旧包没有有效记录时，回退到所属仓库 `time[最新版本号]` 的上传时间；无法确定时显示 `未知`，不采用其他版本的时间。本地版本不展示时间，未安装、解析中、解析失败继续显示原有状态。
-- 公网和内部云仓库使用同一套规则。时间查询在异步刷新阶段完成，单仓库最多并发 4 个元数据请求；单包时间读取失败不影响列表，也不参与安装和升级判断。
+- 公网和内部云仓库使用同一套规则。列表中已有有效时间时直接显示，不再补查；缺失时先显示 `未知`，列表展示后委托 `RefreshDisplayEntryReleaseTimesAsync` 在后台查询，单仓库最多并发 4 个元数据请求，每个包完成后原位补齐时间。
+- 后台查询不占用列表加载状态，不阻塞搜索、安装、升级、卸载或刷新；只修改原条目的 `LatestReleaseTime`，不重建列表、不覆盖包操作状态。查询使用本轮列表的原始来源地址；刷新、保存新地址或关闭窗口会取消旧批次，迟到结果不写入新列表。单包失败保留 `未知`，不参与安装和升级判断。
 
 ## 版本操作规则
 
@@ -103,6 +105,6 @@ public static void OpenInternalRegistry();
 
 窗口 URL 可在已有 fetched 列表时编辑，安装/日志再读当前 URL，旧列表不绑定原来源。只按引用认内部条目，复制或旧条目默认外网；两侧都空也可能被当请求失败。取消仅处理列表 fetch，日志用 None token 且关闭不取消；async完成没有全部窗口/请求身份保护。
 
-按钮忽略 Install 的 bool，工具实际写 Pending 后无自动 refetch/Resolve后验；错误可能只存 m_ErrorMessage 而已有列表区域不显示。折叠行手动赋 GUI.enabled，未完全合并父禁用态，与展开动作保护不同；没有整体 Play 禁用。文档中的状态应结合真实刷新结果，不把 UI灰显或无错误文案当安装保证。
+按钮忽略 Install 的 bool，工具实际写 Pending 后无自动 refetch/Resolve后验；错误可能只存 m_ErrorMessage 而已有列表区域不显示。折叠行手动赋 GUI.enabled 时保留父禁用态；没有整体 Play 禁用。文档中的状态应结合真实刷新结果，不把 UI灰显或无错误文案当安装保证。
 
 依赖缺失窗口只展示元数据购买/打开仓库入口，不自动购买或安装。日志入口当前不限 Framework，取远端 latest优先；Samples 仍通过原 Sample API覆盖导入，未重新冻结来源与目录写集。

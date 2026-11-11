@@ -16,7 +16,7 @@ TMP、Facebook、Generate SceneVisibility、输入设置、NativePreview 等相�
 
 `table.export` 的 `scope` 在校验、选择、Plan 冻结与 Execute 共用去除首尾空白、忽略大小写的规范值；例如 `" code "` 只导出代码，不会落入全量导出分支。
 
-Registry 当前注册 37 个 Action，全部进入 MCP 显式白名单：
+Registry 当前注册 39 个 Action，全部进入 MCP 显式白名单：
 
 | Action ID | Operation | RequiredEvidence | MCP |
 |---|---|---|---|
@@ -40,6 +40,8 @@ Registry 当前注册 37 个 Action，全部进入 MCP 显式白名单：
 | `nova.project.build.inspect-readiness` | Inspect | Static | 开放 |
 | `nova.project.table.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.ui.export` | Generate | Compile + Artifact | 开放 |
+| `nova.project.psd2ugui.inspect` | Inspect | Static | 开放；需要可选 PSD2UGUI 包 |
+| `nova.project.psd2ugui.run` | Generate | Static + Artifact | 开放；需要兼容自动化桥，AI 单独核验 |
 | `nova.project.network.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.sound.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.vibration.export` | Generate | Static + Artifact | 开放 |
@@ -96,6 +98,18 @@ Config 的有效执行坐标要求平台和渠道为非 `None` 的精确枚举�
 `nova.project.config.patch-coordinate` 原请求对明确坐标的 Namespace 与 AppConfigs 五个固定字符串字段执行批量预演、同组广播和共享保存，设计态仍可编辑其他目标平台。同 Action 的互斥 `operation=coordinate-switch + coordinate` 只保存当前渠道/开发模式，Platform 必须匹配并冻结 Active BuildTarget，不隐式切 Unity 平台、不修改其他配置。两分支只落盘 ConfigMaster；Runtime 导出另行执行。旧请求/Receipt 兼容，精确请求、空值、写集、草稿、失败与只读验证见 [设计态共享保存](../EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md)。
 
 Android 刷新合同另保存有限 UI Toolkit 角色的真实字段归属，识别既存面板持有的四类引擎渲染资源（含动态 Atlas 页直接持有的复制材质）正常重建；原始对象行完整保留，其余对象、输入纹理、资产、dirty、场景与选择仍严格保护。旧 Snapshot/Receipt 没有角色字段时保持原摘要和原严格比较，不事后升级旧 partial；具体维护边界见 [AndroidResolver](../EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md)。
+
+## PSD2UGUI 可选插件
+
+项目组以自然语言制作、同步和维护 PSD 界面时，使用 `nova-project-psd2ugui`。Framework 提供 `nova.project.psd2ugui.inspect` 和 `nova.project.psd2ugui.run`，通过已核验的 `cn.efunstudio.psd2ugui` 包调用固定桥 `UGF.EditorTools.Psd2UGUI.NovaPsdAutomation`；不依赖商业程序集编译，不接受任意类型名、方法或代码。缺包为 `not_applicable`，已安装但桥不兼容为 `blocked`，不影响其他 Action 的发现。
+
+`inspect` 只读发现 PSD/PSB、配置、编辑节点、输出与 AI 任务。`run` 只接受明确操作：准备编辑树、同步 PSD、按持久 ID 修改节点、生成界面、导出图片、配置、九宫格，以及运行/应用 AI。具体字段以 live `describe` 为准；不能把当前节点名当作来源 ID，也不能用修改 AI 节点名称来替换 PSD 来源。
+
+Plan 展示实际写入范围，冻结原输入和插件身份，并提前给出恢复指针；Execute 消费原计划一次。插件记录位于 `Library/Nova/AgentActions/PSD2UGUI/`。失败、重载或响应中断后按原 recovery token 只读 Verify，不重新执行生成或重启 AI。完成证据须来自实际保存和产物，后台仍在运行不能报告成功。
+
+`run-ai` 会启动已配置的外部 CLI，传递设计图片和提示词，只有用户目标明确包含 AI 时才执行。这个 Action 仅识别；Skill 等待本次结果核验成功后，再用同一个 `jobId` 调用 `apply-ai` 一次。GUI 的“AI 自动识别 UI 类型”按钮仍沿用自动应用行为。普通生成、同步和查询不触发 AI。
+
+生成 uGUI 后，具体业务 `UIView`、页面注册、资源地址和打开验证仍由已有页面 Skill 完成。完整操作与来源保护见 [PSD2UGUI Skill](../../../../Agents/Skills/nova-project-psd2ugui/SKILL.md)。
 
 ## IAP 商品目录一次提交
 

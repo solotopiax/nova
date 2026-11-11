@@ -19,7 +19,10 @@ description: Use when 项目组需要评估陌生 Unity 项目能否接入、继
 
 ## 检查步骤
 
+新项目或开工准备评估先按 `Docs/Onboarding/PROJECT_STRUCTURE.md` 的“新项目开工准备”逐项只读建立前置清单，分别报告已就绪、待准备、不适用及依据和后续 Operation。默认 MainDemo 启动 Resources 与预加载基线不能仅凭 canonical Prefab 或路径字段判齐备；HybridCLR 按环境文档分别核对包、本地安装、启用及所需产物。只读评估不负责安装、复制资源或配置；清单交给获授权的准备步骤，必需项未齐不称整套环境 ready。
+
 1. 用已解析宿主的 Python 3.9+ 运行 `nova_skills.py resolve` 确认消费项目实际解析到的 Framework 包：macOS/Linux 使用 `python3`，Windows 使用 `py -3`；记录 Unity 版本、Framework 版本、目标平台、当前场景和 Build Settings 的可见事实。
+   Unity 已打开时，按共同入口只读确认窗口归属、阻塞提示和忙碌状态，MCP 无响应不直接判进程卡死。新项目或后续包含 UI 布局时，按 `Docs/Runtime/Modules/UI/UIComponent.md` 记录已有屏幕适配方案、有效配置及缺项，交给写入 Operation 在制作布局前补齐；本检查不点击窗口或更改设置。
 2. 从项目事实而非 Sample 推断拓扑：检查 Nova 托管场景是否使用完整 canonical `Nova.prefab`、运行拓扑是否唯一、Content 场景是否声明加载/卸载责任、资源和配置入口由谁管理。
 3. 检查任务所需的最小依赖：业务 asmdef、已存在 UIGroup、Config/Table/资源入口、Pipify 或直接 Build 入口。不要把“未使用 Pipify”或 Warning 当成阻塞。
 4. 对已安装或被点名的 `com.solotopia.nova.framework.sdk.*` / `com.solotopia.nova.framework.kit.*` 进入只读扩展包分支：从 `Packages/manifest.json`、`Packages/packages-lock.json` 与实际解析包根记录 package id、声明与解析版本、source 和根路径；先读取包内首个存在的 `Nova/Doc/INDEX.md`、`Nova/Docs/INDEX.md` 或 `Nova/DOCS/INDEX.md`，不要因没有 INDEX 而宽扫全包。

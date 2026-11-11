@@ -4,7 +4,7 @@
 
 ## 接入与验收顺序
 
-1. 安装本包及其声明的依赖，在 ConfigWindow 的 `IAPPluginConfig.StoreConfigs` 中登记并启用 `ThirdPayStoreConfig`；在 `Products` 中配置对应商品的 `TableId` 和 `ThirdProductID`。商品可从 IAP SKU Excel 导入，但导入会全量覆盖当前内联商品表，随后仍需保存 ConfigMaster、导出目标 Runtime 配置，并核对导出结果。
+1. 按 [包安装说明](../../README.md#安装) 安装本包及其声明的依赖，在 ConfigWindow 的 `IAPPluginConfig.StoreConfigs` 中登记并启用 `ThirdPayStoreConfig`；在 `Products` 中配置对应商品的 `TableId`、非空 `Name` 和 `ThirdProductID`。商品可从 IAP SKU Excel 导入，但导入会全量覆盖当前内联商品表，随后仍需保存 ConfigMaster、导出目标 Runtime 配置，并核对导出结果。
 2. 在 Network 配置中为 `ThirdGetPaymentConfig`、`ThirdQueryPendingOrder`、`ThirdVerifyIap` 配好实际 Host/Path，并核对服务端的统一配置、待补单查询和批量验单协议。默认 Cmd 名只是路由键，不能代表服务已部署；服务端统一配置还须为当前账号与国家返回 `enabled`、目标 `product_id` 和 HTTPS `payment_page_url`。`ThirdProductID` 用于匹配该 `product_id`。
 3. 后端登录后通过 Nova 的 SDK 登录链同步 UID，等待有效自动国家码或仅在调试时使用 `SetDebugCountryCode`。业务先看 `IsPaymentConfigReady`，再看 `IsPaymentAvailable`；配置未就绪时 `PaymentDisabledReason == 0` 不能解释为服务端允许或拒绝支付。
 4. 通过 `IAPPlugin.PayAsync<IAPResult>(new IAPThirdPayRequest { ... }, ct)` 发起支付；按 `IAPResult` 和 `PaySuccess` / `PayFailed` 处理业务反馈，发货以服务端验单和幂等履约结果为准。支付页成功回调与服务端验单属于不同阶段；关闭页面、返回 App 或取消等待都不等于撤销已建立的订单。
@@ -57,14 +57,66 @@ iOS 原生桥仅在 iOS 13 及以上读取 `SKPaymentQueue.storefront.countryCod
 
 ## 支付流程
 
-1. 先检查同业务键的本地未完成订单并验单。
-2. 获取统一配置快照，检查服务端 `enabled` 和目标商品。
+1. Android 按下节规则决定购买前是否查询服务端成功未验订单；其他平台仍先检查同业务键本地未完成订单并验单。
+2. 前一步未进入历史订单补单、允许继续新购时，获取统一配置快照，检查服务端 `enabled` 和目标商品。
 3. 创建并保存本地订单。
 4. 使用同一份固定快照完成 Google 授权和支付 URL 构建。
 5. 打开支付页，随后验单；未终结订单由补单链继续处理。
 
 固定快照保证商品、国家、渠道参数和支付页 URL 不会在一次支付中混用不同请求版本。
 `nova_iap_create_order_success` 只在本地订单、平台授权和支付 URL 都准备完成后上报；上述准备阶段失败则上报 `nova_iap_create_order_fail`，同一次新订单流程不会同时上报两者。创建成功事件写入 `nova_client_order_id`，此时尚未取得的 `nova_server_order_id` 为空。
+
+### Android 重复点击补单查询
+
+Android 默认启用购买前查询，窗口为 30 分钟。首次购买无时间记录，直接正常支付；首次本地建单时按当前账号与 `TableId + ReceiptParam` 保存 UTC 秒，重复点击不刷新起点。`UNITY_ANDROID` 控制购买分支，在 Android 构建目标的 Editor 中也可验证该决策；`EnableAlwaysPaySucceed` 模拟开关仍会跳过真实购买链路。
+
+| 点击时的情况 | 本次处理 |
+|---|---|
+| 开关开启且 `0 <= 当前 UTC 秒 - 创建 UTC 秒 < 窗口分钟数 × 60` | 先请求 `QueryPendingOrderCmdName`，查询支付成功但尚未校验的订单 |
+| 查询成功，存在当前 `TableId` 的有效订单号 | 按 `ClientOrderId` 去重，全部进入 `Recovered` 批量验单；不再创建新订单 |
+| 查询成功，无当前商品有效订单 | 清理当前业务键的旧本地订单与时间记录，再继续正常支付 |
+| 网络、业务码、解析或查询处理失败，或查询路由未配置 | 返回 `OrderRecoveryFailed`，保留查询前记录，不创建新订单；无新增自动重试 |
+| 开关关闭、窗口为 0、无时间记录、时间非正、已到上限或设备时间回拨 | 跳过查询，清理当前业务键的旧订单与时间后正常支付 |
+
+窗口只控制此次是否查询，不按服务端订单年龄二次筛选。查询使用购买准备阶段已有的等待引用，入口仍由 Store 的购买门禁防止并发新购；等待引用在 `finally` 中配对释放。独立 `CheckLocalOrdersAsync` 后台补单不受该开关和时间窗口限制，查询失败时原有后台补单行为也不改变。
+
+独立后台补单会合并全部本地订单和服务端待验订单，不按本次点击商品筛选；服务端查询失败或未配置时，仍可用已有本地订单继续验单。这与购买前查询失败即停止新购不同。后台查询在等待前读取本地集合，但查询本身没有像购买前查询那样冻结账号版本或附加外部取消；后续验单才捕获当时上下文。因此不能把购买前的迟到响应隔离保证套到后台查询全过程，账号切换时仍须核对订单归属。`Recovered` 场景只发布可发货成功事件，不发布已发货成功或失败事件；Android 购买前查询另外返回本次点击的批次汇总，独立后台扫描没有该返回结果。
+
+**订单归属与回调**：查询按 `TableId` 找出该商品全部成功未验订单，但本地清理和查询时间按 `TableId + ReceiptParam` 隔离。同商品其他业务订单不会被本次清理删除。已有订单保留其自身 `CustomData`、`ReceiptParam`；仅服务端存在的订单不套用本次购买参数，透传由验单响应恢复。每笔可发货订单仍通过原 `PaySuccess` 事件返回。整批成功后，当前 `PayAsync` 返回 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空` 的批次完成结果，不能把该汇总再作为一次发货；任一验单未成功则汇总返回 `OrderRecoveryFailed`。部分成功订单可能已经发布成功事件，汇总失败不撤销其结果。
+
+时间随 `iap_thirdpay / data_{uid}` 账号存档保存；旧版本缺少时间记录时按空记录兼容，时间字段单独损坏会忽略无效时间，不丢弃有效订单。正常验单删单不同时移除查询起点，因此剩余窗口内仍可能再次查询服务器。查询与验单等待取消后不再消费响应；切账号、清空上下文或释放 Store 后不将旧响应应用到新账号。这不撤销已经发送的服务端请求。
+
+运行时通过独立能力接口控制，不更改其他支付能力接口的实现要求：
+
+```csharp
+if (iapPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recovery))
+{
+    recovery.SetAndroidThirdPayOrderRecoveryEnabled(true);
+    recovery.SetAndroidThirdPayOrderRecoveryWindowMinutes(30); // 始终限制在 0～30。
+}
+```
+
+服务端继续复用 Nova 的 `ThirdQueryPendingOrder` 和公共请求头，不发送 Solar 旧接口的独立 `payment_appid` 字段；部署方须确认应用、账号与支付商户映射正确。当前查询响应没有首充状态字段，此功能不新增首充状态同步，也不改变既有奖励展示参数。实际服务端映射、重复发奖幂等和真机支付仍须在目标环境联调。
+
+### 购买前补单的返回与失败处理
+
+业务应区分当前调用的汇总反馈与各笔历史订单的履约反馈：
+
+| 返回或异常 | 含义与处理 |
+|---|---|
+| `IsSuccess=true、IsRecoveredOrder=true、CanDeliver=false、OrderId=空` | 本次点击命中的历史订单已全部验单成功；只完成当前等待，不额外发货。各笔可发货订单已通过原成功事件返回 |
+| `ErrorSource=ThirdPay、ErrorCode=OrderRecoveryFailed (10)` | 查询未完成、查询服务未配置、处理异常，或命中的历史订单尚未全部校验成功；本次未创建新订单，可展示 `ErrorDesc` 并允许用户稍后重试 |
+| `OperationCanceledException` | 调用方取消、Store 释放或查询/验单所属账号变化；结束当前等待，不当作查询成功，也不自动重放购买 |
+
+`OrderRecoveryFailed` 是当前点击的汇总失败，不能用它覆盖已完成的逐单结果。查询阶段失败时保留原本地订单与时间；进入批量验单后则沿用各订单的服务端状态处置，可能已有部分订单发出成功事件并清理本地记录，不提供整批回滚。业务仍须以稳定订单身份幂等履约，不能同时在事件与汇总返回处各发一份奖励。
+
+### 升级与行为变化
+
+1. 旧配置没有新增字段时，购买前查询默认开启、窗口三十分钟；持久配置需保存 ConfigMaster 并重新正式导出 Runtime，运行时临时设置使用 [查询能力接口](ThirdPayStoreConfig.md#运行时调整购买前查询)。
+2. Android 不再因为本地存在同业务订单就直接验单：窗口内先向服务端确认成功未验订单。**关闭开关或将窗口设为 0，不会回到旧 Android 分支**；下次点击会清理当前业务旧订单与时间后正常新购。
+3. 旧账号存档只有订单、没有创建时间时按窗口外处理。清理本地记录不取消已建立的服务端交易；历史成功订单的恢复还依赖独立后台补单及目标服务端查询接口，升级验收应覆盖这一链路。
+4. 窗口和本地清理按账号及 `TableId + ReceiptParam` 隔离，服务端命中筛选仍按 `TableId`；同商品多笔历史订单保留各自透传，业务不得用本次点击参数替换历史订单身份。
+5. 非 Android 购买分支与原生支付页选择方式保持原有行为。本功能没有新增网络协议或独立首充状态字段，部署前仍须核对既有查询路由、商户映射和服务端幂等性。
 
 ## ThirdPay 链路打点
 
@@ -130,8 +182,8 @@ ThirdPay 的订单生命周期事件统一使用 `nova_client_order_id` 和 `nov
 | `ExternalBrowserCallback` | 当前 Auth Tab、Custom Tabs 或系统浏览器明确回调支付成功 | `max(7, max(1, RetryValidateMaxNum))` | `PendingPayment`、`Processing` |
 | `DirectPayAmbiguousReturn` | 当前应用内支付页关闭，支付结果不明确 | `min(3, max(1, RetryValidateMaxNum))` | `PendingPayment`、`Processing` |
 | `ExternalBrowserReturn` | 外部支付没有收到成功回调，仅检测到 App 返回且倒计时结束 | `min(3, max(1, RetryValidateMaxNum))` | `PendingPayment`、`Processing` |
-| `DirectPayPreflight` | 后续手动点击支付，命中相同 `TableId + ReceiptParam` 的历史订单 | 1 | 不重试 |
-| `Recovered` | 后台补单 | 1 | 不重试 |
+| `DirectPayPreflight` | 非 Android 后续手动点击支付，命中相同 `TableId + ReceiptParam` 的历史订单 | 1 | 不重试 |
+| `Recovered` | 后台补单，或 Android 购买前查询命中服务端历史订单 | 1 | 不重试 |
 
 达到当前场景的次数上限后，客户端统一按最终响应处理：
 
@@ -206,6 +258,8 @@ IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 
 国家、商品和渠道参数均来自本次支付固定的统一配置快照。应用 ID、语言和渠道读取标准公共 Header，不在 Store 配置中重复保存。
 
+URL 构造还要求公共 Header 的 `AppId > 0`、本地商品 `Name` 及服务端商品 `LocalCurrency`、`LocalPrice` 非空；缺少这些值会在建单后的 URL 准备阶段失败。当前只检查价格与币种字符串非空，不在客户端证明金额格式、币种适用性或服务端实收一致性。
+
 ## 协议
 
 协议源位于 `Nova/Protos/pb_net_third_pay.proto`，生成代码位于 `Nova/Scripts/Runtime/Protos/PbNetThirdPay.cs`。
@@ -226,9 +280,9 @@ Android 真机使用 Auth Tab → Custom Tabs → `Application.OpenURL` 的外�
 
 本地业务键是 `TableId + ReceiptParam.ToUpperInvariant()`，不裁剪票据空白，也不包含 UID、`CustomData` 或网页奖励；UID 隔离依赖账号存档容器。仓库快照只复制集合，元素仍是可变订单引用。新增、状态修改和删除先作用于内存，再调用保存回调；回调可为空且没有结果值，调用返回不能证明磁盘落盘或服务端幂等履约。保存或事件抛错不会整体回滚前面的改动。
 
-切换账号会结束当前外部浏览器会话并更换账号仓库，但不是所有嵌入页面、HTTP 请求和回调的统一代际屏障；异步服务访问的是 Hub 当时的状态，不能将一次支付期间账号变化当作自动隔离证明。Hub 的服务绑定只执行一次，绑定标记在依赖构造前设置，构造抛错可能留下部分绑定。释放按顺序取消、关闭并调用服务 `Dispose`，没有覆盖所有步骤的总 `finally`，也不会等待全部忘记式任务结束；某个依赖抛错可能阻断后续清理。
+切换账号会结束当前外部浏览器会话并更换账号仓库。购买前查询和验单请求在消费响应前核对账号版本，Store 释放后停止等待与发布；这不是所有嵌入页面、支付准备及 HTTP 请求的统一撤销屏障，不能将一次支付期间账号变化当作全部链路自动隔离证明。Hub 的服务绑定只执行一次，绑定标记在依赖构造前设置，构造抛错可能留下部分绑定。释放按顺序取消、关闭并调用服务 `Dispose`，没有覆盖所有步骤的总 `finally`，也不会等待全部忘记式任务结束；某个依赖抛错可能阻断后续清理。
 
-验单重试间隔依次是 `0.2、0.5、1、2、4、8` 秒，后续继续使用 `8` 秒，使用 `UniTask.Delay` 默认缩放时间。取消令牌用于循环检查与延迟，不传给 `ThirdIapNetService` 的网络发送；没有由该循环保证的单次 HTTP 超时或全程墙钟上限。服务缺失返回空结果，不表示验单成功。批量响应中任意订单处于可重试状态即可触发整批下一次请求，因此不能从单项已终结推导整批立刻结束；最终按客户端订单号 `Ordinal` 匹配首项，缺单按缺单处置，响应不应包含空订单元素。
+验单重试间隔依次是 `0.2、0.5、1、2、4、8` 秒，后续继续使用 `8` 秒，使用 `UniTask.Delay` 默认缩放时间。取消令牌用于循环检查、延迟和外部等待取消，不传给 `ThirdIapNetService` 的底层网络发送；停止等待不会撤销已发请求。没有由该循环保证的单次 HTTP 超时或全程墙钟上限。服务缺失返回空结果，不表示验单成功。批量响应中任意订单处于可重试状态即可触发整批下一次请求，因此不能从单项已终结推导整批立刻结束；最终按客户端订单号 `Ordinal` 匹配首项，缺单按缺单处置，响应不应包含空订单元素。
 
 中间日志、打点和业务事件与最终批量保存不构成事务。异常可能在已发事件、已改内存而尚未保存时退出；不存在统一异常回滚或必定自动重放。关闭页面或本地取消不撤销支付，最终权益仍须服务端核验与幂等控制。
 

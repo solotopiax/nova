@@ -20,11 +20,14 @@ keywords:
   - nova_project_action
 tags: [glossary, nova, editor, skill, action, mcp]
 related:
+  - "[[GLO-22-nova-collaboration-system|GLO-22]]"
   - "[[ADR-081-project-action-controlled-execution-layer|ADR-081]]"
   - "[[GLO-20-asmdef-namespace-boundary|GLO-20]]"
 ---
 
 # GLO-21：Skill、Action 与 MCP 的职责边界
+
+泛指整体维护与协作闭环时统一使用 [[GLO-22-nova-collaboration-system|Nova 协作体系]]；本条仅在需要解释具体执行职责时区分下述技术概念。
 
 ## 定义
 

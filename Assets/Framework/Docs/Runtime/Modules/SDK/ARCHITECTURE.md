@@ -84,6 +84,10 @@
 
 支付公共接口只提供最小调用面：`IIAPRequest.TableId` 是商品表行 ID，价格与平台 ProductId 来自实际商品配置；`PayAsync<T>` 的结果类型必须匹配实现，否则 `as T` 可得到 null。恢复接口收集各 store 能转换为 T 的结果，不等于补单发货或完成外部验单。`IIAPResult` 的 `ErrorSource` 与 `ErrorCode` 必须联合解释，同一非零整数在不同错误域含义不同；OrderId 用于关联定位，早期失败可为 null，不能替代 receipt 或服务端确认。`IsSuccess`、客户端统计与最终发货各有边界，详见实际安装的 [IAP 包文档](../../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md)。
 
+包内 `IAPResult` 的 `CanDeliver` 与 `IsSuccess` 分别判断。Android ThirdPay 购买前补单可以返回成功但不可发货的批次完成结果；Mobile 的消耗品补单与订阅、非消耗品恢复也使用不同事件。业务按真实订单身份复用已有幂等履约入口，不能给返回值、事件重放和恢复结果各发一份奖励。
+
+公共 SDK 会话机制只向实现相应接收接口的插件交付通知。当前 IAP 接收 UID，但不消费登录 `sessionId`，也未实现登出接收接口；`EndLoginSession()` 不能被解释为已清空所有 Store UID 或撤销旧交易。切账号、页面关闭、后台恢复和在途交易的隔离要求仍按具体支付包核对。
+
 - `SDKComponent` 只做入口与生命周期代理，不承载任何第三方 SDK 业务逻辑。
 - `SDKManager` 只编排插件，不暴露厂商 SDK 类型。
 - 插件接口表达的是 Nova 认可的能力边界，不是厂商原始 API 的逐项镜像。

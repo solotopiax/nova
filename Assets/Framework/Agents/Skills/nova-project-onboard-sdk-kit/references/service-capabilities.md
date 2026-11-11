@@ -10,11 +10,11 @@
 
 | 业务目标 | 既有执行入口与必须绑定的参数 | 结果、生命周期与重复调用边界 |
 |---|---|---|
-| 请求/展示广告、控制 Banner | `IAdPlugin.RequestAsync(format, customProps, ct)`、`IsReady(format)`、`ShowAsync(format, customProps, ct)`；Banner 加载后使用 `IBannerControl.ShowBanner/HideBanner/DestroyBanner()`。`format` 取实际启用格式，`customProps` 是附加属性字典，不是渠道选择或奖励凭据 | `RequestAsync` 返回 `AdLoadResult`；全屏 `ShowAsync` 无结果值，订阅具体 `AdPlugin.Events` 的展示、关闭、奖励与收入通知。业务领取身份和幂等拥有者沿用项目既有实现；页面只释放自己的订阅与等待，渠道由 SDKManager 持有 |
+| 请求/展示广告、控制 Banner | `IAdPlugin.RequestAsync(format, customProps, ct)`、`IsReady(format)`、`ShowAsync(format, customProps, ct)`；Banner 加载后使用 `IBannerControl.ShowBanner/HideBanner/DestroyBanner()`，具体 `AdPlugin.TryShowBanner()` 可检查是否正常发出显示调用。`format` 取实际启用格式，`customProps` 是附加属性字典，不是渠道选择或奖励凭据 | `RequestAsync` 返回 `AdLoadResult`；全屏 `ShowAsync` 无结果值，`ShowCompleted` 是 displayed，关闭及奖励看各自通知；`TryShowBanner=true` 也不证明曝光。页面只释放自己的订阅与等待，业务奖励沿用幂等入口，渠道由 SDKManager 持有 |
 | 购买、恢复与补单 | `IAPPlugin.PayAsync<IAPResult>(request, ct)`；request 使用实际 Store 的请求类型，`TableId` 对应正式商品表行 ID，`StoreType` 由具体请求决定。恢复与扫描分别使用 `RestorePurchasesAsync<IAPResult>(ct)`、`CheckLocalOrdersAsync(ct)`，专属查询走 `TryGetCapability<T>` | `IsSuccess` 与 `CanDeliver` 分别判断；返回值、Replay 事件和补单结果共用项目订单幂等消费者。`CustomData` 与 `ReceiptParam` 角色不同，后者还受目标 Store 编码/长度约束；恢复/扫描会有真实副作用，不为查询配置自动执行 |
 | 打开客服、更新资料与未读查询 | `AIHelpPlugin.Show(entranceId, welcomeMessage)`；`entranceId` 是当前应用后台入口，欢迎语可空且仅在线客服页有效。语言走 `SetLanguage(languageCode)`，资料走 `UpdateUserInfo(name, serverId, userTags, customDataJsonString)`；未读查询走 `FetchUnreadMessageCount/FetchUnreadTaskCount()` | `Show` 返回 bool；`OnMessageArrived`、`OnUnreadTaskCountChanged` 均交付原厂 JSON `string`，按页面生命周期成对订阅/退订，不当作 int 数量。统一登录已交付 UID 时不重复 `Login`；登出仍调用已就绪实例的 `ResetUserInfo()`，日志上传路径不自动配置 |
 | 统计事件、属性与归因查询 | `ITrackPlugin.TrackEvent(eventName, Dictionary<string, object>)`、`SetUserProperty(key, stringValue)`；归因走 `IAttributionPlugin.TrackEvent(...)`、`GetAttributionAsync(ct)` 与 `OnAttributionResolved`。事件/字段/目标从既有 Tracks 和项目触发点读取 | 所有调用由 Unity 主线程的项目入口发起；归因查询等待使用页面取消令牌，事件成对退订。统一登录通知已设置用户身份时不重复同步；不重复发送框架内置注册、登录或广告事件，不借一次查询触发额外上报 |
-| Push Token 与 Topic | `IPushPlugin.GetTokenAsync(ct)`、`OnTokenRefreshed`；`SetTopicSubscribed(topic, subscribed)` 的 bool 明确为订阅/取消订阅，沿用当前业务 Topic | 先核对 Firebase 已有自动权限与标识上报，避免再次提示或重复上传；Token 只记录存在性。Topic 方法同步发起后台操作，没有成功返回值，不能据此认定服务端已订阅；页面结束取消等待并退订自身处理器 |
+| Push Token 与 Topic | `IPushPlugin.GetTokenAsync(ct)`、`OnTokenRefreshed`；`SetTopicSubscribed(topic, subscribed)` 的 bool 明确为订阅/取消订阅，沿用当前业务 Topic | Firebase 插件可获取不等于原厂就绪；未就绪或已释放时 Token 返回空值，先检查 Value 非空再上报。核对已有自动权限与标识上报，避免再次提示或重复上传；Token 只记录存在性。Topic 方法同步发起后台操作，没有成功返回值，不能据此认定服务端已订阅；页面结束取消等待并退订自身处理器 |
 | 创建/取消业务 push task | `IFirebasePushTaskPlugin.QueuePushTaskAsync(new FirebasePushTask { TaskKey, TriggerTime, TemplateId, Cancel }, ct)`；`TaskKey` 非空且为业务唯一键，`TriggerTime` 为 Unix **秒**，`TemplateId` 来自当前服务端模板 | 返回 bool 只证明本地缓存写入；同键覆盖旧缓存。`Cancel=true` 只发送 `TaskKey/Cancel`，忽略时间与模板。`ct` 仅取消缓存等待，不能撤销已发送任务；保留原任务键及发送状态，断线先查原结果，不换键盲重发 |
 | 刷新实验、读参、曝光与指标 | `DataMasterPlugin.SetUserProperty(key, objectValue)` 在本次拉取前设置；读参使用 `GetParamValue<T>(topicName, paramName, fallback)` 或 JSON 版本，`topicName` 取 `GetTopicNames()`/响应 Params 字典 key；真实展示时 `MarkExposure(topicName)`，指标用 `LogExperimentEvent(eventName, doubleValue, extraContext)` | 首次统一登录上下文已触发刷新时直接等 `WaitForRefreshAsync(ct)`；明确要求再次刷新且已有当前登录用户时调用 `Refresh()` 后再等待，核对 `DataMasterRefreshResult.Success/UserId`。等待本身不发起请求；不以再次 Login 补属性，不把 `experiment.topicId` 当主题名，不为重复任务清理缓存或新建账号 |
 
@@ -24,7 +24,7 @@
 
 | 包后缀 | 配置入口与按需文档 | 运行探针和边界 |
 |---|---|---|
-| `sdk.ad` + `sdk.max` | 顶层 `AdPluginConfig.ChannelConfigs` 内加入 `MaxAdChannelConfig`；父 `Nova/Doc/AdPluginConfig.md/IAdPlugin.md`，MAX `Nova/Doc/MaxAdPlugin.md/MaxAdPluginBuildProcessor.md` | `IAdPlugin` 请求结果、目标格式 Ready 和对应展示/关闭事件；MAX 包安装不证明广告位可用 |
+| `sdk.ad` + `sdk.max` | 顶层 `AdPluginConfig.ChannelConfigs` 内加入 `MaxAdChannelConfig`；父 `Nova/Doc/AdPlugin.md/AdPluginConfig.md`，MAX `Nova/Doc/MaxAdPlugin.md/MaxAdPluginBuildProcessor.md` | `IAdPlugin` 请求结果、目标格式 Ready 和对应展示/关闭事件；MAX 包安装不证明广告位可用，iOS 还须核对适配器清单与 Pod/SPM 后处理版本一致性 |
 | `sdk.admob` | 同父广告列表，内嵌 `AdMobAdChannelConfig`；`Nova/Doc/AdMobAdPlugin.md` | 独立官方 `com.google.ads.mobile` 四格式适配；asmdef 当前在 `[11.5.0,12.0.0)` 启用适配，包清单不直接安装官方 SDK。先核显式安装/配置/原生产物，源码与编译不代替真实 UMP、填充、奖励和收入 |
 | `sdk.iap` + `sdk.iap.mobile` | 顶层 `IAPPluginConfig` 内 `Products/StoreConfigs`，加入 `MobileStoreConfig`；父 `Nova/Doc/IAPPlugin.md`，Mobile `Nova/DOCS/MobileStore.md/MobileInitService.md` | 目标 Store `IAPInitResult`、商品可用与真实平台回调分别核对；核心 Ready 不证明商品已获取 |
 | `sdk.iap.thirdpay` | 同 IAP 列表内 `ThirdPayStoreConfig`；`Nova/Doc/ThirdPayStore.md/ThirdPayStoreConfig.md/PlatformPaymentPolicy.md` | 登录后的国家与配置、商品和订单结果分别验收；按目标商店地区核对平台计划、选择与披露、API 和上报要求，未满足时保持第三方支付入口关闭 |
@@ -33,6 +33,8 @@
 首次接入先区分补内嵌引用与改现有字段：已注册的 IAP Mobile/ThirdPay/Voucher Store 可按共用契约使用 `nova.project.config.ensure-panel-references`，补齐后重新读取字段、patch 并导出。广告渠道不是顶层 SDK Config，该 Action 当前也不承诺补广告渠道；缺少内嵌渠道对象时核对包文档化 Inspector 和当前受控入口，没有可用入口则报告具体配置前提，不用任意对象 JSON、类型字符串或反射补齐。独立 AdMob 另核其包及官方 SDK 实际安装状态，既有 MAX 配置或广告模块业务验收不改变这些事实。
 
 独立 AdMob 使用 `AppIdAndroid/AppIdIOS/TagForUnderAgeOfConsent` 和四类广告位列表，复用相同广告业务/Config Operation；其初始化依次执行 UMP 更新/必要表单、检查 `CanRequestAds()`、等待 `MobileAds.Initialize` 状态后注册四格式真实 ID；Editor / 非移动平台不自动请求测试广告。UMP 流程用 `WaitForPrivacyFlowAsync`，无法从官方状态取得明确个性化同意，通用授权 bool 保持不支持查询。全屏组表达式当前经兼容 `PlacementIds` 展开后注册单 ID 槽位，尚未保留 `RegisterAdGroups` 的组内串行拓扑。标准 Banner 只支持显示、隐藏、销毁和位置；刷新、宽度、背景方法不因接口存在就认定支持。官方 Settings 注入复用包内 Nova 构建处理器，不在业务重复写原生 Manifest/plist，设备未验收保持 `partial`。
+
+MAX 当前包声明与 iOS 所有权后处理所期望的 UnityAds 适配器及 Pod/SPM 版本存在差异；按包内 `MaxAdPluginBuildProcessor.md` 核对实际安装版本和脚本契约，未对齐时不要把 Editor 初始化或包解析当作 iOS 构建已就绪。具体版本由包清单及包内构建文档维护，本指引不另建版本清单。
 
 MAX 配置读 `AppKey/AdMobAppIdAndroid/AdMobAppIdIOS`、启用状态和所需 `RVPlacementGroups/InterPlacementGroups/AppOpenPlacementGroups`、`BannerPlacementIds`；旧 `RVPlacementIds/InterPlacementIds/AppOpenPlacementIds` 是展开后的兼容真实 ID 快照。空广告位列表不靠重试补齐；构建处理器和官方 UPM adapters 自动处理的项复用既有 Player 构建，不复制到业务代码。MAX 保留配置组内串行拓扑，统一 `GroupRetryIntervalsSeconds` 默认 `2、4、8、16、32` 秒；只有整组失败推进下标，任一 ID 成功归零，末项后循环。AdMob 当前将组表达式展开为独立单 ID 组并行调度，不能继承 MAX 的组内串行承诺。广告普通业务统一 `Nova.SDK.Get<IAdPlugin>()`；先 `RequestAsync(format, ..., ct)` 并检查结果/`IsReady`。`ShowAsync` 返回 `UniTask`，结果从事件取得；Banner 预加载后走 `IBannerControl`，奖励按渠道和格式核对 `RewardGranted` 与 `UserCompleted`，前者表示奖励资格，后者表示原厂完成状态，二者均不证明业务已实际发奖；MAX 插屏展示成功即满足当前奖励条件，激励以官方奖励回调为准。订阅按生命周期释放。
 
@@ -48,11 +50,17 @@ Mobile 六条 CmdName 使用当前 `MobileStoreConfig` 的 Google/Apple 查询�
 
 支付统一 `IAPPlugin.PayAsync<T>` / `RestorePurchasesAsync<T>`，专属能力用 `TryGetCapability`，避免业务依赖内部 Store 或按商店堆转发。Editor `EnableAlwaysPaySucceed` 只验证模拟路径，正式发货依据服务端验单和幂等订单。支付、补单、Restore 可能改本地与服务端状态，接入探针默认不创建订单。
 
+UID 由 SDKManager 在 IAP 就绪后同步。当前 IAP 不消费登录 `sessionId`、不接收登出通知，`EndLoginSession()` 不会自动清空 Store UID 或取消旧交易；账号切换和登出时的购买入口、旧页面结果与后续履约需由现有业务会话及各 Store 的实际保护共同约束，不能把 SDK 全局会话结束当作所有支付等待已撤销。
+
 商品目录先沿本 Skill 的[内联商品维护](inline-products.md)维护，再正式保存并导出目标 Runtime。独立提交使用[商品目录上传](product-catalog-upload.md)的 `nova.project.iap.upload-product-catalog`；请求只有 `runtimeGuid + developMode`，冻结已保存 Master 的显式 `ExportTarget`、六文件与内存态、环境/客户端版本、完整规范目录及最终请求和固定桥身份。先核包内 `Nova/Doc/IAPProductCatalogProtocol.md`，再沿正式 Plan、精确外部授权、一次 Execute 与只读 Verify；不以未导出草稿、选中行或 Excel 筛选结果作为上传源。
 
 旧 Inspector 与无参数 Step `iap.product_catalog.upload` 仍复用 `IAPProductCatalogUploader.UploadCurrentAsync(CancellationToken)`，执行时读取当前导出配置；通用 Batch 没有自动取得新 Action 的目录预冻结。精确 HTTP 409 且 `code=CATALOG_VERSION_CONFLICT` 仍 Warning 后正常返回并表示新目录未应用，Step/Batch 成功不表示目录生效；不自动改版本或重传。新 Action 即使收到 2xx 也最高 `partial`，没有权威后台应用契约就不称落库成功；错误、取消、重载和仅有发送意图均不自动重发。上传只使用 App AES，不输出凭据、Body 或原响应，也不执行支付、补单和发货；目录结果不升级 `sdk-kit.iap.business` 整任务。
 
 ThirdPay 奖励透传使用 `IAPThirdPayRequest.FirstRechargeReward`、`ExtraBonusReward` 和 `IAPThirdPayRewardItem`，只影响本次支付 URL，不替代服务端验单或幂等发货。商品 Proto 的 tag 重排兼容边界以包内 `ThirdPayStore.md` 为准；本地生成类匹配不证明已部署服务端或旧客户端兼容。Mobile 的 Android 前台恢复检查、已有购买验单及确认继续复用包内 Store 生命周期，不在业务 View 再建恢复轮询或重复确认。
+
+Mobile 平台透传编码保留 UID 与 `ReceiptParam` 的输入字母大小写，平台 UUID 回传仍可能规范大小写；本地业务订单匹配继续按既有归一规则，不承诺端到端原样回传。消耗品补单、订阅恢复和非消耗品恢复分别核对 `PaySuccess`、`SubscriptionRestored`、`NonConsumeRestored`，平台确认或本地 `AwaitingConfirm` 不代表项目已发货。Voucher 则使用独立交易 journal，当前不随结果回填 `ReceiptParam`；报价和余额查询不证明服务端已原子扣减，缺少扣减路由也可能进入待恢复而非明确拒绝。差异以各 Store 文档和服务端幂等履约为准。
+
+ThirdPay Android 购买前补单查询默认开启、窗口三十分钟，配置字段 `AndroidOrderRecoveryEnabled` / `AndroidOrderRecoveryWindowMinutes` 复用现有面板修改与 Runtime 导出；运行时由 `TryGetCapability<IIAPThirdPayOrderRecoveryCapable>` 获取开关及窗口设置能力。查询失败中止本次新购，窗口外或关闭时清理同账号同业务键旧记录再正常支付；命中服务器订单按原事件逐笔补单，`PayAsync` 汇总成功为 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空`，不得重复发货。开关不关闭独立后台补单。实际协议仍复用 `ThirdQueryPendingOrder`，不自动迁移 Solar 旧商户参数或首充状态；接入验收核对目标服务端账号/应用/商户映射及幂等履约。完整时序与旧存档规则以包内文档为准。
 
 业务 View 的支付和查询在开始时保存所属会话与取消令牌，等待后、异常反馈和按钮恢复前核对页面仍打开且所有者未变；关闭时先取消本会话，再清除模块引用。GameLogin 当前没有页面取消参数，旧结果只停止页面回写，不撤销身份请求或支付订单。复用导入的 `IAPDemo/README.md` 与 Sample 实现核对关闭、立即重开和旧任务结束；这些 C# 业务 API 的存在不代表已注册对应 MCP Action，真实平台与履约证据仍需单独取得。
 

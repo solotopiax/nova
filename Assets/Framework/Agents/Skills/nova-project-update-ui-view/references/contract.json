@@ -41,6 +41,11 @@
       "kind": "csharp-api",
       "entry": "Nova.UI.OpenUIViewSync<T> / OpenUIViewAsync<T> / OpenUIViewSync(string uiViewName, object userData = null) / OpenUIViewAsync(string uiViewName, object userData = null) / OpenUIViewByAssetSync / OpenUIViewByAssetAsync",
       "when": "在已授权业务源码接入中按类型、UI表Name或唯一AssetLocation选择配置；所有打开先加载UI注册表，分组、暂停与池化以表为准，缺失或歧义返回-1；旧bool重载仅供迁移且不再覆盖表格"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova-project-edit-settings confirmed UIComponent Inspector editing",
+      "when": "仅适配计划确需更改项目自有 UIComponent 时，按所选 Operation 冻结精确配置资产、原值/目标值、override、保存与读回；不修改包内 canonical Prefab，不把此路由当作新 MCP Action；方向修改须另核对当前宿主实际Player Settings编辑能力，不冒称patch-target支持任意ProjectSettings。"
     }
   ],
   "inputs": [
@@ -78,6 +83,11 @@
       "name": "localizationSourceFontResourceDependencyAndRequestedLanguageSetAcceptance",
       "required": false,
       "description": "批量本地化分支必需；语言源/正式导出复用update-localization，字体Mark/资源/布局与完整请求Play语言集合明确：三种请求覆盖三种，明确单语言不扩大；只要求切换但未指定集合时冻结基准与目标至少两种，记录测试偏好及恢复路径"
+    },
+    {
+      "name": "screenAdaptationPlan",
+      "required": false,
+      "constraint": "按 Docs/Runtime/Modules/UI/UIComponent.md 的屏幕适配与安全区章节由Agent读取并冻结；创建页面必需，更新/Workflow仅布局、画布、方向或安全区分支必需。包含平台方向、设计尺寸/比例和支持范围、缩放/安全区唯一拥有者、有效配置/原目标值、变化刷新与验收；纯数据/事件且布局不变记录沿用及影响范围，不要求用户重复填写可读事实。"
     }
   ],
   "effects": [
@@ -93,7 +103,8 @@
       "generated UI output required by this registration change",
       "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
       "confirmed project-owned UI node set missing TextLocalizing and explicit Key/FontMark fields through shared Unity MCP or selected edit-settings Operation",
-      "necessary authoritative localization source and formal output only through selected nova-project-update-localization and its exact write scope"
+      "necessary authoritative localization source and formal output only through selected nova-project-update-localization and its exact write scope",
+      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -103,7 +114,8 @@
       "unrelated UI registration or generated output",
       "manual edits to generated UI output",
       "unconfirmed global TextLocalizing repair, inferred Key mapping, duplicate component, inherited source Apply/Unpack or unknown Stage/global dirty asset save",
-      "runtime TextLocalizing setters used as a substitute for persistent binding, handwritten RTL reversal or unconfirmed input/layout migration"
+      "runtime TextLocalizing setters used as a substitute for persistent binding, handwritten RTL reversal or unconfirmed input/layout migration",
+      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes"
     ]
   },
   "locks": [
@@ -140,6 +152,7 @@
     "Unity 编译及任务必需的Play交互证据，compile不能代替明确要求的行为验收",
     "批量本地化时逐节点权威映射、唯一组件、持久Key/FontMark与variant/嵌套override证据，必要源/正式导出/Config/字体资源消费完整链",
     "批量本地化时实际入口完整请求语言集合逐项的文本/字体/布局/开关页验证及原语言偏好恢复，源码/Schema/未覆盖请求集合的截图不能标validated",
-    "测试对象/runner/meta/日志/偏好/动态字体及非目标序列化噪声清场与目标保存范围核对"
+    "测试对象/runner/meta/日志/偏好/动态字体及非目标序列化噪声清场与目标保存范围核对",
+    "布局分支实施前已有 screenAdaptationPlan，实际 UIComponent/CanvasScaler 配置与唯一安全区拥有者符合计划；实际入口的参考/边界比例、安全区、支持方向及重开 Play 布局证据，移动端交付按目标补 Player/设备证据，缺失保持 partial。纯数据/事件且布局不变不扩大验收。"
   ]
 }

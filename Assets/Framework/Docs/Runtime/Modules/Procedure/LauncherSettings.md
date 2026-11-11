@@ -49,6 +49,7 @@
 - 面板路径相对于 `Resources/`，不是 AssetBundle 地址。
 - 改动 `LocalizationJsonPathTemplate` 会直接影响启动期 UI 文本是否能命中。
 - `SplashDuration` 只控制最短时间，不保证后续流程已经准备好。
+- canonical Prefab 填有默认路径不表示对应资源已随 Framework 主体导入；新项目按 [固定启动资源](../../../Onboarding/RESOURCE_WORKFLOW.md#新项目默认固定启动资源) 准备 MainDemo 启动资源、依赖和唯一 Resources 键，并验证实际显示。
 
 ## 继续阅读
 

@@ -79,12 +79,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private readonly ThirdPayServiceHub m_Hub;
 
         /// <summary>
+        /// 统一的批量验单请求函数。
+        /// </summary>
+        private readonly Func<string, IReadOnlyList<string>, UniTask<NetResponse<PbNetThirdVerifyIapResp>>> m_VerifyOrders;
+
+        /// <summary>
         /// 创建第三方订单验单服务。
         /// </summary>
         /// <param name="hub">ThirdPay 强类型服务容器。</param>
         public ThirdPayOrderValidationService(ThirdPayServiceHub hub)
         {
             m_Hub = hub ?? throw new ArgumentNullException(nameof(hub));
+            m_VerifyOrders = (cmd, ids) => m_Hub.NetService.VerifyIapAsync(cmd, ids);
         }
 
         /// <summary>
@@ -96,6 +102,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>与输入订单对应的验单结果列表。</returns>
         public async UniTask<List<IAPResult>> ValidateAsync(List<ThirdPayOrderRecord> orders, ThirdPayValidationScene scene, CancellationToken ct)
         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, m_Hub.RuntimeTaskToken);
+            ct = linkedCts.Token;
+            long version = m_Hub.PersistContext.Version;
+            EnsureValidationContext(version, ct);
             if (orders == null || orders.Count == 0)
             {
                 return new List<IAPResult>();
@@ -125,8 +135,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             string lastProtocolMessage = string.Empty;
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                ct.ThrowIfCancellationRequested();
-                NetResponse<PbNetThirdVerifyIapResp> response = await m_Hub.NetService.VerifyIapAsync(verifyCmdName, clientOrderIds);
+                EnsureValidationContext(version, ct);
+                NetResponse<PbNetThirdVerifyIapResp> response = await m_VerifyOrders(verifyCmdName, clientOrderIds).AttachExternalCancellation(ct);
+                EnsureValidationContext(version, ct);
                 bool isFinalAttempt = attempt + 1 >= maxAttempts;
                 if (response.IsSuccess && response.Data != null)
                 {
@@ -293,6 +304,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>与输入订单对应的业务结果列表。</returns>
         private List<IAPResult> ApplyValidationResponse(List<ThirdPayOrderRecord> orders, PbNetThirdVerifyIapResp response, ThirdPayValidationScene scene, int validateCount)
         {
+            long version = m_Hub.PersistContext.Version;
             var results = new List<IAPResult>(orders.Count);
             bool anyRemoved = false;
             bool anyChanged = false;
@@ -301,6 +313,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             bool publishTerminalFailures = ShouldPublishTerminalFailure(scene);
             foreach (ThirdPayOrderRecord order in orders)
             {
+                EnsureValidationContext(version, m_Hub.RuntimeTaskToken);
                 PbNetThirdVerifyOrderResult matched = FindResponse(response, order.ClientOrderId);
                 if (matched == null)
                 {
@@ -372,12 +385,27 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 results.Add(failure);
             }
 
+            EnsureValidationContext(version, m_Hub.RuntimeTaskToken);
             if (anyRemoved || anyChanged)
             {
                 m_Hub.PersistContext.Save();
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// 在请求前后和结果发布时检查账号与释放状态，丢弃旧账号的迟到验单结果。
+        /// </summary>
+        /// <param name="version">本轮验单开始时的账号版本。</param>
+        /// <param name="ct">调用方与 Store 生命周期的取消令牌。</param>
+        private void EnsureValidationContext(long version, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (version != m_Hub.PersistContext.Version)
+            {
+                throw new OperationCanceledException("第三方支付验单所属账号已变化。", ct);
+            }
         }
 
         /// <summary>

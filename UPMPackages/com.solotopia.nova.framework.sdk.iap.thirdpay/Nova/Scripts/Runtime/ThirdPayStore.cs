@@ -18,10 +18,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
     /// <summary>
     /// 应用内第三方支付 Store。
-    /// 仅支持 InAppAuto，由 Store 负责支付页、政策校验、验单、补单与订单持久化。
+    /// 仅支持 InAppAuto，由 Store 负责支付页、现有 Google 外部结算接口、验单、补单与订单持久化。
+    /// 商户资格、适用计划及平台披露与交易上报要求须由项目另行核对，不由页面可打开或验单成功证明。
     /// </summary>
     [IAPStore(IAPStoreType.ThirdPay)]
-    public sealed partial class ThirdPayStore : IAPStoreBase, IIAPThirdPayConfigCapable, IIAPThirdPayProductCapable, IIAPThirdPayCheckoutCapable, IIAPStorePauseListener, IIAPStoreFocusListener
+    public sealed partial class ThirdPayStore : IAPStoreBase, IIAPThirdPayConfigCapable, IIAPThirdPayProductCapable, IIAPThirdPayCheckoutCapable, IIAPThirdPayOrderRecoveryCapable, IIAPStorePauseListener, IIAPStoreFocusListener
     {
         /// <summary>
         /// 创建第三方支付 Store，并提前建立初始化前可用的共享状态容器。
@@ -86,7 +87,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         /// <param name="request">第三方支付请求。</param>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>支付及服务端验单结果。</returns>
+        /// <returns>支付及服务端验单结果，或 Android 购买前补单的不可再次发货批次汇总；逐单履约使用原订单成功事件。</returns>
         public override async UniTask<IAPResult> PayAsync(IAPRequest request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
@@ -200,6 +201,34 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 获取当前是否跳过 Google 第三方支付信息页。
         /// </summary>
         public bool IsPaymentInformationScreenSkipped => m_Hub.SkipPaymentInformationScreen;
+
+        /// <summary>
+        /// 设置 Android 重复购买前的补单查询开关，不改变后台补单或非 Android 行为。
+        /// </summary>
+        /// <param name="isEnabled">是否启用购买前查询。</param>
+        public void SetAndroidThirdPayOrderRecoveryEnabled(bool isEnabled)
+        {
+            m_Hub.AndroidOrderRecoveryEnabled = isEnabled;
+        }
+
+        /// <summary>
+        /// 设置 Android 购买前查询窗口；超出范围时限制为零至三十分钟。
+        /// </summary>
+        /// <param name="windowMinutes">窗口分钟数；零表示跳过查询。</param>
+        public void SetAndroidThirdPayOrderRecoveryWindowMinutes(int windowMinutes)
+        {
+            m_Hub.AndroidOrderRecoveryWindowMinutes = Math.Max(0, Math.Min(30, windowMinutes));
+        }
+
+        /// <summary>
+        /// 获取当前 Android 购买前查询开关。
+        /// </summary>
+        public bool IsAndroidThirdPayOrderRecoveryEnabled => m_Hub.AndroidOrderRecoveryEnabled;
+
+        /// <summary>
+        /// 获取当前 Android 购买前查询窗口分钟数。
+        /// </summary>
+        public int AndroidThirdPayOrderRecoveryWindowMinutes => m_Hub.AndroidOrderRecoveryWindowMinutes;
 
         /// <summary>
         /// 按支付表行 ID 获取已拉取的第三方商品信息。

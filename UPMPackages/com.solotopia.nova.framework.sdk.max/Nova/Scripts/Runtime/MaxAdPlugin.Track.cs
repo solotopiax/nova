@@ -20,6 +20,29 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
     {
 #if NOVA_APPLOVIN_MAX
         /// <summary>
+        /// 将 MAX 未提供收益时使用的负值占位符归一化为 Nova 的非负收益语义。
+        /// </summary>
+        /// <param name="revenue">MAX 原厂返回的收益。</param>
+        /// <returns>有效收益；未知、负数或非有限值统一为零。</returns>
+        private static double NormalizeMaxRevenue(double revenue)
+        {
+            if (double.IsNaN(revenue) || double.IsInfinity(revenue) || revenue < 0d)
+            {
+                return 0d;
+            }
+
+            return revenue;
+        }
+
+        /// <summary>
+        /// 读取并归一化 MAX 回调收益；缺失响应按未知收益处理。
+        /// </summary>
+        /// <param name="info">MAX 回调携带的广告响应。</param>
+        /// <returns>符合 Nova 非负收益约定的美元收益。</returns>
+        private static double GetMaxRevenue(MaxSdkBase.AdInfo info)
+            => NormalizeMaxRevenue(info?.Revenue ?? 0d);
+
+        /// <summary>
         /// 在厂商回调返回前复制所需字符串和数值；主线程队列不持有 MAX 响应对象。
         /// </summary>
         private sealed class MaxAdInfoSnapshot
@@ -35,7 +58,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 NetworkPlacement = info?.NetworkPlacement;
                 Placement = info?.Placement;
                 CreativeIdentifier = info?.CreativeIdentifier;
-                Revenue = info?.Revenue ?? 0d;
+                Revenue = GetMaxRevenue(info);
                 RevenuePrecision = info?.RevenuePrecision;
                 WaterfallName = info?.WaterfallInfo?.Name;
             }
@@ -189,7 +212,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 构建并上传 MAX 的 ad_ilrd 事件；Banner 聚合后会传入累计收益，非 Banner 会传入单次收益。
+        /// 构建 MAX 的 ad_ilrd 事件并在派发后触发同金额的后台协议；Banner 共用原累计批次。
         /// </summary>
         /// <param name="format">当前广告格式。</param>
         /// <param name="adUnitId">MAX 广告位标识。</param>
@@ -221,7 +244,14 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 
             MergeCorrelationProps(ilrdProps, correlationProps);
 
-            return DispatchToAllTrackers("ad_ilrd", ilrdProps);
+            bool dispatched = DispatchToAllTrackers("ad_ilrd", ilrdProps);
+            // 未派发时原 Banner 累计会保留，后台必须同步等待，避免恢复后重复发送旧金额。
+            if (dispatched)
+            {
+                StartRevenueReport(new AdEvent { EventType = AdEventType.Revenue, Format = format, PlacementId = adUnitId, Revenue = revenueValue, Currency = "USD", Network = adInfo.NetworkName, Precision = adInfo.RevenuePrecision, Timestamp = DateTime.UtcNow });
+            }
+
+            return dispatched;
         }
 
         /// <summary>

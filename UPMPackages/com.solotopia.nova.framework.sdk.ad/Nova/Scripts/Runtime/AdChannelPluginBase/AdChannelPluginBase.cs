@@ -84,9 +84,26 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// </summary>
         /// <param name="globals">广告全局配置；为空或渠道已释放时忽略。</param>
         public void ApplyGlobalConfig(AdChannelConfigList globals)
+            => ApplyGlobalConfig(globals, m_RevenueReportCmdName);
+
+        /// <summary>
+        /// 创建渠道后应用全局开关及广告收益上报路由配置，并记录实际路由或未启用状态。
+        /// </summary>
+        /// <param name="globals">广告全局配置；为空或渠道已释放时忽略全局开关。</param>
+        /// <param name="revenueReportCmdName">广告收益上报 NetCmd 名称；为空时禁用基类自动上报。</param>
+        public void ApplyGlobalConfig(AdChannelConfigList globals, string revenueReportCmdName)
         {
             RequireAdMainThread();
-            if (m_IsDisposed || globals == null)
+            if (m_IsDisposed)
+            {
+                return;
+            }
+            m_RevenueReportCmdName = revenueReportCmdName?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(m_RevenueReportCmdName))
+                Log.Info(LogTag.AD, $"[{Name}] 广告收益上报未启用：channel={Channel}，未配置收益上报 NetCmd。");
+            else
+                Log.Info(LogTag.AD, $"[{Name}] 广告收益上报配置：channel={Channel}，cmd={m_RevenueReportCmdName}。");
+            if (globals == null)
             {
                 return;
             }
@@ -292,6 +309,13 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public bool IsReady(AdFormat format) => PickBestReadyUnit(format) != null;
 
         /// <summary>
+        /// 返回本渠道 Banner 控制接口实际操作的广告位；默认 null 保留旧派生渠道的任意就绪项选择。
+        /// 固定控制首 ID 的渠道应重写，使 Ready 和收益查询与原厂控制目标一致。
+        /// </summary>
+        /// <returns>固定 Banner 广告位 ID；未限定时为 null。</returns>
+        protected virtual string GetBannerControlPlacementId() => null;
+
+        /// <summary>
         /// 查询本渠道指定全屏格式是否仍占用原厂展示；业务await取消不解除占用。
         /// </summary>
         /// <param name="format">广告格式。</param>
@@ -377,6 +401,13 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// 显示已加载的 Banner 广告；Banner 渠道重写此方法。
         /// </summary>
         public virtual void ShowBanner() { }
+
+        /// <summary>
+        /// 尝试发出 Banner 显示调用；默认委托旧 ShowBanner 以兼容既有派生渠道。
+        /// 能校验原厂对象的渠道应重写，无法显示时记录 Warning 并返回 false。
+        /// </summary>
+        /// <returns>显示调用已发出时为 true，不代表实际曝光；旧 void 实现只能确认方法正常返回。</returns>
+        public virtual bool TryShowBanner() { ShowBanner(); return true; }
 
         /// <summary>
         /// 隐藏 Banner 广告（不销毁）；Banner 渠道重写此方法。

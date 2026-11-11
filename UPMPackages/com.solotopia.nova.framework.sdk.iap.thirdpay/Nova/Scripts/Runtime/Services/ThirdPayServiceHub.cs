@@ -121,6 +121,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         internal bool SkipPaymentInformationScreen { get; set; }
 
         /// <summary>
+        /// Android 购买前查询开关，仅由 Android 购买分支消费。
+        /// </summary>
+        internal bool AndroidOrderRecoveryEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Android 购买前查询窗口分钟数。
+        /// </summary>
+        internal int AndroidOrderRecoveryWindowMinutes { get; set; } = 30;
+
+        /// <summary>
         /// 获取或设置必需 Store 配置是否齐备。
         /// </summary>
         internal bool ConfigReady { get; set; }
@@ -161,6 +171,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_IsBound = true;
             Context = context;
             Config = config;
+            AndroidOrderRecoveryEnabled = config?.AndroidOrderRecoveryEnabled ?? true;
+            AndroidOrderRecoveryWindowMinutes = config?.AndroidOrderRecoveryWindowMinutes ?? 30;
             Table = table;
             NetService = new ThirdIapNetService();
             PaymentConfigService = new ThirdPayPaymentConfigService(NetService.GetPaymentConfigAsync);

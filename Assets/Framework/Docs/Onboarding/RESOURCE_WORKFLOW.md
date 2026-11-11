@@ -32,6 +32,27 @@ API 细节见 [AssetComponent](../Runtime/Modules/Asset/AssetComponent.md)，Bun
 
 修复 UI 注册缺失时，先修改 Excel，再通过 [UI Exporter](../Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.md) 导出 JSON/Binary 和 C#；核对场景 UISettings、生成表属性、Prefab 与业务泛型入口一致。只修改 JSON 会在下次导出时被旧表源覆盖。AppsflyerDemo 的入口为 `DemoAppsflyerView`，数据地址为 `UIs`，UI 分组为 `Demo`。
 
+## 新项目默认固定启动资源
+
+新建 Nova 项目默认采用 MainDemo 的固定启动资源作为可运行基线。开发态来源为 `Assets/Samples/MainDemo/Resources/BuiltIn/**`；消费项目从实际安装版本的 MainDemo Sample 经正式导入取得，再通过 Unity 资产工具引入项目自有目录。不要依赖开发机路径、修改包缓存，或要求产品长期保留整套 Demo。canonical `Nova.prefab` 虽已填入路径，Framework 自身的 Resources 当前主要是 Debug 资源，并不包含这套启动 UI 实物。
+
+来源尚未导入时，先单独冻结官方 Sample 导入的精确目录、文件、编译和自动导入辅助工具的写入/弹窗副作用，按现有建项授权执行并核验，再进入资源复制。三面板复制的写集不能暗含整套 Sample 导入；无法冻结导入范围时明确保留来源缺口，不能运行 Sample 专用自动配置去覆盖现有工程。导入辅助工具边界见 [项目与场景结构](PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界)。
+
+| ProcedureComponent 中的 LauncherSettings 字段 | 默认 Resources 键 |
+| --- | --- |
+| `SplashPanelPrefab` | `BuiltIn/Prefabs/LauncherSplashPanel` |
+| `ProgressPanelPrefab` | `BuiltIn/Prefabs/LauncherProgressPanel` |
+| `DialogPanelPrefab` | `BuiltIn/Prefabs/LauncherDialogPanel` |
+| `LocalizationJsonPathTemplate` | `BuiltIn/Jsons/LocalizationTexts_{0}` |
+
+准备时核对三面板 Prefab、必要的 Launcher 组件与序列化绑定、字体/材质、闪屏贴图和本次所需启动语言 JSON。MainDemo 当前含 `LocalizationTexts_ChineseSimplified.json` 和 `LocalizationTexts_English.json`；它们服务 `LauncherLocalization`，不能代替正式业务 Localization 表及其初始化。素材可以替换为项目占位物料，但必须实际导入、保存并验证，不只填写空路径。
+
+通过 Unity 检查资源依赖并复制/引用，读回依赖仍指向哪里；复制 Prefab 不自动证明字体、材质、贴图与脚本归属已独立。默认键可以保留；多个 Sample 已导入时可能存在相同 `BuiltIn/...` 键，必须核对有效 Resources 闭包的全局键唯一性。必要时采用项目唯一的 Resources 子路径并同步修改项目自有 `ProcedureComponent.LauncherSettings`。仅把文件移到另一个外层目录，不会改变 Resources 相对键。
+
+启动面板及其脚本、文本、字体、贴图、解密所需代码必须在业务 DLL 和业务 Bundle 加载前就可用，不反向依赖后续预加载。固定启动资源继续走 Resources；业务内容仍按实际资源方案管理，不能因此把所有业务物料搬进 Resources。组件字段和加载语义见 [LauncherSettings](../Runtime/Modules/Procedure/LauncherSettings.md) 与 [LauncherUIController](../Runtime/Modules/Procedure/LauncherUIController.md)。
+
+验收须沿真实启动入口检查闪屏、进度与必要提示面板、目标语言文本以及引用依赖；缺面板可能只产生日志并返回 null，流程继续并不表示资源完整。新增项目的最小启动闭环和准备顺序见 [新项目开工准备](PROJECT_STRUCTURE.md#新项目开工准备)。
+
 ## Resources 规则的边界
 
 - `Resources/BuiltIn/**` 可以正常通过 `Resources.Load`、`Resources.LoadAsync` 等接口加载。

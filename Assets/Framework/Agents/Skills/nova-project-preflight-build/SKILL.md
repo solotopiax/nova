@@ -19,6 +19,7 @@ description: Use when Nova 项目组要在实际构建 Player 前，只读检查
 - 检查读取启用的 Build Settings 场景、项目 Build Support、`ProjectSettings/Nova/Globals.json` 的精确 ConfigMaster 绑定、当前 Platform/Channel/DevelopMode 与 ConfigRuntimeSO 坐标、场景 Asset/App 渠道快照、YooAsset Settings/Collector/Package 结构，以及启用时的 HybridCLR 安装与 link.xml 路径一致性。
 - 规则检查完成不等于可以构建。Action 返回 `success` 只说明只读检查执行完成；本 Skill 必须继续读取 `data.ready`、`errorCount`、`warningCount` 和逐条规则。
 - 不用旧 BuildReport、旧 APK/AAB、旧 Xcode/WebGL 工程或“上次能打”替代当前工程快照。
+- HybridCLR 按 `Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md` 的安装验收分层报告。当前探针对禁用分支未阻断，不等于已安装或热更可用；普通 IL2CPP 构建成功也不能升级这些状态。不得为通过预检关闭开关；新项目完整环境就绪还须满足开工准备清单，构建预检不覆盖全部资源/模块实际加载。
 
 ## Action 与证据
 

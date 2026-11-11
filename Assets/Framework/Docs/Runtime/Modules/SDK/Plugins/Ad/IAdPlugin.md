@@ -25,7 +25,7 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 
 - `RequestAsync()` 的具体调度由实现负责；当前广告聚合实现并行请求已注册渠道，不支持该格式的渠道返回失败。渠道内广告组、重试和缓存策略由广告包文档维护。
 - 返回值是统一的 `AdLoadResult`；当前聚合在首个渠道成功或全部渠道失败时完成。成功可能来自已有缓存，失败不表示已启动的后台重试全部停止；调用方取消按实现传播取消异常。
-- `ShowAsync()` 只负责展示，展示前应先用 `IsReady()` 判断。
+- `ShowAsync()` 只负责发起展示，展示前应先用 `IsReady()` 判断。当前聚合启用竞价时选择收益最高的就绪渠道，关闭竞价时按配置顺序选择首个就绪渠道；无就绪渠道时警告后跳过，不会自动加载。
 - Ready 是当前缓存状态快照，不保证稍后展示成功；当前聚合的 `IsAdPlaying(format)` 查询任意渠道是否占用，业务取消等待不会自行清除原生播放状态。
 - Banner 的显示、隐藏、销毁与位置更新不走 `ShowAsync()`，而是走 `IBannerControl`。
 - `IsUserConsentSet()` 表示用户是否已经作出广告隐私授权决定；只有它为 `true` 时，`HasUserConsent()` 的结果才表示明确同意或拒绝。
@@ -33,6 +33,8 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 - `WaitForPrivacyFlowAsync()` 等待渠道初始化期间触发的隐私流程结束，不保证一定获得个性化同意，也不表示广告已就绪。调用前应先等待 `Nova.SDK.InitializeTask` 或确认广告插件已创建；等待与取消能力须按实际渠道实现核对。
 
 `ShowAsync()` 返回 `UniTask`，不返回广告结果；展示、关闭和奖励通知由具体广告实现的事件 API 提供。业务取消只结束实现支持的本地等待，不能据此推断原生广告已关闭。
+
+当前聚合的全屏占用跨格式互斥：已有全屏广告时新展示发布 `ShowFailed` 的 `Busy(-12)` 并正常返回。`ShowCompleted` 表示原厂 displayed 成功，`AdClosed` 才是关闭终态；激励资格须以渠道奖励回调为准，不能以 `ShowAsync` 返回或 displayed 通知直接发奖。广告收益业务事件、分析打点和后台收益协议也有各自入口，不能由一次展示调用完成推断它们均已成功。
 
 本接口继承的初始化与释放契约不统一规定对象可再次初始化。每个实现的复用条件、事件清理和取消边界由对应包声明；业务通过 SDKManager 获取和使用插件，整体释放交给其所有者。
 

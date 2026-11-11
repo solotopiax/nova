@@ -13,9 +13,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using NovaFramework.Kit.Network.GameLogin.Runtime;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AdPlugin.Runtime;
 using TMPro;
+using UnityEngine;
 
 namespace NovaFramework.Sdk.Ad.Samples.Runtime
 {
@@ -24,6 +26,107 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
     /// </summary>
     public sealed partial class DemoAdView
     {
+        /// <summary>
+        /// 绑定登录按钮，并按当前页面登录状态显示广告交互区。
+        /// </summary>
+        private void BindLoginButton()
+        {
+            if (m_LoginButton == null) return;
+            m_LoginButton.onClick.RemoveAllListeners();
+            m_LoginButton.onClick.AddListener(OnLoginClicked);
+            SetAuthenticatedContentActive(m_LoggedIn);
+        }
+
+        /// <summary>
+        /// 发起游戏账号登录；重复点击由登录任务入口拦截。
+        /// </summary>
+        public void OnLoginClicked()
+        {
+            LoginAsync().Forget();
+        }
+
+        /// <summary>
+        /// 登录成功后开放广告操作；GameLogin 不支持页面取消，关闭后仅丢弃旧页面结果。
+        /// </summary>
+        private async UniTaskVoid LoginAsync()
+        {
+            CancellationTokenSource session = m_AdViewCts;
+            if (this == null || !Available || session == null || m_LoggedIn || m_LoginInProgress) return;
+
+            m_LoginInProgress = true;
+            SetLoginButtonState(false, "登录中…");
+            try
+            {
+                NetResponse<PbNetLoginResp> response = await Nova.Network.Kit<Login>().Async(string.Empty, string.Empty, false);
+                if (this == null || !Available || !ReferenceEquals(m_AdViewCts, session)) return;
+                if (response == null || !response.IsSuccess)
+                {
+                    AppendFeedback("登录失败：" + (response?.ErrorCode ?? 0) + "，" + (response?.ErrorMessage ?? "null"), FeedbackLevel.Error);
+                    return;
+                }
+
+                m_LoggedIn = true;
+                SetAuthenticatedContentActive(true);
+                AppendFeedback("登录成功，已开放广告操作。", FeedbackLevel.Success);
+            }
+            catch (OperationCanceledException)
+            {
+                if (this != null && Available && ReferenceEquals(m_AdViewCts, session)) AppendFeedback("登录请求已取消。", FeedbackLevel.Warn);
+            }
+            catch (Exception ex)
+            {
+                if (this != null && Available && ReferenceEquals(m_AdViewCts, session)) AppendFeedback("登录异常：" + ex.Message, FeedbackLevel.Error);
+            }
+            finally
+            {
+                if (this != null && ReferenceEquals(m_AdViewCts, session))
+                {
+                    m_LoginInProgress = false;
+                    if (!m_LoggedIn) SetLoginButtonState(true, "登录");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 拒绝登录前的广告业务调用，防止直接调用按钮回调绕过显隐限制。
+        /// </summary>
+        /// <returns>当前页面已登录时返回 true。</returns>
+        private bool EnsureLoggedIn()
+        {
+            if (m_LoggedIn) return true;
+            AppendFeedback("请先登录后再使用广告操作。", FeedbackLevel.Warn);
+            return false;
+        }
+
+        /// <summary>
+        /// 互斥显示登录按钮与交互区的广告控件，保留标题和反馈区。
+        /// </summary>
+        /// <param name="active">是否显示登录后的广告控件。</param>
+        private void SetAuthenticatedContentActive(bool active)
+        {
+            if (m_LoginButton != null) m_LoginButton.gameObject.SetActive(!active);
+            if (m_InteractionRoot == null) return;
+            for (int i = 0; i < m_InteractionRoot.childCount; i++)
+            {
+                Transform child = m_InteractionRoot.GetChild(i);
+                if (m_LoginButton != null && child == m_LoginButton.transform) continue;
+                child.gameObject.SetActive(active);
+            }
+        }
+
+        /// <summary>
+        /// 更新登录按钮的交互状态与主文字。
+        /// </summary>
+        /// <param name="interactable">是否允许点击登录。</param>
+        /// <param name="label">按钮主文字。</param>
+        private void SetLoginButtonState(bool interactable, string label)
+        {
+            if (m_LoginButton == null) return;
+            m_LoginButton.interactable = interactable;
+            TMP_Text text = m_LoginButton.GetComponentInChildren<TMP_Text>(true);
+            if (text != null) text.text = label;
+        }
+
         /// <summary>
         /// 视图初始化钩子，仅在首次创建实例时触发。
         /// 设置广告 Demo 标题；交互事件由 prefab 持久化绑定。
@@ -96,6 +199,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
             if (this == null || !Available || session == null) return;
             CancellationToken token = session.Token;
             if (token.IsCancellationRequested) return;
+            if (!EnsureLoggedIn()) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
@@ -132,6 +236,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// <param name="format">要检查的广告类型。</param>
         private void CheckAdReady(AdFormat format)
         {
+            if (!EnsureLoggedIn()) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
@@ -153,6 +258,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
             if (this == null || !Available || session == null) return;
             CancellationToken token = session.Token;
             if (token.IsCancellationRequested) return;
+            if (!EnsureLoggedIn()) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
@@ -182,13 +288,21 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// </summary>
         private void ShowBanner()
         {
+            if (!EnsureLoggedIn()) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
             }
 
-            adPlugin.ShowBanner();
-            AppendFeedback("显示 Banner。", FeedbackLevel.Success);
+            try
+            {
+                bool dispatched = adPlugin.TryShowBanner();
+                AppendFeedback(dispatched ? "已发出 Banner 显示调用。" : "当前没有可显示的 Banner，请先请求并等待加载成功。", dispatched ? FeedbackLevel.Info : FeedbackLevel.Warn);
+            }
+            catch (Exception ex)
+            {
+                AppendFeedback("Banner 显示调用失败：" + ex.Message, FeedbackLevel.Error);
+            }
         }
 
         /// <summary>
@@ -196,6 +310,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// </summary>
         private void HideBanner()
         {
+            if (!EnsureLoggedIn()) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;
@@ -210,6 +325,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// </summary>
         private void DestroyBanner()
         {
+            if (!EnsureLoggedIn()) return;
             if (!TryGetAdPlugin(out AdPlugin adPlugin))
             {
                 return;

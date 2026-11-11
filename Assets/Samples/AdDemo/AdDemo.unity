@@ -417,7 +417,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_ProtoSettings.ProtoSourceDirPath
-      value: Assets/Samples/AdDemo/Protos
+      value: UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Protos
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.size
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.NetCmdSettings.SourceDirPath
@@ -426,6 +430,14 @@ PrefabInstance:
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.HostKeySettings.SourceDirPath
       value: Assets/Samples/AdDemo/Excels/Networks/HostKeys
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[12].SourcePath
+      value: pb_net_iaa_report.proto
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[12].CSharpExportPath
+      value: UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Scripts/Runtime/Protos
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath

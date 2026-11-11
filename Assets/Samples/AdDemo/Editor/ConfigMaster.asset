@@ -227,12 +227,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -240,7 +242,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729136
-      - rid: 1184
+      - rid: 1250
       - rid: 791344466879840444
       - rid: 1000
       - rid: 1001
@@ -249,7 +251,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729137
-      - rid: 1185
+      - rid: 1251
       - rid: 791344466879840445
       - rid: 1003
       - rid: 1004
@@ -285,12 +287,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -307,7 +311,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729138
-      - rid: 1186
+      - rid: 1252
       - rid: 791344466879840446
       - rid: 1006
       - rid: 1007
@@ -343,12 +347,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -356,7 +362,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729139
-      - rid: 1187
+      - rid: 1253
       - rid: 791344466879840447
       - rid: 1009
       - rid: 1010
@@ -365,7 +371,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729140
-      - rid: 1188
+      - rid: 1254
       - rid: 791344466879840448
       - rid: 1012
       - rid: 1013
@@ -401,12 +407,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -414,7 +422,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729141
-      - rid: 1189
+      - rid: 1255
       - rid: 791344466879840449
       - rid: 1015
       - rid: 1016
@@ -423,7 +431,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729142
-      - rid: 1190
+      - rid: 1256
       - rid: 791344466879840450
       - rid: 1018
       - rid: 1019
@@ -459,12 +467,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -472,7 +482,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729143
-      - rid: 1191
+      - rid: 1257
       - rid: 791344466879840451
       - rid: 1021
       - rid: 1022
@@ -481,7 +491,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729144
-      - rid: 1192
+      - rid: 1258
       - rid: 791344466879840452
       - rid: 1024
       - rid: 1025
@@ -517,12 +527,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -530,7 +542,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729145
-      - rid: 1193
+      - rid: 1259
       - rid: 791344466879840453
       - rid: 1027
       - rid: 1028
@@ -539,7 +551,7 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729146
-      - rid: 1194
+      - rid: 1260
       - rid: 791344466879840454
       - rid: 1030
       - rid: 1031
@@ -575,12 +587,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -633,12 +647,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -691,12 +707,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -749,12 +767,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -807,12 +827,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -865,12 +887,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -923,12 +947,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -981,12 +1007,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1039,12 +1067,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1097,12 +1127,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1155,12 +1187,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -1213,12 +1247,14 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     - Mode: 1
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
+        ExtensionConfigsJson: '{}'
         PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
         InfoPlistUsageDescriptions: '{}'
     SDKConfigsByMode:
@@ -2618,12 +2654,12 @@ MonoBehaviour:
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
         m_ProductFetchRetryDelaysMs: d00700008813000010270000
-    - rid: 1184
+    - rid: 1250
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1195
+          - rid: 1261
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2634,12 +2670,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1185
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1251
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1196
+          - rid: 1262
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2650,12 +2687,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1186
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1252
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1197
+          - rid: 1263
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2666,12 +2704,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1187
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1253
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1198
+          - rid: 1264
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2682,12 +2721,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1188
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1254
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1199
+          - rid: 1265
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2698,12 +2738,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1189
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1255
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1200
+          - rid: 1266
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2714,12 +2755,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1190
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1256
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1201
+          - rid: 1267
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2730,12 +2772,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1191
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1257
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1202
+          - rid: 1268
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2746,12 +2789,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1192
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1258
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1203
+          - rid: 1269
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2762,12 +2806,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1193
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1259
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1204
+          - rid: 1270
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2778,12 +2823,13 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1194
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1260
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 1205
+          - rid: 1271
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -2794,7 +2840,8 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 1195
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 1261
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2812,7 +2859,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1196
+    - rid: 1262
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2830,7 +2877,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1197
+    - rid: 1263
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2848,7 +2895,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1198
+    - rid: 1264
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2866,7 +2913,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1199
+    - rid: 1265
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2884,7 +2931,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1200
+    - rid: 1266
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2902,7 +2949,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1201
+    - rid: 1267
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2920,7 +2967,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1202
+    - rid: 1268
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2938,7 +2985,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1203
+    - rid: 1269
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2956,7 +3003,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1204
+    - rid: 1270
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -2974,7 +3021,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1205
+    - rid: 1271
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -3335,6 +3382,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518333
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3369,6 +3417,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518377
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3403,6 +3452,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518419
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3437,6 +3487,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518421
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3471,6 +3522,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518423
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3505,6 +3557,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518425
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3539,6 +3592,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518429
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3573,6 +3627,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518431
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3607,6 +3662,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518433
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3641,6 +3697,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518435
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3675,6 +3732,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518437
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3709,6 +3767,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518439
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3743,6 +3802,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518441
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3777,6 +3837,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518445
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3811,6 +3872,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518557
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3845,6 +3907,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518559
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3879,6 +3942,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518561
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3913,6 +3977,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518563
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3947,6 +4012,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518565
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3981,6 +4047,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518567
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4015,6 +4082,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518569
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4049,6 +4117,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518571
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4083,6 +4152,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518573
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4117,6 +4187,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518575
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4151,6 +4222,7 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
+        m_RevenueReportCmdName: AdRevenueReport
     - rid: 791344494233518577
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:

@@ -25,6 +25,10 @@
 
 `AdFormat`、`BannerPosition` 和 `AdLoadResult` 继续归属 `NovaFramework.Runtime`；`AdLoadResult` 的文件名仍为 `Plugins/Ad/AdLoadEvent.cs`。
 
+## 已迁出 Framework 的支付类型
+
+`ProductInfo` 已迁到 IAP 核心包 `com.solotopia.nova.framework.sdk.iap` 的 `Nova/Scripts/Runtime/Results/ProductInfo.cs`，命名空间为 `NovaFramework.SDK.IAP.Runtime`，用于平台本地化商品信息。它仍是当前类型，不能按删除处理；其查询能力由实际支付 Store 的能力接口提供。
+
 ## 已移除的旧类型
 
 以下旧类型没有当前同名实现；迁出类型不能按删除处理：
@@ -32,7 +36,6 @@
 - `AdLoadEvent`
 - `AdLoadFailEvent`
 - `PurchaseResult`
-- `ProductInfo`
 
 ## 关联文档
 

@@ -80,6 +80,8 @@ namespace NovaFramework.Mcp.Editor
             new ExposurePolicy("nova.project.localization.export"),
             new ExposurePolicy("nova.project.pipify.run-batch"),
             new ExposurePolicy("nova.project.iap.upload-product-catalog"),
+            new ExposurePolicy("nova.project.psd2ugui.inspect"),
+            new ExposurePolicy("nova.project.psd2ugui.run"),
             new ExposurePolicy("nova.project.pipify.inspect-settings"),
             new ExposurePolicy("nova.project.pipify.configure-batch"),
             new ExposurePolicy("nova.project.settings.inspect-target"),

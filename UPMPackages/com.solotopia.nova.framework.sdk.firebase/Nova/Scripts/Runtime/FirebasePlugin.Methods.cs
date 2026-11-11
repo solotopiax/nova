@@ -28,6 +28,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 异步初始化 Firebase SDK。
         /// 检查并修复 Firebase 依赖，注册 FCM Token 与消息回调，获取 Analytics 实例 ID。
         /// Firebase 通过 FirebaseApp.DefaultInstance 自主初始化；config 仅提供初始化完成后的框架侧行为开关。
+        /// 依赖不可用或普通初始化异常只记录警告，原厂就绪状态保持 false；插件仍可获取，不阻断预加载。
+        /// 取消仍向上传播，不将取消视为完成框架接入。
         /// </summary>
         /// <param name="config">Firebase 插件运行时配置。</param>
         /// <param name="ct">取消令牌；Firebase 原生任务不可中断，但框架初始化等待会随组件销毁取消。</param>
@@ -48,7 +50,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 m_ReportNetService = new FirebaseReportNetService();
                 m_RuntimeConfig = config as FirebasePluginConfig;
                 if (m_RuntimeConfig == null)
-                    throw new InvalidOperationException("Firebase 配置缺失。");
+                {
+                    CleanupRuntimeState();
+                    Log.Warning(LogTag.Firebase, "Firebase 配置缺失，已跳过 Firebase 功能。");
+                    return;
+                }
                 InitializePushTaskServices();
                 m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
 #if (UNITY_IOS || UNITY_ANDROID)
@@ -66,7 +72,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
                 if (dependencyStatus != Firebase.DependencyStatus.Available)
                 {
-                    throw new InvalidOperationException($"Firebase 初始化失败，依赖状态：{dependencyStatus}。");
+                    CleanupRuntimeState();
+                    Log.Warning(LogTag.Firebase, $"Firebase 初始化失败，依赖状态：{dependencyStatus}，已跳过 Firebase 功能。");
+                    return;
                 }
 
                 FirebaseMessaging.TokenReceived += OnTokenReceived;
@@ -94,7 +102,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 });
                 Log.Debug(LogTag.Firebase, "初始化完成。");
 #else
-                throw new PlatformNotSupportedException("Firebase 插件仅支持 iOS 和 Android Player。");
+                CleanupRuntimeState();
+                Log.Warning(LogTag.Firebase, "Firebase 插件仅支持 iOS 和 Android Player，已跳过 Firebase 功能。");
 #endif
             }
             catch (OperationCanceledException)
@@ -105,8 +114,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             catch (Exception e)
             {
                 CleanupRuntimeState();
-                Log.Error(LogTag.Firebase, $"OnInitializeAsync 初始化异常：{e}");
-                throw;
+                Log.Warning(LogTag.Firebase, $"OnInitializeAsync 初始化失败，已跳过 Firebase 功能：{e}");
             }
         }
 
@@ -231,7 +239,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 清理 Firebase 插件运行期状态。
-        /// 初始化失败时 SDKManager 不会再调用 DisposeAsync，因此初始化失败与正常释放共用同一套收口逻辑。
+        /// 初始化失败时立即清理，Manager 后续失败释放可重复调用；正常释放也复用此路径。
         /// </summary>
         private void CleanupRuntimeState()
         {
@@ -397,15 +405,15 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 把"初始化结果"与"登录结果"统一为"先 await 拿值、再用值"的可等待过程。
         /// 数据槽位由本插件自身发布（FirebasePushToken 在 OnTokenReceived 主线程回调，
         /// FirebaseAnalyticsInstanceId 在 GetAnalyticsInstanceIdAsync 主线程回调）；
+        /// Firebase 未就绪或已释放时直接跳过，不创建无法完成的标识等待。
         /// m_ReportNetService 或 m_RuntimeConfig 为 null（守卫早返回路径）时静默跳过；
         /// CancellationToken 暂用 default；OperationCanceledException 静默吞，其他异常仅记日志不上抛。
         /// </summary>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
         private async UniTaskVoid ReportOnLoginAsync(long sessionId)
         {
-            if (m_RuntimeConfig == null)
+            if (!m_InitOver || m_IsDisposed || m_RuntimeConfig == null || m_ReportNetService == null)
             {
-                Log.Error(LogTag.Firebase, $"ReportOnLoginAsync 上报 Firebase 标识失败，m_RuntimeConfig 为 null。");
                 return;
             }
 
@@ -413,10 +421,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             {
                 object pushTokenObj = await FetchDataAsync(SDKDataKeys.FirebasePushToken, default);
                 object instanceIdObj = await FetchDataAsync(SDKDataKeys.FirebaseAnalyticsInstanceId, default);
+                if (!m_InitOver || m_IsDisposed || sessionId != m_LoginSessionId) return;
                 string pushToken = pushTokenObj as string ?? string.Empty;
                 string instanceId = instanceIdObj as string ?? string.Empty;
                 string resolvedCountryCode = await ResolveFirebaseCountryCodeAsync(default);
-                if (sessionId != m_LoginSessionId) return;
+                if (!m_InitOver || m_IsDisposed || sessionId != m_LoginSessionId) return;
                 string country = FirebaseDefaultTopicBuilder.NormalizeReportCountryCode(resolvedCountryCode);
                 TimeSpan utcOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
                 string timezoneOffset = FirebaseDefaultTopicBuilder.FormatReportTimezoneOffset(utcOffset);

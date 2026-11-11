@@ -130,7 +130,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     State = ThirdPayLocalOrderState.Created,
                 };
 
+#if UNITY_ANDROID
+                m_Hub.PersistContext.UpsertCreatedOrder(order, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+#else
                 m_Hub.PersistContext.UpsertOrder(order);
+#endif
                 LogDebug($"第三方支付本地订单已创建：OrderId={order.ClientOrderId}，TableId={order.TableId}，ExternalBrowser={useExternalBrowser}");
 
                 ThirdPayGoogleAuthorization authorization;
@@ -346,13 +350,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 发起新支付前复用相同业务键的本地未完成订单并直接验单。
+        /// Android 先执行窗口内服务端查询；其他平台复用相同业务键本地订单直接验单。
         /// </summary>
         /// <param name="request">当前第三方支付请求。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>命中本地订单时返回验单结果；未命中时返回 null。</returns>
         private async UniTask<IAPResult> TryValidateExistingOrderBeforePayAsync(IAPThirdPayRequest request, CancellationToken ct)
         {
+#if UNITY_ANDROID
+            return await m_Hub.OrderRecoveryService.RecoverBeforePayAsync(request, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), ct);
+#else
             if (!m_Hub.PersistContext.TryFindOrderByKey(request.TableId, request.ReceiptParam, out ThirdPayOrderRecord order))
             {
                 return null;
@@ -362,6 +369,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_Hub.PersistContext.UpsertOrder(order);
             LogDebug($"第三方支付命中本地未完成订单，直接验单：OrderId={order.ClientOrderId}，OrderKey={ThirdPayOrderKey.Build(order)}");
             return await m_Hub.Store.ValidateOrderAsync(order, ThirdPayValidationScene.DirectPayPreflight, ct);
+#endif
         }
 
         /// <summary>

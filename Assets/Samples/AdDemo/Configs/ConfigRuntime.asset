@@ -23,17 +23,18 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
+    ExtensionConfigsJson: '{}'
     PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
     InfoPlistUsageDescriptions: '{}'
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 6078457943708663971
-  - rid: 6078457943708663972
-  - rid: 6078457943708663973
-  - rid: 6078457943708663974
+  - rid: 2824341999375876264
+  - rid: 2824341999375876265
+  - rid: 2824341999375876266
+  - rid: 2824341999375876267
   EnabledKitConfigs:
-  - rid: 6078457943708663975
+  - rid: 2824341999375876268
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -66,7 +67,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 6078457943708663971
+    - rid: 2824341999375876264
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
         m_DevKey: YOUR_APPSFLYER_DEV_KEY
@@ -76,7 +77,7 @@ MonoBehaviour:
         m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
         m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
         m_ReportCmdName: AppsFlyerReport
-    - rid: 6078457943708663972
+    - rid: 2824341999375876265
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -87,12 +88,12 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 6078457943708663973
+    - rid: 2824341999375876266
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 6078457943708663976
+          - rid: 2824341999375876269
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -103,7 +104,8 @@ MonoBehaviour:
           - 16
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 6078457943708663974
+        m_RevenueReportCmdName: AdRevenueReport
+    - rid: 2824341999375876267
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
@@ -111,12 +113,12 @@ MonoBehaviour:
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
         m_AutoRequestNotificationPermission: 1
-    - rid: 6078457943708663975
+    - rid: 2824341999375876268
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 6078457943708663976
+    - rid: 2824341999375876269
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1

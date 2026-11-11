@@ -19,6 +19,7 @@ description: Use when 项目组要更新既有 Nova 业务 UIView、Prefab、布
 | 要改打开、关闭、UIGroup、遮挡或对象池语义 | `Docs/Runtime/Modules/UI/UIComponent.md` 与 `Docs/Runtime/Modules/UI/UIManager/UIManager.md` |
 | 要改注册源或导出物 | 当前项目已确认的 UI 注册/导出入口；只读其直接说明和本次目标 |
 | 要改 Prefab、序列化引用或布局 | Unity Editor / MCP 中的目标 Prefab；不手写 YAML |
+| 要改布局、根画布、方向或安全区 | `Docs/Runtime/Modules/UI/UIComponent.md` 的“屏幕适配与安全区”，实施前冻结适配方案；UIComponent 配置复用 `nova-project-edit-settings`，Player Settings 按文档核对真实宿主通道 |
 | 页面批量本地化Key/FontMark绑定、补缺失组件 | [批量本地化绑定](references/localization-binding.md)，条件复用 `nova-project-update-localization` 与 `nova-project-edit-settings` |
 
 打开入口先读取当前 `Docs/Runtime/Modules/UI/UIComponent.md`：普通 `OpenUIViewSync/Async` 的字符串首参只接收 UI 表 `Name`；`OpenUIViewByAssetSync/Async` 的首参只接收唯一 `AssetLocation`，泛型入口仍按类型名查表，分组、暂停与池化都来自表格；缺配置或匹配不唯一时停止，不使用旧 bool 重载覆盖配置，也不绕过注册表加载。`Name` 指配置行名称，不是 Excel 文件名；第二参数 `userData` 即使是字符串也只作业务数据，不能继续传旧分组参数。
@@ -26,6 +27,8 @@ description: Use when 项目组要更新既有 Nova 业务 UIView、Prefab、布
 ## 冻结输入
 
 确认现有 View 与 Prefab 的精确路径、目标 UIGroup、预期行为、允许改动的节点/绑定、注册源、是否需要导出，以及最低验证目标。UIGroup、注册源、布局范围或导出入口存在多个候选时先请求选择。不得覆盖未知布局、重排无关节点、改 Nova Framework、PackageCache 或生成物以外的项目资产。
+
+布局/画布/方向/安全区分支先按 UIComponent 文档冻结 `screenAdaptationPlan`，读取当前方案、有效值与唯一拥有者，明确原值/目标值及参考/边界比例和安全区验收。先复用现有根缩放与安全区接线，缺少内容容器时仅补业务范围的最小适配；不要重复缩放、重复扣边距或照抄物理像素 offset。UIComponent 配置通过 edit-settings 的精确范围执行；Player Settings 按文档核对真实宿主通道，缺少能力时保留缺口。纯事件、文案或数据绑定且布局不变时只核对本次影响，不强制全分辨率验收。
 
 批量目标先从用户指定页面/目录查出实际Prefab、TextMeshProUGUI节点、现有TextLocalizing及权威Key/FontMark映射，展示明确节点集合与差异；已有授权覆盖后串行执行共享Unity MCP，不让新手逐节点配置，不全工程扩大扫描。缺Key来源、字体资源或可靠持久保存入口时保留具体缺项，不能随便用当前显示文字猜唯一Key。
 
@@ -43,6 +46,6 @@ description: Use when 项目组要更新既有 Nova 业务 UIView、Prefab、布
 1. 先只读比对当前 View 生命周期、Prefab 绑定和注册事实，再锁定最小写入集。
 2. 更新业务源码；涉及 Prefab、Scene 或序列化引用时，只通过 Unity Editor / MCP 写入。
 3. 仅当注册内容确有变化时调用 `nova.project.ui.export`。全量范围为 `all/code/data`；传精确 `sourcePath` 时只允许 `code/data`。先核 Plan 展示的目标 Unit、全部来源 Hash、共享 `UITables.cs`、`_configs` 和准确删除范围，再确认一次 Execute；单文件 `all` 没有原子领域入口，不拼接两个调用。`code-only` 要求已有正式 JSON。Execute 后等待本次编译/代码重载，再通过 Receipt 或 `recovery_token` 只读 Verify；来源漂移、生成代码冲突或导出失败立即停止。缺少受控 Action 时保持 `partial`，不绕过边界。
-4. 先取得 Unity 编译证据。用户要求实际交互时，再在获授权的 Unity 环境中验证打开、刷新、关闭和返回行为。
+4. 先取得 Unity 编译证据。用户要求实际交互时，再在获授权的 Unity 环境中验证打开、刷新、关闭和返回行为；布局分支还须按 UIComponent 文档验证适配计划与实际生效配置，必要证据缺失时保持 `partial`，不能只以编译通过证明适配完成。
 
 普通源码更新达到 `compile` 且所需绑定持久化才能报告 `success`；用户要求实际交互或批量本地化时，还须相应 Play 与全部请求语言的实际显示证据，要求切换但未给集合时冻结最少两种。缺少 Unity 或必要 Play 证据时如实返回 `partial`。已有页面、Prefab 或注册事实冲突时保持 `blocked`，不猜测合并。删除、替换非生成资产、外部写入、Git 操作不属于本 Skill 的默认授权范围。

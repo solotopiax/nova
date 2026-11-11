@@ -23,6 +23,18 @@
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
       "Path": "/v1/user/report-firebase"
+    },
+    {
+      "Name": "AdRevenueReport",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/taijiv2/report"
+    },
+    {
+      "Name": "GameAccountLogin",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/loginV1"
     }
   ]
 }

@@ -10,43 +10,60 @@
 - `ISDKLoginReceiver`：接收 `SDKManager` 交付的账号，设置 Firebase 用户 ID 并触发标识上报
 - `ISDKLoginSessionEndReceiver`：更新账号会话边界，使旧会话的异步上报结果失效
 
-`SDKManager` 在插件就绪后调用 `OnSDKLogin`，插件随后把 Firebase 标识异步上报到业务服务器。
+`SDKManager` 在插件完成框架接入后调用 `OnSDKLogin`；原厂 Firebase 已就绪时，插件才等待标识并异步上报到业务服务器。
+
+Firebase 原厂初始化失败时只记录警告，Nova 插件仍可获取；原厂相关方法在未就绪时安全跳过，游戏可继续启动。本地推送任务缓存仍可使用，实际发送需等 Firebase 和用户身份就绪。
 
 ## 2. 公开 API
 
 | 成员 | 说明 |
 |---|---|
+| `IsAvailable` | 继承 SDKPluginBase，表示 Nova 插件接入完成、可被业务获取；不代表原厂 Firebase 初始化成功，释放后为 `false` |
 | `TrackEvent(string, Dictionary<string, object>)` | 上报自定义埋点事件 |
 | `TrackEvent(TrackEvent)` | 上报统一事件载荷 |
 | `SetUserProperty(string, string)` | 设置用户属性 |
 | `SetUserId(string)` | 同步 Analytics / Crashlytics 用户 ID |
 | `OnTokenRefreshed` | FCM Token 刷新事件 |
-| `GetTokenAsync(...)` | 等待并返回当前 FCM Token |
+| `GetTokenAsync(...)` | 原厂未就绪或已释放时立即返回空 Token；已就绪时等待下发，等待中释放也返回空 Token |
 | `SetTopicSubscribed(string, bool)` | 订阅或退订主题 |
 | `QueuePushTaskAsync(FirebasePushTask, ...)` | 缓存业务 push task，并按配置批量发送 |
 | `SetAnalyticsEnabled(bool)` | 控制 Analytics 收集开关 |
 | `GetToken()` | 同步读取已缓存的 FCM Token |
 | `GetAnalyticsInstanceId()` | 同步读取已缓存的 Analytics Instance ID |
-| `IsInitialized` | 初始化完成标志 |
+| `IsInitialized` | 原厂 Firebase 是否真正就绪，对应已有的 `m_InitOver` |
 | `IsNotificationLaunch` | 本次启动是否由推送点击触发 |
 
 ## 3. 初始化语义
 
 - `Priority => 30` 只参与稳定通知和逆序释放排序；SDKManager 按能力依赖调度初始化，不按 Priority 分桶。
 
-- `OnInitializeAsync(...)` 会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；只有依赖检查通过并成功注册 `FirebaseMessaging` 回调后才返回。
-- `SDKPluginBase` 会在 `OnInitializeAsync(...)` 正常返回后把 `IsAvailable` 置为 `true`，因此 Firebase 插件的 `IsAvailable == true` 表示 Firebase 依赖已可用且 Messaging 事件已完成注册。
-- 若依赖检查失败，`OnInitializeAsync(...)` 会抛出异常，由 `SDKManager` 按单插件失败隔离语义记录并保持该插件不可用。
+- `OnInitializeAsync(...)` 仍会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；依赖检查通过并成功注册 `FirebaseMessaging` 回调后，才将现有的 `m_InitOver` 置为 `true`。
+- `IsAvailable` 完全继承基类，Firebase 不重复声明 `ISDKPlugin`、不隐藏属性、不新增初始化失败标记。它表示 Nova 插件接入完成；原厂是否真正就绪看 `IsInitialized`，由现有 `m_InitOver` 表达。
+- 依赖不可用、配置缺失、平台不支持或普通初始化异常时，插件清理原厂运行状态、记录警告后返回，不主动抛出普通初始化异常。令牌未取消且 Manager 已完成配置注入并调用插件初始化时，基类按正常完成处理，业务仍可获取 FirebasePlugin，而 `IsInitialized` 为 `false`；Manager 自身的配置注入失败、插件未启用或取消仍沿用公共 SDK 规则。
+- 取消仍按取消处理，不转换成成功；初始化失败也不会因开启热更新就自动触发热更新失败框。业务后续调用的异常、资源下载失败和原厂可能显示的依赖修复提示，需要分别判断。
 - 依赖检查通过后，若 `FirebasePluginConfig.AutoRequestNotificationPermission` 为 `true`（默认值），插件会先调度一次异步 Fire-and-Forget 请求；实际通知权限请求会等待 SDK Manager 对应的全 SDK 初始化完成，并在启动前景稳定后才请求 `Alert | Sound | Badge` 通知权限。该请求不阻塞 Firebase 初始化完成回调；若项目希望由业务自行选择交互时机，可在配置中关闭该开关。
 - 大多数公开方法都会在 `m_InitOver == false` 时直接静默返回。
 - 默认 Topic 和显式 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token 后再调用 Firebase；iOS 首次安装时如果 Firebase topic API 返回 APNs Token 尚未就绪，会对订阅或退订操作本身做有界延迟重试。
-- `GetTokenAsync(...)` 不依赖 `m_InitOver` 直接返回，而是等待 `m_TokenReceived` 非空。
+- `GetTokenAsync(...)` 在原厂未就绪或已释放时立即返回 `Provider="FCM"`、`Value=""`；已就绪但未收到 Token 时等待下发，失去就绪状态或释放后返回空值，传入令牌取消仍按取消处理。业务必须检查空 Token，不能将空值上报为有效设备标识。
+- 登录回调仍缓存用户 ID，但原厂未就绪或已释放时跳过标识上报，不创建无法完成的数据槽等待。推送任务仍可排队到本地，发送继续受原厂就绪与用户身份门槛保护。
+
+启动流程中的可选功能可先获取插件，需要确认原厂服务状态时检查 `IsInitialized`：
+
+```csharp
+await Nova.SDK.InitializeTask;
+if (Nova.SDK.TryGet<FirebasePlugin>(out var firebase) && firebase.IsInitialized)
+{
+    // 仅在插件可用时接入推送、埋点等业务。
+}
+```
+
+全体 SDK 初始化完成、插件状态 `Ready` 和 `WaitForPluginAsync<FirebasePlugin>(ct)` 完成，都不保证原厂 Firebase 就绪。`Get<FirebasePlugin>()` 在插件已完成接入时正常返回；插件未启用、公共层配置注入失败或未完成接入时，仍保留 `SDKUnavailableException` 契约。此调整不修改公共 SDK 层。
 
 依赖检查与 Token 等待没有统一的内置截止时间，调用方需要限制等待时须传入自己的令牌。Topic 操作对可恢复错误按 2/5/10/20/30 秒间隔重试，包含首次最多六次；默认 Topic 同步耗尽后还可能安排后续补偿。单次等待、某个 Topic 调用成功与完整默认 Topic 差异同步完成应分别判断，不能从初始化 Ready 推导订阅或后台推送送达。
 
 释放会取消内部等待并退订 Messaging，但清理没有逐项 finally，某次取消或退订抛异常可打断后续步骤。已 Post 到主线程的 Token/Message 回调没有释放态门禁，仍可能更新缓存、发布槽或通知业务；业务 Token 事件也没有逐监听者异常隔离。插件不清 Token、标识与消息去重缓存，业务订阅须自行配对移除。`IsNotificationLaunch` 在处理后续推送点击时也可变 true，不只表示冷启动来源。Token 和标识原文可能进入现有 Debug 日志，收集诊断时须脱敏。
 
-结束业务会话只换 session 标记，不清原厂用户 ID 或取消标识等待；登录上报等齐 Token、Analytics ID、国家码后才核一次 session，HTTP 已发出便不能撤回。自动权限请求在检测到不在前台时会退出，不等待下一次前台补发。
+结束业务会话只换 session 标记，不清原厂用户 ID 或取消标识等待；登录上报在标识就绪后与国家码解析后分别核对就绪、释放和会话状态，HTTP 已发出便不能撤回。自动权限请求在检测到不在前台时会退出，不等待下一次前台补发。
 
 ## 4. 配置与上报
 

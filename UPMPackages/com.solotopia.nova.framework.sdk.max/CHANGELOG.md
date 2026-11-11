@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-11
+
+### Fixed
+
+- 修复 MAX Editor 门面缺少收益字段时将 -1 传入广告加载结果、Ready 收益比较和收益打点的问题，未知收益统一按 0 暴露。
+
+- Banner 就绪和收益查询统一使用实际控制的首个配置 ID；显示对象不可用或原厂显示调用异常时仅记录警告，销毁后迟到加载不恢复 Ready，其他 ID 不自动跟随显示。
+
+- 修复 iOS 构建归属检查仍要求旧 Unity Ads 适配版本的问题；C# 与 Ruby 严格校验同步匹配已声明的 Unity Ads 4210001.0.0 及其 Pod 4.21.0.1，保留 LINE、其他 Pods 和未知契约拒绝保护。
+
+### Changed
+
+- 同步 MAX README、文档索引与插件说明，明确收益回调复用 AdChannelPluginBase 的 IAA 上报链路及 AdRevenueReport 配置。
+
+- 移除已被最新 Unity / AppLovin 版本修复的 SafeDK launcher manifest 临时处理器及相关文档说明，MAX 构建处理器不再额外改写 launcher manifest。
+
+- 补齐 RevenueReport 配置与收益上报诊断文档，说明客户端协议字段和服务端接入要求。
+
+- 新增后台广告收益上报，在 TrackMaxAdIlrd 已派发分支触发；Banner 共用既有 ILRD 累计金额与存档，无可用打点目标时保留累计并等待，非 Banner 随单次 ILRD 派发，ad_impression 规则不变。
+
+- 最低依赖提升至 Ad 1.2.3，配套新增收益上报与 Banner 显示反馈接口。
+
 ## [0.2.1] - 2026-10-23
 
 ### Changed

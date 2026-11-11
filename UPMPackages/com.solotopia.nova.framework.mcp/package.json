@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.mcp",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - MCP",
@@ -26,6 +26,6 @@
   },
   "nova": {
     "requiredFrameworkApiVersion": "0.7.0",
-    "releaseTime": "2026-10-26T09:35:34Z"
+    "releaseTime": "2026-11-11T02:25:07Z"
   }
 }

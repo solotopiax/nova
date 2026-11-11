@@ -134,12 +134,12 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             UnregisterInterCallbacks();
             UnregisterBannerCallbacks();
             UnregisterAppOpenCallbacks();
-            foreach (string placementId in m_CreatedBannerPlacementIds)
+            foreach (string placementId in m_CreatedBannerViews.Keys)
             {
                 try { MaxSdk.DestroyBanner(placementId); }
                 catch (System.Exception ex) { Log.Warning(LogTag.Max, $"MAX Banner 释放失败：placement={placementId}，{ex.Message}"); }
             }
-            m_CreatedBannerPlacementIds.Clear();
+            m_CreatedBannerViews.Clear();
             m_BannerDesiredVisible = false;
             m_CountryCode = null;
             m_IsUserConsentSet = false;

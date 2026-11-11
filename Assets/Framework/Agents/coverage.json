@@ -3355,6 +3355,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/HybridClrStripGradleScope.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/LocalizationExportAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/NetworkExportAction.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/Psd2UguiRunAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/SoundExportAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/TableExportAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/TracksGenerateRegistryAction.cs",
@@ -3367,6 +3368,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/ConfigValidateCoordinateAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/PersistenceInspectDataAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/PipifyInspectSettingsAction.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/Psd2UguiInspectAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/SettingsInspectTargetAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Package/UpmManageLatestAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Package/UpmUninstallDirectAction.cs",
@@ -3386,6 +3388,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/PrivacyAesRotation.Recovery.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/PrivacyAesRotation.Transaction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/PrivacyAesRotation.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/SerializedPropertyValues.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/SerializedTargetEditing.cs"
       ],
@@ -3404,7 +3407,8 @@
         "nova-project-edit-settings",
         "nova-project-integrate-persistence",
         "nova-project-onboard-sdk-kit",
-        "nova-project-configure-runtime"
+        "nova-project-configure-runtime",
+        "nova-project-psd2ugui"
       ],
       "adapters": [
         {
@@ -3471,13 +3475,24 @@
           "entry": "nova.project.iap.upload-product-catalog",
           "kind": "agent-action",
           "when": "仅明确提交已导出的完整目录，按runtimeGuid+developMode冻结原Plan、精确授权至多一次提交并只读Verify；2xx仍partial，目录结果不代表支付业务完成"
+        },
+        {
+          "entry": "nova.project.psd2ugui.inspect",
+          "kind": "agent-action",
+          "when": "只读发现当前项目候选、已安装可选包及固定桥、配置来源、PSD/PSB、编辑树persistentId与来源、输出/AI状态；未指定路径时先发现，不创建配置或执行AI"
+        },
+        {
+          "entry": "nova.project.psd2ugui.run",
+          "kind": "agent-action",
+          "when": "仅执行live Schema支持的prepare/sync/patch-nodes/generate/export-images/apply-ai/run-ai/configure/nine-slice固定操作；冻结精确源和写集，经Plan/Execute/Verify；run-ai只识别，成功Verify后绑定本轮jobId单独apply-ai，再检查并按目标generate"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "默认PP/SQLite global-data元数据仍无值/无MasterPrivacy/Save/开库；独立值AES三Action仅当前Editor已索引PP字符串与标准SQL值，PP全局Save需明确接受且只能恢复已知键，SQL登记lease/同库真实事务/受保护sqlcipher_export备份，Plan/Verify可写伴随文件；Cipher与Privacy另由同三Action独立typed分支处理macOS当前Editor限定范围；设备/其它坐标/外部消费者独立验收。源码/隔离回归不等真实full Action或设备耐久性。"
+        "默认PP/SQLite global-data元数据仍无值/无MasterPrivacy/Save/开库；独立值AES三Action仅当前Editor已索引PP字符串与标准SQL值，PP全局Save需明确接受且只能恢复已知键，SQL登记lease/同库真实事务/受保护sqlcipher_export备份，Plan/Verify可写伴随文件；Cipher与Privacy另由同三Action独立typed分支处理macOS当前Editor限定范围；设备/其它坐标/外部消费者独立验收。源码/隔离回归不等真实full Action或设备耐久性。",
+        "PSD2UGUI是可选商业包：Framework固定桥只调用已安装且身份兼容的包；查询/本地生成不需AI登录，run-ai显式授权外部调用，识别后按jobId应用，业务UIView另接现有页面Skill。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -3505,7 +3520,8 @@
         "Assets/Framework/Docs/Editor/PlayerTmpFontBuildContract.md"
       ],
       "navigationInputs": [
-        "Assets/Framework/Docs/INDEX.md"
+        "Assets/Framework/Docs/INDEX.md",
+        "Assets/Framework/Agents/Skills/nova-project-psd2ugui/SKILL.md"
       ],
       "taskScope": "consumer",
       "taskRefs": [
@@ -3517,7 +3533,14 @@
         "tracks.source.structure",
         "persistence.values.aes",
         "persistence.cipher.rotate",
-        "persistence.privacy.rotate"
+        "persistence.privacy.rotate",
+        "psd2ugui.inspect",
+        "psd2ugui.edit-tree",
+        "psd2ugui.configure",
+        "psd2ugui.generate",
+        "psd2ugui.export-images",
+        "psd2ugui.nine-slice",
+        "psd2ugui.ai"
       ]
     },
     {
@@ -4409,7 +4432,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "环境Check/Ready只是当前探测范围；新项目准备按PROJECT_STRUCTURE逐项核验，HybridCLR解析包/本地安装/启用/产物/运行分别报告，普通APK不证明HybridCLR安装。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md",
@@ -6427,7 +6451,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "GUI 仅公网包列表加载期间屏蔽内容区并保留工具栏；列表返回即恢复操作，缺失发布时间在后台原位补齐，刷新、改址或关闭取消旧批次。其他仓库加载不限制已返回条目，Agent Action 仍按其独立全来源计划合同执行。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md",
@@ -7942,6 +7967,7 @@
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/IAPThirdPayRewardItem.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/IIAPThirdPayCheckoutCapable.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/IIAPThirdPayConfigCapable.cs",
+        "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/IIAPThirdPayOrderRecoveryCapable.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/IIAPThirdPayProductCapable.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Services/Checkout/ThirdPayCheckoutCoordinator.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Services/Config/ThirdPayPaymentConfigService.cs",
@@ -8198,7 +8224,6 @@
       "sources": [
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs",
-        "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxSafeDKLauncherManifestFix.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/MaxSDKUrlMenuItems.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/FacebookAdSetting/FacebookAdSetting.cs",
@@ -10444,7 +10469,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "UI布局任务先按 UIComponent.md 冻结屏幕适配方案；根缩放复用UIComponent，GetDeviceSafeArea仅返回物理像素而不自动改布局；项目自有UIComponent字段沿edit-settings，方向修改另核对真实Player Settings通道；布局验收按所选UI Skill合同。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -14761,7 +14787,8 @@
         ],
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
-          "只建立已确认的入口和根 Prefab；业务启动与场景切换需真实 Play 证据"
+          "只建立已确认的入口和根 Prefab；业务启动与场景切换需真实 Play 证据",
+          "新项目默认经Unity引入MainDemo固定Resources及完整依赖，冻结唯一键与项目LauncherSettings，保存读回并验证真实启动；不照搬整套Sample或以默认路径代替实物。"
         ],
         "gaps": []
       },
@@ -14799,7 +14826,8 @@
         ],
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
-          "只读当前平台、启用场景、配置坐标与渠道、YooAsset和HybridCLR前置；ready仅表示本次前置快照，不代替实际构建或运行。"
+          "只读当前平台、启用场景、配置坐标与渠道、YooAsset和HybridCLR前置；ready仅表示本次前置快照，不代替实际构建或运行。",
+          "HybridCLR禁用分支未阻断不表示已安装/热更可用，构建ready不替代新项目完整开工准备。"
         ],
         "gaps": []
       },
@@ -15437,7 +15465,8 @@
           }
         ],
         "conditions": [
-          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口"
+          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
+          "创建或布局/画布/方向/安全区分支在实施前冻结screenAdaptationPlan并满足所选页面Skill的条件布局验收；纯绑定且布局不变只复核影响范围。"
         ],
         "gaps": []
       },
@@ -15476,7 +15505,8 @@
           }
         ],
         "conditions": [
-          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口"
+          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
+          "创建或布局/画布/方向/安全区分支在实施前冻结screenAdaptationPlan并满足所选页面Skill的条件布局验收；纯绑定且布局不变只复核影响范围。"
         ],
         "gaps": []
       },
@@ -15519,7 +15549,8 @@
           }
         ],
         "conditions": [
-          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口"
+          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
+          "创建或布局/画布/方向/安全区分支在实施前冻结screenAdaptationPlan并满足所选页面Skill的条件布局验收；纯绑定且布局不变只复核影响范围。"
         ],
         "gaps": []
       },
@@ -16292,7 +16323,8 @@
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "从当前项目取实参与既有Owner；缺现成触发代码时仅在已授权项目源码新增必要业务胶水并复用声明公开API，跨绑定/配置/表/DLL复用对应Operation；真实资源/规则/协议或设备证据缺失不假成功，遵循START_HERE共同测试清场",
-          "开始/结算/重开/回大厅和局/页面业务暂停复用business-flow参考；先确认实际入口/Service/Procedure/FSM、局身份、结果/奖励/重开保留范围与清理，缺Service且属授权可补正式项目胶水，不存在Nova.Game门面；全局速度/缓存暂停单独路由runtime.game-control"
+          "开始/结算/重开/回大厅和局/页面业务暂停复用business-flow参考；先确认实际入口/Service/Procedure/FSM、局身份、结果/奖励/重开保留范围与清理，缺Service且属授权可补正式项目胶水，不存在Nova.Game门面；全局速度/缓存暂停单独路由runtime.game-control",
+          "新项目业务预加载参考MainDemo依赖顺序并核对实际结果/失败/取消，前置资源配置与环境由既有Operation先准备，不以100%进度当模块可用。"
         ],
         "gaps": []
       },
@@ -17139,7 +17171,8 @@
           }
         ],
         "conditions": [
-          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口"
+          "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
+          "Generate前真实安装/版本及Unity匹配与启用策略独立核对，包存在或普通IL2CPP构建不构成安装证据。"
         ],
         "gaps": []
       },
@@ -18595,7 +18628,8 @@
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "只针对当前已导入的一个Sample读取入口和资源绑定；只用已存在演示按钮，不自动登录、支付、发事件、权限请求或删除账号；Sample UI启动不证明厂商/服务/设备成功",
-          "先核实际导入清单声明的生成目录已被 AssetDatabase 识别；完成标记不豁免缺失目录恢复。未声明源资产缺失仍报错，目录恢复与 Editor 启动不证明 DLL、Bundle 或 Player 就绪。"
+          "先核实际导入清单声明的生成目录已被 AssetDatabase 识别；完成标记不豁免缺失目录恢复。未声明源资产缺失仍报错，目录恢复与 Editor 启动不证明 DLL、Bundle 或 Player 就绪。",
+          "新项目默认经Unity引入MainDemo固定Resources及完整依赖，冻结唯一键与项目LauncherSettings，保存读回并验证真实启动；不照搬整套Sample或以默认路径代替实物。"
         ],
         "gaps": []
       },
@@ -18877,6 +18911,237 @@
           "compile",
           "play"
         ]
+      }
+    },
+    {
+      "id": "psd2ugui.inspect",
+      "goal": "查询 PSD2UGUI 能力、配置来源、设计源、图层节点与已有输出",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/SKILL.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Inspect(string)"
+      ],
+      "execution": {
+        "mode": "read-only",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      }
+    },
+    {
+      "id": "psd2ugui.edit-tree",
+      "goal": "从 PSD/PSB 建立可编辑树，同步设计源并修改节点类型、名称或共享图片引用",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/edit-tree.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Plan(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Execute(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Verify(string)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.psd2ugui.run",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      }
+    },
+    {
+      "id": "psd2ugui.configure",
+      "goal": "修改 PSD2UGUI 项目配置、TMP偏好、共享目录、输出目录或只复制缺少的AI提示模板",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/edit-tree.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Plan(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Execute(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Verify(string)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.psd2ugui.run",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      }
+    },
+    {
+      "id": "psd2ugui.generate",
+      "goal": "把 PSD/PSB 编辑树生成或更新为 uGUI，保留正确图片、文字与已有输出身份",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/generate-and-images.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Plan(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Execute(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Verify(string)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.psd2ugui.run",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      }
+    },
+    {
+      "id": "psd2ugui.export-images",
+      "goal": "按 PSD2UGUI 图层导出选择批量导出图片并核对准确目录和覆盖范围",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/generate-and-images.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Plan(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Execute(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Verify(string)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.psd2ugui.run",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      }
+    },
+    {
+      "id": "psd2ugui.nine-slice",
+      "goal": "核对并处理 PSD2UGUI 图片九宫格、Sprite Border与Image类型",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/generate-and-images.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Plan(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Execute(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Verify(string)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.psd2ugui.run",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      }
+    },
+    {
+      "id": "psd2ugui.ai",
+      "goal": "使用已授权AI识别PSD界面，按本轮jobId应用结果，或明确重放缓存结果",
+      "skill": "nova-project-psd2ugui",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/ai.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Plan(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Execute(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/Psd2UguiActionBridge.cs#NovaFramework.Editor.Psd2UguiActionBridge.Verify(string)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.psd2ugui.inspect",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.psd2ugui.run",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "先读取已安装包与live Schema、真实源/配置/节点persistentId和输出记录；只执行本次目标所需固定操作。",
+          "非AI分支核实未外传；run-ai独立取得外部执行证据，Verify成功后按本轮jobId应用，纯插件产物不等于业务UIView运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
       }
     }
   ],

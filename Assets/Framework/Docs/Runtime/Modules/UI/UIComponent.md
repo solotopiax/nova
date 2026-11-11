@@ -92,6 +92,49 @@
 
 失败或异常转 false 后允许重试；OnDestroy 清任务引用/标志/Manager 引用，不取消正在执行的底层注册表加载。IsLoadOver 与目标行、Prefab 和页面打开分别验证。
 
+## 屏幕适配与安全区
+
+### 先确定方案，再制作布局
+
+新项目在 UI/Prefab 制作前完成下表；已有项目创建页面或调整布局、画布、安全区时，先读取并继承当前方案，只修改本次授权内容。纯事件、文案或数据绑定且不影响布局时，无需重做全套适配。项目事实由 Agent 查明；用户未指定且工程无既有方案时，在目标范围内选择合理默认、说明理由并告知用户，不把所有参数反复转交用户填写。
+
+| 必须明确 | 实施前记录的内容 |
+| --- | --- |
+| 平台与方向 | 目标设备、横屏/竖屏、是否自动旋转及允许方向；核对实际 Player Settings，不能仅从 Game View 截图判断。 |
+| 设计尺寸与比例 | 参考设计分辨率及其宽高比、支持的最窄/最宽屏幕比例。设计分辨率是画布参考尺寸，不能每台设备改成其物理像素，也不能套用 Demo 的固定尺寸。 |
+| 布局策略 | 按宽/按高匹配与权重，玩法区域如何保持比例、留白或裁切，背景如何铺满；明确文字、按钮及底部操作区的锚点与最小可用空间。 |
+| 缩放拥有者 | 实际 `UIComponent`、实例根/父 Canvas、`CanvasScaler` 与配置资产，记录当前值、目标值及生效时机；根缩放只由一处负责。 |
+| 安全区拥有者 | 刘海、挖孔、圆角、系统栏和底部手势区域如何避让，哪个内容子容器唯一负责，背景是否延伸到屏幕边缘；记录坐标换算与方向/尺寸变化、池化重开的刷新方式。 |
+| 验证范围 | 参考比例、最窄/最宽支持比例、无刘海与有安全区裁切的代表场景，以及实际支持的旋转方向；移动端交付还需目标 Player/设备验证，未取得时单列缺口。 |
+
+方案可以直接写在本轮任务说明中，不强制新增长期方案文件。实施前必须已确定可执行方案，不能等页面做好后才补适配。
+
+### 复用 UIComponent 的根画布缩放
+
+| Inspector / API | 当前实现 |
+| --- | --- |
+| “屏幕设计分辨率” `m_ScreenDesignedResolution` / `ScreenDesignedResolution` | 声明默认 `1366×768`；公开属性只读。项目的实际值来自自身配置，不以声明默认代替。 |
+| “屏幕宽高适配比例阀值 (W<->H)” `m_ScreenWidthHeightMatchValue` / `ScreenWidthHeightMatchValue` | 声明默认 `1`；`0` 匹配宽、`1` 匹配高。公开 setter 会同步已缓存的缩放器。 |
+| `InstanceRootCanvasScaler` | 只读访问实际缓存的根缩放器；不是另一套独立缩放配置。 |
+
+`Awake()` 的 `ApplyInstanceRootCanvasScaler` 查找实例根自身或父 Canvas 的 `CanvasScaler`，写入 `uiScaleMode=ScaleWithScreenSize`、`referenceResolution` 与 `matchWidthOrHeight`；当前没有显式写入 `screenMatchMode`，必须核对实际模式。预设 `m_InstanceRoot` 不会自动补齐缺少的 Canvas/Scaler。调整设计值应通过 Unity 保存实际承载 `UIComponent` 的项目资产；消费任务按 `nova-project-edit-settings` 冻结目标、Prefab override 与写集，不修改包内 canonical Prefab 或手写 YAML。方向变更须核对当前宿主真实可用的 Unity Editor Player Settings 编辑通道，单独冻结原值、目标值、保存与读回；`edit-settings` 的普通资产 Action 不支持任意 ProjectSettings，缺少可用通道时明确缺口。
+
+运行后再读回实际缩放器验证。被 UIComponent 选中的实例根/父 CanvasScaler 会在 `Awake()` 被写入，不能仅改该缩放器而忽略 UIComponent 的配置；不得每页再挂一套根尺寸/缩放脚本，使父画布和页面重复缩放。局部棋盘、图片等保持比例属于具体内容布局，应明确其局部职责，不再控制全局根画布。
+
+### 安全区查询与内容接入
+
+`Nova.UI.GetDeviceSafeArea(bool isForGUISystem = false)` 返回物理像素 `Rect`；默认原点在左下，`true` 用于左上原点的 GUI 坐标。默认 provider 读取 `Screen.safeArea`，查询不会自动修改任何 `RectTransform`。当前 UI 模块没有通用的自动安全区容器组件，`UIComponent` Inspector 也没有自定义 provider 注入项，不能宣称安装后已自动避让刘海。
+
+先查项目已有安全区容器和平台适配；缺少内容布局时，只在业务范围补最小接线。业务通过 `Nova.UI` 查询，不直接取得 UIManager。针对实际画布、父 RectTransform、坐标原点及渲染模式换算：只有内容容器对应全屏且坐标一致时才可按屏幕尺寸归一化锚点；其他情况使用实际父级的坐标变换。不能把屏幕物理像素边距直接赋给已缩放画布的 `offsetMin/offsetMax`。
+
+`UIView` 基类初始化会把视图根拉伸铺满父级；宜在独立内容子容器避让，由一处应用安全区，避免背景、视图根和内容层重复扣边距。首次 `OnInit` 仅对新实例执行，池化重开不会再次初始化；按支持的方向、窗口/安全区变化及重开时机刷新，避免每帧无差别重建全部布局。
+
+存量示例边界：`DemoNavTreeView.ApplySafeArea` 当前直接把物理像素边距写入 offset，不能作为缩放画布下正确换算的通用模板；Debugger 的 `SafeAreaSizer` 是单边布局占位组件，也不等于 UI 模块通用安全容器。本节明确偏差，不在规则维护任务中迁移这些存量实现。
+
+### 适配验收
+
+在实际入口打开页面，核对计划中的参考/边界比例和安全区：文字可读、按钮可触达、关键内容不被裁切或遮挡、背景铺满策略正确、交互坐标与显示一致、开关页及支持的旋转后不叠加缩放或边距。记录实际分辨率、比例、安全区和生效配置；只有 Inspector 保存或编译通过不足以证明布局正确。缺少必要 Play、目标 Player 或设备证据时保持对应 `partial`，不得称为适配已验证。测试尺寸、方向、临时对象和截图按共同清场要求恢复或清理。
+
 ## 高价值 API 面
 
 这里不展开所有重载，只保留真正值得先记住的能力分组。
@@ -131,6 +174,10 @@
 `OpenUIViewAsync` 和 `OpenUIViewByAssetAsync` 返回的非负 `serialID` 只表示打开请求已创建；后续资源加载或实例化失败时，
 通过 `OnOpenUIViewFail(serialID, assetLocation, errorMessage)` 通知业务层。业务订阅者应按
 自己保存的 `serialID` 过滤事件，并在生命周期结束时注销。
+
+订阅需在组件初始化后进行。退出时 `UIComponent` 可能先于业务视图执行 `OnDestroy`；
+此时 `OnOpenUIViewFail -= handler` 允许安全完成，重复退订也不会访问已清空的管理器引用。
+这只保证事件退订的收尾安全，不表示已销毁组件仍可打开、查询或关闭视图。
 
 ```csharp
 // Name 列值为 DemoToastView 的配置行。

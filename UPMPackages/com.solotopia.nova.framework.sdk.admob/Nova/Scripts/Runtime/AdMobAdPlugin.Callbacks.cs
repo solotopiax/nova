@@ -186,7 +186,7 @@ namespace NovaFramework.SDK.AdMobAdPlugin.Runtime
             completion?.TrySetResult(result);
         }
 
-        /// <summary>官方微单位收益只接受 USD，避免未换汇金额违反共享 AdEvent 契约；非 USD 保留明确诊断，不伪造美元。</summary>
+        /// <summary>有效 USD 收益显式派发后台协议并保留逐次业务通知；Banner 复用渠道唯一的 ILRD 累计。</summary>
         /// <param name="session">当前广告对象。</param>
         /// <param name="value">官方收益，1,000,000 微单位等于一货币单位。</param>
         private void Paid(AdSession session, AdValue value)
@@ -196,7 +196,29 @@ namespace NovaFramework.SDK.AdMobAdPlugin.Runtime
                 Log.Warning(LogTag.AD, "AdMob 收益回调不是有效 USD 金额，当前共享收益接口不执行自动换汇。");
                 return;
             }
-            RaiseRevenue(new AdEvent { EventType = AdEventType.Revenue, Format = session.Format, PlacementId = session.PlacementId, Network = "AdMob", Revenue = value.Value / 1000000d, Currency = "USD", Precision = value.Precision.ToString(), Timestamp = DateTime.UtcNow });
+            var revenue = new AdEvent { EventType = AdEventType.Revenue, Format = session.Format, PlacementId = session.PlacementId, Network = "AdMob", Revenue = value.Value / 1000000d, Currency = "USD", Precision = value.Precision.ToString(), Timestamp = DateTime.UtcNow };
+            TrackAdMobRevenue(revenue);
+            RaiseRevenue(revenue);
+        }
+
+        /// <summary>AdMob 尚无独立 ad_ilrd 分析事件；后台派发复用共享累计入口，不维护第二套存档。</summary>
+        /// <param name="revenue">本次原始收益，保持不变以供逐次业务通知。</param>
+        private void TrackAdMobRevenue(AdEvent revenue)
+        {
+            if (revenue.Format != AdFormat.Banner)
+            {
+                StartRevenueReport(revenue);
+                return;
+            }
+            try
+            {
+                TrackBannerIlrdAggregated(revenue.Revenue, total =>
+                {
+                    StartRevenueReport(new AdEvent { EventType = AdEventType.Revenue, Format = revenue.Format, PlacementId = revenue.PlacementId, Network = revenue.Network, Revenue = (double)total, Currency = revenue.Currency, Precision = revenue.Precision, Timestamp = revenue.Timestamp });
+                    return true;
+                });
+            }
+            catch (Exception ex) { Log.Warning(LogTag.AD, $"AdMob Banner 收益累计失败：{ex.Message}"); }
         }
     }
 }

@@ -10,7 +10,9 @@
 
 ```
 SDKComponent
-  └── IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener
+  └── IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin,
+                  ISDKPauseListener, ISDKFocusListener,
+                  ISDKLoginReceiver, ISDKInitializationDependencies
         ├── IAPPluginConfig              // 序列化配置数据
         ├── IAPProductTableService       // 运行期商品表查询服务
         ├── IAPStoreContext              // Store 运行期依赖容器
@@ -27,7 +29,9 @@ SDKComponent
 - 实现 `IIAPInternalStore`
 - 标注 `[IAPStore(IAPStoreType.Xxx)]`，静态声明对应 StoreType
 
-扫描阶段先按 Attribute 中的 StoreType 查询 `IAPPluginConfig.StoreConfigs`；未配置的可选 Store 不执行构造函数或字段初始化。已配置但 `Enabled=false` 的 Store 仍会构造并保留，以维持 `SetStoreEnabled(...)` 的运行时懒启用语义。单个 Store 实例化或初始化失败只记录 Warning 并跳过，不阻断其他 Store。
+扫描阶段先按 Attribute 中的 StoreType 查询 `IAPPluginConfig.StoreConfigs`；未配置的可选 Store 不执行构造函数或字段初始化。已配置但 `Enabled=false` 的 Store 仍会构造并保留，以维持 `SetStoreEnabled(...)` 的运行时懒启用语义。单个 Store 实例化或初始化的普通异常只记录 Warning 并跳过，不阻断其他 Store；初始化的 `OperationCanceledException` 仍向上传播。
+
+插件通过 `ISDKInitializationDependencies` 声明对 `ITrackPlugin` 的可选依赖：已启用时等待其初始化结果，缺失或失败不作为必需依赖阻断支付。`Priority=70` 用于稳定遍历及释放顺序，不决定初始化先后。账号通过 `ISDKLoginReceiver.OnSDKLogin(userId, sessionId)` 交付，IAP 自身不订阅登录事件。
 
 应用 Pause/Focus 生命周期统一由 `SDKComponent` 采集并广播给 `IAPPlugin`。IAPPlugin 通过 `IIAPStorePauseListener` / `IIAPStoreFocusListener` 可选接口逐 Store 转发，渠道包不再自行创建 `MonoBehaviour` 生命周期代理。转发不按 Store 启用状态过滤，是否响应由 Store 当前会话状态自行判断，避免运行中禁用 Store 时丢失已有会话的返回事件。
 
@@ -107,7 +111,7 @@ SDKManager.InitializePlugin(IAPPlugin)
         ├── BuildStoreConfigMap(config)
         ├── new IAPProductTableService(config.Products)
         ├── DiscoverAndInitializeStoresAsync(ct)
-        └── 订阅 SDKEventData.UserLogin，登录后自动 SetUserId
+        └── 返回后由 SDKManager 标记插件 Ready，并补交当前登录账号
 ```
 
 `Store.InitializeAsync` 的完成语义由各 Store 定义。Mobile Store 在创建服务并启动运行期后台连接后即返回，所以 `Nova.SDK.InitializeTask` 不会等待 Google Play / App Store 的 `Connect()` 回调；Mobile 连接结果由 `IAPPlugin.Events.InitResult` 派发，连接成功前支付由 Store Ready 门禁拦截。
@@ -127,12 +131,16 @@ SDKManager.InitializePlugin(IAPPlugin)
 ### 补单
 
 ```
-SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
+Nova.SDK.Login(uid, userProperties)
+  └── SDKManager（插件 Ready 后交付或补交最新账号）
+        └── IAPPlugin.OnSDKLogin(uid, sessionId) → SetUserId(uid) → 广播给所有 Store
 业务层调用 IAPPlugin.CheckLocalOrdersAsync(ct)
   └── 遍历 Store.CheckLocalOrdersAsync(ct)
 ```
 
-`CheckLocalOrdersAsync` 可以早于登录事件调用。插件层会记录一次延后补单请求，等 `SetUserId` 同步账号 UID 后通过 IAPPlugin 后台任务入口自动执行，避免每个 Store 重复实现“等待登录后再跑”的动作缓存逻辑。扫描执行中再次触发时只标记当前轮结束后补跑一轮，不并发进入 Store，也不无上限堆积同类补单事件。`OnDisposeAsync` 会先取消后台任务，再释放各 Store，避免登录后自动补单在插件释放后继续访问旧 Store。
+`CheckLocalOrdersAsync` 可以早于登录事件调用。插件层会记录一次延后补单请求，等 `SetUserId` 同步账号 UID 后通过 IAPPlugin 后台任务入口自动执行，避免每个 Store 重复实现“等待登录后再跑”的动作缓存逻辑。扫描执行中再次触发时只标记当前轮结束后补跑一轮，不并发启动多轮补单扫描，也不无上限堆积同类补单事件；这项扫描门禁不覆盖用户的 `PayAsync` 或平台迟到回调。`OnDisposeAsync` 会先取消后台任务，再释放各 Store，避免登录后自动补单在插件释放后继续访问旧 Store。
+
+Android ThirdPay 还会在用户重复点击时执行购买前查询。它由 ThirdPay 的开关与时间窗口控制：满足查询条件时，只有服务端明确查询成功且未命中当前商品才继续新购，查询失败会结束本次购买；关闭开关或不在有效窗口时，则清理当前业务旧记录后正常新购。独立后台补单仍合并本地和服务端订单，服务端查询失败时可继续校验本地订单，不能直接复用它来替代严格的购买前查询。两条入口共用验单能力，逐笔成功与批次完成的返回语义见 [ThirdPay 购买前补单规则](../../../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询)。
 
 后台任务统一入口的签名是 `Func<CancellationToken, UniTask>`。返回 `UniTask<T>` 的 Store 内部方法不能直接以方法组接入后台入口；需要用 lambda 或无返回包装方法显式 `await` 并丢弃结果，保证后台任务只承载取消和异常收口，不改变原方法的业务返回语义。
 
@@ -180,7 +188,7 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 
 ## 8. 文档边界
 
-本目录记录当前代码事实和使用方式。历史设计、废弃方案和长期决策应进入 `Assets/Framework/Minds/**` 或子包 `Nova/Doc/plans/**` 归档，不在活跃 API 文档中混写。
+本目录记录当前代码事实和使用方式。新的长期决策按 Nova 知识规则维护在 `Assets/Framework/Minds/**`；当前 API 细节与本轮执行、验收记录不另建归档或写入历史计划目录。
 
 ## 9. 基类模板的实际责任边界
 

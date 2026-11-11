@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.firebase",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "13.14.0",
   "displayName": "Nova Framework - SDK - Firebase",
@@ -27,6 +27,6 @@
     "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.18"
   },
   "nova": {
-    "releaseTime": "2026-10-29T01:52:35Z"
+    "releaseTime": "2026-11-11T02:26:40Z"
   }
 }

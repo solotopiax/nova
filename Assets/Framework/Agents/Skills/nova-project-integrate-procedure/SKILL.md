@@ -15,6 +15,8 @@ description: Use when 项目组要在现有 Nova 消费项目中新增或调整�
 
 ## 冻结输入与阻断门
 
+新建项目的业务预加载按 `Docs/Onboarding/PROJECT_STRUCTURE.md` 默认参考当前 MainDemo `ProcedurePreload`，先完成当前阶段环境、固定启动 Resources、配置与必要导出，再实现依赖链。保留实际模块初始化顺序、结果检查、取消/代际保护、重试和启动 UI 收尾；按依赖明确裁剪，不照搬八步计数、Demo 导航或把未检查 bool 的返回当完成。资源/场景/配置写入交对应 Operation，本 Skill 不越权代办。
+
 Procedure分支先冻结唯一项目根、目标业务 Procedure 类型与源码位置、业务程序集名、命名空间、是否由当前业务热更 DLL 交付、进入职责、离开职责、下一状态及跳转条件、既有调用点、异步任务与取消预期、允许写入集，以及可观察进入、离开、跳转和取消的 Play 探针。游戏Service分支按对应引用冻结现有入口、状态、Service契约与验收；不需要切Procedure的行为不强行新建类型或下一状态。
 
 - 业务 Procedure 必须位于项目业务 DLL 层并继承 `ProcedureBase`；不移动、不修改 `NovaFramework.Runtime` 中的框架内置 Procedure。目标若是框架启动链或 Framework API 改造，返回 `not_applicable`。

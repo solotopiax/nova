@@ -28,6 +28,56 @@ namespace NovaFramework.Editor
         public static partial class PlugPals
         {
             /// <summary>
+            /// 为已展示且缺少有效发布时间的条目补查元数据；仅更新时间字段，不重建安装状态或依赖数据。
+            /// 已有时间的条目不发起请求，单仓库最多并发四次；调用方负责取消过期批次及刷新界面。
+            /// </summary>
+            /// <param name="registryUrl">生成这些条目时使用的仓库地址，不使用尚未保存的地址输入。</param>
+            /// <param name="entries">本轮已展示的条目实例。</param>
+            /// <param name="token">刷新或关闭窗口时取消的批次令牌。</param>
+            /// <param name="onUpdated">单个条目的时间补齐后调用；不应在回调中修改包操作状态。</param>
+            internal static async Task RefreshDisplayEntryReleaseTimesAsync(string registryUrl, IReadOnlyList<PackageDisplayEntry> entries, CancellationToken token, Action onUpdated)
+            {
+                if (entries == null || string.IsNullOrEmpty(registryUrl))
+                {
+                    return;
+                }
+
+                token.ThrowIfCancellationRequested();
+                using var concurrency = new SemaphoreSlim(4);
+                await Task.WhenAll(entries
+                    .Where(entry => entry != null && !string.IsNullOrEmpty(entry.Name) && !string.IsNullOrEmpty(entry.LatestVersion)
+                        && NormalizeReleaseTime(entry.LatestReleaseTime) == null)
+                    .Select(entry => RefreshDisplayEntryReleaseTimeAsync(entry, registryUrl, concurrency, token, onUpdated)));
+            }
+
+            /// <summary>
+            /// 补齐单个条目精确最新版本的时间；请求期间条目身份或版本变化时废弃结果。
+            /// </summary>
+            /// <param name="entry">待补齐的条目，只允许更新其 LatestReleaseTime。</param>
+            /// <param name="registryUrl">本轮列表所属仓库地址。</param>
+            /// <param name="concurrency">当前仓库批次共用的并发限制。</param>
+            /// <param name="token">本轮批次取消令牌。</param>
+            /// <param name="onUpdated">有效时间写入后的界面刷新回调。</param>
+            private static async Task RefreshDisplayEntryReleaseTimeAsync(PackageDisplayEntry entry, string registryUrl, SemaphoreSlim concurrency, CancellationToken token, Action onUpdated)
+            {
+                var package = new VerdaccioPackageInfo { Name = entry.Name, Version = entry.LatestVersion };
+                await FetchPackageReleaseTimesAsync(package, registryUrl, concurrency, token);
+                token.ThrowIfCancellationRequested();
+                if (!string.Equals(entry.Name, package.Name, StringComparison.Ordinal)
+                    || !string.Equals(entry.LatestVersion, package.Version, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                string releaseTime = GetVersionReleaseTime(package, package.Version);
+                if (releaseTime != null)
+                {
+                    entry.LatestReleaseTime = releaseTime;
+                    onUpdated?.Invoke();
+                }
+            }
+
+            /// <summary>
             /// 有限并发读取一个包的版本元数据；取消沿用调用方令牌，单包失败不影响列表。
             /// </summary>
             /// <param name="package">需要补充时间的远端包。</param>

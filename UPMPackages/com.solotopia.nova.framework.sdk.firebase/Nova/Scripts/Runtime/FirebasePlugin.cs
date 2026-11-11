@@ -157,14 +157,25 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 异步获取当前设备的 FCM 推送令牌。
-        /// 令牌未就绪时等待直至收到或取消；就绪后立即返回带 FCM Provider 的 PushToken。
+        /// Firebase 未就绪或已释放时返回空令牌；已就绪但令牌未下发时等待，失去就绪状态或释放后结束等待。
         /// </summary>
         /// <param name="ct">取消令牌，默认不取消。</param>
-        /// <returns>推送令牌，含 Provider="FCM" 与令牌字符串。</returns>
+        /// <returns>Provider 固定为 FCM；原厂未就绪或已释放时 Value 为空字符串，调用方应跳过令牌上报。</returns>
         public async UniTask<PushToken> GetTokenAsync(CancellationToken ct = default)
         {
-            await UniTask.WaitUntil(() => !string.IsNullOrEmpty(m_TokenReceived), cancellationToken: ct);
-            return new PushToken { Value = m_TokenReceived, Provider = "FCM" };
+            ct.ThrowIfCancellationRequested();
+            if (m_InitOver && !m_IsDisposed)
+            {
+                await UniTask.WaitUntil(
+                    () => !m_InitOver || m_IsDisposed || !string.IsNullOrEmpty(m_TokenReceived),
+                    cancellationToken: ct);
+            }
+
+            return new PushToken
+            {
+                Value = m_InitOver && !m_IsDisposed ? m_TokenReceived ?? string.Empty : string.Empty,
+                Provider = "FCM",
+            };
         }
 
         /// <summary>

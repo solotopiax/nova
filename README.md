@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.6-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.7-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -34,7 +34,7 @@
 | com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.1 |
-| com.solotopia.nova.framework.mcp | 0.1.7 |
+| com.solotopia.nova.framework.mcp | 0.1.8 |
 
 Android AAB 可通过 Pipify 上传 Google Play，默认内部测试草稿；配置与上传边界见 [Google Play 上传说明](./Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)。
 
@@ -94,9 +94,9 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 默认直接安装的包：
 
-- Nova Framework：`com.solotopia.nova.framework@0.7.6`。
+- Nova Framework：`com.solotopia.nova.framework@0.7.7`。
 - Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.3`。
-- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.7`。
+- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.8`。
 - EDM：`com.google.external-dependency-manager@1.2.190`。
 
 Nova Framework - MCP 提供 Nova 的 MCP 接入基础，`com.coplaydev.unity-mcp` 是其当前使用的 Unity MCP Provider，由包依赖经 OpenUPM 自动解析，不另写入工程的直接依赖。

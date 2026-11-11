@@ -74,7 +74,9 @@ public static List<PackageDisplayEntry> BuildDisplayEntries(VerdaccioPackageInfo
 
 - `VerdaccioPackageInfo.VersionReleaseTimes`：按精确版本记录有效时间；包内字段优先，旧包回退仓库完整元数据的 `time[版本号]`。不使用 `created`、`modified` 或其他版本时间代替。
 - `PackageDisplayEntry.LatestReleaseTime`：远端最新版本的时间，供详情独立的 `Release Time` 行显示；本地版本不展示时间。
-- 四参数拉取入口用于窗口详情的时间补充，单仓库最多并发 4 个元数据请求；调用方取消令牌照常传播，单包失败只使该包时间未知。现有三参数入口继续只查列表，自动更新和 Agent 包操作不额外请求全部版本元数据。
+- 四参数拉取入口仍保留原有语义：`includeReleaseTimes=true` 时等待全部时间查询后返回，最多并发 4 个元数据请求；调用方取消令牌照常传播，单包失败只使该包时间未知。现有三参数入口继续只查列表，窗口、自动更新和 Agent 包操作均可直接使用，不额外等待全部版本元数据。
+- 窗口先通过三参数入口取得列表并调用 `BuildDisplayEntries`，再使用内部 `RefreshDisplayEntryReleaseTimesAsync` 原位补齐缺失的时间。该入口复用既有元数据读取与精确版本匹配，跳过已有有效时间的条目，最多并发 4 次；仅写 `LatestReleaseTime`，每个包补齐后回调界面刷新，不覆盖安装状态、依赖或其他字段，不新增消费端 Action。
+- 后台批次绑定列表的原始仓库 URL 和取消令牌；刷新、改址或关闭窗口时取消。单包请求失败不影响已经展示的列表，结果按原包名和精确最新版本校验后才回填，版本漂移或取消时废弃。
 - `FormatReleaseTime` 输出 `yyyy/MM/dd HH:mm:ss`，转换为编辑器本地时区；非法或缺失时间显示 `未知`。原始版本字段不包含时间，不改变比较、安装、缓存或依赖规则。
 
 ### 本地版本读取

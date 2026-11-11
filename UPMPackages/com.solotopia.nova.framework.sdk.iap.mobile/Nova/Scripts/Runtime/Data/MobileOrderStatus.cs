@@ -37,7 +37,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         LocalPayFailed = 3,
 
         /// <summary>
-        /// 服务端验单已通过、业务已发货，等待平台 ConfirmPurchase 的 ack 回调。
+        /// 服务端验单已通过，等待平台 ConfirmPurchase 的 ack 回调；不表示项目已经实际发货。
         /// 收到 OnPurchaseConfirmed(ConfirmedOrder) 后删除；ack 失败则保留记录，
         /// 等待下次 FetchPurchases 重新拉取到 PendingOrder 后重试确认。启动扫描时跳过，不重发服务端验单。
         /// </summary>

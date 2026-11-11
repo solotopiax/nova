@@ -52,7 +52,7 @@ public interface IBannerControl
 }
 ```
 
-> 调用前须先 `IAdPlugin.RequestAsync(AdFormat.Banner)` 完成预加载，且加载结果为 `Success=true`，使聚合层选出活跃 Banner 渠道。未选出渠道时聚合控制方法为空操作，自适应高度为 -1；`DestroyBanner` 后清除活跃渠道，需要再次预加载才能通过聚合层显示。所有控制方法由 Unity 主线程调用。
+> 先 `IAdPlugin.RequestAsync(AdFormat.Banner)` 创建并加载广告。首次显示重新选择当前就绪渠道，能发现后台重试或取消等待后成功加载的结果；无就绪渠道时记录 Warning。`AdPlugin.TryShowBanner()` 提供 bool 反馈，接口签名保持不变，true 不代表曝光。显示后控制固定作用于该实例，Hide 保留归属，Destroy 清除归属和预加载候选；首次显示前控制使用请求成功时的候选。没有目标时控制为空操作，自适应高度为 -1。所有控制方法由 Unity 主线程调用，详见 [Banner 归属](./AdPlugin.md#7-请求展示和渠道所有权)。
 
 当前 MAX 的坐标与宽度直接转成整数传给原厂，Android 使用 dp，iOS 使用 points；高度 helper 也没有密度换算。`GetAdaptiveBannerHeight()` 的默认宽度直接取 Unity `Screen.width`，不能据此认为返回值是 Canvas 像素。需要指定宽度时传入原生单位，并在布局端核对转换。
 

@@ -802,6 +802,7 @@ class NovaSkillsToolTests(unittest.TestCase):
                 "nova-project-diagnose-startup",
                 "nova-project-ui-create-view",
                 "nova-project-update-ui-view",
+                "nova-project-psd2ugui",
                 "nova-project-integrate-resource",
                 "nova-project-setup-entry-scene",
                 "nova-project-update-localization",

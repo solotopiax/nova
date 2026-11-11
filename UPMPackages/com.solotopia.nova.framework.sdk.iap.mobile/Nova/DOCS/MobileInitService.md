@@ -1,6 +1,6 @@
 ﻿# MobileInitService
 
-**类签名**：`internal sealed partial class MobileInitService`
+**类签名**：`internal sealed partial class MobileInitService : MobileLogOwner`
 **命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
 **访问方式**：通过 `MobileServiceHub.InitService` 取得；不对外暴露
 
@@ -29,8 +29,8 @@ Unity IAP 5.x 初始化生命周期管理服务，负责三步初始化序列（
 ## §3 继承关系
 
 ```
-internal sealed partial class MobileInitService
-    （无继承，通过 MobileServiceHub 接收跨服务依赖）
+internal sealed partial class MobileInitService : MobileLogOwner
+    （继承移动内购日志基类，通过 MobileServiceHub 接收跨服务依赖）
 ```
 
 ---
@@ -73,7 +73,7 @@ internal sealed partial class MobileInitService
 
 | 字段 / 属性 | 类型 | 默认值 | 访问性 | 说明 |
 |---|---|---|---|---|
-| `Controller` | `StoreController` | `null` | `internal` | Unity IAP 商店控制器，BeginInitialization 写入；已迁移到 ExtendedService，此处仅保留状态上下文 |
+| `Controller` | `StoreController` | `null` | `internal get / private set` | BeginInitialization 保留的控制器引用；平台调用与事件注册由 ExtendedService 统一执行 |
 | `LastInitFailureReason` | `MobileStoreInitFailureReason` | `None` | `internal` | 最近一次初始化失败原因 |
 | `LastInitFailureMessage` | `string` | `string.Empty` | `internal` | 最近一次初始化失败详情 |
 | `IsReady` | `bool`（属性） | — | `internal` | `m_InitState == Ready && m_Connected` |
@@ -230,9 +230,9 @@ MobileStore.InitializeAsync
 
 ## §10 常见误区
 
-**误区 1：认为 Controller 由 InitService 持有**
+**误区 1：在 InitService 中直接操作 Controller**
 
-MobileInitService 在旧版中直接持有 `IStoreController / IExtensionProvider`。重构后 StoreController 已完全迁移到 `MobileExtendedService`；InitService 仅通过 `m_RuntimeContext` 管理连接态和初始化状态，不直接调用 Controller 方法。
+MobileInitService 在旧版中直接持有 `IStoreController / IExtensionProvider`。当前平台调用与事件注册统一由 `MobileExtendedService` 执行；InitService 的 `m_RuntimeContext.Controller` 仍保留同一控制器引用，用于初始化状态上下文，不承担平台调用入口。
 
 **误区 2：直接读取 MobileRuntimeContext.Controller**
 

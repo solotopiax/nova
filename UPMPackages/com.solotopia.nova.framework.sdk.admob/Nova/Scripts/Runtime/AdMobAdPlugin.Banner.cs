@@ -20,6 +20,10 @@ namespace NovaFramework.SDK.AdMobAdPlugin.Runtime
 {
     public sealed partial class AdMobAdPlugin
     {
+        /// <summary>Banner 控制固定操作配置首个 ID，就绪和收益查询与该目标保持一致。</summary>
+        /// <returns>配置首个 Banner ID；未配置时为空字符串，避免选择其他槽位。</returns>
+        protected override string GetBannerControlPlacementId() => m_BannerPlacementId ?? string.Empty;
+
         /// <summary>创建固定标准 Banner 并保持隐藏直到业务显式显示；保存所有准确事件委托。</summary>
         /// <param name="session">本次 Banner 广告位记录。</param>
         private void CreateBanner(AdSession session)
@@ -55,10 +59,27 @@ namespace NovaFramework.SDK.AdMobAdPlugin.Runtime
             => m_BannerPlacementId != null && m_Ads.TryGetValue(m_BannerPlacementId, out var session) && IsCurrent(session) ? session.Banner : null;
 
         /// <summary>记录业务可见期望并显示首个 Banner；加载恢复后保持同一期望。</summary>
-        public override void ShowBanner()
+        public override void ShowBanner() => TryShowBanner();
+
+        /// <summary>检查首个 Banner 对象并发起显示，缺失对象或原厂调用失败时只记录警告。</summary>
+        /// <returns>原厂显示调用已发出时为 true，不代表曝光。</returns>
+        public override bool TryShowBanner()
         {
+            var banner = GetBanner();
+            if (banner == null || banner.IsDestroyed)
+            {
+                Log.Warning(LogTag.AD, "AdMob Banner 显示已跳过：尚未创建或已失效，请先请求 Banner。");
+                return false;
+            }
+            bool previousVisible = m_BannerDesiredVisible;
             m_BannerDesiredVisible = true;
-            GetBanner()?.Show();
+            try { banner.Show(); return true; }
+            catch (Exception ex)
+            {
+                m_BannerDesiredVisible = previousVisible && ReferenceEquals(GetBanner(), banner) && !banner.IsDestroyed;
+                Log.Warning(LogTag.AD, $"AdMob Banner 显示调用失败：placement={m_BannerPlacementId}，{ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>隐藏首个 Banner，保留原厂对象与自动加载状态，不将可用广告位错误作废。</summary>

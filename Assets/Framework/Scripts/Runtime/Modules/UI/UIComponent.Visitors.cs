@@ -22,11 +22,19 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 异步打开视图失败事件，参数依次为视图序列编号、资源地址和错误信息。
+        /// 订阅需在组件初始化后进行；组件销毁后允许迟到或重复退订。
         /// </summary>
         public event Action<int, string, string> OnOpenUIViewFail
         {
             add => m_UIManager.OnOpenUIViewFail += value;
-            remove => m_UIManager.OnOpenUIViewFail -= value;
+            remove
+            {
+                // 退出时组件可能先于视图销毁；管理器引用已清空时无需再转发退订。
+                if (m_UIManager != null)
+                {
+                    m_UIManager.OnOpenUIViewFail -= value;
+                }
+            }
         }
 
         /// <summary>

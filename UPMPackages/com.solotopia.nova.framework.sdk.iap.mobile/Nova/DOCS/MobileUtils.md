@@ -1,7 +1,6 @@
-﻿# Mobile IAP 工具类
+# Mobile IAP 工具类
 
-> 本文档覆盖 `com.solotopia.nova.framework.sdk.iap.mobile` 包内两个内部工具类：
-> `MobileReceiptParser`（票据解析）和 `MobileStoreParameterCodec`（购买透传参数编解码）。
+> 本文档覆盖 `MobileReceiptParser`（内部票据解析）、`MobileStoreParameterCodec`（内部购买透传参数编解码），以及公开的 `MobileIapNetService`（查单与验单网络封装）。业务购买与恢复仍使用父包 `IAPPlugin`，无需直接调用内部工具。
 
 ---
 
@@ -104,7 +103,9 @@ Android 运行期可以把 Google `OrderId` 写入 `MobileOrderRecord.Transactio
 **命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
 **文件**：`Utils/MobileStoreParameterCodec.cs`
 
-uid + tableId + receiptParam 三值与 GUID 字符串互转工具，用于购买时把三者编码为 UUID 写入平台账号字段（Android: `ObfuscatedAccountId` / `ObfuscatedProfileId`；iOS: `AppAccountToken`），随平台票据回传，回调 / 补单 / 恢复时解码还原以精确路由订单并把透传数据带回业务（跨重启不丢）。设计对齐 IAP3Helper 的 `IAP3StoreParameterCodec`。相关决策见 [[ADR-072-iap-mobile-passthrough-param-layout]]。
+uid + tableId + receiptParam 三值与 GUID 字符串互转工具，用于购买时把三者编码为 UUID 写入平台账号字段（Android: `ObfuscatedAccountId` / `ObfuscatedProfileId`；iOS: `AppAccountToken`）。有效平台回调或服务端未完成订单响应可按该布局解析商品及透传参数，透传参数随未完成订单存档保留；缺失或旧布局数据仍依赖调用方兼容处理，不保证任意历史票据都能完整还原。
+
+编码和解码本身保留槽位字母大小写；订单键、队列和当前支付匹配继续把 `ReceiptParam` 转大写。大小写保留不会改变原订单身份，只差大小写的透传参数仍会合并；iOS 平台 UUID 往返也不保证原字符串大小写。
 
 ### §2 文件表
 
@@ -116,26 +117,26 @@ uid + tableId + receiptParam 三值与 GUID 字符串互转工具，用于购买
 
 | 段 | hex 范围 | 字节 | 内容 | 编码方式 |
 |---|---|---|---|---|
-| uid | `[0,8)` | 4 | 用户 UID | **转大写后左补 0**（ASCII 十六进制，业务约束 ≤8 字符） |
+| uid | `[0,8)` | 4 | 用户 UID | **保留原大小写并左补 0**（ASCII 十六进制，业务约束 ≤8 字符） |
 | tableId | `[8,16)` | 4 | 商品配置表行 ID | **数值左补 0**（业务约束 ≤8 位十进制） |
-| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **转大写后左补 0**（ASCII 十六进制，业务约束 ≤16 字符） |
+| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **保留原大小写并左补 0**（ASCII 十六进制，业务约束 ≤16 字符） |
 
-> uid / receiptParam 允许包含字母，不再要求能解析为 long；编码前统一转大写，tableId 仍按数值写入。三段组合后正好是标准 `8-4-4-4-12` GUID 字符串。
+> uid / receiptParam 允许包含字母，不再要求能解析为 long；编码保留原字符串大小写，tableId 仍按数值写入。三段组合后正好是标准 `8-4-4-4-12` GUID 字符串。
 
 ### §5 完整公开 API
 
 ```csharp
 // 将 uid + tableId + receiptParam 编码为 GUID（8-4-4-4-12）
-// uid / receiptParam 转大写后写入定长槽；tableId 按数值写入 8 hex
+// uid / receiptParam 保留原大小写写入定长槽；tableId 按数值写入 8 hex
 internal static string Encode(string uid, long tableId, string receiptParam)
 
 // 解码 tableId（hex [8,16) 数值）；失败返回 0
 internal static long DecodeTableId(string guid)
 
-// 解码 receiptParam（hex [16,32) 归一化字符串）；无透传/失败返回 null
+// 解码 receiptParam（hex [16,32) 字符串槽位）；无透传/失败返回 null
 internal static string DecodeReceiptParam(string guid)
 
-// 解码 uid（hex [0,8) 归一化字符串）；客户端不依赖，供服务端按同布局对齐
+// 解码 uid（hex [0,8) 字符串槽位）；客户端不依赖，供服务端按同布局对齐
 internal static string DecodeUid(string guid)
 ```
 
@@ -144,16 +145,16 @@ internal static string DecodeUid(string guid)
 **编码（Encode）**：
 
 ```
-uidHex     = uid.ToUpperInvariant().PadLeft(8, '0') → 8 字符
-tableHex   = tableId.ToString("X").PadLeft(8, '0') → 8 hex
-receiptHex = receiptParam.ToUpperInvariant().PadLeft(16, '0') → 16 字符
+uidHex     = uid.PadLeft(8, '0') → 8 字符
+tableHex   = Convert.ToString(tableId, 16).PadLeft(8, '0') → 8 hex
+receiptHex = receiptParam.PadLeft(16, '0') → 16 字符
 raw    = uidHex + tableHex + receiptHex（共 32 字符）
 result = raw[0..8]-raw[8..12]-raw[12..16]-raw[16..20]-raw[20..32]
 ```
 
-**解码**：`DecodeTableId` 取 `raw[8..16]` 按 hex 解析；`DecodeReceiptParam` / `DecodeUid` 取对应字符串槽位，去掉左侧补 0，全 0 返回 null。`ReceiptParam` 会参与 Mobile 未完成订单键，空值保持旧 tableId-only 语义，非空值按 codec 的大写归一化结果参与匹配。
+**解码**：`DecodeTableId` 取 `raw[8..16]` 按 hex 解析；`DecodeReceiptParam` / `DecodeUid` 取对应字符串槽位，去掉左侧补 0，全 0 返回 null。`ReceiptParam` 会参与 Mobile 未完成订单键，空值保持旧 tableId-only 语义，非空值由 MobileOrderKey 单独转大写后参与匹配，不依赖 codec 改写大小写。
 
-**iOS `AppAccountToken`**：iOS 要求 UUID 格式的 `Guid`，`Encode` 结果恰好是标准 GUID 字符串，`PurchaseService.ApplyPurchaseContext` 中直接 `Guid.TryParse(uuid, out Guid)` 后写入。
+**iOS `AppAccountToken`**：iOS 要求 UUID 格式的 `Guid`，`Encode` 结果恰好是标准 GUID 字符串，`PurchaseService.ApplyPurchaseContext` 中直接 `Guid.TryParse(uuid, out Guid)` 后写入。UUID 不携带字符大小写信息，平台回传时可能重新格式化，因此不能保证平台往返后保留原字符串大小写。
 
 **校验**：范围/格式校验在 `MobilePurchaseService.TryValidatePassthroughParams`，由 `PayAsync` 入口调用——tableId 超 8 位、uid 超 8 位或 receiptParam 超 16 位、uid / receiptParam 含非十六进制字符、或非空值以 `0` 开头时，都直接拒绝支付（`IAPMobileErrorCode.InvalidPassthroughParam`），不会发起平台购买。后两项避免 iOS `AppAccountToken` 不是合法 GUID，或固定槽位解码去除补零后丢失原值。空值仍表示不透传。`ApplyPurchaseContext` 只做纯编码，不再重复校验；codec 自身同样只做纯编解码。
 
@@ -167,7 +168,7 @@ result = raw[0..8]-raw[8..12]-raw[12..16]-raw[16..20]-raw[20..32]
 
 **误区 2：uid 完整 64 位会进透传参数**
 
-uid 槽只有 8 个字符；完整 uid 仍由服务端另行同步（见 [[ADR-072-iap-mobile-passthrough-param-layout]]）。客户端从不依赖解码出的 uid。
+uid 槽只有 8 个字符；真实购买入口对超长 UID 直接返回透传参数错误，不会自动截取或转换完整 64 位 UID。客户端不把解码出的 UID 用于订单归属匹配；服务端账号认证与关联仍需按真实接口实现核实，不能从本工具推断已完成同步。
 
 **误区 3：解码结果为 0 / null 但不判断**
 
@@ -179,7 +180,32 @@ uid 槽只有 8 个字符；完整 uid 仍由服务端另行同步（见 [[ADR-0
 
 ---
 
+## MobileIapNetService
+
+**类签名**：`public sealed class MobileIapNetService : MobileLogOwner`
+
+**命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
+
+**文件**：`Services/Net/MobileIapNetService.cs`
+
+由 Mobile 的服务中心创建，封装服务端未完成订单查询及普通/订阅验单；不创建平台购买、不直接发货，也不自行初始化 Network。所有调用从 `Nova.Network.ResolveNetCmdRow(cmdName)` 解析已加载的命令，再经 `NetService.SendAsync` 使用公共协议头、Protobuf 和现有加密网络链路发送。
+
+```csharp
+public UniTask<NetResponse<PbNetGoogleQueryPendingOrderResp>> QueryGooglePendingOrderAsync(string cmdName)
+public UniTask<NetResponse<PbNetAppleQueryPendingOrderResp>> QueryApplePendingOrderAsync(string cmdName)
+public UniTask<NetResponse<PbNetMobileVerifyResp>> VerifyGoogleAsync(string cmdName, string productId, string token, float price, bool isSubscription)
+public UniTask<NetResponse<PbNetMobileVerifyResp>> VerifyGoogleAsync(string cmdName, IReadOnlyList<PbNetGoogleVerifyIapOrderItem> items, bool isSubscription)
+public UniTask<NetResponse<PbNetMobileVerifyResp>> VerifyAppleAsync(string cmdName, string orderId, float price, bool isSubscription)
+public UniTask<NetResponse<PbNetMobileVerifyResp>> VerifyAppleAsync(string cmdName, IReadOnlyList<PbNetAppleVerifyIapOrderItem> items, bool isSubscription)
+```
+
+Google 验单项为 `product_id/token/float price`，Apple 为 `order_id/float price`，不发送完整 Receipt；`price` 由上层读取支付表配置，不能用平台本地化展示价格替换。`isSubscription` 选择独立的普通/订阅请求类型，调用方仍必须传入对应 NetCmd 名称，方法不会自动纠正错误路由。协议源见 [pb_net_mobile_pay.proto](../Protos/pb_net_mobile_pay.proto)。
+
+这些方法没有 `CancellationToken` 参数，也不在本层实现重试或验证平台签名。批次列表为 null/空时返回失败 `NetResponse`；空订单项、Protobuf 字符串 null、协议构造及解析异常仍可能抛出。`NetResponse.IsSuccess` 不能替代每笔订单 `Status` 的处理；服务端终态、重试与确认顺序由 ValidationService 管理。完整请求和响应会进入 IAP Debug 日志，分享前需脱敏；接口存在和静态检查不证明服务端可用或真实验单成功。
+
+---
+
 ## §13 关联文档
 
-- MobileStore 类规格：`./MobileStore.md`
-- 内部服务架构总览：`./MobileIAP-Architecture.md`
+- [MobileStore 类规格](./MobileStore.md)
+- [内部服务架构总览](./MobileIAP-Architecture.md)

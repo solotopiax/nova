@@ -23,6 +23,8 @@
 ## 当前契约重点
 
 - `IAPResult.ErrorCode` 和 `IAPInitResult.FailReason` 都是 `int` 透传；核心层只定义通用调度错误，渠道 Store 使用自己的错误码枚举。
+- `IAPPlugin` 实现 `ISDKLoginReceiver`，由 SDKManager 在就绪及账号变化后交付 UID，不自行订阅 `SDKEventData.UserLogin`；通过 `ISDKInitializationDependencies` 可选等待已启用的 `ITrackPlugin`。
+- 支付调用成功与可发货分别由 `IsSuccess`、`CanDeliver` 表示。Android ThirdPay 购买前补单的批次完成结果为成功但不可再次发货，历史订单沿原事件逐笔返回；见 [支付返回值与发货资格](IAPPlugin.md#支付返回值与发货资格)。
 - 打点字段 `nova_reason` 由具体 Store 把自身明确枚举转成 `int` 后写入，补充描述写入 `nova_reason_detail`；父包不解释渠道失败枚举和订单号语义。
 - 父包不定义跨 Store 的打点失败原因枚举；`nova_reason` 只要求 Store 侧传入明确 `Enum`，具体枚举下沉到各 Store，上报载荷使用枚举整数值。
 - `IAPStoreBase` partial 布局固定：无后缀文件保留 public/abstract 调用面，`.Visitors.cs` 放字段和状态属性，`.Methods.cs` 放 protected/private/internal 模板与辅助方法，`.Track.cs` / `.Net.cs` 分别承载打点与网络能力。
@@ -43,10 +45,12 @@
 
 ## 子包
 
-- `com.solotopia.nova.framework.sdk.iap.mobile`：Google Play + iOS App Store 官方内购 Store。
-- `com.solotopia.nova.framework.sdk.iap.thirdpay`：第三方支付 Store。
-- `com.solotopia.nova.framework.sdk.iap.voucher`：代金券 Store。
+- [`com.solotopia.nova.framework.sdk.iap.mobile`](../../../com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/INDEX.md)：Google Play + iOS App Store 官方内购 Store。
+- [`com.solotopia.nova.framework.sdk.iap.thirdpay`](../../../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/INDEX.md)：第三方支付 Store，含 Android 重复点击补单查询、运行时查询设置与升级说明。
+- [`com.solotopia.nova.framework.sdk.iap.voucher`](../../../com.solotopia.nova.framework.sdk.iap.voucher/Nova/Doc/INDEX.md)：代金券 Store。
 
 ## SDK 初始化与账号规则
 
 本插件由 ConfigMaster 启用。初始化是否等待其他 SDK 由插件的 `ISDKInitializationDependencies` 能力声明决定，`Priority` 不控制启动先后；业务只需目标能力时使用 `Nova.SDK.WaitForPluginAsync<T>()` 并检查 `Ready`。游戏后端登录成功后调用 `Nova.SDK.Login(uid, userProperties)`，框架会在插件就绪后补交最新账号；切换账号再次调用，登出调用 `EndLoginSession()`。新接入 SDK 应按框架 SDK 插件契约 实现。
+
+IAP 当前的 `OnSDKLogin(userId, sessionId)` 只转调 `SetUserId(userId)`，未使用会话编号，也未实现 `ISDKLoginSessionEndReceiver`。`EndLoginSession()` 不会自动清除各 Store 的旧 UID 或取消在途交易；账号隔离和退场边界见 [IAPPlugin.md](./IAPPlugin.md#调度完成不保证所有-store-完成) 及各 Store 文档。

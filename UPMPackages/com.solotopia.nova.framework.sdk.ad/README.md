@@ -1,9 +1,9 @@
 # AdPlugin
 
 > 包名：`com.solotopia.nova.framework.sdk.ad`
-> 当前版本：`1.2.2`
+> 当前版本：`1.2.3`
 
-广告聚合插件基类，调度 Rewarded / Interstitial / Banner / AppOpen / Native 格式（具体支持由渠道实现决定，当前 MAX 支持前四种），内置多渠道调度、广告位状态机、重试与打点。
+广告聚合插件基类，调度 Rewarded / Interstitial / Banner / AppOpen / Native 格式（具体支持由渠道实现决定，当前 MAX 与独立 AdMob 支持前四种），内置多渠道调度、广告位状态机、重试与打点。
 
 ## 安装
 
@@ -11,12 +11,20 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.ad": "1.2.2"
+  "com.solotopia.nova.framework.sdk.ad": "1.2.3"
 }
 ```
 
+本包只提供聚合与渠道基类，不包含可独立出广告的原厂 SDK。项目组可在 Nova PlugPals 的内部云仓库安装本包及所选渠道包，需有对应内部 registry 的访问权限；操作入口见 [PlugPals](../../Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md)。当前四格式渠道见 [MAX](../com.solotopia.nova.framework.sdk.max/README.md) 与 [独立 AdMob](../com.solotopia.nova.framework.sdk.admob/README.md)，各自的官方外网依赖、安装条件与平台边界以渠道说明为准。`Native` 枚举存在不表示这两个渠道已实现原生广告展示。
+
 ## 当前行为
 
+- Banner 首次显示重新选择当前就绪渠道，后台重试或取消等待后加载成功仍可显示。显示后固定实例归属，Hide 保留、Destroy 清除；具体类 `AdPlugin.TryShowBanner()` 可查询是否发出调用，无广告或显示失败记录 Warning，不代表曝光。详见 [Banner 控制](./Nova/Doc/AdPlugin.md)。
+
+- 广告收益协议由 `AdChannelPluginBase.StartRevenueReport` 统一承接。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，MAX 在 `TrackMaxAdIlrd` 派发时显式调用，AdMob 在 `Paid` 入口显式接入；原始 `RaiseRevenue` / `RaiseRevenueImmediately` 仅用于业务通知。自定义渠道须同步接入协议入口。
+- IAA 协议类型为 `PbIAAReportData`、`PbNetIAAReportReq` 和 `PbNetIAAReportResp`，请求通过 `ad_channel` 与 `iaa` 传递数据，由 `Services/AdRevenueReportNetService.cs` 统一校验、构造并调用 `NetService.SendAsync`。
+- `RevenueReportCmdName` 为空时兼容旧资产并跳过自动上报；`RevenuePaid` 仍只是 Unity 主线程业务通知，不代表网络上报已成功。实际发送采用应用 AES 加密的 Protobuf POST，参数和网络结果日志均为 Debug，协议、失败边界和排查顺序见[收益上报说明](./Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+- MAX Banner 后台协议与 ad_ilrd 共用一份渠道累计及存档（默认 5 次），在同一次派发中使用相同金额和最后一次回调的广告位。全部打点目标不可用时保留累计，协议同步等待；网络失败只记录警告。AdMob 尚无分析 ad_ilrd，显式复用渠道累计。非 Banner 不受阈值影响，ad_impression 仍逐次派发，详见[收益累计说明](./Nova/Doc/AdChannelPluginBase.md#广告收益上报)。
 - AdPlugin.RequestAsync 并行请求当前已登记渠道；基类默认组间并行、组内串行，失败尝试下一 ID，成功停止本组。组末项失败后按 ad 统一间隔序列循环等待再从首 ID 开始，成功后该组下标归零；本轮全部被观察组失败返回失败，后台继续重试。
 - `ShowCompleted` 表示渠道 SDK 已回调 displayed，不代表广告已关闭或激励已完成；非 Banner 在关闭或展示失败后自动续杯。
 - `AdResult.RewardGranted` 由渠道设置奖励资格；MAX 插屏展示成功时即为 true，激励关闭时取官方奖励回调状态，开屏为 false。关闭入口不会按广告收益回调改写该字段。
@@ -43,6 +51,8 @@ MAX的RVPlacementGroups、InterPlacementGroups、AppOpenPlacementGroups保持字
 - [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)
 - [Nova/Doc/IAdPlugin.md](./Nova/Doc/IAdPlugin.md)
 - [Nova/Doc/AdChannelPluginBase.md](./Nova/Doc/AdChannelPluginBase.md)
+- [Nova/Doc/AdPlugin.md](./Nova/Doc/AdPlugin.md)
+- [Nova/Doc/AdPluginConfig.md](./Nova/Doc/AdPluginConfig.md)
 - [奖励资格与回调时点](./Nova/Doc/AdPluginEvents.md#奖励资格与回调时点)
 
 ## 维护

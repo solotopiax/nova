@@ -22,6 +22,32 @@ namespace NovaFramework.Editor
     public sealed partial class PlugPalsWindow : EditorWindow
     {
         /// <summary>
+        /// 本轮公网包列表尚未返回结果时屏蔽内容区；不等待后台时间查询，不受尚未保存的地址输入影响。
+        /// 空地址会立即返回空结果，成功空列表或失败均不继续阻塞。
+        /// </summary>
+        private bool IsFetchingExternalRegistry => m_IsFetching && m_ExternalPackages == null;
+
+        /// <summary>
+        /// 在当前内容区域居中绘制等待文案，并持续刷新以响应异步请求完成。
+        /// </summary>
+        /// <param name="message">等待期间展示的单行提示。</param>
+        private void DrawLoadingMessage(string message)
+        {
+            EditorUtil.Draw.Layout.Vertical(() =>
+            {
+                GUILayout.FlexibleSpace();
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    GUILayout.FlexibleSpace();
+                    EditorUtil.Draw.Label(message, false, GUILayout.Width(EditorStyles.label.CalcSize(new GUIContent(message)).x));
+                    GUILayout.FlexibleSpace();
+                });
+                GUILayout.FlexibleSpace();
+            }, GUILayout.ExpandHeight(true));
+            Repaint();
+        }
+
+        /// <summary>
         /// 发起远程包列表请求入口。
         /// 取消上一个未完成的请求后新建令牌，委托 EditorUtil.PlugPals 完成网络和数据处理。
         /// </summary>
@@ -77,7 +103,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 并发获取公网与内部云包列表，并按各自完成顺序渐进更新窗口。
+        /// 并发获取公网与内部云包列表，按完成顺序立即展示；发布时间独立在后台补齐。
         /// </summary>
         /// <param name="token">取消令牌。</param>
         private async void FetchPackagesAsync(System.Threading.CancellationToken token)
@@ -101,6 +127,7 @@ namespace NovaFramework.Editor
                     }
 
                     ApplyRegistryFetchResult(result);
+                    RefreshReleaseTimesInBackgroundAsync(result, token);
                 }
 
                 if (!token.IsCancellationRequested)
@@ -126,7 +153,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 请求单个 registry 并将成功、超时和异常统一转换为可展示结果。
+        /// 仅请求单个 registry 的包列表并构建条目，不等待发布时间补查；统一返回成功或失败结果。
         /// </summary>
         /// <param name="registryUrl">registry 根地址；为空时直接返回空成功结果。</param>
         /// <param name="isInternal">是否为内部云 registry。</param>
@@ -137,6 +164,7 @@ namespace NovaFramework.Editor
             var result = new RegistryFetchResult
             {
                 IsInternal = isInternal,
+                RegistryUrl = registryUrl,
                 Entries = new List<EditorUtil.PlugPals.PackageDisplayEntry>(),
             };
 
@@ -151,8 +179,7 @@ namespace NovaFramework.Editor
                 EditorUtil.PlugPals.VerdaccioPackageInfo[] packages = await EditorUtil.PlugPals.FetchRemotePackagesAsync(
                     registryUrl,
                     EditorUtil.PlugPals.c_RegistryApiPath,
-                    token,
-                    true);
+                    token);
                 token.ThrowIfCancellationRequested();
 
                 if (packages == null)
@@ -180,6 +207,42 @@ namespace NovaFramework.Editor
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 在列表展示后委托工具层补齐时间，不占用列表加载状态；取消或关闭后不再刷新旧界面。
+        /// </summary>
+        /// <param name="result">本轮已展示的列表及其实际仓库来源。</param>
+        /// <param name="token">与列表共用的批次令牌，刷新或关闭窗口时取消。</param>
+        private async void RefreshReleaseTimesInBackgroundAsync(RegistryFetchResult result, CancellationToken token)
+        {
+            if (result.Entries.Count == 0 || !string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                return;
+            }
+
+            try
+            {
+                await EditorUtil.PlugPals.RefreshDisplayEntryReleaseTimesAsync(result.RegistryUrl, result.Entries, token, () =>
+                {
+                    if (this != null && !token.IsCancellationRequested
+                        && ReferenceEquals(result.Entries, result.IsInternal ? m_InternalPackages : m_ExternalPackages))
+                    {
+                        Repaint();
+                    }
+                });
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                // 刷新、改址或关闭窗口主动取消旧批次，不影响已展示列表，也不提示为加载失败。
+            }
+            catch (Exception e)
+            {
+                if (this != null && !token.IsCancellationRequested)
+                {
+                    Log.Warning(LogTag.Editor, "PlugPals 后台发布时间补充失败: {0}", e.Message);
+                }
+            }
         }
 
         /// <summary>
@@ -917,7 +980,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 在“已安装”页列表顶部绘制横向拉满的一键升级按钮。
+        /// 在“已安装”页列表顶部绘制横向拉满的一键升级按钮；不等待其他仓库加载结束。
         /// </summary>
         private void DrawBatchUpgradeButton()
         {
@@ -931,7 +994,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(8f);
-                EditorUtil.Draw.DisabledGroup(m_IsFetching || m_IsOperating || upgradeableEntries.Count == 0, () =>
+                EditorUtil.Draw.DisabledGroup(IsFetchingExternalRegistry || m_IsOperating || upgradeableEntries.Count == 0, () =>
                 {
                     EditorUtil.Draw.SuccessButton("一键升级", false, () => UpgradeAll(upgradeableEntries),
                         GUILayout.ExpandWidth(true), GUILayout.Height(28f));
@@ -942,11 +1005,11 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 批量调用既有安装入口，并用同一本地批次在升级完成及重载后合并重要声明。
+        /// 公网仓库就绪后批量调用既有安装入口，并用同一本地批次在升级完成及重载后合并重要声明。
         /// </summary>
         private void UpgradeAll(IReadOnlyList<EditorUtil.PlugPals.PackageDisplayEntry> entries)
         {
-            if (m_IsFetching || entries == null || entries.Count == 0 ||
+            if (IsFetchingExternalRegistry || entries == null || entries.Count == 0 ||
                 !EditorUtility.DisplayDialog("确认一键升级", $"确认升级当前页面中的 {entries.Count} 个可升级包？", "确定", "取消"))
             {
                 return;
@@ -1072,7 +1135,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制展开卡片内的操作按钮组：安装/升级 + 卸载 + UPM。
+        /// 绘制展开卡片内的操作按钮组：安装/升级 + 卸载 + UPM；仅公网加载阻塞包变更操作。
         /// </summary>
         /// <param name="entry">包条目。</param>
         private void DrawRowActionButtons(EditorUtil.PlugPals.PackageDisplayEntry entry)
@@ -1088,7 +1151,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(c_LabelWidth + 4f);
-                    EditorUtil.Draw.DisabledGroup(m_IsFetching || !canInstallOrUpgrade, () =>
+                    EditorUtil.Draw.DisabledGroup(IsFetchingExternalRegistry || !canInstallOrUpgrade, () =>
                     {
                         EditorUtil.Draw.SuccessButton(installLabel, false, () =>
                         {
@@ -1109,7 +1172,7 @@ namespace NovaFramework.Editor
                             Repaint();
                         }, GUILayout.Width(c_ColBtnWidth), GUILayout.Height(c_RowBtnHeight));
                     });
-                    EditorUtil.Draw.DisabledGroup(m_IsFetching || !canUninstall, () =>
+                    EditorUtil.Draw.DisabledGroup(IsFetchingExternalRegistry || !canUninstall, () =>
                     {
                         EditorUtil.Draw.DangerButton("卸载", false, () =>
                         {
@@ -1216,7 +1279,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 在折叠行的版本操作列区域绘制操作按钮（安装/升级 + 卸载 + UPM）。
-        /// 使用 GUI.Button 手动 Rect 绘制，与行内其他列风格一致。
+        /// 使用 GUI.Button 手动 Rect 绘制，与行内其他列风格一致；仅公网加载阻塞包变更操作。
         /// </summary>
         /// <param name="entry">包条目。</param>
         /// <param name="area">版本操作列矩形区域。</param>
@@ -1237,7 +1300,7 @@ namespace NovaFramework.Editor
 
             try
             {
-                GUI.enabled = !m_IsFetching && !m_IsOperating && canInstallOrUpgrade;
+                GUI.enabled = prevEnabled && !IsFetchingExternalRegistry && !m_IsOperating && canInstallOrUpgrade;
                 GUI.color = GUI.enabled ? new Color(0.3f, 0.7f, 0.35f) : new Color(0.2f, 0.4f, 0.22f);
                 if (GUI.Button(new Rect(x, btnY, c_ColBtnWidth, btnH), installLabel) && ConfirmInstall(entry))
                 {
@@ -1255,7 +1318,7 @@ namespace NovaFramework.Editor
                 }
 
                 x += c_ColBtnWidth + 2f;
-                GUI.enabled = !m_IsFetching && !m_IsOperating && canUninstall;
+                GUI.enabled = prevEnabled && !IsFetchingExternalRegistry && !m_IsOperating && canUninstall;
                 GUI.color = GUI.enabled ? new Color(0.75f, 0.25f, 0.25f) : new Color(0.45f, 0.2f, 0.2f);
                 if (GUI.Button(new Rect(x, btnY, c_ColBtnWidth, btnH), "卸载") && ConfirmUninstall(entry))
                 {
@@ -1274,7 +1337,7 @@ namespace NovaFramework.Editor
                 }
 
                 x += c_ColBtnWidth + 2f;
-                GUI.enabled = !m_IsOperating;
+                GUI.enabled = prevEnabled && !m_IsOperating;
                 GUI.color = GUI.enabled ? new Color(0.8f, 0.7f, 0.25f) : new Color(0.5f, 0.43f, 0.18f);
                 if (GUI.Button(new Rect(x, btnY, c_ColBtnUpmWidth, btnH), "UPM"))
                 {

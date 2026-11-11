@@ -3,7 +3,7 @@
 > 最后更新：2026-09-21
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
 
-**类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable`
+**类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable, IIAPStorePauseListener, IIAPStoreFocusListener`
 **命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
 **发现方式**：通过 `[IAPStore]` 由父包 `IAPPlugin` 反射发现并初始化。业务侧通常通过 `IAPPlugin.PayAsync<T>` 和 `TryGetCapability<T>` 使用。
 
@@ -52,6 +52,16 @@
 | `AppleVerifySubscriptionCmdName` | `IAPAppleVerifySubscription` | Apple 订阅验单 Cmd |
 | `ProductFetchRetryDelaysMs` | `2000 / 5000 / 10000` | 商品拉取整体失败后的自动重试延迟，单位毫秒；空列表或非正数回落默认值 |
 
+### 接入与验收顺序
+
+1. 在 `Nova → Open PlugPals → 外网仓库` 安装 `com.solotopia.nova.framework.sdk.iap.mobile`，确认 UPM 已解析父包与 Unity IAP `5.4.4` 等清单依赖。支持 Unity `6000.4.x`，最低 `6000.4.2f1`。
+2. 在 ConfigMaster 启用 IAP、添加并启用 `MobileStoreConfig`。通过 IAP Products / SKU Excel 维护商品；Mobile 读取 `ProductID`，不使用 `ThirdProductID`。商品必须与目标平台后台实际商品匹配；平台注册会 Trim SKU，后续表查询使用原值，因此配置中不要保留 SKU 首尾空白。
+3. 在 Network 配置中登记所用平台的查单、普通验单及订阅验单 NetCmd 和对应 Host，完成项目正式导出与加载。上表默认值只是命令名称，不会创建路由、服务端接口或商店商品；协议见 [MobileUtils.md](./MobileUtils.md#mobileiapnetservice)。
+4. 将 IAP、商品与 Network 配置正式导出到当前坐标的 `ConfigRuntimeSO`。Excel 导入和 Inspector 编辑只修改配置源，不会自动更新运行时导出物；如需提交商品目录，另按 [父包商品目录协议](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPProductCatalogProtocol.md) 操作。
+5. 后端登录成功时调用 `Nova.SDK.Login(uid, userProperties)`，由 SDKManager 在 IAP Ready 后交付或补交最新 UID；业务仍需调用 `CheckLocalOrdersAsync`。用户主动恢复购买使用 `RestorePurchasesAsync`，不要把它用于每次启动或后台订阅刷新。
+6. 按商品类型接入 `PaySuccess`、`SubscriptionRestored` 和 `NonConsumeRestored`，并在退出所属业务生命周期时释放订阅。返回值与事件可能重复指向同一订单，均交给同一业务幂等入口；实际发货必须检查 `IsSuccess && CanDeliver`。
+7. 在目标平台准备真实商品、测试账号与可用验单后，分别验证主动购买、取消、验单失败补单、跨启动恢复、平台确认及实际履约。Editor 模拟成功、配置导出、商店连接和商品查询各自只证明对应环节，不能替代设备、服务端或实际支付证据。
+
 ## 3. MobileStore 关键属性
 
 | 属性 / 字段 | 说明 |
@@ -84,6 +94,8 @@ public long GetSubscriptionExpireTime(long tableId)
 public bool HasNonConsumeProduct(long tableId)
 public ProductInfo GetProductInfo(long tableId)
 ```
+
+`InSubscriptionPeriod(long tableId)` 继承自 `IAPStoreBase`，通过 Mobile 的到期时间查询实现订阅能力；Pause/Focus 接口为显式实现，业务不直接调用。
 
 能力接口：
 
@@ -149,6 +161,8 @@ IAPPlugin.PayAsync<IAPResult>(IAPMobileRequest)
         └── PayGuardAsync(request, ct, PurchaseService.PayAsync)
               ├── store 禁用 / 未就绪 / 已有支付 / 商品表缺失 → 失败
               └── MobilePurchaseService.PayAsync
+                    ├── 未同步有效账号 UID → 拒绝真实支付
+                    ├── 检查 tableId、UID 与 ReceiptParam 的透传范围和格式
                     ├── 当前 `tableId + ReceiptParam` 订单键已有待验订单 → 优先补验
                     ├── 订阅商品自身仍在有效期内 → 返回 SubscriptionIsReady，不发起平台购买
                     ├── 写 Purchasing 占位订单
@@ -159,6 +173,8 @@ IAPPlugin.PayAsync<IAPResult>(IAPMobileRequest)
 ```
 
 `MobileStore.PayAsync` 只要拿到失败 `IAPResult`，都会在返回给业务层前调用 `TrackReturnedPayFailureInternal` 上报一次 `nova_iap_local_pay_fail`。这包括 `PayGuardAsync` 产生的 Store 禁用、未就绪、重入和商品表缺失，也包括 `MobilePurchaseService` 返回的商品未获取、商品不可用、透传参数非法、平台购买发起异常、主动支付验单失败等结果。Mobile 覆写 `ShouldTrackPayGuardFailure` 返回 `false`，避免 guard 内直接按父包枚举域上报；最终由 PayAsync 返回边界映射到 `IAPMobileErrorCode`。
+
+真实购买要求 UID 非空、为 1-8 位 ASCII 十六进制且不以 `0` 开头；`ReceiptParam` 可为空，非空时为 1-16 位十六进制且不以 `0` 开头。透传校验接受 `TableId=0..99,999,999`，实际商品查询和订单键仍要求合法配置的正主键，不能把 `0` 当作可购买商品。该上限小于 SKU Excel 的 TableId 上限。编码保留 UID / `ReceiptParam` 原字母大小写，订单键及当前支付匹配仍对 `ReceiptParam` 转大写；iOS `AppAccountToken` 使用 UUID，平台往返可能重新格式化大小写。只差大小写的 `ReceiptParam` 不能区分两笔业务订单，详见 [MobileUtils.md](./MobileUtils.md)。
 
 ## 6.1 补单扫描流程
 
@@ -193,7 +209,7 @@ IAPPlugin.CheckLocalOrdersAsync
 | 1 | `PendingValidate` | 平台回调成功，待服务端验单 |
 | 2 | `ValidateFailed` | 验单网络或 HTTP 失败，保留记录等待下次补单 |
 | 3 | `LocalPayFailed` | 平台本地支付失败，启动扫描时直接删除 |
-| 4 | `AwaitingConfirm` | 服务端验单已通过、业务已发货，等待平台 `ConfirmPurchase` 的 ack 回调；收到 `OnPurchaseConfirmed(ConfirmedOrder)` 后删除，ack 失败则保留，等待下次 `FetchPurchases` 重新拉取到 `PendingOrder` 后重试确认（不重发服务端验单）。仅对持有平台 `PendingOrder` 的订单进入该状态；token 补单 / 历史单无 ack 可等，验单成功后直接删除 |
+| 4 | `AwaitingConfirm` | 服务端验单已通过，等待平台 `ConfirmPurchase` 的 ack 回调；不表示项目已实际发货。收到 `OnPurchaseConfirmed(ConfirmedOrder)` 后删除，ack 失败则保留，等待下次 `FetchPurchases` 重新拉取到 `PendingOrder` 后重试确认（不重发服务端验单）。仅对持有平台 `PendingOrder` 的订单进入该状态；token 补单 / 历史单无 ack 可等，验单成功后直接删除 |
 
 ### 服务端验单状态
 
@@ -205,9 +221,11 @@ IAPPlugin.CheckLocalOrdersAsync
 | 4 | `Delivered` | 服务端已处理过订单；删除记录并派发成功，`CanDeliver=true`，客户端仍按本地幂等规则补发奖 |
 | 5 | `Invalid` | 无效订单；删除记录并派发失败 |
 
-上表「删除记录」经 `FinalizeVerifiedOrderRecord` 收尾：若该订单仍持有平台 `PendingOrder`，先置 `AwaitingConfirm` 并落盘、发起 `ConfirmPurchase`，待 ack 回调（`OnPurchaseConfirmed`）到达后再删除；无待确认平台订单时才立即删除。业务发货（`PaySuccess` / 订阅到期更新）在验单成功即刻完成，不等待平台 ack。
+上表「删除记录」经 `FinalizeVerifiedOrderRecord` 收尾：先更新本地权益，若该订单仍持有平台 `PendingOrder`，先置 `AwaitingConfirm` 并落盘、发起 `ConfirmPurchase`，待 ack 回调（`OnPurchaseConfirmed`）到达后再删除；无待确认平台订单时才立即删除。正常路径随后派发业务结果，不等待平台 ack；实际发货由项目处理，平台确认与发货不共享事务。
 
-`PaySuccess` 派发按 `tableId + ReceiptParam` 组成的订单键做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。验单成功打点另按当前 UID 持久化平台订单号去重：Apple 使用 transaction id，Google 优先使用服务端验单响应 `OrderId`、缺失时回退当前运行期 Google `OrderId`；持久化列表和运行期兜底缓存最多各保留 300 条，新增超限时淘汰最老记录。旧版 `google:{purchaseToken}` 会在同一订单再次验单成功时迁移为订单号键并跳过重复打点。订阅商品只有当前主动 `PayAsync` 对应的订单才走 `PaySuccess`；后台补单、Restore 和订阅刷新只更新订阅到期时间。
+`PaySuccess` 派发按 `tableId + ReceiptParam` 组成的订单键做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。验单成功打点另按当前 UID 持久化平台订单号去重：Apple 使用 transaction id，Google 优先使用服务端验单响应 `OrderId`、缺失时回退当前运行期 Google `OrderId`；持久化列表和运行期兜底缓存最多各保留 300 条，新增超限时淘汰最老记录。旧版 `google:{purchaseToken}` 会在同一订单再次验单成功时迁移为订单号键并跳过重复打点。
+
+在 `CanDeliver=true` 且未命中上述业务键去重的前提下，消耗品主动购买和补单均可发 `PaySuccess`；非消耗品仅主动购买可发；订阅还要求当前主动支付等待点存在。订阅和非消耗品补单/恢复分别走 `SubscriptionRestored` / `NonConsumeRestored`，即使当前没有协调 Restore，也会就地派发单条恢复通知。订阅恢复只收集 `Verified` / `Delivered`；`Reissued` 只推进完成计数及本地状态。非消耗品恢复可包含成功但 `CanDeliver=false` 的 `Reissued` 结果，不能忽略发货资格。
 
 ### 埋点事件
 
@@ -217,7 +235,7 @@ Mobile 在 `MobileStore.Track.cs` 中构造订单号、验单状态和失败原�
 |---|---|
 | `nova_iap_init` | 商店连接成功或初始化失败 |
 | `nova_iap_buy` | 用户发起真实平台购买前；Editor 下 `EnableAlwaysPaySucceed` 调试支付也会上报 |
-| `nova_iap_local_pay_success` | Unity IAP 返回 Pending / Confirmed 并登记本地订单后；同一订单号在当前运行期去重 |
+| `nova_iap_local_pay_success` | Unity IAP 返回 Pending / Confirmed 并登记本地订单后；Apple 按 TransactionId、Google 按 GoogleToken 在当前运行期去重 |
 | `nova_iap_local_pay_fail` | `MobileStore.PayAsync` 返回失败 `IAPResult`；没有 `PayAsync` 返回链路的迟到 `OnPurchaseFailed`；`OnPurchaseConfirmed(FailedOrder)` |
 | `nova_iap_validate_fail` | 单轮验单失败但订单仍可能重试或补单 |
 | `nova_iap_first_pay_order_validate` | 当前主动支付订单第一次验单失败 |
@@ -232,7 +250,7 @@ Mobile 在 `MobileStore.Track.cs` 中构造订单号、验单状态和失败原�
 
 | 字段 | 口径 |
 |---|---|
-| `nova_iap_local_pay_success.nova_order_id` | 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退 Apple `TransactionId` |
+| `nova_iap_local_pay_success.nova_order_id` | 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退当前运行期 `TransactionId` |
 | `nova_iap_validate_success.nova_order_id` | 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId` |
 | `nova_iap_validate_success` 去重 key | Apple 使用 transaction id；Google 使用该事件的 `nova_order_id`，即优先取服务端验单响应 `OrderId`、缺失时回退当前运行期 Google `OrderId` |
 | `nova_iap_local_pay_fail.nova_reason` | `IAPMobileErrorCode` 的 int 值；`PluginRouter` guard 失败会映射到对应 Mobile 错误码，Unity IAP `PurchaseFailureReason` 映射到 1000-1010 |
@@ -266,6 +284,7 @@ Mobile 在 `MobileStore.Track.cs` 中构造订单号、验单状态和失败原�
 | `Status` | 当前订单状态 |
 | `IsReplenish` | 是否为补单路径 |
 | `CustomDataParam` | 业务透传字符串 |
+| `ReceiptParam` | 从平台账号 UUID 解码或请求记录中保留的票据透传字符串；随未完成订单持久化并在结果中回传，订单键另行转大写匹配 |
 
 ## 9. 错误码
 
@@ -389,7 +408,7 @@ if (iap.TryGetCapability<IIAPMobileSubscriptionCapable>(out var sub))
 所有平台调用必须经 `MobileExtendedService`，不要在其他服务中缓存或绕过它访问 Controller。
 
 **误区 3：登录后不做补单扫描。**
-`SetUserId` 只负责切换 UID 和加载对应存档；业务层仍需在合适时机调用 `IAPPlugin.CheckLocalOrdersAsync`。
+`SetUserId` 只负责切换 UID 和加载对应存档；SDKManager 通过 `OnSDKLogin` 自动调用它，业务层仍需在合适时机调用 `IAPPlugin.CheckLocalOrdersAsync`。若登录前已请求扫描，父包会在 UID 同步后补执行一次。
 
 **误区 4：看到 `CanDeliver=false` 仍直接发货。**
 `Reissued` 会返回成功但 `CanDeliver=false`，表示奖励已通过其他渠道补发，业务层不应重复发货。`Delivered` 仍会按 `CanDeliver=true` 返回，用于覆盖客户端发出验单协议但未收到响应的补发奖场景。验单成功打点按当前 UID 持久化的平台订单号键去重：Apple 使用 transaction id，Google 使用订单号；重复平台回调仍由订单状态机和运行期队列去重控制。

@@ -23,7 +23,7 @@
 
 - [MobileStore.md](./MobileStore.md) — `MobileStore` 对外 API、配置、订单状态机、支付与补单流程。
 - [MobileInitService.md](./MobileInitService.md) — Unity IAP 初始化服务和初始化失败原因。
-- [MobileUtils.md](./MobileUtils.md) — 票据解析与购买透传参数编解码工具。
+- [MobileUtils.md](./MobileUtils.md) — 票据解析、购买透传参数编解码和公开查单/验单网络接口。
 
 ## 商品拉取与不可用 SKU 口径
 
@@ -46,6 +46,8 @@
 ## 当前契约重点
 
 - `QueryPendingOrder` 响应里的 `table_id` 是 `long`，客户端优先用它确定商品行，再结合 `parameter` 解码出的 `ReceiptParam` 合并到 `OrderRecordsByKey`；`parameter` 解码不到 `ReceiptParam` 时按空透传兼容旧协议。
+- 购买编码保留 UID / `ReceiptParam` 原字母大小写，订单键及主动支付匹配仍对 `ReceiptParam` 转大写；iOS `AppAccountToken` 经 `Guid` 与平台格式化后不保证保留原大小写，不能据此建立区分大小写的两笔业务订单。
+- 消耗品补单仍走 `PaySuccess`；订阅与非消耗品补单/恢复分别走 `SubscriptionRestored` / `NonConsumeRestored`。没有协调 Restore 正在执行时，也会按类型派发单条恢复通知；不要只订阅 `PaySuccess`。
 - `MobileOrderRecord.TransactionId` 是平台订单 ID；Android 可在运行期写入 Google `OrderId`，但通过条件编译禁止持久化；iOS 会写入本地存档供重启后补单验单使用。
 - 订阅商品在自身有效期内重复支付会本地返回 `IAPMobileErrorCode.SubscriptionIsReady`，不会再发起 Unity IAP 平台购买。
 - Google 验单与本地支付成功打点去重使用 `GoogleToken`，不是 `TransactionId`。
@@ -70,6 +72,7 @@
 
 ## 相关
 
-- 父包文档索引：`../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md`
-- 父包类规格：`../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md`
-- 父包架构：`../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md`
+- [接入与验收顺序](./MobileStore.md#接入与验收顺序)
+- [父包文档索引](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md)
+- [父包类规格](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md)
+- [父包架构](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md)

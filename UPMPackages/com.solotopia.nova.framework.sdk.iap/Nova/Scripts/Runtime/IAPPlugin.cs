@@ -159,8 +159,8 @@ namespace NovaFramework.SDK.IAP.Runtime
 
         /// <summary>
         /// 手动设置当前账号 UID，广播给所有商店。
-        /// 通常无需主动调用——IAPPlugin 已由 SDKManager 在插件就绪后自动同步；
-        /// 仅在登录事件触达前 IAP 已使用或需要强制切换账号时使用。
+        /// 通常由 SDKManager 经 OnSDKLogin 在插件就绪后同步；
+        /// 业务登录使用 Nova.SDK.Login，直接调用本方法不改变框架的登录会话，也不取消在途交易。
         /// </summary>
         /// <param name="uid">已登录用户的唯一 ID。</param>
         public void SetUserId(string uid)

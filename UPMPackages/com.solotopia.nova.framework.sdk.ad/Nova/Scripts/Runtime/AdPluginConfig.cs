@@ -11,6 +11,7 @@
 using System;
 using NovaFramework.Runtime;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
@@ -42,6 +43,13 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private float m_CountryCodeWaitTimeoutSeconds = 5f;
 
         /// <summary>
+        /// 广告收益上报使用的 NetCmd 名称；为空时不自动发送收益协议，兼容未配置该路由的存量资产。
+        /// </summary>
+        [FormerlySerializedAs("m_IaaReportCmdName")]
+        [SerializeField, HideInInspector, Tooltip("广告收益上报使用的 NetCmd 名称；建议填写 AdRevenueReport。为空时跳过自动上报。")]
+        private string m_RevenueReportCmdName = string.Empty;
+
+        /// <summary>
         /// 渠道配置访问入口，AdPlugin 通过 Items 遍历渠道，通过其余只读属性读取全局开关。
         /// </summary>
         public AdChannelConfigList ChannelConfigs => m_ChannelConfigs;
@@ -50,6 +58,11 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// 等待广告 SDK 返回国家码的超时时间，单位秒。
         /// </summary>
         public float CountryCodeWaitTimeoutSeconds => m_CountryCodeWaitTimeoutSeconds;
+
+        /// <summary>
+        /// 广告收益上报 NetCmd 名称；为空时禁用基类自动上报。
+        /// </summary>
+        public string RevenueReportCmdName => m_RevenueReportCmdName;
 
         /// <summary>
         /// 无参构造器；供 ConfigWindow SDKPluginScanner 通过 Activator 创建空实例使用。
