@@ -205,7 +205,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 构造 IAP store 运行时上下文，从各框架 Manager 中获取跨模块依赖。
+        /// 构造 Store 上下文并冻结路由失败打点坐标，从各框架 Manager 中获取跨模块依赖。
         /// </summary>
         /// <param name="config">IAPPlugin 配置，用于提取 Editor 下的 EnableAlwaysPaySucceed 调试开关。</param>
         /// <returns>构造完成的 IAPStoreContext 实例。</returns>
@@ -214,6 +214,8 @@ namespace NovaFramework.SDK.IAP.Runtime
             IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
             INetworkManager networkManager = FrameworkManagersGroup.GetManager<INetworkManager>();
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
+            m_TrackPlatform = (configManager?.Platform ?? PlatformType.None).ToString();
+            m_TrackChannel = (configManager?.Channel ?? ChannelType.None).ToString();
             DevelopMode developMode = configManager?.DevelopMode ?? DevelopMode.Debug;
 #if UNITY_EDITOR
             bool enableAlwaysPaySucceed = config.EnableAlwaysPaySucceed;

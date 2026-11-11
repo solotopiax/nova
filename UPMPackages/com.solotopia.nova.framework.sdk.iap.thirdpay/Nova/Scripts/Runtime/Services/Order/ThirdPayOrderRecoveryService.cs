@@ -50,7 +50,20 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="utcSeconds">本次点击的 UTC 秒时间戳。</param>
         /// <param name="ct">本次购买取消令牌。</param>
         /// <returns>补单批次结果或查询失败；允许正常新购时返回 null。</returns>
-        internal async UniTask<IAPResult> RecoverBeforePayAsync(IAPThirdPayRequest request, long utcSeconds, CancellationToken ct)
+        internal UniTask<IAPResult> RecoverBeforePayAsync(IAPThirdPayRequest request, long utcSeconds, CancellationToken ct)
+        {
+            return RecoverBeforePayWithConfigAsync(request, utcSeconds, m_Hub.ResolveClientConfig(m_Hub.PaymentConfigService?.Snapshot?.ClientConfig), ct);
+        }
+
+        /// <summary>
+        /// 使用本次固定有效配置执行补单决策，不读取中途变化的本地开关。
+        /// </summary>
+        /// <param name="request">当前支付请求。</param>
+        /// <param name="utcSeconds">本次决策时间。</param>
+        /// <param name="clientConfig">已经合并线上与本地值的固定配置。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>补单结果；允许新购时返回 null。</returns>
+        internal async UniTask<IAPResult> RecoverBeforePayWithConfigAsync(IAPThirdPayRequest request, long utcSeconds, ThirdPayEffectiveClientConfig clientConfig, CancellationToken ct)
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, m_Hub.RuntimeTaskToken);
             CancellationToken token = linkedCts.Token;
@@ -64,8 +77,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     return PreflightFailure(request, "尚未登录，无法查询第三方支付补单。");
                 }
 
-                if (!m_Hub.AndroidOrderRecoveryEnabled || !m_Hub.PersistContext.IsOrderRecoveryWithinWindow(
-                        request.TableId, request.ReceiptParam, m_Hub.AndroidOrderRecoveryWindowMinutes, utcSeconds))
+                if (!clientConfig.AndroidOrderRecoveryEnabled || !m_Hub.PersistContext.IsOrderRecoveryWithinWindow(
+                        request.TableId, request.ReceiptParam, clientConfig.AndroidOrderRecoveryWindowMinutes, utcSeconds))
                 {
                     ClearCurrentBusinessOrders(request);
                     return null;

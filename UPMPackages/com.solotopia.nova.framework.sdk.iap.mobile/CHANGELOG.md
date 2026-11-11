@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-11
+
+### Changed
+
+- 官方内购打点统一使用运行配置的平台与运营渠道，新增 nova_store_type=Mobile；nova_channel 不再按平台发送 google、ios 或 mobile。
+
+- 最低 IAP 依赖提升至 0.2.6，配套新版支付统计功能，避免消费项目因安装旧版依赖而编译失败。
+
 ## [0.2.2] - 2026-11-11
 
 ### Fixed

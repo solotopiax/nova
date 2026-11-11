@@ -56,7 +56,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             // 清空支付配置快照及其请求状态。
             m_Hub.PaymentConfigService.Reset();
             // 恢复是否跳过 Google 第三方支付信息页的配置值。
-            m_Hub.SkipPaymentInformationScreen = m_Hub.Config?.SkipPaymentInformationScreen ?? false;
+            m_Hub.AndroidSkipPaymentInformationScreen = m_Hub.Config?.AndroidSkipPaymentInformationScreen ?? false;
             // 创建空订单仓储，等待设置用户 ID 后切换到对应账号数据。
             ResetRepository((ThirdPayPersistData)CreateEmptyPersistData());
 
@@ -189,18 +189,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 设置是否跳过 Google 第三方支付信息页；默认值来自 ThirdPayStoreConfig。
+        /// 设置 Google 信息页的本地跳过开关；默认值来自 ThirdPayStoreConfig，服务端明确配置时优先使用服务端值。
         /// </summary>
         /// <param name="skip">是否跳过信息页。</param>
         public void SetSkipPaymentInformationScreen(bool skip)
         {
-            m_Hub.SkipPaymentInformationScreen = skip;
+            m_Hub.AndroidSkipPaymentInformationScreen = skip;
         }
 
         /// <summary>
-        /// 获取当前是否跳过 Google 第三方支付信息页。
+        /// 获取 Google 信息页的本地跳过开关，不包含本次支付快照的服务端覆盖值。
         /// </summary>
-        public bool IsPaymentInformationScreenSkipped => m_Hub.SkipPaymentInformationScreen;
+        public bool IsPaymentInformationScreenSkipped => m_Hub.AndroidSkipPaymentInformationScreen;
 
         /// <summary>
         /// 设置 Android 重复购买前的补单查询开关，不改变后台补单或非 Android 行为。

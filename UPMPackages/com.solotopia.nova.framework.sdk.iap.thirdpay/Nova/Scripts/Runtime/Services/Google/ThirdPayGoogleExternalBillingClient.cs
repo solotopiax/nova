@@ -32,6 +32,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private readonly double m_TimeoutSeconds;
 
         /// <summary>
+        /// 操作视图共享连接的生命周期所有者；视图不能关闭共享连接。
+        /// </summary>
+        private readonly ThirdPayGoogleExternalBillingClient m_LifetimeOwner;
+
+        /// <summary>
         /// 当前适配器是否已经释放。
         /// </summary>
         private bool m_Disposed;
@@ -56,9 +61,34 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 创建共享原生连接、仅覆盖本次操作超时的视图。
+        /// </summary>
+        /// <param name="owner">原生连接所有者。</param>
+        /// <param name="timeoutSeconds">已校验的有限正秒数。</param>
+        private ThirdPayGoogleExternalBillingClient(ThirdPayGoogleExternalBillingClient owner, double timeoutSeconds)
+        {
+            m_Client = owner.m_Client;
+            m_TimeoutSeconds = timeoutSeconds;
+            m_LifetimeOwner = owner;
+        }
+
+        /// <summary>
+        /// 为本次授权固定网络超时，不修改初始化或其他账号操作的默认超时。
+        /// </summary>
+        /// <param name="timeoutSeconds">有限正秒数。</param>
+        /// <returns>不拥有共享连接的轻量操作视图。</returns>
+        internal ThirdPayGoogleExternalBillingClient WithTimeout(double timeoutSeconds)
+        {
+            ThrowIfDisposed();
+            if (double.IsNaN(timeoutSeconds) || double.IsInfinity(timeoutSeconds) || timeoutSeconds <= 0 || timeoutSeconds > int.MaxValue / 1000d)
+                throw new ArgumentOutOfRangeException(nameof(timeoutSeconds));
+            return new ThirdPayGoogleExternalBillingClient(this, timeoutSeconds);
+        }
+
+        /// <summary>
         /// 获取当前客户端连接是否可用。
         /// </summary>
-        public bool IsReady => !m_Disposed && m_Client.IsReady();
+        public bool IsReady => !m_Disposed && !(m_LifetimeOwner?.m_Disposed ?? false) && m_Client.IsReady();
 
         /// <summary>
         /// 建立 Google 外部结算服务连接。
@@ -222,7 +252,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 结束 Google 外部结算连接。
+        /// 释放当前适配器；只有连接所有者结束 Google 外部结算连接，操作视图不关闭共享连接。
         /// </summary>
         public void Dispose()
         {
@@ -232,7 +262,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             m_Disposed = true;
-            m_Client.EndConnection();
+            if (m_LifetimeOwner == null)
+                m_Client.EndConnection();
         }
 
         /// <summary>
@@ -240,7 +271,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private void ThrowIfDisposed()
         {
-            if (m_Disposed)
+            if (m_Disposed || (m_LifetimeOwner?.m_Disposed ?? false))
             {
                 throw new ObjectDisposedException(nameof(ThirdPayGoogleExternalBillingClient));
             }

@@ -18,6 +18,21 @@ namespace NovaFramework.SDK.IAP.Runtime
     public abstract partial class IAPStoreBase
     {
         /// <summary>
+        /// 本轮 Store 初始化时冻结的平台名称；初始化前为 None。
+        /// </summary>
+        private string m_TrackPlatform = nameof(NovaFramework.Runtime.PlatformType.None);
+
+        /// <summary>
+        /// 本轮 Store 初始化时冻结的运营渠道名称；初始化前为 None。
+        /// </summary>
+        private string m_TrackChannel = nameof(NovaFramework.Runtime.ChannelType.None);
+
+        /// <summary>
+        /// 本轮 Store 初始化时冻结的支付商店类型名称。
+        /// </summary>
+        private string m_TrackStoreType = nameof(IAPStoreType.None);
+
+        /// <summary>
         /// 商品表，由 InitializeAsync 阶段注入；为 null 时表示该 store 在当前配置下被禁用，子类自行决定降级行为。
         /// </summary>
         protected IIAPProductTable Table { get; private set; }

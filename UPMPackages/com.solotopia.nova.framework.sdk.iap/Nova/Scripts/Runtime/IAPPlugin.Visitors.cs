@@ -21,6 +21,15 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// </summary>
     public sealed partial class IAPPlugin
     {
+        /// <summary>
+        /// 插件构造运行上下文时冻结的平台名称，用于未匹配 Store 的失败打点。
+        /// </summary>
+        private string m_TrackPlatform = nameof(PlatformType.None);
+
+        /// <summary>
+        /// 插件构造运行上下文时冻结的运营渠道名称，用于路由失败打点。
+        /// </summary>
+        private string m_TrackChannel = nameof(ChannelType.None);
 
         /// <summary>
         /// 插件友好名，用于诊断日志与 Inspector 显示。

@@ -68,7 +68,7 @@
 - 本地未完成订单仓库以 `tableId + ReceiptParam` 订单键合并订单；不传 `ReceiptParam` 时保持旧 tableId-only 语义。`TransactionId` 可承载平台订单号，但 Android 不持久化，iOS 随本地存档保留。
 - Google 使用 `GoogleToken` 作为验单凭据和本地支付成功打点去重 key；Apple 使用 `TransactionId`。
 - `nova_iap_validate_success` 的平台订单键去重按当前 UID 持久化，最多保存 300 条；新增第 301 条时删除最老记录，防止存档和运行期缓存无限增长。
-- `TrackChannel` 按平台输出 `google` / `ios` / `mobile`，TGA 侧可用该值区分 `solar_channel`。
+- Mobile 所有支付打点统一使用商店初始化时缓存的 `PlatformType` / `ChannelType` 名称写入 `nova_platform` / `nova_channel`，`nova_store_type` 固定为 `Mobile`；不再发送 `google` / `ios` / `mobile` 别名。
 
 ## 相关
 

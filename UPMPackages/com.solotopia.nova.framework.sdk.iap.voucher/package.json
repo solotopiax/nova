@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "com.solotopia.nova.framework": "0.7.3",
-    "com.solotopia.nova.framework.sdk.iap": "0.2.2",
+    "com.solotopia.nova.framework.sdk.iap": "0.2.6",
     "com.solotopia.unitask": "10.0.6"
   }
 }

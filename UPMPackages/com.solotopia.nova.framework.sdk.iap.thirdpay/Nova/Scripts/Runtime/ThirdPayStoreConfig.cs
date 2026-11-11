@@ -11,6 +11,7 @@
 using System;
 using NovaFramework.SDK.IAP.Runtime;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
@@ -42,13 +43,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 是否跳过 Google 第三方支付信息页。
         /// </summary>
         [SerializeField, Tooltip("是否跳过 Google 第三方支付信息页，直接进入 ThirdPay 支付页")]
-        private bool m_SkipPaymentInformationScreen = false;
+        [FormerlySerializedAs("m_SkipPaymentInformationScreen")]
+        private bool m_AndroidSkipPaymentInformationScreen = false;
 
         /// <summary>
         /// 外部浏览器返回应用后自动验单前的等待秒数。
         /// </summary>
         [SerializeField, Tooltip("外部浏览器支付返回 App 后自动验单前的等待秒数")]
-        private float m_ExternalBrowserReturnValidateDelaySeconds = 2.5f;
+        [FormerlySerializedAs("m_ExternalBrowserReturnValidateDelaySeconds")]
+        private float m_AndroidExternalBrowserReturnValidateDelaySeconds = 2.5f;
 
         /// <summary>
         /// 获取统一第三方支付配置的协议名。
@@ -72,7 +75,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// Google 外链结算网络操作的超时秒数。
         /// </summary>
         [SerializeField, Tooltip("Google 外链结算网络类操作（连接/资格/生成 token）的超时秒数，用户信息页不受此限制")]
-        private double m_GoogleApiTimeoutSeconds = 15d;
+        [FormerlySerializedAs("m_GoogleApiTimeoutSeconds")]
+        private double m_AndroidGoogleApiTimeoutSeconds = 15d;
 
         /// <summary>
         /// 获取当前配置对应的 Store 类型。
@@ -97,12 +101,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <summary>
         /// 获取是否默认跳过 Google 第三方支付信息页。
         /// </summary>
-        public bool SkipPaymentInformationScreen => m_SkipPaymentInformationScreen;
+        public bool AndroidSkipPaymentInformationScreen => m_AndroidSkipPaymentInformationScreen;
 
         /// <summary>
         /// 获取外部浏览器支付返回后的自动验单延迟秒数。
         /// </summary>
-        public float ExternalBrowserReturnValidateDelaySeconds => m_ExternalBrowserReturnValidateDelaySeconds > 0f ? m_ExternalBrowserReturnValidateDelaySeconds : 2.5f;
+        public float AndroidExternalBrowserReturnValidateDelaySeconds => m_AndroidExternalBrowserReturnValidateDelaySeconds > 0f ? m_AndroidExternalBrowserReturnValidateDelaySeconds : 2.5f;
 
         /// <summary>
         /// 获取第三方支付配置协议的 NetCmd 名称。
@@ -122,6 +126,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <summary>
         /// 获取 Google 外链结算网络类操作的超时秒数；非正值时回落为 15 秒。
         /// </summary>
-        public double GoogleApiTimeoutSeconds => m_GoogleApiTimeoutSeconds > 0d ? m_GoogleApiTimeoutSeconds : 15d;
+        public double AndroidGoogleApiTimeoutSeconds => m_AndroidGoogleApiTimeoutSeconds > 0d ? m_AndroidGoogleApiTimeoutSeconds : 15d;
     }
 }

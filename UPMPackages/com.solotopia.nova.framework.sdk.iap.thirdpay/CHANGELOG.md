@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-11
+
+### Added
+
+- 服务端 client_config 新增五项统一使用 Android 前缀的配置，支持覆盖 Google 信息页、Android 补单查询开关与窗口、浏览器返回验单延迟和 Google 网络超时五项配置；线上明确值优先，缺失或 null 沿用本地，false 和窗口 0 有效。单次支付固定有效配置，返回延迟随浏览器会话保存，Google 初始化继续用本地超时；运行时本地设置能力继续保留，非法线上类型或范围按配置异常处理；公开配置属性改名的源码迁移见 Breaking。
+
+### Changed
+
+- 第三方支付各阶段打点统一补齐运行平台、运营渠道与 nova_store_type=ThirdPay，不再把 thirdpay 作为 nova_channel。
+
+- 最低 IAP 依赖提升至 0.2.6，配套新版支付统计功能，避免消费项目因安装旧版依赖而编译失败。
+
+### Breaking
+
+- ThirdPayStoreConfig 的三个公开配置属性改名：SkipPaymentInformationScreen → AndroidSkipPaymentInformationScreen、ExternalBrowserReturnValidateDelaySeconds → AndroidExternalBrowserReturnValidateDelaySeconds、GoogleApiTimeoutSeconds → AndroidGoogleApiTimeoutSeconds。旧 C# 调用须改用新名称；既有 Unity 配置资产保留 FormerlySerializedAs 字段映射，运行时本地设置能力继续保留。
+
 ## [0.1.3] - 2026-11-11
 
 ### Changed

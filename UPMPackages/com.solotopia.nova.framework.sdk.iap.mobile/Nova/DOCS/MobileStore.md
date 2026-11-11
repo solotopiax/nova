@@ -67,7 +67,7 @@
 | 属性 / 字段 | 说明 |
 |---|---|
 | `StoreType` | 固定 `IAPStoreType.Mobile` |
-| `TrackChannel` | Android = `google`，iOS = `ios`，其他平台兜底 `mobile` |
+| `TrackChannel` | 继承基类，默认取初始化时缓存的 `ChannelType` 名称；平台、渠道及商店名称在初始化时缓存，发送时统一写入 `nova_platform`、`nova_channel`，`nova_store_type=Mobile` |
 | `LogTag` | 固定 `LogTag.IAPMobile` |
 | `GameUID` | 当前用户 UID，供内部服务读取 |
 | `InPayTableId` | 当前支付中的 tableId；0 表示空闲 |

@@ -32,7 +32,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 | `FacebookAdSetting/FacebookAdSetting.cs` | `FacebookAdSetting` | Facebook 广告 SDK 隐私设置内部工具类 |
 | `Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs` | `MaxAdPluginBuildProcessor` | 构建预处理写入 AppLovinSettings.asset、注册 Android ProGuard；iOS 后处理 Embed 并补齐 SKAdNetworkItems |
 | `Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs` | `MaxSkAdNetworkPlistCompleter` | iOS 内部工具：离线枚举已装网络，再向官方接口请求并增量合并 SKAdNetwork ID |
-| `Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs` | `MaxIOSPodOwnershipPostprocessor` | iOS 顺序 44 后处理：核对已审官方 adapter 版本并将 LINE / Unity Ads 的两项原生依赖交给 CocoaPods |
+| `Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs` | `MaxIOSPodOwnershipPostprocessor` | iOS 顺序 44 后处理：读取已安装官方 adapter 依赖并将 LINE / Unity Ads 的两项原生依赖交给 CocoaPods |
 | `Editor/BuildProcessor/MaxIOSPodOwnership.rb` | 固定 Ruby 脚本 | 定向回写生成工程的两项 MAX 引用与 Pod 声明，普通异常时恢复原始文件 |
 | `Editor/MaxSDKUrlMenuItems.cs` | `MaxSDKUrlMenuItems` | MAX Console / MAX Readme 外部入口菜单 |
 | `NovaFramework.SDK.MaxAdPlugin.Runtime.asmdef` | — | Runtime 程序集与 `NOVA_APPLOVIN_MAX` 版本宏 |
@@ -46,7 +46,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 
 Mediation adapters 也由 [package.json](../../package.json) 固定版本声明为 AppLovin 官方 UPM 包，按平台拆为 `.android` / `.ios` 依赖。当前声明 BidMachine、ByteDance、Chartboost、Facebook、Fyber、Google、Google Ad Manager、InMobi、IronSource、Mintegral、Moloco、UnityAds、Vungle、Line 的双平台包，以及 Yandex Android 包；未声明 Yandex iOS。旧 `Core/MaxSdk/Mediation/**/Dependencies.xml` 不再作为依赖来源。Google / Google Ad Manager 当前固定 Android `25050000.0.0`、iOS `13110000.0.0`；Unity Ads 双平台为 `4210001.0.0`，不表示安装时自动追踪最新版。
 
-当前 iOS 依赖归属处理器严格接受 Unity Ads iOS 的 UPM / SPM `4210001.0.0` 与 Pod `4.21.0.1`，与本包声明及官方 XML 一致。LINE iOS 仍为 UPM / SPM `3010102.0.0` 与 Pod `3.1.1.2`。该处理独立于广告位配置和运行时初始化；未知版本或原厂契约变化仍令构建失败，升级后须重新导出并完成原生构建验收，详见[iOS 原生依赖归属](./MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
+iOS 依赖归属处理器不再要求固定 adapter 版本，按当前已安装包的官方 XML 读取 Pod/SPM 版本；仍检查依赖身份、结构及工程引用，详见[iOS 原生依赖归属](./MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
 本包依赖 Ad 基础包 `1.2.3`、Framework `0.7.3`、MAX SDK `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）。官方 SDK 还传递依赖 EDM4U；消费工程必须同时提供 AppLovin 与 EDM4U registry，安装示例见 [README](../../README.md#安装)。Nova PlugPals 会处理本包 `nova.scopedRegistries` 元数据；Unity 原生 Package Manager 不会自动把该元数据写入工程 manifest。
 

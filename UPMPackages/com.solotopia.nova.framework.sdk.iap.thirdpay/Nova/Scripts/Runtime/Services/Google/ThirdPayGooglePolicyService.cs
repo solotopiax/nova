@@ -234,8 +234,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="buildPaymentUrl">使用 Google token 构造最终支付 URL 的回调。</param>
         /// <param name="skipInformationScreen">是否跳过 Google 信息页并直接进入 ThirdPay。</param>
         /// <param name="ct">取消令牌。</param>
+        /// <param name="timeoutSeconds">本次授权的网络操作超时；null 使用客户端默认值，信息页不计时。</param>
         /// <returns>政策授权结果。</returns>
-        public async UniTask<ThirdPayGoogleAuthorization> AuthorizeAsync(Func<string, string> buildPaymentUrl, bool skipInformationScreen, CancellationToken ct)
+        public async UniTask<ThirdPayGoogleAuthorization> AuthorizeAsync(Func<string, string> buildPaymentUrl, bool skipInformationScreen, CancellationToken ct, double? timeoutSeconds = null)
         {
             if (buildPaymentUrl == null)
             {
@@ -243,11 +244,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             ct.ThrowIfCancellationRequested();
-            LogDebug($"Google 外链授权开始：ClientReady={m_Client.IsReady}，SkipInfo={skipInformationScreen}");
-            if (!m_Client.IsReady)
+            IThirdPayGoogleExternalBillingClient client = timeoutSeconds.HasValue && m_Client is ThirdPayGoogleExternalBillingClient native
+                ? native.WithTimeout(timeoutSeconds.Value) : m_Client;
+            LogDebug($"Google 外链授权开始：ClientReady={client.IsReady}，SkipInfo={skipInformationScreen}");
+            if (!client.IsReady)
             {
                 LogDebug("Google 外链授权：开始连接 Billing 服务。");
-                ThirdPayGoogleResponse connection = await m_Client.ConnectAsync(ct);
+                ThirdPayGoogleResponse connection = await client.ConnectAsync(ct);
                 LogDebug($"Google 外链授权：连接结果={connection}");
                 if (connection == ThirdPayGoogleResponse.Unavailable)
                 {
@@ -263,7 +266,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             LogDebug("Google 外链授权：开始检查外部结算计划可用性。");
-            ThirdPayGoogleResponse availability = await m_Client.CheckAvailabilityAsync(ct);
+            ThirdPayGoogleResponse availability = await client.CheckAvailabilityAsync(ct);
             LogDebug($"Google 外链授权：外部结算计划可用性结果={availability}");
             if (availability == ThirdPayGoogleResponse.Unavailable)
             {
@@ -278,7 +281,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             LogDebug("Google 外链授权：开始创建外部交易 token。");
-            ThirdPayGoogleTokenResult tokenResult = await m_Client.CreateTokenAsync(ct);
+            ThirdPayGoogleTokenResult tokenResult = await client.CreateTokenAsync(ct);
             LogDebug($"Google 外链授权：token 创建结果={tokenResult.Response}，TokenLength={tokenResult.Token.Length}");
             if (tokenResult.Response != ThirdPayGoogleResponse.Ok || string.IsNullOrEmpty(tokenResult.Token))
             {
@@ -300,7 +303,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             LogDebug("Google 外链授权：开始打开 Google 信息页。");
-            ThirdPayGoogleResponse launch = await m_Client.LaunchInformationScreenAsync(paymentUrl, ct);
+            ThirdPayGoogleResponse launch = await client.LaunchInformationScreenAsync(paymentUrl, ct);
             LogDebug($"Google 外链授权：Google 信息页返回={launch}");
             if (launch == ThirdPayGoogleResponse.UserCancelled)
             {

@@ -107,9 +107,19 @@ namespace NovaFramework.SDK.IAP.Runtime
         public const string Price = "nova_price";
 
         /// <summary>
-        /// 支付渠道名称。
+        /// 运行平台的 PlatformType 枚举名称字符串。
+        /// </summary>
+        public const string Platform = "nova_platform";
+
+        /// <summary>
+        /// 包体分发与运营渠道的 ChannelType 枚举名称字符串。
         /// </summary>
         public const string Channel = "nova_channel";
+
+        /// <summary>
+        /// 支付商店类型的 IAPStoreType 枚举名称字符串。
+        /// </summary>
+        public const string StoreType = "nova_store_type";
 
         /// <summary>
         /// 订单 ID。

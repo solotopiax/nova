@@ -16,23 +16,6 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     public sealed partial class MobileStore
     {
         /// <summary>
-        /// 渠道标识，用于打点事件的 Channel 字段。
-        /// </summary>
-        protected override string TrackChannel
-        {
-            get
-            {
-#if UNITY_ANDROID
-                return "google";
-#elif UNITY_IOS
-                return "ios";
-#else
-                return IAPStoreType.Mobile.ToString().ToLowerInvariant();
-#endif
-            }
-        }
-
-        /// <summary>
         /// 当前 Store 使用的 Nova 日志标签。
         /// </summary>
         protected override string LogTag => NovaFramework.Runtime.LogTag.IAPMobile;

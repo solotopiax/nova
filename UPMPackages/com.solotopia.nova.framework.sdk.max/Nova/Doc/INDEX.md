@@ -19,7 +19,7 @@
 
 MAX 在 `TrackMaxAdIlrd` 已派发分支调用父包 `StartRevenueReport`；配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，协议与 ILRD 使用相同金额，Banner 共用唯一累计及存档，打点目标全不可用时协议同步等待。协议仍使用 `PbIAAReportData`、`PbNetIAAReportReq`、`PbNetIAAReportResp`，统一 Service 为 `AdRevenueReportNetService`，详见 [Ad 基础包收益上报文档](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
 
-iOS 两项 MAX adapter 的原生依赖归属处理与 SKAdNetwork 补齐接入既有 Player 构建流程；归属处理器与当前 Unity Ads iOS 声明的 `4210001.0.0`、官方 XML 中的 Pod `4.21.0.1` 和 SPM `4210001.0.0` 一致，其他版本或契约变化仍会阻断构建。SKAdNetwork 的网络清单在本地枚举，ID 清单仍依赖官方 HTTP 接口。构建前配置检查、失败恢复和平台验收边界见[构建处理器文档](./MaxAdPluginBuildProcessor.md#构建前广告配置边界)与[iOS 原生依赖归属](./MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
+iOS 两项 MAX adapter 的原生依赖归属处理与 SKAdNetwork 补齐接入既有 Player 构建流程；处理器不再要求固定 adapter 版本，原生依赖版本从当前安装包的官方 XML 读取，仍核对依赖身份及工程结构。SKAdNetwork 的网络清单在本地枚举，ID 清单仍依赖官方 HTTP 接口。构建前配置检查、失败恢复和平台验收边界见[构建处理器文档](./MaxAdPluginBuildProcessor.md#构建前广告配置边界)与[iOS 原生依赖归属](./MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
 源码与文档说明不代表 Player 构建、原生编译或真机广告已经通过，目标工程须按[验证边界](./MaxAdPlugin.md#验证边界)执行。
 

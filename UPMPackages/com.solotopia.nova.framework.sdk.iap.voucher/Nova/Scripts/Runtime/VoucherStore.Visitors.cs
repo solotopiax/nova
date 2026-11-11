@@ -28,11 +28,6 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         public VoucherWalletSnapshot Wallet => m_Session?.Wallet ?? VoucherWalletSnapshot.CreateNotReady();
 
         /// <summary>
-        /// 支付打点使用的 Voucher 渠道标识。
-        /// </summary>
-        protected override string TrackChannel => "voucher";
-
-        /// <summary>
         /// 当前 Store 使用的 Nova 日志标签。
         /// </summary>
         protected override string LogTag => NovaFramework.Runtime.LogTag.IAPVoucher;

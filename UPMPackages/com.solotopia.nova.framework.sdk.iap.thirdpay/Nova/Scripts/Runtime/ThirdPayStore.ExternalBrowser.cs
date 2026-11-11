@@ -76,13 +76,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="request">ThirdPay 支付请求。</param>
         /// <param name="order">已保存的本地订单。</param>
         /// <param name="paymentConfig">本次支付固定使用的配置快照。</param>
+        /// <param name="clientConfig">本次支付固定的有效客户端配置。</param>
         /// <param name="googleToken">Google 外部结算上报 token。</param>
         /// <param name="paymentUrl">最终支付 URL。</param>
         /// <param name="firstRechargeReward">本次支付固定使用的首充奖励。</param>
         /// <param name="extraBonusReward">本次支付固定使用的额外赠送奖励。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>Deep Link 成功回调或浏览器返回 App 后的验单结果。</returns>
-        internal async UniTask<IAPResult> OpenExternalBrowserPaymentAsync(IAPThirdPayRequest request, ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, string googleToken, string paymentUrl, IAPThirdPayRewardItem firstRechargeReward, IAPThirdPayRewardItem extraBonusReward, CancellationToken ct)
+        internal async UniTask<IAPResult> OpenExternalBrowserPaymentAsync(IAPThirdPayRequest request, ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, ThirdPayEffectiveClientConfig clientConfig, string googleToken, string paymentUrl, IAPThirdPayRewardItem firstRechargeReward, IAPThirdPayRewardItem extraBonusReward, CancellationToken ct)
         {
             if (m_Hub.ExternalBrowserService == null)
             {
@@ -99,6 +100,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return AttachReturnedPayFailureContext(Fail(request, IAPThirdPayErrorCode.StoreInitFailed, "第三方外部浏览器支付会话创建失败。"), ThirdPayPaymentFailureReason.PaymentPageOpenFailed, order?.ClientOrderId);
             }
 
+            session.ReturnValidationDelaySeconds = clientConfig.AndroidExternalBrowserReturnValidateDelaySeconds;
             ThirdPayPaymentPageResult pageResult;
             try
             {
@@ -152,6 +154,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             m_Hub.ExternalBrowserSessionState.Begin(order);
+            m_Hub.ExternalBrowserSessionState.Current.ReturnValidationDelaySeconds = m_Hub.Config?.AndroidExternalBrowserReturnValidateDelaySeconds ?? c_DefaultExternalBrowserReturnValidateDelaySeconds;
             Application.deepLinkActivated += OnExternalBrowserDeepLinkActivated;
         }
 
@@ -689,7 +692,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>正数延迟秒数。</returns>
         private float GetExternalBrowserReturnValidateDelaySeconds()
         {
-            return m_Hub.Config?.ExternalBrowserReturnValidateDelaySeconds ?? c_DefaultExternalBrowserReturnValidateDelaySeconds;
+            return (float)(m_Hub.ExternalBrowserSessionState.Current?.ReturnValidationDelaySeconds
+                ?? m_Hub.Config?.AndroidExternalBrowserReturnValidateDelaySeconds ?? c_DefaultExternalBrowserReturnValidateDelaySeconds);
         }
     }
 }

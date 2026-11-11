@@ -1,7 +1,7 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.2.2`
+> 当前版本：`0.2.3`
 
 MAX 广告聚合插件，提供广告展示服务。
 
@@ -9,7 +9,7 @@ MAX 广告聚合插件，提供广告展示服务。
 
 当前 `package.json` 将 Unity Ads Android / iOS adapter 均固定为 `4210001.0.0`，LINE iOS adapter 固定为 `3010102.0.0`。这些是 UPM adapter 包版本，不能直接当作其原生 SDK 版本。
 
-iOS 构建的 Nova 顺序 `44` 后处理将 LINE、Unity Ads 原生 adapter 统一交给 CocoaPods，避免两项 SPM adapter 与其他 MAX Pods 同时生产 `AppLovinSDK.framework`，并保留 Firebase 等其他 SDK 的 SPM 配置。处理器按官方 XML 严格核对 Unity Ads iOS 的 UPM / SPM `4210001.0.0` 与 Pod `4.21.0.1`，LINE 的 UPM / SPM `3010102.0.0` 与 Pod `3.1.1.2`；未知版本、XML 或工程引用图变化仍会阻断构建。升级后应重新导出工程，再核对 Pods 并执行 Xcode 编译；版本对齐不代表平台验收已经通过。精确契约与恢复边界见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
+iOS 构建的 Nova 顺序 `44` 后处理会将 LINE、Unity Ads 原生 adapter 统一交给 CocoaPods，避免两项 SPM adapter 与其他 MAX Pods 同时生产 `AppLovinSDK.framework`，并保留 Firebase 等其他 SDK 的 SPM 配置。处理器不再限制固定 adapter 版本，Pod/SPM 版本从当前已安装包的官方依赖 XML 读取；依赖身份、结构和工程引用仍会检查。具体行为与恢复边界见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
 Android 构建不再由 Nova 额外改写 SafeDK launcher manifest；Quality Service 的 launcher Application 配置依赖项目实际安装的 Unity / AppLovin 构建链。MAX 构建处理器保留官方设置注入、ProGuard、iOS 依赖归属和 SKAdNetwork 处理，详见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md)。
 
@@ -20,12 +20,12 @@ Android 构建不再由 Nova 额外改写 SafeDK launcher manifest；Quality Ser
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.max": "0.2.2"
+    "com.solotopia.nova.framework.sdk.max": "0.2.3"
   }
 }
 ```
 
-本包固定依赖 Ad `1.2.3`、Framework `0.7.3` 和 MAX `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
+本包固定依赖 Ad `1.2.1`、Framework `0.7.3` 和 MAX `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
 
 项目组在 Nova PlugPals 使用内部云仓库安装本 Nova 包，需有对应内部 registry 的访问权限；窗口入口见 [PlugPals](../../Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md)。下方 AppLovin 与 OpenUPM 是原厂依赖的外网 registry，与 Nova 内部仓库分别配置，安装和原生依赖解析都需要相应网络可达。
 

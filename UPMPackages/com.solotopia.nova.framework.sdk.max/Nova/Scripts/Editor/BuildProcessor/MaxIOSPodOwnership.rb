@@ -12,12 +12,12 @@ begin
   podfile_path = File.join(root, 'Podfile')
   raise '生成工程缺少 Unity-iPhone.xcodeproj/project.pbxproj 或 Podfile' unless File.file?(pbx_path) && File.file?(podfile_path)
 
-  # 固定两个官方版本的 XML 契约；未来升级必须重新审查，不能自动沿用旧版本的 Pods 归属决策。
+  # 版本读取当前安装包的官方 XML，不固定 UPM、Pod 或 SPM 版本；依赖身份与结构仍须匹配。
   adapters = [
-    {xml: ENV.fetch('NOVA_MAX_IOS_LINE_XML'), pod: 'AppLovinMediationLineAdapter', version: '3.1.1.2',
-     url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-Line.git', spm: '3010102.0.0'},
-    {xml: ENV.fetch('NOVA_MAX_IOS_UNITYADS_XML'), pod: 'AppLovinMediationUnityAdsAdapter', version: '4.21.0.1',
-     url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-UnityAds.git', spm: '4210001.0.0'}
+    {xml: ENV.fetch('NOVA_MAX_IOS_LINE_XML'), pod: 'AppLovinMediationLineAdapter',
+     url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-Line.git'},
+    {xml: ENV.fetch('NOVA_MAX_IOS_UNITYADS_XML'), pod: 'AppLovinMediationUnityAdsAdapter',
+     url: 'https://github.com/AppLovin/AppLovin-MAX-Swift-Package-UnityAds.git'}
   ]
   adapters.each do |adapter|
     document = REXML::Document.new(File.binread(adapter[:xml]))
@@ -25,11 +25,16 @@ begin
     packages = REXML::XPath.match(document, '/dependencies/remoteSwiftPackage')
     products = REXML::XPath.match(document, '/dependencies/remoteSwiftPackage/swiftPackage')
     valid = pods.size == 1 && packages.size == 1 && products.size == 1 &&
-      pods.first.attributes['name'] == adapter[:pod] && pods.first.attributes['version'] == adapter[:version] &&
-      packages.first.attributes['url'] == adapter[:url] && packages.first.attributes['version'] == adapter[:spm] &&
+      pods.first.attributes['name'] == adapter[:pod] &&
+      packages.first.attributes['url'] == adapter[:url] &&
       products.first.attributes['name'] == adapter[:pod] && products.first.attributes['replacesPod'] == adapter[:pod] &&
       products.first.attributes['target'] == 'All'
     raise "官方 MAX XML 契约漂移：#{adapter[:pod]}" unless valid
+    adapter[:version] = pods.first.attributes['version'].to_s
+    adapter[:spm] = packages.first.attributes['version'].to_s
+    # Pod 版本会写入 Ruby 字面量；仅接受明确的数字版本，避免占位符或 XML 内容变成 Podfile 代码。
+    raise "官方 MAX XML 缺少有效版本：#{adapter[:pod]}" unless
+      adapter[:version].match?(/\A\d+(?:\.\d+)*\z/) && adapter[:spm].match?(/\A\d+(?:\.\d+)*\z/)
   end
 
   original_pbx = File.binread(pbx_path)

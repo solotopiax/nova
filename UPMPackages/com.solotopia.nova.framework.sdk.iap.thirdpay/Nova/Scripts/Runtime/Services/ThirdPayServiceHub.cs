@@ -118,7 +118,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <summary>
         /// 获取或设置是否跳过 Google 第三方支付信息页。
         /// </summary>
-        internal bool SkipPaymentInformationScreen { get; set; }
+        internal bool AndroidSkipPaymentInformationScreen { get; set; }
 
         /// <summary>
         /// Android 购买前查询开关，仅由 Android 购买分支消费。
@@ -134,6 +134,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 获取或设置必需 Store 配置是否齐备。
         /// </summary>
         internal bool ConfigReady { get; set; }
+
+        /// <summary>
+        /// 为一次支付合并线上快照与本地当前配置，不修改运行期开关。
+        /// </summary>
+        /// <param name="online">已经按当前账号与国家校验的线上配置；null 使用本地。</param>
+        /// <returns>固定的有效配置标量。</returns>
+        internal ThirdPayEffectiveClientConfig ResolveClientConfig(ThirdPayClientConfig online)
+        {
+            return new ThirdPayEffectiveClientConfig(online, Config, AndroidSkipPaymentInformationScreen, AndroidOrderRecoveryEnabled, AndroidOrderRecoveryWindowMinutes);
+        }
 
         /// <summary>
         /// 获取 Hub 是否已经完成服务绑定。
@@ -269,7 +279,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             PaymentConfigService = null;
             CountryState.ClearAll();
             NetService = null;
-            SkipPaymentInformationScreen = false;
+            AndroidSkipPaymentInformationScreen = false;
             ConfigReady = false;
             Config = null;
             Context = null;

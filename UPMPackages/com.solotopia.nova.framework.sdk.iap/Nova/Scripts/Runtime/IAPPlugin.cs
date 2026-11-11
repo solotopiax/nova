@@ -220,7 +220,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 上报 IAPPlugin 路由层在命中具体 Store 前产生的 PayAsync 失败。
+        /// 上报命中具体 Store 前的 PayAsync 失败，复用初始化缓存坐标，商店类型取自当次请求。
         /// </summary>
         /// <param name="result">待上报的失败支付结果。</param>
         /// <param name="request">原始支付请求；为空时表示 request 本身为空。</param>
@@ -231,17 +231,16 @@ namespace NovaFramework.SDK.IAP.Runtime
                 return;
             }
 
-            string channel = request == null ? "router" : request.StoreType.ToString().ToLowerInvariant();
             var properties = new Dictionary<string, object>
             {
                 { IAPTrackFields.TableId, result.TableId },
                 { IAPTrackFields.ProductId, string.Empty },
                 { IAPTrackFields.Debug, m_StoreContext?.DevelopMode == DevelopMode.Debug },
                 { IAPTrackFields.Price, 0f },
-                { IAPTrackFields.Channel, channel },
                 { IAPTrackFields.Reason, result.ErrorCode },
                 { IAPTrackFields.ReasonDetail, FormatPayFailureReasonDetail(result) },
             };
+            IAPStoreBase.AppendTrackDimensions(properties, m_TrackPlatform, m_TrackChannel, (request?.StoreType ?? IAPStoreType.None).ToString());
             AppendRouterCustomData(properties, result.CustomData);
             m_StoreContext?.TrackPlugin?.TrackEvent(IAPTrackEvents.LocalPayFail, properties);
         }

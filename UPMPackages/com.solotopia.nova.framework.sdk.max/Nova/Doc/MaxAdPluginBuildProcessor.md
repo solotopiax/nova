@@ -104,18 +104,16 @@ iOS 后处理会在 Pods 中寻找名单里的 5 项候选 xcframework，将实�
 
 EDM4U `1.2.188` 在顺序 `35` 写入 SPM、`40` 生成 Podfile、`50` 安装 Pods。Nova MAX 在 `44` 回写两项 adapter，Nova 部署下限在 `45` 保持既有 Podfile 规则；随后 `NovaBuildPostprocessor` 从修正后的工程读取上下文，继续常规后处理。
 
-| 当前处理器允许的官方 UPM 契约 | 被移除的直接 SPM repository/product | 恢复到 `UnityFramework` 的 Pod |
+| 官方 UPM 包 | 被移除的直接 SPM repository/product | 恢复到 UnityFramework 的 Pod |
 |---|---|---|
-| `com.applovin.mediation.adapters.line.ios@3010102.0.0` | `AppLovin-MAX-Swift-Package-Line.git` / `AppLovinMediationLineAdapter` | `AppLovinMediationLineAdapter`, `3.1.1.2` |
-| `com.applovin.mediation.adapters.unityads.ios@4210001.0.0` | `AppLovin-MAX-Swift-Package-UnityAds.git` / `AppLovinMediationUnityAdsAdapter` | `AppLovinMediationUnityAdsAdapter`, `4.21.0.1` |
+| com.applovin.mediation.adapters.line.ios | AppLovin-MAX-Swift-Package-Line.git / AppLovinMediationLineAdapter | AppLovinMediationLineAdapter |
+| com.applovin.mediation.adapters.unityads.ios | AppLovin-MAX-Swift-Package-UnityAds.git / AppLovinMediationUnityAdsAdapter | AppLovinMediationUnityAdsAdapter |
 
-上表版本来自当前官方 adapter 的 `package.json` 与 `Editor/Dependencies.xml`，并同时固定在 `MaxIOSPodOwnershipPostprocessor.cs` 和随包 `MaxIOSPodOwnership.rb` 中。XML 的 SPM 版本分别为 LINE `3010102.0.0`、Unity Ads `4210001.0.0`，product 名必须与对应 Pod 名相同，`replacesPod` 指向该 Pod，`target` 为 `All`。这里只接受已核对的完整契约，不接受任意新版本；未来升级必须重新核对 UPM、Pod、SPM 和引用图。版本对齐不代表 CocoaPods 安装、Xcode 编译或真机运行已通过，升级后须重新导出并执行平台验收。
-
-维护者后续更换这两项 adapter 时，必须一并核对本包 `package.json` 的 UPM 版本、原厂 `Editor/Dependencies.xml` 的 Pod / SPM 版本，以及 C# / Ruby 的严格名单。只改依赖声明或只改其中一份名单都不算完成；还须定向验证正确契约可回写、未知契约仍拒绝，最后在目标工程重新导出并核对原生构建结果。
+处理器不再限制固定 UPM、Pod 或 SPM 版本。Pod/SPM 版本读取当前已安装包的 `Editor/Dependencies.xml`，不从旧版本常量推导；版本必须为非空数字点分形式，拒绝占位符及可注入 Podfile 的内容。此变更不修改 package.json 的依赖声明，也不代表任意新版工程结构都兼容。
 
 两个 SPM adapter 会传递引入 `AppLovinSDK`，其他 MAX Pods 也会引入同名 framework。在当前混合图下，Xcode 会因同名 framework 的两个生产者报 `Multiple commands produce`；版本相同也不能消除双生产者。本处理只让 MAX 的两项 adapter 回到 CocoaPods，让 MAX 继续使用 Podfile 既有的 `AppLovinSDK` 版本；保留 Firebase SPM、其他 Pods、部署版本 block、其他 target 和配置，不关闭全局 SPM，不改官方 XML。
 
-执行前会核对自身包身份、两个官方 UPM 版本、`Editor/Dependencies.xml` 的精确 Pod/SPM 契约、唯一 `UnityFramework` target、引用图与 Podfile。Podfile 中已存在且同版本的两项 Pod 会复用；重复执行不再写文件。未知 MAX SPM 仓库、版本冲突、未知引用图、缺失工具或文件会令 Unity 构建失败，修复直接原因后重新导出。脚本在内存中保留原始 `project.pbxproj` 与 Podfile 快照，已开始回写时发生普通异常，会恢复这两文件；`120000` 毫秒超时、进程被强制终止或系统中断无法保证执行恢复，不复用可能中断的生成工程，应重新导出。没有写入永久备份或修改项目真源。
+执行前会核对自身包身份、两个官方包的存在性、`Editor/Dependencies.xml` 的 Pod/SPM 身份与结构及其中声明的版本、唯一 `UnityFramework` target、引用图与 Podfile。Podfile 中已存在且同版本的两项 Pod 会复用；重复执行不再写文件。未知 MAX SPM 仓库、版本冲突、未知引用图、缺失工具或文件会令 Unity 构建失败，修复直接原因后重新导出。脚本在内存中保留原始 `project.pbxproj` 与 Podfile 快照，已开始回写时发生普通异常，会恢复这两文件；`120000` 毫秒超时、进程被强制终止或系统中断无法保证执行恢复，不复用可能中断的生成工程，应重新导出。没有写入永久备份或修改项目真源。
 
 固定 Ruby 脚本随本包正式携带。C# 复用 `EditorUtil.ProcessRunner.RunSync`，在当前 `pod` 子进程设置 `RUBYOPT=-r./MaxIOSPodOwnership.rb`，使用该 CocoaPods 启动器自己的 Ruby 与 gem 环境；脚本完成后在 CocoaPods CLI 前退出。包路径可以包含空格，不写死本机 Homebrew 路径，不改全局环境，不再次执行 `pod install`。脚本输入只有导出根目录与两个已解析官方 XML 路径，超时为 `120000` 毫秒。
 

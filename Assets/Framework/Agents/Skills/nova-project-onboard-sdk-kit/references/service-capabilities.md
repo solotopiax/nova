@@ -60,7 +60,7 @@ ThirdPay 奖励透传使用 `IAPThirdPayRequest.FirstRechargeReward`、`ExtraBon
 
 Mobile 平台透传编码保留 UID 与 `ReceiptParam` 的输入字母大小写，平台 UUID 回传仍可能规范大小写；本地业务订单匹配继续按既有归一规则，不承诺端到端原样回传。消耗品补单、订阅恢复和非消耗品恢复分别核对 `PaySuccess`、`SubscriptionRestored`、`NonConsumeRestored`，平台确认或本地 `AwaitingConfirm` 不代表项目已发货。Voucher 则使用独立交易 journal，当前不随结果回填 `ReceiptParam`；报价和余额查询不证明服务端已原子扣减，缺少扣减路由也可能进入待恢复而非明确拒绝。差异以各 Store 文档和服务端幂等履约为准。
 
-ThirdPay Android 购买前补单查询默认开启、窗口三十分钟，配置字段 `AndroidOrderRecoveryEnabled` / `AndroidOrderRecoveryWindowMinutes` 复用现有面板修改与 Runtime 导出；运行时由 `TryGetCapability<IIAPThirdPayOrderRecoveryCapable>` 获取开关及窗口设置能力。查询失败中止本次新购，窗口外或关闭时清理同账号同业务键旧记录再正常支付；命中服务器订单按原事件逐笔补单，`PayAsync` 汇总成功为 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空`，不得重复发货。开关不关闭独立后台补单。实际协议仍复用 `ThirdQueryPendingOrder`，不自动迁移 Solar 旧商户参数或首充状态；接入验收核对目标服务端账号/应用/商户映射及幂等履约。完整时序与旧存档规则以包内文档为准。
+ThirdPay 的 Android 购买前补单、五项线上行为配置及优先级，按 ThirdPay 包内 `Nova/Doc/ThirdPayStore.md` 和 `ThirdPayStoreConfig.md` 查阅与接入。本地持久配置复用现有面板修改与 Runtime 导出，运行时能力通过 `IAPPlugin.TryGetCapability` 获取；协议路由复用 Network Operation 完成配置与导出。服务端行为字段由目标服务实际下发，验收核对查询结果、批次返回、订单事件与幂等履约。
 
 业务 View 的支付和查询在开始时保存所属会话与取消令牌，等待后、异常反馈和按钮恢复前核对页面仍打开且所有者未变；关闭时先取消本会话，再清除模块引用。GameLogin 当前没有页面取消参数，旧结果只停止页面回写，不撤销身份请求或支付订单。复用导入的 `IAPDemo/README.md` 与 Sample 实现核对关闭、立即重开和旧任务结束；这些 C# 业务 API 的存在不代表已注册对应 MCP Action，真实平台与履约证据仍需单独取得。
 

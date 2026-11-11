@@ -4,7 +4,7 @@
 
 | 文档 | 内容 |
 |---|---|
-| [ThirdPayStore.md](./ThirdPayStore.md) | 接入与验收顺序、Android 重复点击补单与升级变化、错误处理、订单状态和平台支付行为 |
+| [ThirdPayStore.md](./ThirdPayStore.md) | 接入与验收顺序、Android 重复点击补单及配置要点、错误处理、订单状态和平台支付行为 |
 | [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) | Store 配置字段、购买前查询运行时能力及生效时机 |
 | [PlatformPaymentPolicy.md](./PlatformPaymentPolicy.md) | Google Play / Apple App Store 第三方支付政策、当前实现边界与上线验收 |
 
@@ -22,7 +22,7 @@
 
 - [重复点击时何时补单、何时允许新购](ThirdPayStore.md#android-重复点击补单查询)
 - [如何处理批次完成、查询失败与取消](ThirdPayStore.md#购买前补单的返回与失败处理)
-- [升级后需要调整什么](ThirdPayStore.md#升级与行为变化)
+- [补单配置与验收要点](ThirdPayStore.md#配置与验收要点)
 - [运行时调整查询开关和窗口](ThirdPayStoreConfig.md#运行时调整购买前查询)
 
 ## 支付请求参数
@@ -34,8 +34,8 @@
 | `FirstRechargeReward` | 首充网页展示奖励，写入 `first_recharge_reward` | 仅当前支付页使用 |
 | `ExtraBonusReward` | 额外赠送网页展示奖励，写入 `extra_bonus_reward` | 仅当前支付页使用 |
 
-`IAPThirdPayRequest.CustomParam` 已移除。网页奖励统一使用 `IAPThirdPayRewardItem`，构造时要求 `itemId > 0` 且 `quantity > 0`；没有对应奖励时保持 `null`，加密 JSON 会省略该节点。
+网页奖励统一使用 `IAPThirdPayRewardItem`，构造时要求 `itemId > 0` 且 `quantity > 0`；没有对应奖励时保持 `null`，加密 JSON 会省略该节点。
 
 支付 URL 构造、UniWebView 5.11.1 生命周期、Android Auth Tab / Custom Tabs 外部支付页、支付回调和全屏支付页均由包内实现，业务无需注入支付页打开器。`ThirdPayStore` 仅持有 `ThirdPayServiceHub`，由 Hub 统一装配服务并维护国家码、商品快照、当前账号存档、外部浏览器 session 与后台任务生命周期。
 
-统一配置中的 `client_config` 当前只转换为包内 `internal ThirdPayClientConfig` 并输出受 IAP 日志开关控制的 Debug 日志；上述公开能力接口没有读取它的成员，业务代码不能把 `ClientConfig.Test` 或 `TryGetValue` 当作公开 API。
+统一配置中的 `client_config` 转换为包内 `internal ThirdPayClientConfig` 并输出受 IAP 日志开关控制的 Debug 日志；其中五项行为配置支持线上优先、本地回退，按本次支付快照固定使用，详见 [线上客户端行为配置](ThirdPayStore.md#线上客户端行为配置)。上述公开能力接口没有读取它的成员，业务代码不能把 `ClientConfig.AndroidSkipPaymentInformationScreen` 或 `TryGetValue` 当作公开 API。

@@ -54,8 +54,8 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
                 throw new FileNotFoundException("MAX iOS 依赖归属脚本缺失，请重新安装完整的 Nova MAX 包。", scriptPath);
 
             PackageInfo[] packages = PackageInfo.GetAllRegisteredPackages();
-            string lineXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.line.ios", "3010102.0.0");
-            string unityAdsXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.unityads.ios", "4210001.0.0");
+            string lineXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.line.ios");
+            string unityAdsXml = FindDependencyXml(packages, "com.applovin.mediation.adapters.unityads.ios");
 
             // 使用有效 pod 启动器自己的 Ruby 与 gem 环境，不固定 Homebrew 路径、不修改全局环境。
             // 相对 require 使包安装路径含空格时也可加载；RUBYOPT 只覆盖本次子进程并由脚本在 CLI 前退出。
@@ -80,18 +80,17 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
         }
 
         /// <summary>
-        /// 从已注册 UPM 包定位已审版本的官方 Dependencies.xml；不读取或修改 vendor 缓存内容以外的文件。
-        /// 包缺失、版本漂移或 XML 缺失均明确失败，避免按未知上游版本继续注入旧的原生依赖。
+        /// 从已注册 UPM 包定位当前安装版本的官方 Dependencies.xml，不限制固定 UPM 版本。
+        /// 包或 XML 缺失时明确失败；原生依赖版本由脚本读取该 XML，不使用旧版本常量。
         /// </summary>
         /// <param name="packages">Unity 当前已注册的 UPM 包身份列表。</param>
         /// <param name="packageName">固定的 LINE 或 Unity Ads iOS 官方 adapter 包名。</param>
-        /// <param name="version">本轮已审查并由 Nova MAX package.json 固定的 UPM 版本。</param>
         /// <returns>该官方包 Editor/Dependencies.xml 的绝对路径。</returns>
-        private static string FindDependencyXml(PackageInfo[] packages, string packageName, string version)
+        private static string FindDependencyXml(PackageInfo[] packages, string packageName)
         {
             PackageInfo package = packages.SingleOrDefault(item => item.name == packageName);
-            if (package == null || package.version != version || string.IsNullOrEmpty(package.resolvedPath))
-                throw new InvalidOperationException($"MAX iOS 依赖归属修复要求 {packageName}@{version}，实际版本缺失或不一致。");
+            if (package == null || string.IsNullOrEmpty(package.resolvedPath))
+                throw new InvalidOperationException($"MAX iOS 依赖归属修复无法定位已安装包 {packageName}。");
 
             string xmlPath = Path.GetFullPath(Path.Combine(package.resolvedPath, "Editor", "Dependencies.xml"));
             if (!File.Exists(xmlPath))

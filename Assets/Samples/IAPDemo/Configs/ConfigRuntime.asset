@@ -29,13 +29,13 @@ MonoBehaviour:
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2824341999375876717
-  - rid: 2824341999375876718
-  - rid: 2824341999375876719
-  - rid: 2824341999375876720
-  - rid: 2824341999375876721
+  - rid: 2824342112410271906
+  - rid: 2824342112410271907
+  - rid: 2824342112410271908
+  - rid: 2824342112410271909
+  - rid: 2824342112410271910
   EnabledKitConfigs:
-  - rid: 2824341999375876722
+  - rid: 2824342112410271911
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -70,7 +70,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2824341999375876717
+    - rid: 2824342112410271906
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
         m_DevKey: YOUR_APPSFLYER_DEV_KEY
@@ -80,7 +80,7 @@ MonoBehaviour:
         m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
         m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
         m_ReportCmdName: AppsFlyerReport
-    - rid: 2824341999375876718
+    - rid: 2824342112410271907
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -91,12 +91,12 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 2824341999375876719
+    - rid: 2824342112410271908
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2824341999375876723
+          - rid: 2824342112410271912
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
           - 32
         m_CountryCodeWaitTimeoutSeconds: 5
         m_RevenueReportCmdName: 
-    - rid: 2824341999375876720
+    - rid: 2824342112410271909
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
@@ -116,7 +116,7 @@ MonoBehaviour:
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
         m_AutoRequestNotificationPermission: 1
-    - rid: 2824341999375876721
+    - rid: 2824342112410271910
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:
         m_EnableAlwaysPaySucceed: 0
@@ -126,16 +126,16 @@ MonoBehaviour:
         m_LoadingPanelPrefab: IAP/IAPLoadingPanel
         m_StoreConfigList:
           m_Items:
-          - rid: 2824341999375876724
-          - rid: 2824341999375876725
+          - rid: 2824342112410271913
+          - rid: 2824342112410271914
         m_Products:
           m_Items: []
-    - rid: 2824341999375876722
+    - rid: 2824342112410271911
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 2824341999375876723
+    - rid: 2824342112410271912
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -153,7 +153,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2824341999375876724
+    - rid: 2824342112410271913
       type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
       data:
         m_Enabled: 1
@@ -164,15 +164,15 @@ MonoBehaviour:
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
         m_ProductFetchRetryDelaysMs: d00700008813000010270000
-    - rid: 2824341999375876725
+    - rid: 2824342112410271914
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
         m_Enabled: 1
         m_AndroidOrderRecoveryEnabled: 1
         m_AndroidOrderRecoveryWindowMinutes: 30
-        m_SkipPaymentInformationScreen: 0
-        m_ExternalBrowserReturnValidateDelaySeconds: 2.5
+        m_AndroidSkipPaymentInformationScreen: 0
+        m_AndroidExternalBrowserReturnValidateDelaySeconds: 2.5
         m_PaymentConfigCmdName: ThirdGetPaymentConfig
         m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
         m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
+        m_AndroidGoogleApiTimeoutSeconds: 15

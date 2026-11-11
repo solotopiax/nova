@@ -18,9 +18,21 @@ namespace NovaFramework.SDK.IAP.Runtime
     public abstract partial class IAPStoreBase
     {
         /// <summary>
-        /// 当前 Store 的稳定渠道标识。
+        /// 本轮初始化时缓存的运营渠道名称；保留可重写入口，发送时以缓存三维属性为准。
         /// </summary>
-        protected abstract string TrackChannel { get; }
+        protected virtual string TrackChannel => m_TrackChannel;
+
+        /// <summary>
+        /// 在每轮 Store 初始化时读取一次配置并缓存三个枚举名称，后续打点不再查询 Manager 或转换枚举。
+        /// 配置未加载时冻结 None，不在事件发送阶段猜测或补取坐标。
+        /// </summary>
+        private void CacheTrackDimensions()
+        {
+            IConfigManager config = FrameworkManagersGroup.GetManager<IConfigManager>();
+            m_TrackPlatform = (config?.Platform ?? PlatformType.None).ToString();
+            m_TrackChannel = (config?.Channel ?? ChannelType.None).ToString();
+            m_TrackStoreType = StoreType.ToString();
+        }
 
         /// <summary>
         /// 上报 IAP 初始化成功事件。
@@ -120,6 +132,7 @@ namespace NovaFramework.SDK.IAP.Runtime
                 { IAPTrackFields.Price, price },
                 { IAPTrackFields.Channel, TrackChannel },
             };
+            AppendTrackDimensions(properties, m_TrackPlatform, m_TrackChannel, m_TrackStoreType);
             AppendCustomData(properties, customData);
             return properties;
         }
@@ -146,13 +159,29 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 通过当前 Store 上下文发送指定打点事件。
+        /// 写入本轮初始化缓存的平台、运营渠道及商店类型，再通过 Store 上下文发送事件。
         /// </summary>
         /// <param name="eventName">事件名称。</param>
         /// <param name="properties">事件属性。</param>
         protected void EmitTrackEvent(string eventName, Dictionary<string, object> properties)
         {
+            properties ??= new Dictionary<string, object>();
+            AppendTrackDimensions(properties, m_TrackPlatform, m_TrackChannel, m_TrackStoreType);
             Context?.TrackPlugin?.TrackEvent(eventName, properties);
+        }
+
+        /// <summary>
+        /// 将已确定的三维名称写入支付打点，覆盖旧值；此方法只复制值，不查询运行配置。
+        /// </summary>
+        /// <param name="properties">非空目标属性字典。</param>
+        /// <param name="platform">初始化时缓存的平台名称。</param>
+        /// <param name="channel">初始化时缓存的运营渠道名称。</param>
+        /// <param name="storeType">缓存的商店名称；路由失败时使用当次请求中已知的类型名称。</param>
+        internal static void AppendTrackDimensions(Dictionary<string, object> properties, string platform, string channel, string storeType)
+        {
+            properties[IAPTrackFields.Platform] = platform;
+            properties[IAPTrackFields.Channel] = channel;
+            properties[IAPTrackFields.StoreType] = storeType;
         }
 
         /// <summary>

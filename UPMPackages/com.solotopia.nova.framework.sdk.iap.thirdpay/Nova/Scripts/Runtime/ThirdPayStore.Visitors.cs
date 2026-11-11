@@ -24,11 +24,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private const float c_DefaultExternalBrowserReturnValidateDelaySeconds = 2.5f;
 
         /// <summary>
-        /// 获取第三方支付打点使用的固定渠道标识。
-        /// </summary>
-        protected override string TrackChannel => IAPStoreType.ThirdPay.ToString().ToLowerInvariant();
-
-        /// <summary>
         /// 当前 Store 使用的 Nova 日志标签。
         /// </summary>
         protected override string LogTag => NovaFramework.Runtime.LogTag.IAPThirdPay;

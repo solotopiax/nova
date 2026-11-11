@@ -2,6 +2,8 @@
 
 `ThirdPayStore` 负责客户端造单、统一支付配置、支付 URL、Google 外链政策、支付页、验单与本地补单。
 
+
+支付打点统一包含 `nova_platform`、`nova_channel`、`nova_store_type`：前两项来自商店初始化时的 `PlatformType` / `ChannelType` 枚举名称，商店类型固定为 `ThirdPay`；三项名称按实例缓存，发送时只复制缓存，重新初始化时刷新。不再把商店类型写入 `nova_channel`。大小写、缺失配置和路由失败边界见 [父包三维属性](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md#支付打点三维属性)。
 ## 接入与验收顺序
 
 1. 按 [包安装说明](../../README.md#安装) 安装本包及其声明的依赖，在 ConfigWindow 的 `IAPPluginConfig.StoreConfigs` 中登记并启用 `ThirdPayStoreConfig`；在 `Products` 中配置对应商品的 `TableId`、非空 `Name` 和 `ThirdProductID`。商品可从 IAP SKU Excel 导入，但导入会全量覆盖当前内联商品表，随后仍需保存 ConfigMaster、导出目标 Runtime 配置，并核对导出结果。
@@ -14,11 +16,11 @@
 
 上架前还须按目标商店地区和已登记的支付计划完成 [平台支付政策核对](PlatformPaymentPolicy.md)。本包的支付页、现有 Google 外部结算接口或服务端 `enabled` 均不能单独证明符合当前平台要求；未满足对应选择、披露、Entitlement、平台 API 与交易上报条件时，应保持该地区数字商品的 ThirdPay 入口关闭。
 
-## 商品协议兼容边界
+## 商品协议与服务端配对
 
-当前 `PbNetThirdProductInfo` 删除了旧 `id = 1`，并将 `local_currency` 从 tag 2 改为 1、`local_price` 从 3 改为 2、`product_id` 从 4 改为 3。Protobuf 按字段编号识别数据；这次修改会让旧币种被当作新价格、旧价格被当作新商品 ID，部分旧字段丢失，属于不兼容的 wire 协议变化。
+`PbNetThirdProductInfo` 的字段编号为 `local_currency = 1`、`local_price = 2`、`product_id = 3`。Protobuf 按字段编号识别数据，服务端和客户端须使用一致的协议定义。
 
-包内当前生成类与新 `.proto` 的 tag 1/2/3 静态一致，只能证明本地新格式配对，不能证明已部署服务端或旧客户端兼容。接入或升级前须明确服务端与客户端采用的同一协议版本，并核对旧客户端共存、灰度和回退方案。尚未取得服务端配对及跨版本验收证据时，不应将该协议变更标为兼容通过。真实支付与后台兼容须在目标服务端按实际协议版本验收。
+协议源与生成类保持一致，只能证明包内结构配对；接入时仍须核对目标服务端的实际响应，并通过商品查询、支付页和验单联调确认整条链路。
 
 ## 内部职责
 
@@ -34,7 +36,41 @@ Store 初始化阶段会独立启动 iOS Storefront、Android Billing 和 AD 三
 - 当前国家的 `product_config.product_list`
 - 可选的 `channel_config.payment_customer_ids`
 - `payment_page_config.payment_page_url`
-- 可选的 `client_config` JSON；包内快照会将完整对象转换为 `internal ThirdPayClientConfig.Values` 只读字典，内部代码可通过 `ClientConfig.Test` 或 `ClientConfig.TryGetValue` 读取；嵌套对象和数组分别保留为 `JObject` 与 `JArray`。目前没有对业务公开的读取能力。
+- 可选的 `client_config` JSON；包内快照会将完整对象转换为 `internal ThirdPayClientConfig.Values` 只读字典，内部代码可通过强类型字段或 `ClientConfig.TryGetValue` 读取；嵌套对象和数组分别保留为 `JObject` 与 `JArray`。目前没有对业务公开的读取能力。
+
+### 线上客户端行为配置
+
+服务端在现有 `client_config` JSON 字符串中下发以下可选字段，键名精确使用大驼峰，区分大小写。每项独立采用“线上明确值优先；缺失或 null 使用本地”，不把 false 或合法的零当成缺失。
+
+| JSON 字段 | 类型与范围 | 本地来源 / 默认值 |
+|---|---|---|
+| `AndroidSkipPaymentInformationScreen` | 布尔值 | 本地信息页开关，默认 false |
+| `AndroidOrderRecoveryEnabled` | 布尔值 | 本地购买前补单查询开关，默认 true |
+| `AndroidOrderRecoveryWindowMinutes` | JSON 整数，0～30 | 本地补单查询窗口，默认 30；0 表示不查询 |
+| `AndroidExternalBrowserReturnValidateDelaySeconds` | 有限正秒数 | 本地返回验单延迟，默认 2.5 |
+| `AndroidGoogleApiTimeoutSeconds` | 有限正秒数 | 本地 Google 网络超时，默认 15 |
+
+```json
+{
+  "AndroidSkipPaymentInformationScreen": true,
+  "AndroidOrderRecoveryEnabled": true,
+  "AndroidOrderRecoveryWindowMinutes": 30,
+  "AndroidExternalBrowserReturnValidateDelaySeconds": 2.5,
+  "AndroidGoogleApiTimeoutSeconds": 15
+}
+```
+
+五项字段统一使用 Android 前缀，服务端按上表的字段名下发。iOS 可以省略全部五项字段；字段缺失或为 null 时沿用本地配置，Android 行为分支不会在 iOS 执行。
+
+秒数最多为 `2147483.647`，以满足计时器范围；不接受数字字符串、非有限值、非正秒数、越界窗口或小数窗口。错误字段使整份响应解析失败，沿统一配置异常路径返回，不静默夹取或采用部分线上字段。`Values` 保存原始动态字段，业务通过公开能力接口使用支付功能。
+
+支付开始先确认当前账号、国家与路由的配置，再把线上和本地当前值合并为一份只含标量的有效配置。该配置固定用于本次补单决策、Google 授权和浏览器会话。配置确认返回未就绪时，旧单恢复使用本地策略，新购仍受原有配置就绪门禁限制；服务端 `availability.enabled=false` 不阻止旧单补单，但禁止新购。配置解析异常会终止本次流程，不绕过失败继续新购。
+
+Google 网络超时只作用于本次授权的连接、资格与 token 操作，不限制信息页停留时间。初始化阶段尚无用户态线上配置，国家码查询仍使用本地超时；授权使用共享连接的独立超时视图，不修改初始化默认值。浏览器返回延迟在打开支付页时保存到会话，后续配置刷新或本地调整不会改变已打开会话的倒计时。
+
+本地配置和运行时设置接口保留；运行时设置只改变本地回退值，不覆盖线上明确值，也不回写配置资产。`IsPaymentInformationScreenSkipped` 和补单查询属性仍返回本地状态，不代表某次支付的最终合并值。切号或国家上下文变化继续走既有快照失效流程；线上更新随下一次有效配置刷新生效，不新增轮询或每次支付强制联网。
+
+`Enabled`、`StoreType` 与三个 NetCmd 名保持本地；服务端支付开放策略继续使用 `availability`，商品、支付页地址与客户号继续使用现有专属协议字段，不重复塞入 `client_config`。这些行为参数使用 `client_config` JSON 字符串承载。
 
 白名单、黑名单和国家开放策略全部由服务端判断，客户端不保存规则明细。配置按 `UID + Country + CmdName` 缓存；账号、国家或配置上下文变化时立即失效并重新预取。同上下文并发请求合并为一次网络请求，旧上下文响应不能覆盖当前快照。协议不包含版本和 TTL，因此快照在上下文失效前持续有效。
 
@@ -42,7 +78,7 @@ Store 初始化阶段会独立启动 iOS Storefront、Android Billing 和 AD 三
 
 ### 国家码时序
 
-iOS 原生桥仅在 iOS 13 及以上读取 `SKPaymentQueue.storefront.countryCode`，并在托管回调入口将 StoreKit 返回的 ISO 3166-1 alpha-3 国家码转换为统一的 alpha-2 国家码；低版本或 Storefront 未返回有效值时保留 `NSLocaleCountryCode` 两位码回退。无法识别的三位码按空值处理，不进入国家锁定或支付配置请求。此兼容分支已经过 iOS 11 最低目标的原生语法与可用性检查，尚未证明真机商店国家码结果。
+iOS 原生桥仅在 iOS 13 及以上读取 `SKPaymentQueue.storefront.countryCode`，并在托管回调入口将 StoreKit 返回的 ISO 3166-1 alpha-3 国家码转换为统一的 alpha-2 国家码；低版本或 Storefront 未返回有效值时保留 `NSLocaleCountryCode` 两位码回退。无法识别的三位码按空值处理，不进入国家锁定或支付配置请求。Storefront 可用性和实际国家码结果须在目标 iOS 设备验证。
 
 1. `InitializeAsync` 仅启动三路查询，任一路失败或耗时较长都不会阻塞 Store 初始化，也不会阻塞其他来源；AD 后台任务会退出当前 IAP 初始化调用栈并等待 SDK 管理器完成统一初始化，确保低优先级广告插件完成初始化后再读取数据槽。
 2. 登录前的平台回调只写入候选来源；此时调用 `GetCountryCode()` 可以读取候选值，但不会写入 Lock。
@@ -57,11 +93,11 @@ iOS 原生桥仅在 iOS 13 及以上读取 `SKPaymentQueue.storefront.countryCod
 
 ## 支付流程
 
-1. Android 按下节规则决定购买前是否查询服务端成功未验订单；其他平台仍先检查同业务键本地未完成订单并验单。
-2. 前一步未进入历史订单补单、允许继续新购时，获取统一配置快照，检查服务端 `enabled` 和目标商品。
-3. 创建并保存本地订单。
-4. 使用同一份固定快照完成 Google 授权和支付 URL 构建。
-5. 打开支付页，随后验单；未终结订单由补单链继续处理。
+1. 确认当前账号、国家和路由的统一配置，合并五项线上与本地行为参数，并固定本次有效配置。
+2. Android 按下节规则判断是否查询成功未验订单；非 Android 检查同业务键的本地未完成订单并验单。
+3. 未进入订单恢复、允许继续新购时，检查配置是否就绪、服务端 `enabled` 和目标商品。
+4. 创建并保存本地订单，使用同一份快照完成 Google 授权和支付 URL 构建。
+5. 打开支付页并验单；未终结订单由补单链继续处理。
 
 固定快照保证商品、国家、渠道参数和支付页 URL 不会在一次支付中混用不同请求版本。
 `nova_iap_create_order_success` 只在本地订单、平台授权和支付 URL 都准备完成后上报；上述准备阶段失败则上报 `nova_iap_create_order_fail`，同一次新订单流程不会同时上报两者。创建成功事件写入 `nova_client_order_id`，此时尚未取得的 `nova_server_order_id` 为空。
@@ -74,9 +110,9 @@ Android 默认启用购买前查询，窗口为 30 分钟。首次购买无时�
 |---|---|
 | 开关开启且 `0 <= 当前 UTC 秒 - 创建 UTC 秒 < 窗口分钟数 × 60` | 先请求 `QueryPendingOrderCmdName`，查询支付成功但尚未校验的订单 |
 | 查询成功，存在当前 `TableId` 的有效订单号 | 按 `ClientOrderId` 去重，全部进入 `Recovered` 批量验单；不再创建新订单 |
-| 查询成功，无当前商品有效订单 | 清理当前业务键的旧本地订单与时间记录，再继续正常支付 |
+| 查询成功，无当前商品有效订单 | 清理当前业务键的本地订单与时间记录，再继续正常支付 |
 | 网络、业务码、解析或查询处理失败，或查询路由未配置 | 返回 `OrderRecoveryFailed`，保留查询前记录，不创建新订单；无新增自动重试 |
-| 开关关闭、窗口为 0、无时间记录、时间非正、已到上限或设备时间回拨 | 跳过查询，清理当前业务键的旧订单与时间后正常支付 |
+| 开关关闭、窗口为 0、无时间记录、时间非正、已到上限或设备时间回拨 | 跳过查询，清理当前业务键的本地订单与时间后正常支付 |
 
 窗口只控制此次是否查询，不按服务端订单年龄二次筛选。查询使用购买准备阶段已有的等待引用，入口仍由 Store 的购买门禁防止并发新购；等待引用在 `finally` 中配对释放。独立 `CheckLocalOrdersAsync` 后台补单不受该开关和时间窗口限制，查询失败时原有后台补单行为也不改变。
 
@@ -84,7 +120,7 @@ Android 默认启用购买前查询，窗口为 30 分钟。首次购买无时�
 
 **订单归属与回调**：查询按 `TableId` 找出该商品全部成功未验订单，但本地清理和查询时间按 `TableId + ReceiptParam` 隔离。同商品其他业务订单不会被本次清理删除。已有订单保留其自身 `CustomData`、`ReceiptParam`；仅服务端存在的订单不套用本次购买参数，透传由验单响应恢复。每笔可发货订单仍通过原 `PaySuccess` 事件返回。整批成功后，当前 `PayAsync` 返回 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空` 的批次完成结果，不能把该汇总再作为一次发货；任一验单未成功则汇总返回 `OrderRecoveryFailed`。部分成功订单可能已经发布成功事件，汇总失败不撤销其结果。
 
-时间随 `iap_thirdpay / data_{uid}` 账号存档保存；旧版本缺少时间记录时按空记录兼容，时间字段单独损坏会忽略无效时间，不丢弃有效订单。正常验单删单不同时移除查询起点，因此剩余窗口内仍可能再次查询服务器。查询与验单等待取消后不再消费响应；切账号、清空上下文或释放 Store 后不将旧响应应用到新账号。这不撤销已经发送的服务端请求。
+时间随 `iap_thirdpay / data_{uid}` 账号存档保存；没有有效创建时间时不进入窗口内查询；时间字段解析时忽略非法时间值，订单记录独立保存。正常验单删单不同时移除查询起点，因此剩余窗口内仍可能再次查询服务器。查询与验单等待取消后不再消费响应；切账号、清空上下文或释放 Store 后不将旧响应应用到新账号。这不撤销已经发送的服务端请求。
 
 运行时通过独立能力接口控制，不更改其他支付能力接口的实现要求：
 
@@ -96,7 +132,7 @@ if (iapPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recover
 }
 ```
 
-服务端继续复用 Nova 的 `ThirdQueryPendingOrder` 和公共请求头，不发送 Solar 旧接口的独立 `payment_appid` 字段；部署方须确认应用、账号与支付商户映射正确。当前查询响应没有首充状态字段，此功能不新增首充状态同步，也不改变既有奖励展示参数。实际服务端映射、重复发奖幂等和真机支付仍须在目标环境联调。
+购买前查询使用 `ThirdQueryPendingOrder` 和公共请求头，部署方须确认应用、账号与支付商户映射正确。查询响应提供待验订单，不承担首充状态同步；网页奖励使用支付请求中的奖励参数。实际服务端映射、重复发奖幂等和真机支付仍须在目标环境联调。
 
 ### 购买前补单的返回与失败处理
 
@@ -110,13 +146,12 @@ if (iapPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recover
 
 `OrderRecoveryFailed` 是当前点击的汇总失败，不能用它覆盖已完成的逐单结果。查询阶段失败时保留原本地订单与时间；进入批量验单后则沿用各订单的服务端状态处置，可能已有部分订单发出成功事件并清理本地记录，不提供整批回滚。业务仍须以稳定订单身份幂等履约，不能同时在事件与汇总返回处各发一份奖励。
 
-### 升级与行为变化
+### 配置与验收要点
 
-1. 旧配置没有新增字段时，购买前查询默认开启、窗口三十分钟；持久配置需保存 ConfigMaster 并重新正式导出 Runtime，运行时临时设置使用 [查询能力接口](ThirdPayStoreConfig.md#运行时调整购买前查询)。
-2. Android 不再因为本地存在同业务订单就直接验单：窗口内先向服务端确认成功未验订单。**关闭开关或将窗口设为 0，不会回到旧 Android 分支**；下次点击会清理当前业务旧订单与时间后正常新购。
-3. 旧账号存档只有订单、没有创建时间时按窗口外处理。清理本地记录不取消已建立的服务端交易；历史成功订单的恢复还依赖独立后台补单及目标服务端查询接口，升级验收应覆盖这一链路。
-4. 窗口和本地清理按账号及 `TableId + ReceiptParam` 隔离，服务端命中筛选仍按 `TableId`；同商品多笔历史订单保留各自透传，业务不得用本次点击参数替换历史订单身份。
-5. 非 Android 购买分支与原生支付页选择方式保持原有行为。本功能没有新增网络协议或独立首充状态字段，部署前仍须核对既有查询路由、商户映射和服务端幂等性。
+1. 本地购买前查询默认开启、窗口三十分钟；通过 ConfigMaster 保存并正式导出 Runtime，运行时设置使用 [查询能力接口](ThirdPayStoreConfig.md#运行时调整购买前查询)。线上明确值优先，缺失或 null 时使用本地值。
+2. 关闭查询或将窗口设为 0 时，本次点击清理同账号同业务键的本地订单和时间记录，再进入新购门禁；独立后台补单仍可恢复服务端成功未验订单。
+3. 窗口与本地清理按账号及 `TableId + ReceiptParam` 隔离，服务端命中筛选按 `TableId`。多笔订单保留各自透传，业务不得用本次点击参数替换已有订单身份。
+4. 验收覆盖缺少时间记录、窗口边界、查询失败、切账号、批量部分成功，以及服务端幂等发货。清理本地记录不取消服务端已建立的交易。
 
 ## ThirdPay 链路打点
 
@@ -137,7 +172,7 @@ if (iapPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recover
 | `nova_client_order_id` / `nova_server_order_id` | 客户端生成订单号与服务端确认订单号，未取得的一侧为空。 |
 | `nova_native_error_code` / `nova_native_error_message` | 支付页、浏览器或原生能力的补充错误信息。 |
 
-ThirdPay 的订单生命周期事件统一使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送 `nova_order_id`。通用字段在不同阶段曾分别表示客户端订单号或服务端订单号，无法稳定关联同一笔订单；Mobile 继续保留既有 `nova_order_id` 语义，其他 Store 按自身事件契约定义订单字段。
+ThirdPay 的订单生命周期事件统一使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送 `nova_order_id`。两个字段分别标识客户端与服务端订单，便于关联同一笔交易；其他 Store 按自身事件契约定义订单字段。
 
 订单创建、支付页终态、验单和删单事件的完整属性由 `ThirdPayStore.Track.cs` 构造；父包只提供各 Store 共用的商品字段、属性合并和事件发送能力。这样 ThirdPay 的双订单号和细分状态不会进入通用 IAP 基类，也不需要用渠道开关隐藏字段。
 
@@ -232,9 +267,9 @@ IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 
 ## 支付 URL
 
-支付页基址直接来自统一配置的 HTTPS `payment_page_url`。外层 Query 为 `lang/params/app_id`；`params` 是 ThirdPay 动态 AES 加密后的 JSON，包含商品、用户、国家、订单、平台、渠道、打开方式、客户端版本、票据透传、可选网页奖励、可选 `payment_customer_ids` 和 Google token。`platform` 与 `channel` 直接写入 `PbNetReqHeader` 对应枚举的整数值，不再序列化枚举名称字符串。
+支付页基址直接来自统一配置的 HTTPS `payment_page_url`。外层 Query 为 `lang/params/app_id`；`params` 是 ThirdPay 动态 AES 加密后的 JSON，包含商品、用户、国家、订单、平台、渠道、打开方式、客户端版本、票据透传、可选网页奖励、可选 `payment_customer_ids` 和 Google token。`platform` 与 `channel` 直接写入 `PbNetReqHeader` 对应枚举的整数值。
 
-内层加密 JSON 不再发送旧数值字段 `id`；`table_id` 继续表示支付表行。统一配置中的字符串 `product_id` 只用于客户端通过支付表 `ThirdProductID` 匹配 `PbNetThirdProductInfo`，不作为网页支付参数发送。
+内层加密 JSON 使用 `table_id` 表示支付表行。统一配置中的字符串 `product_id` 只用于客户端通过支付表 `ThirdProductID` 匹配 `PbNetThirdProductInfo`，不作为网页支付参数发送。
 
 `IAPThirdPayRequest.FirstRechargeReward` 和 `ExtraBonusReward` 分别表示首充奖励与额外赠送。每项使用 `IAPThirdPayRewardItem` 表示，物品 ID 与数量都必须为正数；非空时分别写入加密 JSON 的 `first_recharge_reward` 和 `extra_bonus_reward` 对象，空值时省略对应节点。奖励快照仅存在于本次支付页流程，Android 从 Auth Tab / Custom Tabs 回退到 `Application.OpenURL` 并重建 URL 时会继续携带；它们不写入本地订单、不参与订单键或验单，也不回填 `IAPResult`。`CustomData` 继续用于客户端支付结果原样回传，`ReceiptParam` 继续通过顶层 `receipt_param` 参与第三方支付订单与验单往返。
 
@@ -254,7 +289,7 @@ IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 }
 ```
 
-`IAPThirdPayRewardItem` 在构造阶段校验参数，`itemId <= 0` 或 `quantity <= 0` 会抛出 `ArgumentOutOfRangeException`。旧的 `IAPThirdPayRequest.CustomParam` 已移除，调用方需要删除该字段赋值并改用上述两个强类型奖励字段；无首充或额外赠送时无需创建占位对象。
+`IAPThirdPayRewardItem` 在构造阶段校验参数，`itemId <= 0` 或 `quantity <= 0` 会抛出 `ArgumentOutOfRangeException`。无首充或额外赠送时，两个奖励字段保持 null，无需创建占位对象。
 
 国家、商品和渠道参数均来自本次支付固定的统一配置快照。应用 ID、语言和渠道读取标准公共 Header，不在 Store 配置中重复保存。
 
@@ -290,9 +325,9 @@ Android 真机使用 Auth Tab → Custom Tabs → `Application.OpenURL` 的外�
 
 Google 连接或外部结算资格返回 `Unavailable` 时，现实现使用空 token 构造支付 URL 并跳过 Google 信息页，内部结果仍可为 `Authorized`；这只表示客户端流程允许继续，不能当作商户、地区或平台政策已获认可。信息页返回 `UserCancelled` 会停止，其余打开失败或不可用结果会继续 ThirdPay 页面。token 生成失败、空 token 或 URL 构造失败分别走失败结果。
 
-Google 网络类方法使用配置的超时令牌限制托管等待，用户信息页没有该默认超时。令牌取消不终止已经发出的 Billing 原生操作，部分客户端入口在注册取消前已调用原生 API；预取消不保证零原生派发。`Dispose` 结束连接，不等待所有回调完成。
+Google 网络类方法使用配置的超时令牌限制托管等待，用户信息页没有该默认超时。令牌取消不终止已经发出的 Billing 原生操作，部分客户端入口在注册取消前已调用原生 API；预取消不保证零原生派发。连接所有者的 `Dispose` 会结束连接，不等待所有回调完成；本次授权使用的超时视图不关闭共享连接。
 
-浏览器打开成功只代表打开请求被提交，不证明页面已显示、用户付款或验单完成。正式 Checkout 传入期望订单号；旧的无订单号 WebView `OpenAsync` 重载不提供同等匹配约束。解析器精确区分 `pay_callback` / `close_callback`，路径和订单号按 `Ordinal` 比较，订单号不自动裁剪；`status=1/3` 是成功、`2` 是失败，其他整数是未知状态。关闭回调本身不含订单号。解析与活动订单匹配不验证 scheme/host/发送者身份，也不替代签名或服务端验单。
+浏览器打开成功只代表打开请求被提交，不证明页面已显示、用户付款或验单完成。正式 Checkout 传入期望订单号；不带订单号的 WebView `OpenAsync` 重载不提供同等匹配约束。解析器精确区分 `pay_callback` / `close_callback`，路径和订单号按 `Ordinal` 比较，订单号不自动裁剪；`status=1/3` 是成功、`2` 是失败，其他整数是未知状态。关闭回调本身不含订单号。解析与活动订单匹配不验证 scheme/host/发送者身份，也不替代签名或服务端验单。
 
 非法全局 Deep Link 被忽略；活动嵌入页面收到非法支付参数则可结束本次页面，同订单未知状态按失败处理。完成源只接受首次终态，会话 ID 与版本避免旧会话清掉新会话，但不等价于所有状态线程安全或账号代际隔离。关闭按钮文案等设置在下一次会话创建时生效，空文案回落默认值；iOS Safe Browsing 不支持时直接失败，不自动放宽为其他页面。页面等待没有统一默认超时；取消与打开交错时不保证原生页面从未打开。关闭托管外部浏览器会话也不能关闭系统浏览器，Unity 对象销毁可能延后到帧末。
 
@@ -300,7 +335,7 @@ Google 网络类方法使用配置的超时令牌限制托管等待，用户信�
 
 打点的“一次”由本地会话标记和部分 `Interlocked` 门禁实现，标记可能早于实际发送；发送异常或网络失败后不能推导远端已经收到，也没有端到端 exactly-once 保证。
 
-返回失败的细分打点上下文按 `IAPResult` 对象身份保存在运行期弱表，返回边界消费后不再保留；缺失时只能从粗错误域有损推导。兼容粗码重载不能还原精确场景、状态或细分原因。`TrackValidateSuccessInternal` 的五参重载使用 `orderId`，带 `ThirdPayValidationTrackContext` 的六参重载当前忽略该形参而使用 `context.ServerOrderId`；显式失败协议码/正文会覆盖 context 同字段。打点函数本身不推进验单、删除订单或履约，批量逐项派发也不提供事务和去重。
+返回失败的细分打点上下文按 `IAPResult` 对象身份保存在运行期弱表，返回边界消费后不再保留；缺失时只能从粗错误域有损推导。只接收粗粒度错误码的重载不能还原精确场景、状态或细分原因。`TrackValidateSuccessInternal` 的五参重载使用 `orderId`，带 `ThirdPayValidationTrackContext` 的六参重载当前忽略该形参而使用 `context.ServerOrderId`；显式失败协议码/正文会覆盖 context 同字段。打点函数本身不推进验单、删除订单或履约，批量逐项派发也不提供事务和去重。
 
 ### URL 与原生输入
 
@@ -308,8 +343,8 @@ Google 网络类方法使用配置的超时令牌限制托管等待，用户信�
 
 嵌入页只额外注册 `alipayconnect` scheme。`ThirdPayUrlRewriteRules` 用不区分大小写的精确地址前缀匹配 `alipayconnect://platformapi/alipayconnectcode.htm`，后面只允许结束或 `?`，重写为 `https://psp.ac.alipay.com/page/simulation-wallet/acwallet/alipayconnectcode.html` 并原样保留 query；不是任意 scheme 转 HTTPS，也不验证 query 的业务内容。
 
-Android 扩展依赖 `androidx.browser:browser:1.10.0` 与 `androidx.activity:activity:1.9.0`；EDM4U 描述与 `.androidlib/build.gradle` 分别参与 Unity 依赖解析和原生库构建。原生库当前 `minSdkVersion=23`、`compileSdkVersion=36`、`targetSdkVersion=36`。Manifest 的 package visibility query 只有 `android.support.customtabs.action.CustomTabsService`；代理 Activity 为 `com.solotopia.nova.thirdpay.NovaThirdPayAuthTabActivity`，`exported=false`、不显示在最近任务、使用透明主题，且由 `consumer-rules.pro` 保留类名。当前清单没有 `AuthTabService` query 或 `configChanges` 声明，不能把旧说明当作实际合并结果。C# 通过全限定类名/JNI 调用桥接，枚举转换接受已定义值不等于某平台确实返回了每一种模式；Gradle 依赖不证明 Google 商户政策已生效。
+Android 扩展依赖 `androidx.browser:browser:1.10.0` 与 `androidx.activity:activity:1.9.0`；EDM4U 描述与 `.androidlib/build.gradle` 分别参与 Unity 依赖解析和原生库构建。原生库当前 `minSdkVersion=23`、`compileSdkVersion=36`、`targetSdkVersion=36`。Manifest 的 package visibility query 只有 `android.support.customtabs.action.CustomTabsService`；代理 Activity 为 `com.solotopia.nova.thirdpay.NovaThirdPayAuthTabActivity`，`exported=false`、不显示在最近任务、使用透明主题，且由 `consumer-rules.pro` 保留类名。当前清单没有 `AuthTabService` query 或 `configChanges` 声明；构建时须核对最终合并清单。C# 通过全限定类名/JNI 调用桥接，枚举转换接受已定义值不等于某平台确实返回了每一种模式；Gradle 依赖不证明 Google 商户政策已生效。
 
-iOS 的 `NovaThirdPayGetStorefrontRegion` 在主队列读取 Storefront/Locale；托管桥保有单个回调槽，重叠请求会替换当前接收者。原生回调传入的 UTF-8 指针应在回调期间消费。包内语法检查或静态调用链不证明真机商店返回值、Deep Link 可达或商户资格。现 WebView 服务动态创建页面对象，不通过包内 `IAPThirdPanel` Prefab 绑定；该旧资产的存在不能证明本次支付实际使用了它。
+iOS 的 `NovaThirdPayGetStorefrontRegion` 在主队列读取 Storefront/Locale；托管桥保有单个回调槽，重叠请求会替换当前接收者。原生回调传入的 UTF-8 指针应在回调期间消费。包内语法检查或静态调用链不证明真机商店返回值、Deep Link 可达或商户资格。WebView 服务动态创建页面对象，不通过包内 `IAPThirdPanel` Prefab 绑定。
 
-源声明、Protobuf 生成类和原生文件是可重新定位的结构输入；上述限制是执行契约。历史编译、设备、服务端或支付记录只能说明当时那次运行，不能随源码快照自动成为当前环境验收结果。
+源声明、Protobuf 生成类和原生文件是可重新定位的结构输入；上述限制是执行契约。编译、设备、服务端及支付验收均以本次目标环境的实际执行结果为准。

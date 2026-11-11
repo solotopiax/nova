@@ -61,6 +61,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             ThirdPayOrderRecord order = null;
             ThirdPayPaymentConfigSnapshot paymentConfig = null;
+            ThirdPayEffectiveClientConfig clientConfig = default;
             string paymentUrl = string.Empty;
             string googleToken = string.Empty;
             IAPThirdPayRewardItem firstRechargeReward = request.FirstRechargeReward;
@@ -69,22 +70,25 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             try
             {
                 LogDebug($"第三方支付开始：TableId={request.TableId}，UserId={userId}，Country={m_Hub.Store.GetCountryCode()}");
-                IAPResult localValidationResult = await TryValidateExistingOrderBeforePayAsync(request, ct);
+                // 配置只确认一次；线上关闭新购不阻止旧单恢复，未取得快照时恢复沿用本地策略。
+                bool paymentConfigReady = await m_Hub.Store.EnsurePaymentConfigAsync(ct);
+                paymentConfig = paymentConfigReady ? m_Hub.PaymentConfigService.Snapshot : null;
+                clientConfig = m_Hub.ResolveClientConfig(paymentConfig?.ClientConfig);
+                IAPResult localValidationResult = await TryValidateExistingOrderBeforePayAsync(request, clientConfig, ct);
                 if (localValidationResult != null)
                 {
                     return localValidationResult;
                 }
 
                 m_Hub.Store.TrackBuyInternal(request);
-                LogDebug($"第三方支付准备阶段：开始确认统一支付配置，TableId={request.TableId}");
-                if (!await m_Hub.Store.EnsurePaymentConfigAsync(ct))
+                LogDebug($"第三方支付准备阶段：检查已确认的统一支付配置，TableId={request.TableId}");
+                if (!paymentConfigReady)
                 {
                     const string configReason = "第三方支付配置尚未就绪。";
                     m_Hub.Store.TrackCreateOrderFailInternal(request, ThirdPayCreateOrderFailureReason.PaymentConfigUnavailable, nativeErrorMessage: configReason);
                     return CreateFailure(request, IAPThirdPayErrorCode.StoreNotAvailable, configReason, ThirdPayPaymentFailureReason.PaymentConfigUnavailable);
                 }
 
-                paymentConfig = m_Hub.PaymentConfigService.Snapshot;
                 if (paymentConfig == null || !paymentConfig.Enabled)
                 {
                     string disabledReason = $"第三方支付服务器返回当前不可用：服务器错误码 {paymentConfig?.DisabledReason.ToString() ?? "Unknown"}。";
@@ -141,7 +145,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 try
                 {
                     LogDebug($"第三方支付授权和 URL 构建开始：OrderId={order.ClientOrderId}");
-                    authorization = await AuthorizeAndBuildUrlAsync(order, paymentConfig, useExternalBrowser, firstRechargeReward, extraBonusReward, ct);
+                    authorization = await AuthorizeAndBuildUrlAsync(order, paymentConfig, clientConfig, useExternalBrowser, firstRechargeReward, extraBonusReward, ct);
                     LogDebug($"第三方支付授权和 URL 构建结束：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}，GoogleTokenLength={authorization.GoogleToken.Length}");
                 }
                 catch (OperationCanceledException)
@@ -180,7 +184,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             if (useExternalBrowser)
             {
-                return await m_Hub.Store.OpenExternalBrowserPaymentAsync(request, order, paymentConfig, googleToken, paymentUrl, firstRechargeReward, extraBonusReward, ct);
+                return await m_Hub.Store.OpenExternalBrowserPaymentAsync(request, order, paymentConfig, clientConfig, googleToken, paymentUrl, firstRechargeReward, extraBonusReward, ct);
             }
 
             ThirdPayPaymentPageResult pageResult;
@@ -239,6 +243,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="order">当前本地订单。</param>
         /// <param name="paymentConfig">本次支付固定使用的配置快照。</param>
         /// <param name="googleToken">Google 外链上报令牌；无令牌时为空。</param>
+        /// <param name="clientConfig">本次支付固定使用的有效客户端配置。</param>
         /// <param name="isExternalBrowser">是否使用外部浏览器打开。</param>
         /// <param name="showBackButton">是否要求支付页显示返回按钮。</param>
         /// <param name="isCustomTab">是否由 Auth Tab 或 Custom Tabs 承载。</param>
@@ -353,12 +358,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// Android 先执行窗口内服务端查询；其他平台复用相同业务键本地订单直接验单。
         /// </summary>
         /// <param name="request">当前第三方支付请求。</param>
+        /// <param name="clientConfig">本次支付固定的线上与本地合并配置。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>命中本地订单时返回验单结果；未命中时返回 null。</returns>
-        private async UniTask<IAPResult> TryValidateExistingOrderBeforePayAsync(IAPThirdPayRequest request, CancellationToken ct)
+        private async UniTask<IAPResult> TryValidateExistingOrderBeforePayAsync(IAPThirdPayRequest request, ThirdPayEffectiveClientConfig clientConfig, CancellationToken ct)
         {
 #if UNITY_ANDROID
-            return await m_Hub.OrderRecoveryService.RecoverBeforePayAsync(request, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), ct);
+            return await m_Hub.OrderRecoveryService.RecoverBeforePayWithConfigAsync(request, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), clientConfig, ct);
 #else
             if (!m_Hub.PersistContext.TryFindOrderByKey(request.TableId, request.ReceiptParam, out ThirdPayOrderRecord order))
             {
@@ -411,16 +417,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         /// <param name="order">当前本地订单。</param>
         /// <param name="paymentConfig">本次支付固定使用的配置快照。</param>
+        /// <param name="clientConfig">本次支付固定使用的有效客户端配置。</param>
         /// <param name="isExternalBrowser">是否使用外部浏览器打开。</param>
         /// <param name="firstRechargeReward">仅供支付网页使用的首充奖励。</param>
         /// <param name="extraBonusReward">仅供支付网页使用的额外赠送奖励。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>Google 授权状态、令牌与支付 URL。</returns>
-        private async UniTask<ThirdPayGoogleAuthorization> AuthorizeAndBuildUrlAsync(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, bool isExternalBrowser, IAPThirdPayRewardItem firstRechargeReward, IAPThirdPayRewardItem extraBonusReward, CancellationToken ct)
+        private async UniTask<ThirdPayGoogleAuthorization> AuthorizeAndBuildUrlAsync(ThirdPayOrderRecord order, ThirdPayPaymentConfigSnapshot paymentConfig, ThirdPayEffectiveClientConfig clientConfig, bool isExternalBrowser, IAPThirdPayRewardItem firstRechargeReward, IAPThirdPayRewardItem extraBonusReward, CancellationToken ct)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             ThirdPayGooglePolicyService googlePolicy = m_Hub.GooglePolicy;
-            bool skipInformationScreen = m_Hub.SkipPaymentInformationScreen;
+            // 只读取本次支付快照；五项有效值已固定，不读取后续变化的本地开关。
+            bool skipInformationScreen = clientConfig.AndroidSkipPaymentInformationScreen;
             LogDebug($"第三方支付 Android Google 授权开始：OrderId={order.ClientOrderId}，ExternalBrowser={isExternalBrowser}，HasGooglePolicy={googlePolicy != null}，SkipInfo={skipInformationScreen}");
             if (googlePolicy == null)
             {
@@ -428,7 +436,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, paymentConfig, string.Empty, isExternalBrowser, isCustomTab: isExternalBrowser, firstRechargeReward: firstRechargeReward, extraBonusReward: extraBonusReward));
             }
 
-            ThirdPayGoogleAuthorization authorization = await googlePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, paymentConfig, token, isExternalBrowser, isCustomTab: isExternalBrowser, firstRechargeReward: firstRechargeReward, extraBonusReward: extraBonusReward), skipInformationScreen, ct);
+            ThirdPayGoogleAuthorization authorization = await googlePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, paymentConfig, token, isExternalBrowser, isCustomTab: isExternalBrowser, firstRechargeReward: firstRechargeReward, extraBonusReward: extraBonusReward), skipInformationScreen, ct, clientConfig.AndroidGoogleApiTimeoutSeconds);
             LogDebug($"第三方支付 Android Google 授权结果：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}");
             return authorization;
 #else

@@ -30,19 +30,90 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public IReadOnlyDictionary<string, object> Values { get; }
 
         /// <summary>
-        /// 获取当前测试配置值。
+        /// 获取服务端指定的 Google 信息页跳过策略；缺失或 null 时沿用本地开关。
+        /// JSON 键名精确为 AndroidSkipPaymentInformationScreen，仅接受布尔值，不转换字符串或数字。
         /// </summary>
-        public string Test { get; }
+        public bool? AndroidSkipPaymentInformationScreen { get; }
+
+        /// <summary>
+        /// 获取服务端购买前补单查询开关；缺失或 null 时沿用本地。
+        /// </summary>
+        public bool? AndroidOrderRecoveryEnabled { get; }
+
+        /// <summary>
+        /// 获取服务端补单窗口分钟数，允许 0 至 30；缺失或 null 时沿用本地。
+        /// </summary>
+        public int? AndroidOrderRecoveryWindowMinutes { get; }
+
+        /// <summary>
+        /// 获取服务端浏览器返回验单延迟秒数，必须为有限正数；缺失或 null 时沿用本地。
+        /// </summary>
+        public double? AndroidExternalBrowserReturnValidateDelaySeconds { get; }
+
+        /// <summary>
+        /// 获取服务端 Google 网络操作超时秒数，必须为有限正数；缺失或 null 时沿用本地。
+        /// </summary>
+        public double? AndroidGoogleApiTimeoutSeconds { get; }
 
         /// <summary>
         /// 将服务端客户端 JSON 配置转换为强类型字段与只读动态字典。
         /// </summary>
         /// <param name="json">服务端下发的客户端配置 JSON。</param>
+        /// <exception cref="JsonSerializationException">JSON 不是对象，或线上字段的类型及范围无效。</exception>
         public ThirdPayClientConfig(string json)
         {
             Dictionary<string, object> values = string.IsNullOrWhiteSpace(json) ? null : Util.Json.Deserialize<Dictionary<string, object>>(json);
             Values = new ReadOnlyDictionary<string, object>(values == null ? new Dictionary<string, object>(StringComparer.Ordinal) : new Dictionary<string, object>(values, StringComparer.Ordinal));
-            Test = Values.TryGetValue("test", out object test) ? test?.ToString() ?? string.Empty : string.Empty;
+            AndroidSkipPaymentInformationScreen = ReadBoolean(nameof(AndroidSkipPaymentInformationScreen));
+            AndroidOrderRecoveryEnabled = ReadBoolean(nameof(AndroidOrderRecoveryEnabled));
+            AndroidOrderRecoveryWindowMinutes = ReadWindowMinutes();
+            AndroidExternalBrowserReturnValidateDelaySeconds = ReadPositiveSeconds(nameof(AndroidExternalBrowserReturnValidateDelaySeconds));
+            AndroidGoogleApiTimeoutSeconds = ReadPositiveSeconds(nameof(AndroidGoogleApiTimeoutSeconds));
+        }
+
+        /// <summary>
+        /// 读取精确键名的可选布尔字段，不转换字符串和数字。
+        /// </summary>
+        /// <param name="key">JSON 字段名。</param>
+        /// <returns>线上值；缺失或 null 返回 null；错误类型抛出配置解析异常。</returns>
+        private bool? ReadBoolean(string key)
+        {
+            if (!Values.TryGetValue(key, out object value) || value == null)
+                return null;
+            if (value is bool result)
+                return result;
+            throw new JsonSerializationException($"ThirdPay client_config.{key} 必须为布尔值或 null。");
+        }
+
+        /// <summary>
+        /// 读取零至三十分钟的补单窗口，仅接受 JSON 整数。
+        /// </summary>
+        /// <returns>线上窗口；缺失或 null 返回 null；错误类型或范围抛出配置解析异常。</returns>
+        private int? ReadWindowMinutes()
+        {
+            if (!Values.TryGetValue(nameof(AndroidOrderRecoveryWindowMinutes), out object value) || value == null)
+                return null;
+            if (value is long minutes && minutes >= 0 && minutes <= 30)
+                return (int)minutes;
+            throw new JsonSerializationException("ThirdPay client_config.AndroidOrderRecoveryWindowMinutes 必须为 0 至 30 的整数或 null。");
+        }
+
+        /// <summary>
+        /// 读取有限正秒数，拒绝字符串、非数值及无法安全用于计时器的范围。
+        /// </summary>
+        /// <param name="key">JSON 字段名。</param>
+        /// <returns>线上秒数；缺失或 null 返回 null；非法值抛出配置解析异常。</returns>
+        private double? ReadPositiveSeconds(string key)
+        {
+            if (!Values.TryGetValue(key, out object value) || value == null)
+                return null;
+            if (value is long || value is double || value is decimal)
+            {
+                double seconds = Convert.ToDouble(value);
+                if (!double.IsNaN(seconds) && !double.IsInfinity(seconds) && seconds > 0 && seconds <= int.MaxValue / 1000d)
+                    return seconds;
+            }
+            throw new JsonSerializationException($"ThirdPay client_config.{key} 必须为有效正秒数或 null（最大 {int.MaxValue / 1000d} 秒）。");
         }
 
         /// <summary>
@@ -63,6 +134,54 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public override string ToString()
         {
             return Util.Json.Serialize(Values, Formatting.None);
+        }
+    }
+
+    /// <summary>
+    /// 单次支付固定使用的有效客户端配置，线上明确值优先，本地值作为缺省。
+    /// </summary>
+    internal readonly struct ThirdPayEffectiveClientConfig
+    {
+        /// <summary>
+        /// 获取本次信息页跳过策略。
+        /// </summary>
+        public bool AndroidSkipPaymentInformationScreen { get; }
+
+        /// <summary>
+        /// 获取本次购买前补单查询开关。
+        /// </summary>
+        public bool AndroidOrderRecoveryEnabled { get; }
+
+        /// <summary>
+        /// 获取本次补单查询窗口分钟数。
+        /// </summary>
+        public int AndroidOrderRecoveryWindowMinutes { get; }
+
+        /// <summary>
+        /// 获取本次浏览器返回验单延迟秒数。
+        /// </summary>
+        public double AndroidExternalBrowserReturnValidateDelaySeconds { get; }
+
+        /// <summary>
+        /// 获取本次Google 网络操作超时秒数。
+        /// </summary>
+        public double AndroidGoogleApiTimeoutSeconds { get; }
+
+        /// <summary>
+        /// 合并线上可选值与本地当前值，不回写任何配置来源。
+        /// </summary>
+        /// <param name="online">当前账号与国家的线上配置；不存在时全部使用本地。</param>
+        /// <param name="local">本地 Store 配置；不存在时使用框架默认值。</param>
+        /// <param name="skipInformationScreen">本地运行期信息页开关。</param>
+        /// <param name="recoveryEnabled">本地运行期补单查询开关。</param>
+        /// <param name="recoveryWindowMinutes">本地运行期补单查询窗口。</param>
+        internal ThirdPayEffectiveClientConfig(ThirdPayClientConfig online, ThirdPayStoreConfig local, bool skipInformationScreen, bool recoveryEnabled, int recoveryWindowMinutes)
+        {
+            AndroidSkipPaymentInformationScreen = online?.AndroidSkipPaymentInformationScreen ?? skipInformationScreen;
+            AndroidOrderRecoveryEnabled = online?.AndroidOrderRecoveryEnabled ?? recoveryEnabled;
+            AndroidOrderRecoveryWindowMinutes = online?.AndroidOrderRecoveryWindowMinutes ?? Math.Max(0, Math.Min(30, recoveryWindowMinutes));
+            AndroidExternalBrowserReturnValidateDelaySeconds = online?.AndroidExternalBrowserReturnValidateDelaySeconds ?? local?.AndroidExternalBrowserReturnValidateDelaySeconds ?? 2.5d;
+            AndroidGoogleApiTimeoutSeconds = online?.AndroidGoogleApiTimeoutSeconds ?? local?.AndroidGoogleApiTimeoutSeconds ?? 15d;
         }
     }
 

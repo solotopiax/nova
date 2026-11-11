@@ -39,6 +39,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 本次打开支付页时固定的返回验单延迟，不随后续配置刷新改变。
+        /// </summary>
+        internal double ReturnValidationDelaySeconds { get; set; } = 2.5d;
+
+        /// <summary>
         /// 客户端订单号。
         /// </summary>
         public string ClientOrderId { get; }

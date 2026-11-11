@@ -9,7 +9,7 @@
 
 ## 安装
 
-在 Unity 中打开 `Nova/Open PlugPals`，从外网仓库安装 `com.solotopia.nova.framework.sdk.iap.voucher`；默认外网入口为 [upm.solotopiax.com](https://upm.solotopiax.com)，实际以窗口中保存的地址为准。本包声明依赖 Nova Framework `0.7.3`、IAP `0.2.2` 和 `com.solotopia.unitask` `10.0.6`，不要求安装 Mobile、ThirdPay、UniWebView 或 Unity Purchasing。下方是已配置对应 registry 后的依赖片段。
+在 Unity 中打开 `Nova/Open PlugPals`，从外网仓库安装 `com.solotopia.nova.framework.sdk.iap.voucher`；默认外网入口为 [upm.solotopiax.com](https://upm.solotopiax.com)，实际以窗口中保存的地址为准。本包声明依赖 Nova Framework `0.7.3`、IAP `0.2.6` 和 `com.solotopia.unitask` `10.0.6`，不要求安装 Mobile、ThirdPay、UniWebView 或 Unity Purchasing。下方是已配置对应 registry 后的依赖片段。
 
 ```json
 {

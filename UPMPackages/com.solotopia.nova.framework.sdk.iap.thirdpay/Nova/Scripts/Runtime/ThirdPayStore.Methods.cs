@@ -74,7 +74,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             if (m_Hub.GooglePolicy == null)
             {
-                double googleTimeout = m_Hub.Config?.GoogleApiTimeoutSeconds ?? 15d;
+                double googleTimeout = m_Hub.Config?.AndroidGoogleApiTimeoutSeconds ?? 15d;
                 m_Hub.GooglePolicy = new ThirdPayGooglePolicyService(new ThirdPayGoogleExternalBillingClient(googleTimeout));
             }
 

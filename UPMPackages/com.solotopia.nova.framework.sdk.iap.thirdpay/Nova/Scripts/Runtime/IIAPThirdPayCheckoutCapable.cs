@@ -18,13 +18,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     public interface IIAPThirdPayCheckoutCapable : IIAPCapable
     {
         /// <summary>
-        /// 设置是否跳过 Google 第三方支付信息页，启用后直接进入 ThirdPay 支付页。
+        /// 设置 Google 信息页的本地跳过开关；服务端明确配置时优先使用服务端值。
         /// </summary>
         /// <param name="skip">是否跳过信息页。</param>
         void SetSkipPaymentInformationScreen(bool skip);
 
         /// <summary>
-        /// 获取当前是否跳过 Google 第三方支付信息页。
+        /// 获取本地信息页跳过开关，不包含本次支付快照的服务端覆盖值。
         /// </summary>
         bool IsPaymentInformationScreenSkipped { get; }
 

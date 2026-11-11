@@ -174,6 +174,30 @@ Android ThirdPay 还会在用户重复点击时执行购买前查询。它由 Th
 - 不把初始化失败原因和支付过程失败原因合并；初始化结果走 `IAPInitResult`，支付结果和支付打点走 Store 自己的支付过程枚举。
 - 具体 Store 的 `.Track.cs` 负责把渠道 enum 和 detail 写入打点；父包只在默认 guard 失败入口处理通用 `IAPResult`。
 
+### 支付打点三维属性
+
+所有客户端支付事件在 `IAPStoreBase.EmitTrackEvent` 发送前统一写入以下属性；商品属性构造与 `IAPPlugin` 的未匹配 Store 失败分支复用同一构造方法。
+
+| 属性 | 来源 | 字符串取值 |
+|---|---|---|
+| `nova_platform` | Store 初始化时的 `IConfigManager.Platform` | `Android`、`iOS`、`WebGL` |
+| `nova_channel` | Store 初始化时的 `IConfigManager.Channel`，表示包体分发与运营渠道 | `Official`、`Google`、`Apple`、`WeChat`、`TikTok`、`Alipay` |
+| `nova_store_type` | 实际 `StoreType`；路由失败时取请求中的类型 | `Mobile`、`ThirdPay`、`Voucher` |
+
+三者使用枚举名称字符串并保留大小写，不发送枚举整数或小写别名。平台和渠道取自已导出的运行配置，不通过编译平台或支付商店推断。
+
+#### 初始化缓存与刷新
+
+- **Store 初始化时缓存三项名称**：`IAPStoreBase.InitializeAsync` 在保存上下文后调用 `CacheTrackDimensions`，读取一次配置，并将平台、运营渠道和商店类型转换为字符串。`CreateTrackProperties` 和 `EmitTrackEvent` 后续只复制缓存值，不查询配置 Manager，也不再转换这三个枚举。
+- **插件单独缓存路由坐标**：`IAPPlugin.BuildStoreContext` 缓存平台和运营渠道，用于未匹配到 Store 的失败事件。此时还没有实际 Store，`nova_store_type` 必须取当次请求的类型，不能固定为某个商店；请求为空或没有提供类型时为 `None`。
+- **缓存按实例、按初始化周期持有**：显式再次调用 Store 的 `InitializeAsync` 会刷新缓存；插件重新构造运行上下文时刷新自己的缓存。仅调用 `SetEnabled`，或对已经初始化的 Store 调用 `EnableAsync`，不会刷新坐标。不使用跨实例静态缓存。
+- **初始化前先加载配置**：初始化时配置缺失或尚未加载，会缓存 `None`，之后发送事件不会自动补读。应沿正常启动链先完成运行配置加载，再初始化支付；配置修正后必须进入新的初始化周期才能获得新快照。
+
+
+`TrackChannel` 保留为可重写的兼容入口，默认返回初始化时缓存的渠道名称；旧子类即使重写它，也不能覆盖发送时的三维属性。其余事件字段、失败原因、去重与发送时机保持既有语义。分析后台若按原来的 `google`、`ios`、`thirdpay`、`voucher`、`mobile` 或 `router` 筛选 `nova_channel`，应改用新的渠道名称，并用 `nova_store_type` 区分支付方式；历史数据不会自动改写。
+
+集中登记仍在本包 `Nova/Tracks/Tracks.xlsx`。`pay_success`、`af_purchase` 和 `af_purchase_sandbox_s2s` 属于服务端事件约定；更新客户端不会自动修改服务端的上报实现。
+
 ## 7. 扩展 Store 的最低要求
 
 1. 定义请求类型，继承 `IAPRequest`。

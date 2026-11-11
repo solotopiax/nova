@@ -145,6 +145,8 @@ OnInitializeAsync(config, ct)
 
 Store 的 `InitializeAsync` 只保证该 Store 已完成自己的启动阶段，不统一保证渠道已经可支付。Mobile Store 会在该方法内启动运行期后台连接后返回，因此 `Nova.SDK.InitializeTask` 不等待 Google Play / App Store 连接；业务若关心 Mobile 就绪结果，应订阅 `IAPPlugin.Events.InitResult`，支付入口本身也会通过 Store Ready 门禁拦截未连接状态。
 
+`BuildStoreContext` 同时缓存初始化时的平台与运营渠道名称，供未匹配到 Store 的失败打点复用；商店类型仍按当次请求写入。各 Store 在自身初始化时缓存完整三维属性，后续发送不再查询配置，刷新条件及 `None` 边界见 [初始化缓存与刷新](IAP-Architecture.md#初始化缓存与刷新)。
+
 `BuildStoreContext` 会从 `IConfigManager.DevelopMode` 读取当前运行模式并写入 `IIAPStoreContext.DevelopMode`。Store 打点里的 Debug 字段应使用该运行模式判断；`EnableAlwaysPaySucceed` 只表示 Editor 下是否跳过真实平台支付，不再作为打点 Debug 依据，非 Editor 编译态会被强制注入为 false。
 
 ### 应用前后台

@@ -30,6 +30,10 @@
 
 - 兼容声明调整为 Unity 6000.4.2f1，配合 Nova Framework 的 Unity 6000.4.x 支持范围。
 
+- 代金券支付打点统一补齐运行平台、运营渠道与 nova_store_type=Voucher，不再把 voucher 作为 nova_channel。
+
+- 最低 IAP 依赖提升至 0.2.6，配套新版支付统计功能，避免消费项目因安装旧版依赖而编译失败。
+
 ### Removed
 
 - 删除 DeductPlan、VoucherDeductMode、可变 VoucherBalanceSnapshot、旧查询、VoucherCodes/CoinUsages/AddOrder 请求字段及 tableId-keyed pending 存档。

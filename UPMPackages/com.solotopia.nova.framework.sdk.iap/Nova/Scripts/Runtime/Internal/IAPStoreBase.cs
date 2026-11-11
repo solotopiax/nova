@@ -29,7 +29,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         public abstract IAPStoreType StoreType { get; }
 
         /// <summary>
-        /// 异步初始化 store，保存商品表与运行时上下文并重置运行时状态。
+        /// 异步初始化 store，保存商品表与上下文、冻结打点三维属性并重置运行时状态。
         /// 子类重写时须调用 base.InitializeAsync。
         /// </summary>
         /// <param name="table">所有 store 共用的商品表（IIAPProductTable 接口实现）。</param>
@@ -41,6 +41,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         {
             Table = table;
             Context = ctx;
+            CacheTrackDimensions();
             m_InPayTableId = 0;
             m_UnavailableSkus = new HashSet<string>();
             m_IsInitialized = true;
