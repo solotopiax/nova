@@ -12,10 +12,10 @@ UPM 包版本检查工具，提供启动自动检查与手动触发两种入口�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil.CheckUpdate.cs` | `partial EditorUtil.CheckUpdate` | 公有接口：`[InitializeOnLoad]` 启动钩子 `Initializer` 嵌套类 |
-| `EditorUtil.CheckUpdate.Visitors.cs` | `partial EditorUtil.CheckUpdate` | 常量声明：`c_ConfigPath`、`c_MenuPath`、`c_RegistryUrl`、`c_InternalRegistryUrl`、`c_ApiPath`；菜单入口 `OpenWindow` |
-| `EditorUtil.CheckUpdate.Methods.cs` | `partial EditorUtil.CheckUpdate` | 全部方法实现：`CheckAsync`、`CheckOnStartupAsync`、`MarkSkip`、`ClearSkip`、`CheckExternalAsync`、`CheckInternalAsync`、`CompareSemVer` 及私有辅助方法 |
-| `EditorUtil.CheckUpdate.Definitions.cs` | `partial EditorUtil.CheckUpdate` | 嵌套类型：`UpdateInfo`（public）、`SkipConfig`（private） |
+| [EditorUtil.CheckUpdate.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.cs) | `partial EditorUtil.CheckUpdate` | 公有接口：`[InitializeOnLoad]` 启动钩子 `Initializer` 嵌套类 |
+| [EditorUtil.CheckUpdate.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs) | `partial EditorUtil.CheckUpdate` | 常量声明：`c_ConfigPath`、`c_MenuPath`、`c_RegistryUrl`、`c_InternalRegistryUrl`、`c_ApiPath`；菜单入口 `OpenWindow` |
+| [EditorUtil.CheckUpdate.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs) | `partial EditorUtil.CheckUpdate` | 全部方法实现：`CheckAsync`、`CheckOnStartupAsync`、`MarkSkip`、`ClearSkip`、`CheckExternalAsync`、`CheckInternalAsync`、`CompareSemVer` 及私有辅助方法 |
+| [EditorUtil.CheckUpdate.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Definitions.cs) | `partial EditorUtil.CheckUpdate` | 嵌套类型：`UpdateInfo`（public）、`SkipConfig`（private） |
 
 ---
 

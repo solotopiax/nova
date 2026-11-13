@@ -62,6 +62,8 @@ Plan 冻结完整资产文件/序列化状态、精确叶子、目标与活动 B
 
 Plan 冻结 GUID、路径、整份资产文件摘要、完整序列化状态摘要和全部物理字段地址；字段值只保存在内存执行态，不进入公开 Plan、Receipt 或审计记录，也不生成逐密钥摘要。其余必填配置缺失可以继续逐步填写，`remainingIssues` 只显示坐标、路径和严重度；`configurationErrorsRemain` 只是当前 Validator 的结果，不证明导出、业务、设备或服务就绪。
 
+参数业务来源与填写规则先按 [AppConfigs](../../../Runtime/Modules/Config/AppConfigs.md#取值来源与格式) 或实际字段所属 Docs 核对，并由 [配置 Skill](../../../../Agents/Skills/nova-project-configure-runtime/SKILL.md#写入前的参数核对) 维护当前变更集。固定字段服务的非空 App AES 长度校验、Validator 的必填校验及保存回执均不验证后台登记，不应把“可写入/无错误”解释为业务参数正确，也不通过任意 C# 或更宽泛编辑入口绕过。
+
 固定字段 Execute 重新核对文件、完整状态、预演结果和草稿；提交前再次检查，使用共享保存链仅落盘目标 Master。不改当前坐标、掩码、BuildTarget、Runtime、Scene、YooAsset 或资源密钥源码，不收尾旧密钥迁移。互斥坐标分支仅改上述两个选择字段。无变化时不保存。保存或复核在真实写入开始后失败返回 partial + Receipt，绝不自动重放。
 
 Receipt 只含版本、资产身份、总体摘要、执行标志和物理字段地址。Verify 只读核对已保存文件摘要与完整目标状态，不调用会补结构的领域 Getter、不重新校验/导出、不执行保存。Master 保存成功仍需 [Exporter](EditorUtil.Config.Exporter.md) 按单一实际目标生成 Runtime，并完成对应编译与运行证据。

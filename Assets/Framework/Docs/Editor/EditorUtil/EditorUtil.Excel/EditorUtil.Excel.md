@@ -5,13 +5,15 @@
 
 表格数据读取与 CSV 写出工具：使用 `ExcelDataReader` 读取 .xlsx / .xls 的 Sheet，两个 `Write` 重载则将行列字符串写为 CSV 文件，供预过滤流程使用。本类不创建或修改 .xlsx 工作簿，也不写入样式或公式元数据。
 
+新建权威 xlsx 或扩展配表样式，按 [配表模板与样式](../../../Onboarding/RESOURCE_WORKFLOW.md#配表模板与样式) 选择模板和随包保真工具；不得把本类 CSV 写出或业务导出成功当成 xlsx 样式已保存。
+
 ---
 
 ## §2 文件表
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil/EditorUtil.Excel/EditorUtil.Excel.cs` | `EditorUtil.Excel`（嵌套静态类） | 全部方法定义，`ExcelDataReader` 读取 .xlsx / .xls + UTF-8 CSV 写出 |
+| [EditorUtil/EditorUtil.Excel/EditorUtil.Excel.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Excel/EditorUtil.Excel.cs) | `EditorUtil.Excel`（嵌套静态类） | 全部方法定义，`ExcelDataReader` 读取 .xlsx / .xls + UTF-8 CSV 写出 |
 
 ---
 

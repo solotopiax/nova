@@ -5,17 +5,19 @@ description: Use when 项目组要在已确认的 Platform、Channel、DevelopMo
 
 # Nova 配置运行时快照
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在需要确认设计态边界时读 `Docs/Editor/Config/ConfigMasterSO.md`；批量固定字段编辑或保存当前渠道/开发模式时读 `Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md`；窗口编辑或保存时读 `Docs/Editor/Windows/ConfigWindow.md`；执行导出时读 `Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md` 和 `Docs/Runtime/Modules/Config/ConfigRuntimeSO.md`；面板编辑或非规范 Master 整理时按需读 [面板编辑参考](references/panel-editing.md)；复用既有 Batch 时才读 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`。若冻结字段触及已安装 SDK/Kit，先确认实际解析的 package id、版本、source 与根路径，并先读取其首个存在的 `Nova/Doc/INDEX.md`、`Nova/Docs/INDEX.md` 或 `Nova/DOCS/INDEX.md`；随后只按该 INDEX 读取目标 Config、路由、资源和平台前置。不要递归读取其他 SDK、Kit、YooAsset 或 CDN 文档。
+再读取 [references/contract.json](references/contract.json)。仅在需要确认设计态边界时读 [Docs/Editor/Config/ConfigMasterSO.md](../../../Docs/Editor/Config/ConfigMasterSO.md)；批量固定字段编辑或保存当前渠道/开发模式时读 [Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.md)；窗口编辑或保存时读 [Docs/Editor/Windows/ConfigWindow.md](../../../Docs/Editor/Windows/ConfigWindow.md)；执行导出时读 [Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) 和 [Docs/Runtime/Modules/Config/ConfigRuntimeSO.md](../../../Docs/Runtime/Modules/Config/ConfigRuntimeSO.md)；面板编辑或非规范 Master 整理时按需读 [面板编辑参考](references/panel-editing.md)；复用既有 Batch 时才读 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)。若冻结字段触及已安装 SDK/Kit，先确认实际解析的 package id、版本、source 与根路径，并先读取其首个存在的 [Nova/Doc/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[Nova/Docs/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 或 [Nova/DOCS/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)；随后只按该 INDEX 读取目标 Config、路由、资源和平台前置。不要递归读取其他 SDK、Kit、YooAsset 或 CDN 文档。
+
+改写 App 字段时先读 [AppConfigs：取值来源与格式](../../../Docs/Runtime/Modules/Config/AppConfigs.md#取值来源与格式)；涉及其它面板参数时按 live `inspect-panel` 的字段类型/Tooltip 读取对应模块 Docs 和真实消费者。仅知道字段名、JSON 类型或非空要求不足以选值。
 
 只有用户要求完整三平台或配置后的 Player 验收时，按需读取 [三平台验收参考](../nova-project-build-player/references/platform-validation.md) 的坐标、场景快照与串行恢复部分。
 
 ## 冻结输入与决策门
 
-冻结一个 `ConfigMasterSO`、Unity 当前 Active BuildTarget 实时映射出的非 `None` Platform、一个 `Channel × DevelopMode` 坐标、精确的字段变更集、目标 `ConfigRuntimeSO` 路径，以及是否明确要求写入活动场景的 DevelopMode / Channel 快照。不要把旧 Config 资产中的平台值、其他坐标、远端 JSON、CDN 凭据或 Sample 默认值当作本次输入。
+冻结一个 `ConfigMasterSO`、Unity 当前 Active BuildTarget 实时映射出的非 `None` Platform、一个 `Channel × DevelopMode` 坐标、精确的字段变更集、目标 `ConfigRuntimeSO` 路径，以及是否明确要求写入活动场景的 DevelopMode / Channel 快照。不要把旧 Config 资产中的平台值、其他坐标、远端 JSON 或 CDN 凭据直接当作本次输入；Sample 物料须先按下方参数核对确认为可用的临时来源，不任意套用默认值。
 
 先读取持久化工作区、已有 Master/Runtime、坐标矩阵和 Batch 参数，给出确定的来源与计划；可读取的身份、路径和数值无需新手抄写。完整三平台授权下主动发现可复用的三平台配置，逐平台执行当前 Operation 并复核；业务渠道/模式存在多个合理候选时才要求用户决策，不从相邻格猜值。
 
@@ -23,6 +25,12 @@ description: Use when 项目组要在已确认的 Platform、Channel、DevelopMo
 - Runtime 导出 Platform 必须等于 Unity 当前 Active BuildTarget 映射值；仅 Android、iOS、WebGL 可用。未映射或请求不一致时先切换 Unity BuildTarget，再重新计划。设计态固定字段批量编辑可明确选择其他有效平台，不自动切换 BuildTarget。
 - 默认编辑已冻结单一坐标。用户明确要求批量时，使用下方固定字段分支，确认全部坐标和掩码展开的物理写集；不从相邻格猜值。
 - 固定字段保存优先使用 `nova.project.config.patch-coordinate`；其它已有面板字段与维度优先使用 `inspect-panel` / `patch-panels`；未开放字段仍使用 ConfigWindow 的 `Nova/Open Config`。该窗口的“导出”成功后还会写活动场景快照。未授权写场景时，通过 `nova.project.config.export-runtime` 导出；底层复用 `EditorUtil.Config.Exporter.Export(...)`，不把 C# API 当作 MCP 旁路。
+
+### 写入前的参数核对
+
+按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行)，在当前变更集中逐字段说明用途、来源出处、格式/单位、坐标及掩码展开范围，区分保留、修改、合法空值、Demo 临时物料与缺少物料；不向 Action 请求添加其 schema 未声明的来源字段，不输出凭据值。项目专有物料未定时，沿同条规则从 Nova 各 Demo 查找配套临时值并记后续替换位置；现有资产或声明默认不自动证明该值是产品正式物料。
+
+字段语义或有效状态不明时先用现有只读 `inspect-panel`；固定字段继续由 `patch-coordinate` 保存，面板字段由 `patch-panels` 保存。App 协议凭据与 Privacy 本地密钥分别按所属文档处理；前者的后台登记不能由随机生成代替，Demo 临时应用参数仍核对原 Demo 的配套后台；后者的生成/轮换走专用维护入口及原授权。专有和 Demo 临时来源均缺失，或当前导出仍拒绝所选合法状态时，保留该依赖分支的阻塞，不以填假值、切换宽泛面板或自写初始化脚本绕过。新建 Master/Runtime 同样遵守本 Skill 的创建边界，不能用一键 Setup 重做已有字段编辑。
 
 ## 保存当前渠道与开发模式
 
@@ -62,6 +70,10 @@ Plan/Execute复核完整资产和精确物理写集，只保存Master；Verify�
 
 先 live describe，再独立 Plan/Execute/只读 Verify。归一预演复用既有 clone 归一与资源密钥校验，并核对重复归一的幂等性；完整资产、meta、语义状态、草稿与差异均重新检查。仅保存一个 Master，不切当前坐标/BuildTarget、不导出 Runtime、不生成资源密钥源码、不清理旧迁移文件；已规范时不保存。无法无歧义地整理则保持 blocked，不通过通用字段入口绕过。写后失败为 partial，不能重放。整理成功后重新 inspect 目标面板或 validate-coordinate，再生成新 patch 计划；整理的静态保存证据不代表本Skill所需的 Runtime 导出与编译验收。
 
+## HybridCLR 基线
+
+配置项目基础能力或 HybridCLR 时，按 [NA-004：业务默认进入热更范围，AOT 例外须证明必要性](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-004业务默认进入热更范围aot-例外须证明必要性) 与[三平台构建基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)核对实际业务程序集、入口、AOT/启动/按需 DLL 映射、link.xml 及资源收集。使用 `inspect-panel/patch-panels` 编辑真实 HybridEditorConfigs 字段；HybridCLR 自身 Settings 通过其正式设置入口维护，不把 Master 保存视作安装/启用/生成完成，不通过临时脚本或手改资产补齐。
+
 ## SDK / Kit 定向分支
 
 仅当冻结字段触及已安装的 `com.solotopia.nova.framework.sdk.*` 或 `com.solotopia.nova.framework.kit.*` 时进入本分支。目标包的 INDEX、精确 Config 类型、路由/资源归属与平台前置不完整时保持 `blocked`，不靠包名、Plugin 类型名或相邻坐标猜测。
@@ -98,11 +110,13 @@ Plan/Execute复核完整资产和精确物理写集，只保存Master；Verify�
 
 ## 执行与验证边界
 
-按“保存 Master → 导出单一 Runtime 快照 → Unity 编译”执行。Exporter 会覆盖已存在的目标 `ConfigRuntimeSO`，并可能按已配置的维度解析更新对应 `YooAssetSettings.asset`；因此目标资产和该坐标的解析结果必须在确认的写入集内。导出时只验证本次坐标的 `EnabledSDKConfigs` / `EnabledKitConfigs` 快照，不把其他坐标、Bundle、Player、CDN 或厂商运行时结果推断为成功。
+按“保存 Master → 导出单一 Runtime 快照 → Unity 编译”执行。Exporter 会覆盖已存在的目标 `ConfigRuntimeSO`，并可能按已配置的维度解析更新对应 [YooAssetSettings.asset（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md)；因此目标资产和该坐标的解析结果必须在确认的写入集内。导出时只验证本次坐标的 `EnabledSDKConfigs` / `EnabledKitConfigs` 快照，不把其他坐标、Bundle、Player、CDN 或厂商运行时结果推断为成功。
 
 `export-runtime` Action 与 Pipify `export.config` 均不回写 Master 当前 Channel/DevelopMode，也不调用场景快照写入器。需要保存当前选择时使用上方 `coordinate-switch`；需要构建时核对 Master 当前坐标、Runtime 与已保存入口场景的 Asset/App 渠道。ConfigWindow 导出会写当前活动场景，仍须保存并检查全部启用场景；场景准备在已授权范围内经既有窗口/受控 Unity 编辑完成。每平台显式切换、坐标保存、导出与构建按单写者串行进行，批次外独立保留 Master、Runtime、Scene 与 PlayerSettings 基线；Batch Plan 不提供这些状态的完整冻结。
 
 最低成功证据是指定 `ConfigRuntimeSO` 导出成功且 Unity 编译通过。只有资产保存、只有静态 diff、或只运行 Pipify 而没有确认编译时返回 `partial`。不把远端 Config 内容、Bundle、Player、CDN 或真机行为推断为本 Skill 的成功。
+
+交付前核对实际使用的 Adapter、原变更集与写集、参数来源、保存/导出及最低证据；来源或执行入口偏离时不能报告完整成功。格式校验与回执只证明各自合同范围，不证明 GM/厂商参数已登记或服务端匹配，也不能追认此前直接脚本写入合规。
 
 Action 调用带冻结时间和 `saveOnlyTouchedAssets=true` 的内部 Export 重载，默认 `exportResourceKeys=false`；它不生成客户端资源密钥源码或相应 link.xml。ConfigWindow/Pipify 使用的公开五参数 Export 会导出这些附加产物并可能更新源码路径追踪。加密配置变更若要求客户端生效，必须另行核对并授权该完整生成链；只完成窄 Action 不能宣称密钥部署完成。`Channel=None` 也不能用于完整配置闭环：坐标校验/插件补齐和底层 Export 都拒绝它，Config Export 的请求校验也直接拒绝 None，其他 Generate 解析器的语义保持原状。
 

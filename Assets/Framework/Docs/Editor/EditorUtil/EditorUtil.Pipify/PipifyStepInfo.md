@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/Definitions/PipifyStepInfo.cs` | `PipifyStepInfo` | 完整实现 |
+| [EditorUtil.Pipify/Definitions/PipifyStepInfo.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyStepInfo.cs) | `PipifyStepInfo` | 完整实现 |
 
 ## §5 公开 API
 

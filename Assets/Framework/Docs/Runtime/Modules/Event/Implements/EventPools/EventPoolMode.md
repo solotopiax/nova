@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/Implements/EventPools/EventPoolMode.cs` | 枚举定义 |
+| [Managers/Implements/EventPools/EventPoolMode.cs](../../../../../../Scripts/Runtime/Modules/Event/Managers/Implements/EventPools/EventPoolMode.cs) | 枚举定义 |
 
 ## 枚举值
 

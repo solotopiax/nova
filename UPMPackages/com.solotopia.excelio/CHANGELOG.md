@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.0.7] - 2026-11-13
+
+### Changed
+
+- 将 ExcelDataReader 上游目录、许可证与 Nova 包装层说明中的路径补为可跳转链接，方便查阅随包原厂许可及再分发要求。
+
 ## [1.0.6] - 2026-06-18
 
 ### Changed

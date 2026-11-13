@@ -73,6 +73,6 @@ related: []
 
 ## 验证依据（Verification）
 
-- 代码：`Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetRemoteService.cs`
-- 调用点：`AssetManager.Methods.cs` `BuildHostOptions` / `BuildWebOptions`
-- Inspector 文案：`AssetComponentInspector.Methods.cs` 主机服务器地址 HelpBox
+- 代码：[Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetRemoteService.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetRemoteService.cs)
+- 调用点：[AssetManager.Methods.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs) `BuildHostOptions` / `BuildWebOptions`
+- Inspector 文案：[AssetComponentInspector.Methods.cs](../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs) 主机服务器地址 HelpBox

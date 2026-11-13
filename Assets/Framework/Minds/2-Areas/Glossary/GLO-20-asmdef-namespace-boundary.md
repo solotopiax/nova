@@ -47,6 +47,6 @@ Sample 引用了另一个 Kit 的类型时，导入后要能编译，既需要�
 ## 来源
 
 - [[PAT-140-upm-package-vs-sample-dependency|PAT-140]]：UPM 包依赖、asmdef 编译引用与 Sample 导入边界。
-- `.nova/RULES.md`：禁止 Runtime 反向依赖 Editor。
+- [.nova/RULES.md](../../../../../.nova/RULES.md)：禁止 Runtime 反向依赖 Editor。
 
 ---

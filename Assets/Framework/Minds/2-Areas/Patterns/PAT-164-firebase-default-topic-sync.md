@@ -77,10 +77,10 @@ related:
 
 ## 来源与验证
 
-- 当前实现：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebaseDefaultTopicBuilder.cs` 负责 Topic 构建、安全字符清洗、国家码规范化和订阅差异计算。
-- 当前实现：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebasePlugin.DefaultTopics.cs` 负责初始化后启动、监听 `LocalizationRefreshEventData`、通过 AD 模块获取最终国家码、持久化状态并应用差异。
-- 当前文档：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Doc/FirebasePlugin.md` 已记录默认 Topic 类型、示例、语言等待、国家码获取和存档语义。
-- 当前测试：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Tests/Editor/FirebaseDefaultTopicBuilderTests.cs` 覆盖 `top_debug_` / `top_release_` 环境前缀、旧 `top_` 存档迁移、`utc_plus_05_30` / `utc_minus_03_30` 非整点时区、`IV` 国家跳过和差异计算。
+- 当前实现：[UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebaseDefaultTopicBuilder.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebaseDefaultTopicBuilder.cs) 负责 Topic 构建、安全字符清洗、国家码规范化和订阅差异计算。
+- 当前实现：[UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebasePlugin.DefaultTopics.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebasePlugin.DefaultTopics.cs) 负责初始化后启动、监听 `LocalizationRefreshEventData`、通过 AD 模块获取最终国家码、持久化状态并应用差异。
+- 当前文档：[UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Doc/FirebasePlugin.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Doc/FirebasePlugin.md) 已记录默认 Topic 类型、示例、语言等待、国家码获取和存档语义。
+- 当前测试：[UPMPackages/com.solotopia.nova.framework.sdk.firebase/Tests/Editor/FirebaseDefaultTopicBuilderTests.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.firebase/Tests/Editor/FirebaseDefaultTopicBuilderTests.cs) 覆盖 `top_debug_` / `top_release_` 环境前缀、旧 `top_` 存档迁移、`utc_plus_05_30` / `utc_minus_03_30` 非整点时区、`IV` 国家跳过和差异计算。
 
 ## 关联
 

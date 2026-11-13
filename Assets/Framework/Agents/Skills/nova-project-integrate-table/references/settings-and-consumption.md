@@ -1,6 +1,6 @@
 # 表格设置与实际消费绑定
 
-先按当前 Framework 的 `Docs/Runtime/Modules/Table/Definitions/TableSettings.md`、`Docs/Runtime/Modules/Table/TableComponent.md` 核对真实字段和生命周期。当前组件字段为 `m_Setting`；`TableSettings.Projects` 与 `Runtime.LoadDescriptions` 是不同列表。`ProjectId`、`ExportDescriptionId`、`RuntimeDataTarget`、每个 `DataFile` 的 AssetAddress/AssetPath 来自有效配置、Luban 及实际导出，不照抄 Sample 默认 `main` 或路径。
+先按当前 Framework 的 [Docs/Runtime/Modules/Table/Definitions/TableSettings.md](../../../../Docs/Runtime/Modules/Table/Definitions/TableSettings.md)、[Docs/Runtime/Modules/Table/TableComponent.md](../../../../Docs/Runtime/Modules/Table/TableComponent.md) 核对真实字段和生命周期。当前组件字段为 `m_Setting`；`TableSettings.Projects` 与 `Runtime.LoadDescriptions` 是不同列表。`ProjectId`、`ExportDescriptionId`、`RuntimeDataTarget`、每个 `DataFile` 的 AssetAddress/AssetPath 来自有效配置、Luban 及实际导出，不照抄 Sample 默认 `main` 或路径。
 
 配置写入复用[共享 Unity 保存规则](../../nova-project-edit-settings/references/unity-mcp-editing.md)。普通自有 Prefab 中已有字段优先 `nova.project.settings.inspect-target/patch-target`，请求从 live describe 和当前序列化属性取精确路径、类型和值；复杂列表/聚合字段不能由 Schema 表示时，使用本契约声明的共享工具。先读取完整现有列表、唯一项目/描述 ID 和原值，再保持无关项，只构造确认目标的最终列表。不把数组某项缺失猜为空，也不执行私有 Inspector 方法。
 

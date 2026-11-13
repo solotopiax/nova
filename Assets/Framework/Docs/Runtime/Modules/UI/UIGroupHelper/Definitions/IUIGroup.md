@@ -11,7 +11,7 @@ UI 视图分组接口，定义了视图分组的核心契约。每个分组管�
 
 | 文件 | 说明 |
 |------|------|
-| `IUIGroup.cs` | 接口定义，位于 `Managers/UIGroupHelper/Definitions/` |
+| [IUIGroup.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Definitions/IUIGroup.cs) | 接口定义，位于 [Managers/UIGroupHelper/Definitions/](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Definitions/) |
 
 ## 关键字段/属性
 

@@ -10,8 +10,8 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Luban.Pipeline.cs` | `EditorUtil.Luban.LubanExportContext` | 导出上下文，封装单次导出操作所需的全部参数 |
-| `EditorUtil.Luban.Pipeline.cs` | `EditorUtil.Luban.Pipeline` | 流水线入口，编排 ConfigSyncer → CliRunner → JsonMerger → MapPropGen |
+| [EditorUtil.Luban.Pipeline.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.cs) | `EditorUtil.Luban.LubanExportContext` | 导出上下文，封装单次导出操作所需的全部参数 |
+| [EditorUtil.Luban.Pipeline.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.cs) | `EditorUtil.Luban.Pipeline` | 流水线入口，编排 ConfigSyncer → CliRunner → JsonMerger → MapPropGen |
 
 ---
 

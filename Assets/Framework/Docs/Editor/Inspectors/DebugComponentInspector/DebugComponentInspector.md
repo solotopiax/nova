@@ -18,9 +18,9 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、�
 
 | 文件 | 说明 |
 |---|---|
-| `DebugComponentInspector.cs` | `OnEnable` 绑定属性，`OnInspectorGUI` 依次绘制配置、磁盘监控、Android 构建安装 |
-| `DebugComponentInspector.Visitors.cs` | `m_DebuggerActiveType`、`m_MaximumConsoleEntries`、`m_RuntimeDebuggerFont`、`m_CurManagerTypeName`、`m_DiskCheckingConfigs` 及 Android 本地缓存字段 |
-| `DebugComponentInspector.Methods.cs` | `DrawConfigs`、`DrawDiskMonitoring`、`DrawAndroidBuild`、`DrawTextFieldWithWrite`、`DrawToolPathRow`、`ReadConfig`、`WriteConfig`、`ResetConfigToDefault`、`BuildAAB` / `BuildAPK`、`InstallAABToDevice` / `InstallAPKToDevice`、`RunPython` |
+| [DebugComponentInspector.cs](../../../../Scripts/Editor/Inspectors/DebugComponentInspector/DebugComponentInspector.cs) | `OnEnable` 绑定属性，`OnInspectorGUI` 依次绘制配置、磁盘监控、Android 构建安装 |
+| [DebugComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/DebugComponentInspector/DebugComponentInspector.Visitors.cs) | `m_DebuggerActiveType`、`m_MaximumConsoleEntries`、`m_RuntimeDebuggerFont`、`m_CurManagerTypeName`、`m_DiskCheckingConfigs` 及 Android 本地缓存字段 |
+| [DebugComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/DebugComponentInspector/DebugComponentInspector.Methods.cs) | `DrawConfigs`、`DrawDiskMonitoring`、`DrawAndroidBuild`、`DrawTextFieldWithWrite`、`DrawToolPathRow`、`ReadConfig`、`WriteConfig`、`ResetConfigToDefault`、`BuildAAB` / `BuildAPK`、`InstallAABToDevice` / `InstallAPKToDevice`、`RunPython` |
 
 ## 当前 Inspector 结构
 
@@ -45,7 +45,7 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、�
 - `adb` 路径（Android SDK `platform-tools` 目录下）
 - `编译时清空缓存` Toggle（写入 `BuildOptions.CleanBuildCache`）
 - 构建 `AAB` / `APK`（默认输出至 `<ProjectRoot>/Build/Android/{AAB|APK}/`，文件名为 `{productName}_{version}.{aab|apk}`）
-- 安装现有包到已连接设备（调用 Python 脚本 `install_aab.py` / `install_apk.py`）
+- 安装现有包到已连接设备（调用 Python 脚本 [install_aab.py](../../../../Scripts/Editor/Tools/Deploys/install_aab.py) / [install_apk.py](../../../../Scripts/Editor/Tools/Deploys/install_apk.py)）
 - 构建并安装到设备（先 Build，成功后立即调用对应安装脚本）
 - AAB 安装链路通过 `bundletool` 将 `.aab` 转成 `.apks` 后用 `adb` 安装
 - 当签名四元组或 `bundletool` / `adb` 路径任一缺失时，构建/安装按钮整体 DisabledGroup 灰显
@@ -54,7 +54,7 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、�
 
 - AAB 默认输出目录：`<ProjectRoot>/Build/Android/AAB`
 - APK 默认输出目录：`<ProjectRoot>/Build/Android/APK`
-- 安装脚本路径：`Packages/com.solotopia.nova.framework/Scripts/Editor/Tools/Deploys/install_aab.py` 与 `install_apk.py`
+- 安装脚本路径：[install_aab.py](../../../../Scripts/Editor/Tools/Deploys/install_aab.py) 与 [install_apk.py](../../../../Scripts/Editor/Tools/Deploys/install_apk.py)
 - `HistoryAABPath` / `HistoryAPKPath` 仅作为“打开文件面板”时的初始目录，选择其他目录后立即写回缓存
 
 ## 本地配置存储

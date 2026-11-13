@@ -11,7 +11,7 @@ PrefabManager 实例化时自动挂载的钩子组件，OnDestroy 时通知 Pref
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Definitions/PrefabInstanceTag.cs` | `PrefabInstanceTag` | 钩子组件，由 PrefabManager.RecordInstance 自动挂载 |
+| [Definitions/PrefabInstanceTag.cs](../../../../../Scripts/Runtime/Modules/Prefab/Definitions/PrefabInstanceTag.cs) | `PrefabInstanceTag` | 钩子组件，由 PrefabManager.RecordInstance 自动挂载 |
 
 ---
 

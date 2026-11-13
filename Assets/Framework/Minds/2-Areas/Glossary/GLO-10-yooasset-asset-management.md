@@ -55,5 +55,5 @@ finally { handle.Release(); }
 ## 来源与验证
 
 - `Packages/manifest.json`：`com.solotopia.yooasset` 以本地 UPM 包引入。
-- `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/` 下 YooAsset 适配器源码。
-- `Assets/Framework/Docs/INDEX.md`：BundleBuilder（YooAsset SBP 构建封装）、AssetDownloader、AssetRemoteService、YooAssetHandleAdapter 条目。
+- [Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions) 下 YooAsset 适配器源码。
+- [Docs/INDEX.md](../../../Docs/INDEX.md)：BundleBuilder（YooAsset SBP 构建封装）、AssetDownloader、AssetRemoteService、YooAssetHandleAdapter 条目。

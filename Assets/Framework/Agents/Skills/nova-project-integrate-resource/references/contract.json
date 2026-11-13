@@ -76,6 +76,16 @@
       "kind": "unity-menu",
       "entry": "Nova/Clean Hotfix Caches",
       "when": "已退出Play且用户授权精确Editor沙盒与框架第一层version删除；先发现菜单与实际路径，执行后读回状态；不清DeviceID/首包/Bundle/浏览器/远端缓存。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Asset.LoadFromPackageSync/Async<T> / LoadSubsFromPackageSync/Async<T> / LoadAllFromPackageSync/Async<T> / LoadRawFromPackageSync/Async / LoadSceneFromPackageSync/Async",
+      "when": "仅在已授权项目业务源码接入显式资源包加载；package/location精确匹配且包/清单由既有链准备；可选接口不扩IAssetManager强制成员，旧Manager不支持时抛NotSupportedException。WebGL只异步，预取消不调度，仅释放已交付Handle，Scene用UnloadAsync；主/子/全/Scene完成不冒充成功。不是MCP Action。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "SpriteBinding(Image) / SpriteBinding(SpriteRenderer) / BindAsync / BindAtlasAsync / Clear / Dispose",
+      "when": "仅已授权业务源码选择性接入；通过默认构造沿Nova.Asset默认包加载，每目标一个拥有者，在主线程调用，关闭/回池显式清理或登记UIView.OpenScope.Own；取消/替代false，真实失败抛错，交接前加载失败保旧图。内部Handle/克隆由助手拥有，不重复Release/Destroy；无自动迁移、选包或共享缓存，不是MCP Action。"
     }
   ],
   "inputs": [
@@ -115,6 +125,16 @@
       "name": "poolOrCacheLifecycleScope",
       "required": false,
       "constraint": "冻结ObjectBase类型/poolName/name/唯一Target/Single或MultiGet/消费方持有期与归还；Editor缓存冻结实际沙盒、Asset第一层version列表、非Play和DeviceID基线；运行时缓存冻结Package/运行模式/激活清单及目标版本/业务入口Owner/并发任务与句柄/仅未被当前清单引用的Bundle范围。手机分支另冻结设备、产物与时间窗，读取可得事实，不猜路径。"
+    },
+    {
+      "name": "explicitContentPackageLoadScope",
+      "required": false,
+      "constraint": "仅选包加载分支必需：真实资源包名/地址/加载类型、目标Manifest前置与Owner、ct、Scene mode及返回Handle的Release/Unload；package不是UPM包名。旧入口保持默认包，不自动Bootstrap/Manifest，不支持能力不回退。"
+    },
+    {
+      "name": "spriteBindingScope",
+      "required": false,
+      "constraint": "仅图片绑定分支必需：实际Image/SpriteRenderer、默认包/地址、普通图或真正SpriteAtlas及精确子图名、唯一助手拥有者、取消及关闭/回池/销毁责任；仅主动new时启用，不扫描接管旧图逻辑，不要求旧项目迁移。 显式构造且真实宿主未Awake时仅本绑定有短期Update观察，销毁后下一Update收尾，觉醒/Dispose停止；Image宿主自身，Renderer宿主同GO辅助组件，已Awake后仅移除Renderer须显式Dispose。原生时序需真实Play，EditMode不代替。"
     }
   ],
   "effects": [
@@ -188,6 +208,7 @@
     "runtime unused-cache: actual Package/activated manifest/target version and business Owner/handles, authorized public-API source integration plus compile and real Play; current built-in implementation rejects pre-cancelled calls before scheduling, invalid actual manifests and non-Succeeded terminal operations; started cancellation only stops waiting; normal return reports operation success, while real file/byte results and preserved current-manifest Bundles and loadable resources remain independent evidence",
     "phone cache/update target: frozen device/artifact/time window, actual manifest version and readable device cache result plus target-resource load; Editor menu, Play, CDN deploy/purge or API return alone is not device proof; unavailable readback stays partial",
     "branch gate: resource/pool integration requires compile plus actual play; Editor cache requires non-Play real before/after checks; runtime cache uses its actual business entry and requested Player/device evidence; static alone is partial",
-    "generate-resource-keys: saved private Master exact coordinate, readonly Plan, exact file/meta/migration snapshot, one Generate, post-execution compile/reload and readonly Receipt verification; legacy asmdef migration branch fails closed before writes"
+    "generate-resource-keys: saved private Master exact coordinate, readonly Plan, exact file/meta/migration snapshot, one Generate, post-execution compile/reload and readonly Receipt verification; legacy asmdef migration branch fails closed before writes",
+    "可选图片/选包接入须有编译和本次Play：旧未修改调用方行为保持，图片反序/替换/取消/关闭/池重开/销毁与Handle/图集克隆释放，或两包同址/旧默认包/清单前置/取消/Release及Scene Unload；Bundle/Player/设备证据独立，未验证不提升。"
   ]
 }

@@ -260,10 +260,10 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 执行一次已经向用户展示并确认的计划。计划只可消费一次，前置状态漂移时拒绝写入。
+            /// 执行一次已展示且处于有效授权范围内的计划。计划只可消费一次，前置状态漂移时拒绝写入。
             /// </summary>
             /// <param name="planId">PlanProjectPackageOperationAsync 返回的一次性计划标识。</param>
-            /// <param name="confirmed">用户是否已确认该计划中的精确包名、动作、来源和版本。</param>
+            /// <param name="confirmed">调用方是否已核对精确包名、动作、来源和版本处于当前或既有授权范围内；不代表每次都需用户重新点击确认。</param>
             /// <param name="token">执行前远端最新版本复核的取消令牌。</param>
             /// <returns>提交后为 partial；未通过确认或失效检查时为 blocked。</returns>
             public static async Task<ProjectPackageOperationResult> ExecutePlannedProjectPackageOperationAsync(

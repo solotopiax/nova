@@ -15,8 +15,8 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.AndroidResolver.cs` | `partial EditorUtil.AndroidResolver` | 公有接口：`Resolve()` |
-| `EditorUtil.AndroidResolver.Methods.cs` | `partial EditorUtil.AndroidResolver` | 私有方法：`ExecuteResolveSync`、`FindResolverType` |
+| [EditorUtil.AndroidResolver.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.cs) | `partial EditorUtil.AndroidResolver` | 公有接口：`Resolve()` |
+| [EditorUtil.AndroidResolver.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.Methods.cs) | `partial EditorUtil.AndroidResolver` | 私有方法：`ExecuteResolveSync`、`FindResolverType` |
 
 ---
 

@@ -6,7 +6,7 @@
 
 发送时会一次性冻结请求字节与请求头，底层使用 UnityWebRequest 与系统 DNS 按主域名、备用域名顺序请求；业务 Service 不需要感知或决定切换策略。
 
-**所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetService.cs`
+**所在文件：** [Scripts/Runtime/Modules/Network/Kit/NetService.cs](../../../../Scripts/Runtime/Modules/Network/Kit/NetService.cs)
 **命名空间：** `NovaFramework.Runtime`
 
 > 此类的 C# 可见性是 public，但 SendAsync、身份写入、清理与互斥 API 面向 Sibling Kit 包并带 `[EditorBrowsable(Never)]`，业务不能直接绕过门面。项目新增标准 Proto 请求通过 [Nova.Network.SendProtoAsync](NetworkComponent.md#项目标准-proto-请求) 复用本链；登录、绑定和存档仍使用已有 Kit 专属入口。
@@ -32,7 +32,8 @@
 | `[EditorBrowsable(Never)] public static void GetIdentity(out string uid, out string openid)` | 原子读取同一份 UID/OpenID 身份快照 |
 | `[EditorBrowsable(Never)] public static void ClearIdentity()` | 原子清空 UID/OpenID |
 | `[EditorBrowsable(Never)] public static IDisposable TryBeginIdentityOperation()` | 非排队获取全局身份操作租约；已有 Login/Delete/Bind/Resolve 时返回 `null` |
-| `[EditorBrowsable(Never)] public static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(INetworkCmdRow cmdRow, TReq request, MessageParser<TResp> parser)` | 完整请求链路；由各业务 Service（如 `Login`）调用；`TReq : IMessage<TReq>`，`TResp : IMessage<TResp>` |
+| `[EditorBrowsable(Never)] public static UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(INetworkCmdRow cmdRow, TReq request, MessageParser<TResp> parser)` | 完整请求链路；由各业务 Service（如 `Login`）调用；`TReq : IMessage<TReq>`，`TResp : IMessage<TResp>` |
+| `[EditorBrowsable(Never)] public static UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(INetworkCmdRow cmdRow, TReq request, MessageParser<TResp> parser, CancellationToken cancellationToken)` | 支持取消的同一请求链；取消会终止整条主备链 |
 
 ---
 
@@ -68,6 +69,7 @@ var resp = await NetService.SendAsync(
 - **通信层终止条件**：服务器返回任意正式 HTTP 响应（包括 4xx/5xx）后立即结束候选链，业务成功和业务失败都不再触发主备切换；只有未获得正式 HTTP 响应的传输失败才继续尝试。
 - **失败返回与异常的边界**：拿到响应但 `IsSuccess=false` 或正文为 `null` 时返回 `NETWORK_ERROR`；解密失败返回 `AES_DECRYPT_FAILED`；BaseResponse 或成功业务体解析失败返回 `PROTO_PARSE_FAILED`。服务端已有业务错误码时，附带业务体解析失败只丢弃 `data`，仍透传原错误码和描述。底层 POST 自身抛异常不在这里转换为上述错误码，而是经过 `finally` 后继续传播；调用尚未取得响应时没有可归还对象，已经取得的响应始终由此处唯一归池。协议解析失败也不会重放已结束的 HTTP 候选链。
 - 三参数 SendAsync 转交 `CancellationToken.None`；四参数重载先检查预取消。它始终 POST，不根据 `INetworkCmdRow.Way` 分派，不自动给请求补 Head；Nova.Network 缺失、序列化或 POST 本身异常可直接传播，不能将所有失败等同返回 Fail。
+- 三参数和四参数重载均使用普通业务单次请求超时。框架内部五参数重载额外接收 `float requestTimeout`，用于启动 GM 拉取覆盖每次物理请求的时限；该值原样传入业务 POST 主备链，主地址、备用地址和重试分别计时，不增加整轮总计时器，也不新增公开重载。
 - 身份锁只保证 SetIdentity/GetIdentity 的成对快照；分开读 UID 与 OpenID 可能跨越一次写入。SetUID/SetOpenID 仍是独立兼容写，未做服务端校验或持久化。ClearIdentity 不归还身份操作租约，也不取消请求；租约必须由取得者在 using/finally 中 Dispose，遗失会使后续竞争持续失败。
 - UTF-8 16 字节不是 16 个字符，也不限定 ASCII；本地长度合法不能证明服务器使用相同凭据。
 

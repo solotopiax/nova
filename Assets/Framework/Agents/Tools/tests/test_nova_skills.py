@@ -7,6 +7,7 @@ import importlib.util
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -27,6 +28,17 @@ def load_tool():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def markdown_local_targets(document_path: Path, content: str) -> set[Path]:
+    """解析测试关心的本地 Markdown 链接目标，不依赖显示文字或开发仓固定前缀。"""
+    targets = set()
+    for reference in re.findall(r"\[[^\]]*\]\(([^)]+)\)", content):
+        path = reference.split("#", 1)[0]
+        if not path or "://" in path:
+            continue
+        targets.add((document_path.parent / path).resolve())
+    return targets
 
 
 class NovaSkillsToolTests(unittest.TestCase):
@@ -622,6 +634,33 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         self.assertTrue(any("首个正文段落" in error for error in errors))
 
+    def test_validate_accepts_common_baseline_relative_link(self):
+        """共同入口改成可点击的同包相对链接后，Skill 仍能正常分发。"""
+        skill_path = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        skill_path.write_text(
+            skill_path.read_text(encoding="utf-8").replace(
+                "`Docs/START_HERE.md`",
+                "[Docs/START_HERE.md](../../../Docs/START_HERE.md)",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
+
+    def test_validate_rejects_common_baseline_link_to_another_document(self):
+        """显示文字正确也不能把共同入口实际链接到另一份文档。"""
+        skill_path = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        skill_path.write_text(
+            skill_path.read_text(encoding="utf-8").replace(
+                "`Docs/START_HERE.md`", "[Docs/START_HERE.md](../../../Docs/INDEX.md)"
+            ),
+            encoding="utf-8",
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("首个正文段落" in error for error in errors))
+
     def test_validate_rejects_missing_progressive_disclosure_route(self):
         """每个 Skill 都必须明确后续资料按需读取的路由，而非全量展开。"""
         skill_path = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
@@ -793,6 +832,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertEqual(
             {
                 "nova-project-router",
+                "nova-project-development",
                 "nova-project-check-readiness",
                 "nova-project-export-tables",
                 "nova-project-integrate-table",
@@ -939,7 +979,7 @@ class NovaSkillsToolTests(unittest.TestCase):
             for line in router_content.splitlines()
             if "nova-project-integrate-network-api" in line
         )
-        for boundary in ("新协议", "HostKey/NetCmd", "认证与账号", "既有单URL", "Manager", "Owner/token", "受控探针", "不无条件要求表导出或账号"):
+        for boundary in ("新协议", "HostKey/NetCmd", "认证与账号", "既有单URL", "Nova.Network", "Owner/token", "受控探针", "不无条件要求表导出或账号"):
             self.assertIn(boundary, router_network_ambiguity_line)
         for boundary in ("新协议或路由/认证变化", "HostKey/NetCmd", "重放语义", "既有单URL维护", "生命周期", "不强制导表", "账号"):
             self.assertIn(boundary, router_network_route_line)
@@ -1327,14 +1367,16 @@ class NovaSkillsToolTests(unittest.TestCase):
         workflow = read_contract("nova-project-data-driven-ui")
         table = read_contract("nova-project-integrate-table")
         ui_create = read_contract("nova-project-ui-create-view")
+        ui_update = read_contract("nova-project-update-ui-view")
+        children = (table, ui_create, ui_update)
         workflow_input_names = {item["name"] for item in workflow["inputs"]}
         child_input_names = {
-            item["name"] for child in (table, ui_create) for item in child["inputs"]
+            item["name"] for child in children for item in child["inputs"]
         }
         workflow_allowed_scope = set(workflow["writeScope"]["allow"])
         child_allowed_scope = {
             path
-            for child in (table, ui_create)
+            for child in children
             for path in child["writeScope"]["allow"]
         }
         workflow_adapter_kinds = {
@@ -1344,7 +1386,8 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         self.assertTrue(child_input_names <= workflow_input_names)
         self.assertTrue(child_allowed_scope <= workflow_allowed_scope)
-        self.assertTrue(set(table["locks"]) <= set(workflow["locks"]))
+        for child in children:
+            self.assertTrue(set(child["locks"]) <= set(workflow["locks"]))
         self.assertTrue(
             {"workspace-edit", "unity-editor-api", "agent-action", "csharp-api", "unity-editor-automation"}
             <= workflow_adapter_kinds
@@ -1523,7 +1566,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         canonical_agents_root = TOOL_PATH.parent.parent
         catalog = load_tool().load_catalog(canonical_agents_root)
         expected_first_paragraph = (
-            "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，"
+            "触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，"
             "作为所有 `nova-project-*` Skill 的共同底线。"
         )
 
@@ -1546,7 +1589,9 @@ class NovaSkillsToolTests(unittest.TestCase):
         content = quick_start_path.read_text(encoding="utf-8")
 
         self.assertIn("所有 `nova-project-*` Skill 触发后都先读取本页", content)
-        self.assertIn("开发态和消费态共享的唯一 Git 真源", content)
+        self.assertIn("开发态与消费态共用", content)
+        self.assertIn("唯一 Git 真源", content)
+        self.assertIn(TOOL_PATH.parent.parent.resolve(), markdown_local_targets(quick_start_path, content))
         self.assertIn("框架开发态 Skill 保留在仓库根 `.agents/skills/`", content)
 
     def test_canonical_ui_create_view_references_existing_framework_docs(self):
@@ -1562,8 +1607,9 @@ class NovaSkillsToolTests(unittest.TestCase):
         ]
 
         for relative_document in required_documents:
-            self.assertIn(f"`Docs/{relative_document}`", content)
-            self.assertTrue((documentation_root / relative_document).is_file())
+            target = (documentation_root / relative_document).resolve()
+            self.assertIn(target, markdown_local_targets(skill_path, content))
+            self.assertTrue(target.is_file())
 
     def test_canonical_ui_create_view_allows_export_without_hand_editing_generated_files(self):
         """UI 导出允许更新生成物，但 Skill 不得暗示可以手工编辑生成物。"""
@@ -1582,8 +1628,11 @@ class NovaSkillsToolTests(unittest.TestCase):
         quick_start_path = TOOL_PATH.parent.parent.parent / "Docs" / "START_HERE.md"
         content = quick_start_path.read_text(encoding="utf-8")
 
-        self.assertIn("Assets/Framework/Agents/Skills/", content)
-        self.assertIn("PackageInfo.resolvedPath/Agents/Skills/", content)
+        self.assertIn(TOOL_PATH.parent.parent.resolve(), markdown_local_targets(quick_start_path, content))
+        self.assertIn("PackageInfo", content)
+        self.assertIn("resolvedPath", content)
+        self.assertIn("当前实际解析的物理根目录", content)
+        self.assertIn("受管同步副本", content)
         self.assertIn(".agents/skills", content)
         self.assertIn("nova-skills.transaction.json", content)
         self.assertIn("不需要执行 `sync`", content)

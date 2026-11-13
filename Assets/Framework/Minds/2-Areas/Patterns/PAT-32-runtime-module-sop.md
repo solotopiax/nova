@@ -26,7 +26,7 @@ related:
 
 ## 适用场景
 
-- 在 `Assets/Framework/Scripts/Runtime/Modules/` 下新增一个 Component+Manager 模块时。
+- 在 [Scripts/Runtime/Modules/](../../../Scripts/Runtime/Modules) 下新增一个 Component+Manager 模块时。
 - 评审 Runtime 模块 PR 是否符合目录、命名与 partial 切分规范。
 
 ## 核心做法
@@ -37,7 +37,7 @@ related:
 |---|---|
 | `XxxComponent.cs` | Component 主文件（类声明 + `Awake` / `Start`） |
 | `XxxComponent.Visitors.cs` | Component 属性访问器（`[SerializeField]` 字段 + 属性） |
-| `XxxComponent.Yyy.cs` | Component 内嵌配置数据类（如 `UIComponent.UIGroup.cs`） |
+| `XxxComponent.Yyy.cs` | Component 内嵌配置数据类（如 [UIComponent.UIGroup.cs](../../../Scripts/Runtime/Modules/UI/UIComponent.UIGroup.cs)） |
 | `XxxManager.cs` | Manager 主文件（构造器 + 接口方法实现） |
 | `XxxManager.Methods.cs` | Manager `private` / `protected` 辅助方法 |
 | `XxxManager.Visitors.cs` | Manager 字段 + 属性访问器 |

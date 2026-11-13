@@ -11,7 +11,7 @@ TCP 明文通道，消息体为 JSON 字符串列表的二进制打包。负责 
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.TcpChannel.cs` | TCP 明文通道实现（含 WebGL 和非 WebGL 两套接收逻辑） |
+| [WebSocketScope.TcpChannel.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.TcpChannel.cs) | TCP 明文通道实现（含 WebGL 和非 WebGL 两套接收逻辑） |
 
 ## 关键字段/属性
 

@@ -44,7 +44,7 @@ iOS 应用的 `Info.plist` 用途说明取决于项目实际调用的权限和�
 ## 来源与验证
 
 - 当前实现：`PrivacyConfigs.InfoPlistUsageDescriptions`、`ConfigWindow.RightPanel`、`EditorUtil.Config.Exporter`、`InfoPlistUsageDescriptionsParser`、`IOSPrivacyManifestBuildProcessor`。
-- 当前说明：`Assets/Framework/Docs/Runtime/Modules/Config/PrivacyConfigs.md` 与 `Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md`。
+- 当前说明：[Docs/Runtime/Modules/Config/PrivacyConfigs.md](../../../Docs/Runtime/Modules/Config/PrivacyConfigs.md) 与 [Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md](../../../Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md)。
 - 验证：解析用例 6/6 通过，Editor 与测试程序集静态编译 0 错误；非 iOS 灰显态已查看。iOS 启用态与真实 Xcode 归档尚未验证，不能据此断言上传平台已接受全部用途说明。
 
 ## 关联

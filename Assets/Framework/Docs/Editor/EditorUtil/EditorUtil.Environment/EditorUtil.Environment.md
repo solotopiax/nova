@@ -1,6 +1,6 @@
 # EditorUtil.Environment
 
-`NovaFramework.Editor.EditorUtil.Environment` 是 Python3、Luban 和 HybridCLR 的编辑器环境检查器集合。当前 Environment.cs 只保留 partial 容器，旧 EnvironmentData、ColumnIndices、GetEnvironmentData 和 GetColumnIndices 已移除；过滤器使用各自显式导出上下文，不应恢复旧的场景默认值回退。
+`NovaFramework.Editor.EditorUtil.Environment` 是 Python3、Luban 和 HybridCLR 的编辑器环境检查器集合。当前 [EditorUtil.Environment.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.cs) 只保留 partial 容器，旧 EnvironmentData、ColumnIndices、GetEnvironmentData 和 GetColumnIndices 已移除；过滤器使用各自显式导出上下文，不应恢复旧的场景默认值回退。
 
 ## 探测与缓存
 
@@ -14,7 +14,7 @@ LubanChecker 独立探测 Luban.dll 存在和 dotnet --version，后者使用 Pr
 
 ## HybridCLR 安装与验收
 
-新建 Nova 工程必须在业务开发前核对 HybridCLR 的实际环境。默认按工程所选 HybridCLR 方案完成本地安装准备；确实不采用时须有明确范围或技术依据并告知用户，状态写为“不适用/未安装”，不能为了通过构建而临时关闭开关，也不能仅因游戏单机就推断无需该环境。
+所有 Nova 工程按 [NA-004：业务默认进入热更范围，AOT 例外须证明必要性](../../../Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-004业务默认进入热更范围aot-例外须证明必要性) 将 HybridCLR 作为必备基线，新建项目在依赖业务开发前准备实际环境、启用与配置。不得因单机、离线或体量小自行选择不采用；不支持的 Unity/平台或缺少工具链须报告阻塞，不能关闭开关来通过构建。三平台 Batch、映射和分层产物要求见[三平台构建与 HybridCLR 基线](../../../Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)。
 
 以下状态分别核验，不相互替代：
 
@@ -23,7 +23,7 @@ LubanChecker 独立探测 Luban.dll 存在和 dotnet --version，后者使用 Pr
 | UPM 包已解析 | 实际 package id、声明与解析版本、source 及解析物理路径；覆盖 registry、local、Git 等实际来源，不以 manifest 声明、固定 `Packages/<id>` 物理目录或缓存目录名代替解析结果。 |
 | 本地安装完成 | 当前安装器的真实结果、`HasInstalledHybridCLR()`、`SettingsUtil.LocalIl2CppDir` 对应本机环境、实际文件及安装版本标记；记录所用 Unity 版本和包声明的兼容分支。目录存在只是必要条件，不足以证明完整、兼容或能构建。 |
 | 启用策略正确 | HybridCLR 自身设置、Nova 热更策略、业务程序集与加载链分别读取；关闭热更不等于安装成功，关闭 HybridCLR 后普通 IL2CPP 构建通过也不能验收该工具链。 |
-| 生成与正式交付 | 使用热更时按目标平台/DevelopmentBuild 核对正式导出、DLL 列表与输出、link/AOT、资源映射、Bundle 和最终 Player；Editor 直接运行源码不证明业务 DLL 已部署。 |
+| 生成与正式交付 | 按目标平台/DevelopmentBuild 核对正式导出、DLL 列表与输出、link/AOT、资源映射、Bundle 和最终 Player；Editor 直接运行源码不证明业务 DLL 已部署。 |
 | 实际运行 | 沿目标 Player/设备核对所需程序集、AOT metadata 和业务入口真实加载；APK 文件存在或能启动不能单独证明热更链有效。 |
 
 安装后重新读取安装器状态和本地版本标记，再对 Nova 环境面板执行重新检测；`Check()` 的旧 SessionState 缓存不能作为当次证据。包版本、上游分支、Unity 版本和安装标记分别报告，不能仅按名称相似推断一致。当前通用环境检查器的固定路径与存在性局限仍如上文所述，面板 `Ready` 不代替这些验收项。

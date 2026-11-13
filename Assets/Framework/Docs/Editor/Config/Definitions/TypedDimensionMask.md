@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/TypedDimensionMask.cs` | `TypedDimensionMask` | 带类型全名的掩码条目容器 |
+| [Editor/Config/Definitions/TypedDimensionMask.cs](../../../../Scripts/Editor/Config/Definitions/TypedDimensionMask.cs) | `TypedDimensionMask` | 带类型全名的掩码条目容器 |
 
 ---
 

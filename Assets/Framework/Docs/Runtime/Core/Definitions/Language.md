@@ -9,7 +9,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Runtime/Core/Definitions/Language.cs` | `Language`, `LanguageInfo`, `LanguageMetadata` | 语言枚举、信息结构体及元数据静态类 |
+| [Runtime/Core/Definitions/Language.cs](../../../../Scripts/Runtime/Core/Definitions/Language.cs) | `Language`, `LanguageInfo`, `LanguageMetadata` | 语言枚举、信息结构体及元数据静态类 |
 
 ## § 3 继承关系
 
@@ -83,7 +83,7 @@ LanguageInfo info = new LanguageInfo("简体中文", "zh-CN");
 
 | 误区 | 正确理解 |
 |---|---|
-| 放到 Localizations 模块下 | `Nova.Visitors.cs` 直接使用 `Language` 字段，放 Localizations 会产生根组件→子模块逆向依赖，正确位置是 `Runtime/Core/Definitions/` |
+| 放到 Localizations 模块下 | [Nova.Visitors.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.Visitors.cs) 直接使用 `Language` 字段，放 Localizations 会产生根组件→子模块逆向依赖，正确位置是 [Runtime/Core/Definitions/](../../../../Scripts/Runtime/Core/Definitions/) |
 | 使用旧的 `LanguageTable.Desc[index]` 数组索引方式 | 已重构为 `LanguageMetadata.GetDesc(Language)` 字典查询，防止枚举增删导致的索引错位 |
 | 用对象初始化器或后续赋值修改 `LanguageInfo.Desc` / `Flag` | 结构体和字段均为只读，使用 `LanguageInfo(desc, flag)` 构造 |
 

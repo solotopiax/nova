@@ -1,7 +1,7 @@
 # Simple Disk Utils
 
 > 包名：`com.solotopia.simplediskutils`
-> 当前版本：`1.0.5`
+> 当前版本：`1.0.8`
 
 跨平台磁盘空间检测工具
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.simplediskutils": "1.0.2"
+  "com.solotopia.simplediskutils": "1.0.8"
 }
 ```
 
@@ -27,4 +27,4 @@
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。

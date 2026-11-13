@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Core/Table/ITable.cs` | `ITable` | 基础接口（仅 `Mode` 属性） |
+| [Core/Table/ITable.cs](../../../../Scripts/Runtime/Core/Table/ITable.cs) | `ITable` | 基础接口（仅 `Mode` 属性） |
 | | `ITable<TData>` | 带强类型数据行的表格接口（List / Map 通用基接口） |
 | | `ITableMap<TKey, TData>` | 映射模式表格接口，支持按键查询 |
 

@@ -10,7 +10,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Proto.CliRunner.cs` | `EditorUtil.Proto.CliRunner` | protoc 路径解析 + 参数拼接 + 进程启动 + Luban→protoc 闭环管线 |
+| [EditorUtil.Proto.CliRunner.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Proto/EditorUtil.Proto.CliRunner.cs) | `EditorUtil.Proto.CliRunner` | protoc 路径解析 + 参数拼接 + 进程启动 + Luban→protoc 闭环管线 |
 
 ---
 
@@ -111,7 +111,7 @@ public static bool RunLubanProtoPipeline(string lubanConfPath, string lubanTarge
 
 ### GetProtocPath
 
-1. 通过 `Path.GetFullPath("Packages/com.solotopia.luban")` 获取 UPM 包路径
+1. 当前实现通过 `Path.GetFullPath("Packages/com.solotopia.luban")` 获取 UPM 逻辑路径；该固定候选不证明实际包根，人工查阅 Luban 包须按 [包发现规则](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 核对有效解析结果
 2. 按 `Application.platform == RuntimePlatform.WindowsEditor` 选择 Mac 或 Win 的相对路径
 3. 拼接完整路径，文件存在则返回；否则打印 Error 返回 null
 

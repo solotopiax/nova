@@ -51,6 +51,7 @@ related:
 ## Nova 边界
 
 - Router、Workflow、Operation 是 Skill 的分类，Skill 不是自运行的 C# 执行器。
+- 动作前先按 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 选定匹配的 Skill、读取其 contract，并按声明入口执行；通用 Unity 操作或工作区源码编辑也须符合该入口的边界，工具能执行不等于已获准绕行。
 - 一个 Skill 可以使用多个 Action，一个 Action 也可以被多个 Skill 复用；只读或工作区任务可以不经过 Unity MCP。
 - 当前 Nova MCP 包扩展默认 Unity MCP Provider，复用其服务；包名含 MCP 不代表另外启动独立服务。
 - 注册工具声明工具名、参数与处理函数，解决 AI 如何发现工具以及请求交给谁的问题。
@@ -62,6 +63,9 @@ related:
 
 - “Nova 流程先拆解任务，再使用 Unity MCP 执行”描述任务安排顺序；“请求先经过 Unity MCP，再进入 Nova 工具”描述通信路径。两者可以同时成立。
 - Action 成功只证明它自己的操作满足证据要求，整个 Skill 或 Workflow 还需完成其余验收。
+- 经 Unity 保存只说明资产写入方式；后续 Action 成功不能追认此前绕过声明入口的任意 C# 或脚本执行合规。实际授权、实时合同与恢复要求见 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行)。
+- 参数来源正确、格式合法、保存与正式导出成功、真实消费者成功分别判断，任一项的证据不能代替其余项；字段含义及约束仍由所属源码与 Docs 说明，不在术语条目重复维护。
+- 参数来源正确包含用户允许从 Nova 各 Demo 临时复用的物料，产品专有物料尚未确定时也可据此推进；按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 核对来源、配套关系、临时状态和后续替换。临时复用不视为自造物料，也不代表正式产品登记。
 - Operation Skill 与 Tool 的 `operation=describe / plan / execute / verify` 含义不同，后者是调用阶段。
 - 安装适配包不会替外部 AI 宿主启动 MCP 服务或刷新已有会话；发现工具和实际连接仍需落实。
 
@@ -75,6 +79,6 @@ related:
 - [Nova Project Skills](../../../Agents/INDEX.md)：Skill 类型、自动发现和 Action 复用契约。
 - [[ADR-081-project-action-controlled-execution-layer|ADR-081]]：受控 Action 执行层与传输桥分离的既有决策。
 - [NovaProjectActionContractProvider.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActionContractProvider.cs)：中立请求转交 Framework Action 的实现。
-- 开发仓 `UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs`：`McpForUnityTool`、`AutoRegister=true` 与请求转交中立网关；对应 Adapter asmdef 引用 `MCPForUnity.Editor` 和 `NovaFramework.Mcp.Editor`。
+- 开发仓 [UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs](../../../../../UPMPackages/com.solotopia.nova.framework.mcp/Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs)：`McpForUnityTool`、`AutoRegister=true` 与请求转交中立网关；对应 Adapter asmdef 引用 `MCPForUnity.Editor` 和 `NovaFramework.Mcp.Editor`。
 
 本条用于术语解释、调用关系图和消费端文档，不新增架构决策。依据当前 Skill、Docs 与注册/分发源码核对；不把这份静态解释当作设备、构建或外部服务已运行成功的证据。

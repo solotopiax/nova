@@ -4,7 +4,7 @@
 
 `BindErrorCode` 是账号绑定业务错误码常量类。服务端绑定业务段（10400~10499）由服务端原样返回，经 `NetService` 透传到 `NetResponse.ErrorCode`，业务侧用本类常量与 `ErrorCode` 比对。
 
-**所在文件：** `Nova/Scripts/Runtime/BindErrorCode.cs`
+**所在文件：** [Nova/Scripts/Runtime/BindErrorCode.cs](../Scripts/Runtime/BindErrorCode.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameBind.Runtime`
 **类签名：** `public static class BindErrorCode`
 

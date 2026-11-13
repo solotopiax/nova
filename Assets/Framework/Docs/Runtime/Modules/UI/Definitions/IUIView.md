@@ -11,7 +11,7 @@ UI 视图接口，定义了视图的完整生命周期契约。包括初始化�
 
 | 文件 | 说明 |
 |------|------|
-| `IUIView.cs` | 接口定义，位于 `Modules/UI/Definitions/` |
+| [IUIView.cs](../../../../../Scripts/Runtime/Modules/UI/Definitions/IUIView.cs) | 接口定义，位于 [Modules/UI/Definitions/](../../../../../Scripts/Runtime/Modules/UI/Definitions/) |
 
 ## 关键字段/属性
 

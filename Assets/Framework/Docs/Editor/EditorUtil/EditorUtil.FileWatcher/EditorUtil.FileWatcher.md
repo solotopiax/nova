@@ -13,7 +13,7 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.FileWatcher.cs` | `EditorUtil.FileWatcher` | 目录监控注册/注销、跨线程变更通知转主线程回调 |
+| [EditorUtil.FileWatcher.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.FileWatcher/EditorUtil.FileWatcher.cs) | `EditorUtil.FileWatcher` | 目录监控注册/注销、跨线程变更通知转主线程回调 |
 
 ---
 

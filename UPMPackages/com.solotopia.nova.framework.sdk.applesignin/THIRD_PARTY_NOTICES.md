@@ -1,5 +1,5 @@
 # Third Party Notices
 
-This package includes AppleAuth Unity plugin source code under `Core/AppleAuth`.
+This package includes AppleAuth Unity plugin source code under [Core/AppleAuth](Core/AppleAuth/).
 
-See `Core/AppleAuth/LICENSE.md` for the upstream license.
+See [Core/AppleAuth/LICENSE.md](Core/AppleAuth/LICENSE.md) for the upstream license.

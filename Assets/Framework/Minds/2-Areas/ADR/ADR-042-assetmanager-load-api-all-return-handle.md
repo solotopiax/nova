@@ -189,6 +189,14 @@ finally
 - **调用方需要管理 Handle 生命周期**：短期使用必须 try/finally；长期持有必须在 Shutdown/Stop/OnDestroy 时 Release，认知成本上升
 - **场景加载 API 仅支持异步卸载**：`ISceneHandle.UnloadAsync()` 无同步等价；若业务需要同步卸载场景，需要等待帧末完成
 
+## 可选便利层仍须有明确拥有者
+
+在本决策上增加目标绑定便利层，不等于恢复裸资源或字符串反查释放：调用方主动创建 [SpriteBinding](../../../Docs/Runtime/Modules/Asset/SpriteBinding.md) 后，由该助手接管每笔实际取得的 Handle；业务拥有助手并在显示职责结束时释放。真正 SpriteAtlas 的克隆与图集 Handle 由同一租约拥有，普通 Sprite 不按克隆销毁。未创建助手的旧代码继续原显式 Handle 用法，不被扫描或接管。
+
+显式选包通过 [独立可选加载能力](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetPackageLoader.md) 复用相同 Handle 契约，不向旧资源接口追加强制实现成员，也不改变旧入口默认包身份。便利层、包选择与页面按次生命周期可以组合，但每项只有主动选择的范围参与，不能为便利接入扩大默认流程。
+
+本段解释持续成立的所有权与兼容边界；具体接口以当前 Docs/源码为准，不作为所有旧项目或目标平台已经运行验收的记录。外部研究与后续定位见 [[RES-006-tengine-source-comparison]]。
+
 ## 关联
 
 - 上层原则：[[ADR-011-load-unload-and-ireference-pairing|ADR-011]]（Load/Unload 配对收口，本 ADR 是其在 Handle 接口层面的系统性落地）

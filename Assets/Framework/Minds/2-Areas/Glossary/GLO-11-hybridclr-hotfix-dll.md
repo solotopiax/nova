@@ -53,6 +53,6 @@ ProcedureLoadDll:
 
 ## 来源与验证
 
-- `Assets/Framework/Minds/2-Areas/MOC/MOC-HybridCLR.md`：当前加载链与配置驱动口径。
-- `Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs` 与 `AssetManagerConfig.cs`：`EnableHotfix` 定义与 PlayMode 双向联动注释。
+- [Minds/2-Areas/MOC/MOC-HybridCLR.md](../MOC/MOC-HybridCLR.md)：当前加载链与配置驱动口径。
+- [Scripts/Runtime/Modules/Asset/AssetComponent.cs](../../../Scripts/Runtime/Modules/Asset/AssetComponent.cs) 与 [AssetManagerConfig.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs)：`EnableHotfix` 定义与 PlayMode 双向联动注释。
 - ADR-005 / ADR-013 / ADR-028 对应决策正文。

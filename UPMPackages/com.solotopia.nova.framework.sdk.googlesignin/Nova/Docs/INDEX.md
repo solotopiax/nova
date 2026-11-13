@@ -9,9 +9,9 @@
 
 ## Current State
 
-- Runtime integration lives under `Nova/Scripts/Runtime`.
-- Native or third-party integration lives under `Core/Plugins`.
-- Demo scene lives under `Assets/Samples/GoogleSigninDemo`.
+- Runtime integration lives under [Nova/Scripts/Runtime](../Scripts/Runtime/).
+- Native or third-party integration lives under [Core/Plugins](../../Core/Plugins/).
+- Import `GoogleSigninDemo` from this package in Package Manager, then locate its scene from the actual import list. The development source is declared in [nova-samples.json](../../nova-samples.json); it is not a fixed consumer import directory.
 - Runtime config is injected automatically through `GoogleSignInPlugin.ConfigType`; Android preprocessing registers ProGuard rules for the package's custom Java bridge.
 - Successful login publishes `SDKDataKeys.OpenId` and `SDKDataKeys.ThirdLoginProvider` for cross-plugin identity synchronization.
 ## Nova SDK 生命周期

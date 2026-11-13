@@ -11,7 +11,7 @@ WebGL 平台 WebSocket 原生 JS 库桥接类。通过 `DllImport("__Internal")`
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.WebGL.cs` | WebGL 原生库接口桥接定义 |
+| [WebSocketScope.WebGL.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/WebSocketScope.WebGL.cs) | WebGL 原生库接口桥接定义 |
 
 ## 委托类型
 

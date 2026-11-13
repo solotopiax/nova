@@ -5,11 +5,11 @@ description: Use when Nova 项目组在接入或升级 Android SDK/Kit 后，需
 
 # Nova 解析 Android 原生依赖
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-先读取 `references/contract.json`。仅在确认 EDM4U 行为时读取 `Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md`；仅在本任务来自既有 Pipify 流程时读取 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`；仅在需要理解 Action 的确认与恢复语义时读取 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md`。不要展开所有 SDK、Gradle、HybridCLR 或构建文档。
+先读取 [references/contract.json](references/contract.json)。仅在确认 EDM4U 行为时读取 [Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md](../../../Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md)；仅在本任务来自既有 Pipify 流程时读取 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)；仅在需要理解 Action 的确认与恢复语义时读取 [Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md](../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)。不要展开所有 SDK、Gradle、HybridCLR 或构建文档。
 
 ## 范围与冻结输入
 
@@ -17,7 +17,7 @@ description: Use when Nova 项目组在接入或升级 Android SDK/Kit 后，需
 
 先冻结唯一项目根、`activeBuildTarget=Android`、EDM4U 已加载状态、非空完整依赖图及摘要、受管写入边界和执行入口。仓库摘要数组保留原始优先级顺序，调换顺序也属于依赖图漂移。依赖图为空、EDM4U 不可用、当前平台不是 Android 或 Resolve 目标不明确时返回 `not_applicable` 或 `blocked`，不得以清目录来“重新试一次”。
 
-项目内产物包括 EDM4U 状态文件、`Assets/GeneratedLocalRepo/**`、`Assets/Plugins/Android/**` 中 EDM4U 管理的依赖文件与 Gradle/Manifest 模板。正规 Force Resolve 还可能运行 Java/Gradle、下载 Maven 依赖、更新主机缓存、安装 Android SDK 包及显示设置选择窗口；因此 Action 声明 `ExternalRead`、`ExternalWrite`，契约主版本为 `2`。不能把固定项目输出目录当成完整副作用边界。
+项目内产物包括 EDM4U 状态文件、[Assets/GeneratedLocalRepo/**（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md)、[Assets/Plugins/Android/**（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) 中 EDM4U 管理的依赖文件与 Gradle/Manifest 模板。正规 Force Resolve 还可能运行 Java/Gradle、下载 Maven 依赖、更新主机缓存、安装 Android SDK 包及显示设置选择窗口；因此 Action 声明 `ExternalRead`、`ExternalWrite`，契约主版本为 `2`。不能把固定项目输出目录当成完整副作用边界。
 
 确认前必须绑定当前解析设置、模板、Java/Gradle/Android SDK 的实际路径与身份、可删除的完整 `gpsr` 标签文件集合、外部下载与缓存/安装目标。当前 Plan 未完整冻结这些输入时返回 `blocked`，不得把用户对功能开发的同意当成对不明外部目标的执行许可。仓库 URL 只进入 SHA-256 摘要，不能把私有 Maven 地址、userinfo、query Token 或凭据写入 Plan、Receipt、日志或报告。
 
@@ -31,7 +31,7 @@ description: Use when Nova 项目组在接入或升级 Android SDK/Kit 后，需
 
 已安装的旧配置迁移回调仅在完整冻结域无 `.asset` 时走专属检查：实际模块、源码和编译归属一致，正常 update 见证成立且无初始化/迁移重入、既有队列为空。原 Plan State/执行观察器只继承同域且回调/调度摘要一致的原见证，Verify 的反序列化回执须另核当前真实 update 栈。排队时等待自然结束，不调用、清除或推进迁移；历史迁移结果不替代或阻断本次 Android 证据，配置仍属于非目标保护。
 
-仅该依赖 Framework Editor 的模块使用 `references/android-refresh-compiled-identity.json` 保存已审完整 DLL/MVID，避免指纹维护本身再次触发重编译。消费端只读；维护方核实实际加载、源码及编译映射后更新。缺失、非法或与实际身份不符时阻断，不自动信任新 DLL。
+仅该依赖 Framework Editor 的模块使用 [references/android-refresh-compiled-identity.json](references/android-refresh-compiled-identity.json) 保存已审完整 DLL/MVID，避免指纹维护本身再次触发重编译。消费端只读；维护方核实实际加载、源码及编译映射后更新。缺失、非法或与实际身份不符时阻断，不自动信任新 DLL。
 
 完整材料的容量通过此 Action 内部无损回执封装解决，不删对象行或改变 dirty/原摘要，不提高通用 Store 的 256KiB 或 MCP 的 2MiB 上限。原文、gzip、封装、完整 Operation 与公开 wire 数据分别有界；失败必须给出实际字节、上限与层级。公开 data 在容量内保持原字段/数组结构；超限明确 blocked 或 partial，并准确说明已附回执是否经 Core 持久化及当前展示缺失，不静默改成 opaque 对象。写后编码超限不得二次抛出：只能沿用此前已持久化的完整写前 Recovery，明确完整写后回执未持久化，不重放。旧普通回执可读不等于新成功，历史 blocked/partial 不因容量修复升级。
 

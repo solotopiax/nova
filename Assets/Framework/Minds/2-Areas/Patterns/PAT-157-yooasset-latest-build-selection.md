@@ -88,10 +88,10 @@ ConfigWindow 与 PipifyWindow 都只读展示动态解析结果，但不把具�
 
 ## 验证依据
 
-- 选择与完整性实现：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.LatestVersion.cs`
-- 上传计划：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.cs`
-- 维度配置：`Assets/Framework/Scripts/Editor/Config/Definitions/CDNEditorConfigs.cs`
-- 窗口交互：`Assets/Framework/Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs`、`Assets/Framework/Scripts/Editor/Windows/PipifyWindow/PipifyWindow.RightPanel.cs`
+- 选择与完整性实现：[Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.LatestVersion.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.LatestVersion.cs)
+- 上传计划：[Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.cs)
+- 维度配置：[Scripts/Editor/Config/Definitions/CDNEditorConfigs.cs](../../../Scripts/Editor/Config/Definitions/CDNEditorConfigs.cs)
+- 窗口交互：[Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs)、[Scripts/Editor/Windows/PipifyWindow/PipifyWindow.RightPanel.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.RightPanel.cs)
 - 契约测试：`Assets/Tests/Editor/CDN/CdnDeploymentPlannerTests.cs`、`CDNEditorConfigsTests.cs`、`CdnConfigWindowContractTests.cs`、`CdnPipifyStepTests.cs`
 - EditMode CDN Editor 回归曾验证 96/96 通过，覆盖最新候选、半成品、损坏 report、同时间歧义、链接越界和前缀命名。
 

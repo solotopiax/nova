@@ -68,5 +68,12 @@ namespace NovaFramework.Runtime
         /// HTTP 每次物理请求的超时时间（秒）；不是整条主备链的总超时。
         /// </summary>
         public float RequestTimeout = 60f;
+
+        /// <summary>
+        /// 启动时 GM 应用配置每次物理请求的超时时间（秒）；主备请求与重试分别计时。
+        /// </summary>
+        [Min(0.1f)]
+        [Tooltip("单次启动 GM 配置请求的超时时间；主备请求分别计时。必须大于 0。")]
+        public float StartupAppConfigRequestTimeout = 5f;
     }
 }

@@ -40,7 +40,7 @@ Nova 框架代码切分为两份程序集：
 具体细则：
 
 1. `.asmdef` 中：`NovaFramework.Editor.asmdef` 的 `references` 列表包含 `NovaFramework.Runtime`；`NovaFramework.Runtime.asmdef` 的 `references` **不得**包含 `NovaFramework.Editor`
-2. Runtime 代码（`Assets/Framework/Scripts/Runtime/**`）禁止：
+2. Runtime 代码（[Scripts/Runtime/](../../../Scripts/Runtime/) 及子目录）禁止：
    - 引 `using UnityEditor;`
    - 引 `using NovaFramework.Editor.*;`
    - 调任何 `EditorUtil.*` 工具
@@ -69,13 +69,13 @@ Nova 框架代码切分为两份程序集：
 
 ## 验证依据（Verification）
 
-- 静态审查：
+- 静态审查（先将 `NOVA_FRAMEWORK_ROOT` 设为当前已解析的 `<FrameworkRoot>`）：
   ```bash
   grep -rn "using UnityEditor\b\|using NovaFramework\.Editor" \
-    Assets/Framework/Scripts/Runtime/ \
+    "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime/" \
     | grep -v "#if UNITY_EDITOR"
   ```
   应输出空。
 - `NovaFramework.Runtime.asmdef.references` 字段不得出现 Editor 程序集名
-- `Assets/Framework/Scripts/Runtime/**` 不得出现 `InternalsVisibleTo(...)`
+- [Scripts/Runtime/](../../../Scripts/Runtime/) 及子目录 不得出现 `InternalsVisibleTo(...)`
 - 玩家构建（任意目标平台）通过编译 = 该决策仍生效

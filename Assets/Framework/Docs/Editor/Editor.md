@@ -1,6 +1,6 @@
 # Framework Editor
 
-**程序集**：`NovaFramework.Editor.asmdef`  
+**程序集**：[NovaFramework.Editor.asmdef](../../Scripts/Editor/NovaFramework.Editor.asmdef)
 **命名空间**：`NovaFramework.Editor`
 
 ## 子模块
@@ -34,7 +34,7 @@
 
 `IEditorRuntimeDrawer` 是一个**可选扩展接口**：
 
-- 接口定义位于 `Editor/Definitions/IEditorRuntimeDrawer.cs`
+- 接口定义位于 [Editor/Definitions/IEditorRuntimeDrawer.cs](../../Scripts/Editor/Definitions/IEditorRuntimeDrawer.cs)
 - 具体 Inspector 可以自行维护 `List<IEditorRuntimeDrawer>`
 - 当前 `EventComponentInspector` 就采用了这种模式
 - 是否使用、何时调用，由具体 Inspector 决定，不是 `BaseComponentInspector` 的基类契约
@@ -50,7 +50,7 @@
 
 ## Editor 侧几个当前事实
 
-- `PlugPalsWindow` 属于 `Windows/`，不是 `Tools/`
+- `PlugPalsWindow` 属于 `Windows/`，不是 [Tools/](../../Scripts/Editor/Tools/)
 - `KitsViewWindow` 属于 `Windows/`
 - `Windows/EnvironmentWindow/` 目录为空壳：`EnvironmentWindow` 类并不存在，「环境检测」UI 内嵌在 `ConfigWindow` 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment`；详见 [EnvironmentWindow.md](Windows/EnvironmentWindow.md)
 - 业务侧 Editor UI 以 `EditorUtil.Draw` 为主，不鼓励在 Inspector/Window 里直接扩散原生 IMGUI 写法
@@ -65,7 +65,7 @@
 
 ### 本地设备安装脚本
 
-`Editor/Tools/Deploys/install_apk.py` 先列出设备再执行 `adb install`，没有解析在线/唯一设备、指定 serial、`-r`、超时或安装后包名/版本/启动验收。`install_aab.py` 用 bundletool 生成 APKS 后安装；主入口在转换前删除已有输出，转换失败不恢复旧 APKS。两者只把 `CalledProcessError` 转成失败结果，程序缺失等 `OSError` 仍传播。
+[Editor/Tools/Deploys/install_apk.py](../../Scripts/Editor/Tools/Deploys/install_apk.py) 先列出设备再执行 `adb install`，没有解析在线/唯一设备、指定 serial、`-r`、超时或安装后包名/版本/启动验收。[install_aab.py](../../Scripts/Editor/Tools/Deploys/install_aab.py) 用 bundletool 生成 APKS 后安装；主入口在转换前删除已有输出，转换失败不恢复旧 APKS。两者只把 `CalledProcessError` 转成失败结果，程序缺失等 `OSError` 仍传播。
 
 AAB 脚本接收八个位置参数，APK 脚本接收两个；多余项不消费，路径存在性和文件类型校验有限。AAB 的签名密码进入 Java 命令参数，进程异常字符串可能包含命令；主入口不主动打印密码不等于全调用链无泄漏。应由受控构建/安装流程约束产物、设备与凭据，脚本退出成功本身不是设备运行验收。
 

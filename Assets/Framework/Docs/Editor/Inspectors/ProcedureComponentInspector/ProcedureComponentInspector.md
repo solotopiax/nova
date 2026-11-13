@@ -11,9 +11,9 @@ ProcedureComponent 的 Inspector 定制面板，提供 Manager 实现类选择�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `ProcedureComponentInspector.cs` | `sealed partial ProcedureComponentInspector` | 主体：`OnEnable`（绑定属性、反射缓存 ProcedureLoadDll internal 属性）、`OnInspectorGUI`、`RequiresConstantRepaint`、`OnCompileComplete` |
-| `ProcedureComponentInspector.Visitors.cs` | `partial ProcedureComponentInspector` | 字段：Manager 类型名 / 入口流程 / LauncherSettings 属性；反射缓存 `m_LoadExceptionPropInfo` / `m_LoadCompletePropInfo` / `m_EntranceTypePropInfo`；`m_RunHistoryFoldout` |
-| `ProcedureComponentInspector.Methods.cs` | `partial ProcedureComponentInspector` | 绘制方法：`DrawConfigs` / `DrawProcedureSettings` / `DrawLauncherSettings` / `DrawRuntimeInfo` / `DrawProcedureHistory`；反射辅助：`TryGetLoadException` / `TryGetLoadComplete` / `TryGetEntranceType`；`RefreshProcedureTypeNames` |
+| [ProcedureComponentInspector.cs](../../../../Scripts/Editor/Inspectors/ProcedureComponentInspector/ProcedureComponentInspector.cs) | `sealed partial ProcedureComponentInspector` | 主体：`OnEnable`（绑定属性、反射缓存 ProcedureLoadDll internal 属性）、`OnInspectorGUI`、`RequiresConstantRepaint`、`OnCompileComplete` |
+| [ProcedureComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/ProcedureComponentInspector/ProcedureComponentInspector.Visitors.cs) | `partial ProcedureComponentInspector` | 字段：Manager 类型名 / 入口流程 / LauncherSettings 属性；反射缓存 `m_LoadExceptionPropInfo` / `m_LoadCompletePropInfo` / `m_EntranceTypePropInfo`；`m_RunHistoryFoldout` |
+| [ProcedureComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/ProcedureComponentInspector/ProcedureComponentInspector.Methods.cs) | `partial ProcedureComponentInspector` | 绘制方法：`DrawConfigs` / `DrawProcedureSettings` / `DrawLauncherSettings` / `DrawRuntimeInfo` / `DrawProcedureHistory`；反射辅助：`TryGetLoadException` / `TryGetLoadComplete` / `TryGetEntranceType`；`RefreshProcedureTypeNames` |
 
 ---
 

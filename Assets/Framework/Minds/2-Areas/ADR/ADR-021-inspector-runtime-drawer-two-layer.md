@@ -70,7 +70,9 @@ Nova 每个 `XxxComponent` 都有一份 `XxxComponentInspector`，里面同时�
 
 ## 验证依据（Verification）
 
+下列命令执行前，将 `NOVA_FRAMEWORK_ROOT` 设为当前已解析的 `<FrameworkRoot>`。
+
 - 类继承关系：`BaseComponentInspector : UnityEditor.Editor` 与 `IEditorRuntimeDrawer` 两个类型存在且仅在 `NovaFramework.Editor` 程序集
-- 静态审查：所有 `XxxComponentInspector : BaseComponentInspector`（`grep -rn "class.*ComponentInspector.*:" Assets/Framework/Scripts/Editor/`），没有直接 `: UnityEditor.Editor` 的业务 Inspector
-- 运行时面板代码守卫：`grep -rn "Application\.isPlaying" Assets/Framework/Scripts/Editor/Inspectors/` 应在每个 RuntimeDrawer 实现内出现至少一次
-- 字段读取：`grep -rn "EditorUtil\.Serializer\.GetProperty" Assets/Framework/Scripts/Editor/Inspectors/` 是 RuntimeDrawer 主流读法
+- 静态审查：所有 `XxxComponentInspector : BaseComponentInspector`（`grep -rn "class.*ComponentInspector.*:" "$NOVA_FRAMEWORK_ROOT/Scripts/Editor/"`），没有直接 `: UnityEditor.Editor` 的业务 Inspector
+- 运行时面板代码守卫：`grep -rn "Application\.isPlaying" "$NOVA_FRAMEWORK_ROOT/Scripts/Editor/Inspectors/"` 应在每个 RuntimeDrawer 实现内出现至少一次
+- 字段读取：`grep -rn "EditorUtil\.Serializer\.GetProperty" "$NOVA_FRAMEWORK_ROOT/Scripts/Editor/Inspectors/"` 是 RuntimeDrawer 主流读法

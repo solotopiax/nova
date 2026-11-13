@@ -15,9 +15,9 @@ App 组件编辑器面板定制，绘制 Manager 选择器、App 更新总开关
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Editor/Inspectors/AppComponentInspector/AppComponentInspector.cs` | `AppComponentInspector` | OnEnable（属性绑定）+ OnInspectorGUI |
-| `Editor/Inspectors/AppComponentInspector/AppComponentInspector.Visitors.cs` | `AppComponentInspector` | SerializedProperty 字段 + 类型列表 |
-| `Editor/Inspectors/AppComponentInspector/AppComponentInspector.Methods.cs` | `AppComponentInspector` | DrawConfigs（三 Foldout 绘制） |
+| [Editor/Inspectors/AppComponentInspector/AppComponentInspector.cs](../../../../Scripts/Editor/Inspectors/AppComponentInspector/AppComponentInspector.cs) | `AppComponentInspector` | OnEnable（属性绑定）+ OnInspectorGUI |
+| [Editor/Inspectors/AppComponentInspector/AppComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/AppComponentInspector/AppComponentInspector.Visitors.cs) | `AppComponentInspector` | SerializedProperty 字段 + 类型列表 |
+| [Editor/Inspectors/AppComponentInspector/AppComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/AppComponentInspector/AppComponentInspector.Methods.cs) | `AppComponentInspector` | DrawConfigs（三 Foldout 绘制） |
 
 ---
 

@@ -6,12 +6,12 @@ This file describes the license boundary of `com.solotopia.nova.framework.sdk.fa
 
 | Path | Ownership / source | License and obligations |
 |---|---|---|
-| `Nova/**` | Solotopia / Nova adapter layer | Solotopia / Nova MIT License below. |
-| Root package metadata and docs authored by Solotopia, including `package.json`, `README.md`, `CHANGELOG.md`, `LICENSE.md`, and `THIRD_PARTY_NOTICES.md` | Solotopia / Nova UPM packaging and documentation | Solotopia / Nova MIT License below. |
-| `Core/FacebookSDK/**` | Upstream Facebook Unity SDK material | Upstream Facebook SDK license, platform terms, developer policies, and notice requirements. See `Core/FacebookSDK/LICENSE.txt`. |
-| `Core/Editor/DisableBitcode.cs` | Imported with the Facebook SDK package | Treated as upstream SDK material unless replaced by a Solotopia-owned implementation. |
+| [Nova/**](Nova/) | Solotopia / Nova adapter layer | Solotopia / Nova MIT License below. |
+| Root package metadata and docs authored by Solotopia, including [package.json](package.json), [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), `LICENSE.md`, and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | Solotopia / Nova UPM packaging and documentation | Solotopia / Nova MIT License below. |
+| [Core/FacebookSDK/**](Core/FacebookSDK/) | Upstream Facebook Unity SDK material | Upstream Facebook SDK license, platform terms, developer policies, and notice requirements. See [Core/FacebookSDK/LICENSE.txt](Core/FacebookSDK/LICENSE.txt). |
+| [Core/Editor/DisableBitcode.cs](Core/Editor/DisableBitcode.cs) | Imported with the Facebook SDK package | Treated as upstream SDK material unless replaced by a Solotopia-owned implementation. |
 
-The Solotopia / Nova MIT License does not override the original license, policy, EULA, trademark, or third-party notice chain for content under `Core/**`.
+The Solotopia / Nova MIT License does not override the original license, policy, EULA, trademark, or third-party notice chain for content under [Core/**](Core/).
 
 ## Solotopia / Nova MIT License
 
@@ -27,6 +27,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Redistribution Notes
 
-- Public distribution must retain `LICENSE.md`, `THIRD_PARTY_NOTICES.md`, and `Core/FacebookSDK/LICENSE.txt`.
+- Public distribution must retain `LICENSE.md`, [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [Core/FacebookSDK/LICENSE.txt](Core/FacebookSDK/LICENSE.txt).
 - Do not describe this package as a pure MIT package. It combines Solotopia-authored MIT content with upstream Facebook SDK content.
 - Recheck the current Facebook SDK license, platform policies, developer terms, App Review requirements, and trademark usage requirements at release time.

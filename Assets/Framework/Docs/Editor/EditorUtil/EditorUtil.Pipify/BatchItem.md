@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/Definitions/BatchItem.cs` | `BatchItem` | 完整实现 |
+| [EditorUtil.Pipify/Definitions/BatchItem.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/BatchItem.cs) | `BatchItem` | 完整实现 |
 
 ## §5 公开 API
 

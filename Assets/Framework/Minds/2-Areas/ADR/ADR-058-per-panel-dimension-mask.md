@@ -74,9 +74,9 @@ ADR-054 建好了三维矩阵底座，但不是所有面板都需要按三维分
 ## 来源与验证依据
 
 - 用户明确约定：保存自动清理并矫正当前掩码下的无效数据，无需整理弹窗。
-- `Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs` 的 `NormalizeForSave` 与 `Assets/Framework/Scripts/Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` 的保存入口。
-- `Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs` 保持只读维度校验。
-- 规则、来源选择、回滚与幂等边界见 `Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md`；存储分类见 `Assets/Framework/Docs/Editor/Config/ConfigMasterSO.md`。
+- [Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs) 的 `NormalizeForSave` 与 [Scripts/Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs) 的保存入口。
+- [Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs) 保持只读维度校验。
+- 规则、来源选择、回滚与幂等边界见 [Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md)；存储分类见 [Docs/Editor/Config/ConfigMasterSO.md](../../../Docs/Editor/Config/ConfigMasterSO.md)。
 - `Assets/Tests/Editor/ConfigLayerContractTests.cs` 覆盖保存来源、已选轴保留、无效 Override、稀疏存量和原子回滚；`Assets/Tests/Editor/ConfigWindowMissingRefFlowTests.cs` 覆盖工作副本保存、重建与关窗恢复链。
 
 ## 关联

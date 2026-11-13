@@ -4,7 +4,7 @@
 |---|---|
 | Class | `[AttributeUsage(Field)] public sealed class PipifyPasswordAttribute : Attribute` |
 | Namespace | `NovaFramework.Editor` |
-| File | `EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs` |
+| File | [EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs) |
 
 Marks a `string` parameter field so `PipifyWindow` renders it with `EditorGUI.PasswordField`.
 

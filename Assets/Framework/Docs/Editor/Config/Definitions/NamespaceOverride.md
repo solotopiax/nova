@@ -11,7 +11,7 @@ Namespace 字段的维度 Override 单项容器；当 `ConfigMasterSO.NamespaceM
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/NamespaceOverride.cs` | `NamespaceOverride` | Namespace 维度 Override 单项 |
+| [Editor/Config/Definitions/NamespaceOverride.cs](../../../../Scripts/Editor/Config/Definitions/NamespaceOverride.cs) | `NamespaceOverride` | Namespace 维度 Override 单项 |
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## §1 文件头
 
-**所在文件：** `Nova/Scripts/Runtime/LoginKitConfig.cs`
+**所在文件：** [Nova/Scripts/Runtime/LoginKitConfig.cs](../Scripts/Runtime/LoginKitConfig.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameLogin.Runtime`
 **类签名：** `[Serializable] public sealed class LoginKitConfig : IKitConfig`
 
@@ -56,5 +56,5 @@ if (config == null)
 ## §13 关联文档
 
 - 同包：[Login.md](./Login.md) — 调用方，`Async` 内拉取 `LoginCmdName`，`DeleteAsync` 内拉取 `DeleteCmdName`
-- 关联包：[GameBind · Bind.md](../../../com.solotopia.nova.framework.kit.network.gamebind/Nova/Docs/Bind.md) — 账号绑定与冲突裁决协议
+- 关联包：[GameBind · Bind.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.kit.network.gamebind` 包内 `Nova/Docs/Bind.md`） — 账号绑定与冲突裁决协议
 - 同包：[INDEX.md](./INDEX.md) — 本包文档总索引

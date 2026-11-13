@@ -1,6 +1,6 @@
 # SDK 异常总览
 
-当前 `Assets/Framework/Scripts/Runtime/Modules/SDK/Definitions/Exceptions/` 下只存在一个公共异常类型。
+当前 [Scripts/Runtime/Modules/SDK/Definitions/Exceptions/](../../../../../Scripts/Runtime/Modules/SDK/Definitions/Exceptions/) 下只存在一个公共异常类型。
 
 ## 当前异常
 

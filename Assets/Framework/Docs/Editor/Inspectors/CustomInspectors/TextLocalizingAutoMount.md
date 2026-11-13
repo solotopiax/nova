@@ -11,7 +11,7 @@ TMP 组件添加时自动挂载 TextLocalizing 的编辑器钩子。
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingAutoMount.cs` | `internal static class TextLocalizingAutoMount` | `[InitializeOnLoadMethod]` 注册 `ObjectFactory.componentWasAdded` 回调，自动挂载 TextLocalizing |
+| [Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingAutoMount.cs](../../../../Scripts/Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingAutoMount.cs) | `internal static class TextLocalizingAutoMount` | `[InitializeOnLoadMethod]` 注册 `ObjectFactory.componentWasAdded` 回调，自动挂载 TextLocalizing |
 
 ---
 

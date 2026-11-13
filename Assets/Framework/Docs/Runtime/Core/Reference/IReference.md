@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `IReference.cs` | 接口定义 |
+| [IReference.cs](../../../../Scripts/Runtime/Core/Reference/IReference.cs) | 接口定义 |
 
 ## 公开 API
 

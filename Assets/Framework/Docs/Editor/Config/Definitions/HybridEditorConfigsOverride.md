@@ -13,7 +13,7 @@ HybridCLR 面板全部字段的维度 Override 单项（仅 Editor 期消费）�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/HybridEditorConfigsOverride.cs` | `HybridEditorConfigsOverride` | HybridCLR 面板四字段维度 Override 单项（Editor-only） |
+| [Editor/Config/Definitions/HybridEditorConfigsOverride.cs](../../../../Scripts/Editor/Config/Definitions/HybridEditorConfigsOverride.cs) | `HybridEditorConfigsOverride` | HybridCLR 面板四字段维度 Override 单项（Editor-only） |
 
 ---
 

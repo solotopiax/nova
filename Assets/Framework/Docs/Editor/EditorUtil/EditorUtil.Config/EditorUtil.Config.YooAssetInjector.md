@@ -6,7 +6,7 @@
 
 Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字段注入 `YooAssetSettings` 与加载 `BundleCollectorSetting`，替代 `Resources.Load` / `AssetDatabase.FindAssets` 全工程扫描，根除多 Sample 共存时命中错副本问题。Sample 不再常驻 `Resources/YooAssetSettings.asset`；Editor Play Mode 会在 `BeforeSceneLoad` 按当前三维坐标重新注入，其中 Platform 实时映射 Unity Active BuildTarget；Player 构建则由构建期 staging 临时提供运行时副本。
 
-UPM Sample 导入到 `Assets/Samples/<Package>/<Version>/<Sample>/` 或业务方整体移动 Demo 后，ConfigMaster 内原有项目相对路径可能失效。维度解析器会在原路径不可加载时，仅回退到 ConfigMaster 同目录下同名且类型匹配的配置资产；该重定位只影响解析结果，不回写序列化资产。
+按 [Sample 导入定位规则](../../../Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核对实际根目录。UPM Sample 导入到 `Assets/Samples/<Package>/<Version>/<Sample>/` 或业务方整体移动 Demo 后，ConfigMaster 内原有项目相对路径可能失效。维度解析器会在原路径不可加载时，仅回退到 ConfigMaster 同目录下同名且类型匹配的配置资产；该重定位只影响解析结果，不回写序列化资产。
 
 ---
 
@@ -14,8 +14,8 @@ UPM Sample 导入到 `Assets/Samples/<Package>/<Version>/<Sample>/` 或业务方
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.cs` | `EditorUtil.Config.YooAssetInjector` | 注入与收集器加载：`Inject` / `LoadBundleCollector` |
-| `Editor/EditorUtil/EditorUtil.SceneRoute.cs` | `EditorUtil.SceneRoute` | Single 场景打开时的 ConfigMaster / YooAsset / Pipify 路由编排与四阶段日志摘要 |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.cs) | `EditorUtil.Config.YooAssetInjector` | 注入与收集器加载：`Inject` / `LoadBundleCollector` |
+| [Editor/EditorUtil/EditorUtil.SceneRoute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.SceneRoute.cs) | `EditorUtil.SceneRoute` | Single 场景打开时的 ConfigMaster / YooAsset / Pipify 路由编排与四阶段日志摘要 |
 
 ---
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova Project Development"
+  short_description: "梳理 Nova 项目的复杂需求、玩法方案和阶段依赖，再交给已有任务继续推进"
+  default_prompt: "请使用 $nova-project-development 梳理当前 Nova 项目的复杂需求，明确关键问题、最小实验或阶段依赖，并转入已有任务继续已授权工作。"

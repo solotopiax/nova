@@ -15,6 +15,8 @@ related: []
 
 # ADR-061：nova-obs-* 18 个子 skill 合并为 nova-obs 单一路由入口
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 背景（Context）
 
 会话开始时观察到 SessionStart 注入的 context 占比偏高，逐项排查发现 skill 列表里 18 个独立的 `nova-obs-*` 子 skill（adr-to-inbox / cur-to-all / health 等）每个都注入 ~80 字符压缩后的 description，仅 description 部分就吃掉约 1500-2000 字符（≈ 600-800 token），且名字前缀冗余（每条都重复 `nova-obs-`）。

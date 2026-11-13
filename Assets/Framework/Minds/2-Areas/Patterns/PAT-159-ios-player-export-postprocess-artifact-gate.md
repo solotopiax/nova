@@ -92,7 +92,7 @@ SDK 升级、替换或删除时同步更新该 SDK 的契约；不要把当前 T
 
 - 2026-08-10 的一次 iOS 导出同时缺失 TGA callback order 88 的 PBX/plist 注入，以及 MAX callback order 90 创建并注册的 `MAXSwiftSupport.swift`。当次源码、编译条件和 Nova 最终后处理均已排除为直接原因；证据只能确认 legacy 回调收集或调用发生了瞬态失效，不能再细分到缓存、收集或反射调用的具体环节。
 - 随后的新导出恢复了上述 TGA/MAX 产物，并以无签名 iPhoneOS `xcodebuild` 通过编译，证明验收应落在导出产物与编译闭环，而非只看源代码。
-- 当前实现依据：`TDPostprocessBuild.cs` 的 TGA legacy 回调、`EditorUtil.Build.BuildPlayer` 的 HybridCLR Development 对齐与 fail-fast 校验、`PipifyHybridClrDevelopmentBuildTests` 的回归覆盖。
+- 当前实现依据：[TDPostprocessBuild.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.tga/Core/unity-sdk-3.4.6/Editor/TDPostprocessBuild.cs) 的 TGA legacy 回调、`EditorUtil.Build.BuildPlayer` 的 HybridCLR Development 对齐与 fail-fast 校验、`PipifyHybridClrDevelopmentBuildTests` 的回归覆盖。
 
 ## 关联
 

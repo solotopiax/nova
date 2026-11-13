@@ -9,8 +9,8 @@ re-license the whole package as a single Solotopia MIT grant.
   Unity Plugin. The SDK and adapters are supplied by the official UPM packages
   declared in [package.json](./package.json), and remain under their own upstream
   license, EULA, and third-party notices.
-- The UPM packaging-layer files (`package.json`, `README.md`, `CHANGELOG.md`,
-  this `LICENSE.md`, `THIRD_PARTY_NOTICES.md`) and any content under `Nova/**`
+- The UPM packaging-layer files ([package.json](package.json), [README.md](README.md), [CHANGELOG.md](CHANGELOG.md),
+  this `LICENSE.md`, [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)) and any content under [Nova/**](Nova/)
   or explicitly marked as Solotopia / Nova are authored by Solotopia and
   provided under the MIT License (Copyright (c) 2026 Solotopia). They do NOT
   override the license boundary of the separately supplied official AppLovin
@@ -33,7 +33,7 @@ re-license the whole package as a single Solotopia MIT grant.
 
 - 本包已移除 `Core/MaxSdk`，不再内置 AppLovin MAX Unity Plugin。SDK 和 adapters 由 [package.json](./package.json) 声明的官方 UPM 包分别供给，继续遵循其原始许可证、EULA 和第三方声明。
 - 官方 UPM 包内的第三方源码、二进制、资源和依赖，也继续遵循其各自的原始许可链。
-- 本包 UPM 包装层文件和 `Nova/**` 中 Solotopia 编写的适配内容沿用上述 MIT 授权；该授权不覆盖另行供给的 AppLovin SDK / adapter 包。
+- 本包 UPM 包装层文件和 [Nova/**](Nova/) 中 Solotopia 编写的适配内容沿用上述 MIT 授权；该授权不覆盖另行供给的 AppLovin SDK / adapter 包。
 
 ## 当前约束
 

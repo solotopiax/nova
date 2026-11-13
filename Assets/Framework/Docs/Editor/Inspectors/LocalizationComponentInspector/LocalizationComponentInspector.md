@@ -12,9 +12,9 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `LocalizationComponentInspector.cs` | `sealed partial LocalizationComponentInspector` | 主体：`OnEnable` 绑定序列化属性，`OnInspectorGUI` 调度绘制入口 |
-| `LocalizationComponentInspector.Visitors.cs` | `partial LocalizationComponentInspector` | 字段：全部 `SerializedProperty`、样式、折叠状态 |
-| `LocalizationComponentInspector.Methods.cs` | `partial LocalizationComponentInspector` | 私有方法：`DrawConfigs`（含修复按钮 + HelpBox）、`DrawTextExportSection`、`DrawFontExportSection`、`DrawSupportedLanguagesFields`、`DoExportAllTextData`、`DoExportAllFontData` |
+| [LocalizationComponentInspector.cs](../../../../Scripts/Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.cs) | `sealed partial LocalizationComponentInspector` | 主体：`OnEnable` 绑定序列化属性，`OnInspectorGUI` 调度绘制入口 |
+| [LocalizationComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.Visitors.cs) | `partial LocalizationComponentInspector` | 字段：全部 `SerializedProperty`、样式、折叠状态 |
+| [LocalizationComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.Methods.cs) | `partial LocalizationComponentInspector` | 私有方法：`DrawConfigs`（含修复按钮 + HelpBox）、`DrawTextExportSection`、`DrawFontExportSection`、`DrawSupportedLanguagesFields`、`DoExportAllTextData`、`DoExportAllFontData` |
 
 ---
 

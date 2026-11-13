@@ -22,4 +22,4 @@
 
 交付可达业务入口与真实Service调用、输入/结果/错误、有效状态转换、取消/退出、监听/资源清理、重复触发/局身份及数据持久性。先Unity编译，再从原入口Play验证目标前后行为与重复/取消探针；只写方法、只查询当前Procedure或只看到日志不证明游戏控制可用。外部账号、交易、云写等按精确独立授权验收；没有真实服务证据保持partial，Mock只证明本地替身。
 
-清理本轮探针、测试状态、runner/meta和日志，必要Refresh并核对原入口/场景恢复及目标diff。按需读匹配版本`Docs/Runtime/Modules/Procedure/ProcedureBase.md`与`Docs/Runtime/Core/Fsm/{FsmState,IFsm,Fsm}.md`，只展开实际Service/source与调用方。当前分支契约源于源码查阅，不是某消费游戏已执行验收。
+清理本轮探针、测试状态、runner/meta和日志，必要Refresh并核对原入口/场景恢复及目标diff。按需读匹配版本 [ProcedureBase](../../../../Docs/Runtime/Modules/Procedure/ProcedureBase.md)、[FsmState](../../../../Docs/Runtime/Core/Fsm/FsmState.md)、[IFsm](../../../../Docs/Runtime/Core/Fsm/IFsm.md) 与 [Fsm](../../../../Docs/Runtime/Core/Fsm/Fsm.md)，只展开实际Service/source与调用方。当前分支契约源于源码查阅，不是某消费游戏已执行验收。

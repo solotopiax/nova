@@ -12,7 +12,7 @@ Kit 固有配置 marker 接口；实现类按 Platform×Channel×DevelopMode 三
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Runtime/Modules/Config/Definitions/IKitConfig.cs` | `IKitConfig` | marker 接口定义 |
+| [Runtime/Modules/Config/Definitions/IKitConfig.cs](../../../../../Scripts/Runtime/Modules/Config/Definitions/IKitConfig.cs) | `IKitConfig` | marker 接口定义 |
 
 ---
 
@@ -55,7 +55,7 @@ string cmd = cfg.CmdName;
 
 - 实现类必须落 AOT 程序集（热更红线）：`[SerializeReference]` 类型需在 AOT 层才可序列化
 - 实现类按 Platform×Channel×DevelopMode 三维格存储（ADR-054 反转 ADR-053 决策 3）；`ConfigMasterSO.EnabledKits` 为全局白名单，控制哪些 Kit 类型参与导出
-- 取不到配置时抛 `KitConfigMissingException`（fail-fast，参见同目录 `KitConfigMissingException.md`）
+- 取不到配置时抛 `KitConfigMissingException`（fail-fast，参见同目录 [KitConfigMissingException.md](KitConfigMissingException.md)）
 
 ---
 

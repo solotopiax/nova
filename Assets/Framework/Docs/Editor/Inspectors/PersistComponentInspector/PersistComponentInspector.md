@@ -14,12 +14,12 @@ Editor 模式下，Inspector 通过 `EditorUtil.Config.WorkspaceActive.Get()` �
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `PersistComponentInspector.cs` | `sealed partial PersistComponentInspector` | 主体：`OnEnable` 绑定 7 个序列化属性及 3 个类型名列表，`OnInspectorGUI` 调度绘制入口 |
-| `PersistComponentInspector.Visitors.cs` | `partial PersistComponentInspector` | 字段：全部 `SerializedProperty` 引用与 `List<string>` 类型名列表 |
-| `PersistComponentInspector.Methods.cs` | `partial PersistComponentInspector` | 私有方法：`DrawConfigs`（配置区总入口）、`DrawManagerSection`（管理器区）、`DrawEncryptSection`（加密区）、`DrawAutoSaveSection`（自动保存间隔区）、`DrawDataSection` / `DrawGlobalSearchBar` / `DrawBackendSearchBar` / `DrawRuntimeData` / `DrawEditorData`（数据区）、`DrawItemRow`（条目行共用绘制）、`MatchSearch` / `ContainsIgnoreCase`（全局与各存储实现搜索匹配）、`TryReadFragmentFile` / `WriteFragmentFile` / `DecodeForDisplay` / `EncodeForStorage`（FF 文件与 AES 双向处理）、`DrawClassifyFoldout` |
-| `PersistComponentInspector.PlayerPrefs.cs` | `partial PersistComponentInspector` | PlayerPrefs 存储实现特定绘制与交互逻辑 |
-| `PersistComponentInspector.FileFragment.cs` | `partial PersistComponentInspector` | FileFragment 存储实现特定绘制与交互逻辑（打开时扫描缓存，无目录监控） |
-| `PersistComponentInspector.SQLite.cs` | `partial PersistComponentInspector` | SQLite 存储实现特定绘制与交互逻辑（含 `EditorUtil.FileSystem.DeletePath` 清理导出路径） |
+| [PersistComponentInspector.cs](../../../../Scripts/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.cs) | `sealed partial PersistComponentInspector` | 主体：`OnEnable` 绑定 7 个序列化属性及 3 个类型名列表，`OnInspectorGUI` 调度绘制入口 |
+| [PersistComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.Visitors.cs) | `partial PersistComponentInspector` | 字段：全部 `SerializedProperty` 引用与 `List<string>` 类型名列表 |
+| [PersistComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.Methods.cs) | `partial PersistComponentInspector` | 私有方法：`DrawConfigs`（配置区总入口）、`DrawManagerSection`（管理器区）、`DrawEncryptSection`（加密区）、`DrawAutoSaveSection`（自动保存间隔区）、`DrawDataSection` / `DrawGlobalSearchBar` / `DrawBackendSearchBar` / `DrawRuntimeData` / `DrawEditorData`（数据区）、`DrawItemRow`（条目行共用绘制）、`MatchSearch` / `ContainsIgnoreCase`（全局与各存储实现搜索匹配）、`TryReadFragmentFile` / `WriteFragmentFile` / `DecodeForDisplay` / `EncodeForStorage`（FF 文件与 AES 双向处理）、`DrawClassifyFoldout` |
+| [PersistComponentInspector.PlayerPrefs.cs](../../../../Scripts/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.PlayerPrefs.cs) | `partial PersistComponentInspector` | PlayerPrefs 存储实现特定绘制与交互逻辑 |
+| [PersistComponentInspector.FileFragment.cs](../../../../Scripts/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.FileFragment.cs) | `partial PersistComponentInspector` | FileFragment 存储实现特定绘制与交互逻辑（打开时扫描缓存，无目录监控） |
+| [PersistComponentInspector.SQLite.cs](../../../../Scripts/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.SQLite.cs) | `partial PersistComponentInspector` | SQLite 存储实现特定绘制与交互逻辑（含 `EditorUtil.FileSystem.DeletePath` 清理导出路径） |
 
 ---
 

@@ -8,7 +8,7 @@
 
 “注册工具”就是告诉 Unity MCP 工具叫什么、接受什么参数、收到调用时交给哪个函数。当前注册实现见 [NovaProjectActionUnityMcpTool.cs](../UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs)。通过 Unity MCP 连接是当前默认适配器的选择；中立契约与 Action 内核仍和具体 Provider 分开。
 
-完整概念说明见已安装 Framework 的 `Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md`；开发仓对应 `Assets/Framework/Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md`。
+完整概念说明见 Framework 的 [AI 工具链说明](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md`）；开发态与消费态都以当前解析的包根为准。
 
 ## 入口
 
@@ -120,7 +120,7 @@ Verify 使用独立的 `Nova.ProjectActions.VerifyJobs.v1` SessionState 命名�
 
 ## 当前开放边界
 
-Adapter 目前显式允许 Registry 中全部 39 个 Action：
+Adapter 目前显式允许 Registry 中全部 41 个 Action：
 
 - `nova.project.upm.manage-latest`
 - `nova.project.upm.uninstall-direct`
@@ -146,6 +146,8 @@ Adapter 目前显式允许 Registry 中全部 39 个 Action：
 - `nova.project.tracks.generate-registry`
 - `nova.project.iap.upload-product-catalog`
 - `nova.project.ui.export`
+- `nova.project.ui.inspect-bindings`
+- `nova.project.ui.configure-bindings`
 - `nova.project.psd2ugui.inspect`
 - `nova.project.psd2ugui.run`
 - `nova.project.network.export`
@@ -173,6 +175,12 @@ Nova Project Skills 与 MCP Tool 不是一张清单：34 个 `nova-project-*` �
 `describe` 保留凭据字段的参数名及类型结构，不将 Schema 当实际值遮蔽；示例、默认和描述载荷移除。Plan/Execute/Verify 的实际数据仍按敏感字段脱敏。
 
 脱敏按已知敏感字段名、当前项目根及 URL 用户信息/query/fragment处理，不是通用秘密扫描；未知自定义字段或自由文本仍可能泄漏，领域 Handler 应先避免输出秘密。描述、计划和结果 DTO 只是当前发现/返回快照，数组属性可能保留原引用；读取或修改 DTO 不获得锁、不延长期限，也不使 Action Ready。
+
+### 可选界面控件绑定
+
+`nova.project.ui.inspect-bindings` 只读一个项目普通 Prefab 的真实 UIView、直接字段及控件持久身份；`nova.project.ui.configure-bindings` 用 `mode=bind|generate` 分别绑定空字段或生成单一归属字段文件。它们只在主动选择时执行，不扫描/改写旧页面，不覆盖原有不同引用、布局或事件。生成须经过本次编译/重载和原回执 Verify，再重新 Inspect 并新建绑定计划；生成成功不等于 Prefab 已绑定，绑定成功不等于页面交互通过。
+
+这两个入口复用原 Plan/确认/锁/单次执行和只读 Verify，不接受任意源码或输出路径。受阻、恢复不完整及重载后不重放执行；独立恢复 Action 当前未提供。详细字段与所有权从 Framework 包的 `Docs/Editor/EditorUtil/EditorUtil.UIBindings.md` 和既有页面 Skill 读取，按 [跨包文档定位](../../README.md#跨包文档定位) 解析实际安装包，不能把开发仓相邻目录当作消费端位置。
 
 ## 恢复与证据
 

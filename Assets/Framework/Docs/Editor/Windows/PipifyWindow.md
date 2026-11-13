@@ -16,14 +16,14 @@ Pipify 流水线配置与执行窗口，用于管理 Batch 列表、配置步骤
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `PipifyWindow.cs` | `PipifyWindow` | 主文件：`[MenuItem]` 入口 `Open()` |
-| `PipifyWindow.Visitors.cs` | `PipifyWindow` | 字段声明：常量（含 TopBar 布局常量 / `c_LeftPanelWidth` / `c_LeftRowHeight`）、实例字段（`m_Settings` / `m_SettingsSO` / `m_IsDirty` / `m_SelectedBatchIndex` / `m_Filter` / `m_LeftScroll` / 样式字段） |
-| `PipifyWindow.Methods.cs` | `PipifyWindow` | 总调度 + Batch / Step 辅助：`OnEnable` / `TryAutoBindSettings` / `OnGUI` / `DrawBody` / `DrawMainTitle` / `EnsureStyles` / `RebindSettings` / `OnClickCreate` / `OnClickSave` / `OnClickRevealInFinder` / `ConfirmDiscardDirty` / `MarkDirty` / `OnClickNewBatch` / `OnRenameBatch` / `OnDuplicateBatch` / `OnDeleteBatch` / `ShowBatchContextMenu` / `IsBatchNameDuplicate` / `GenerateUniqueBatchName` / `CopyBatchItemToClipboard` / `PasteBatchItemFromClipboard` / `CloneBatchItem` |
-| `PipifyWindow.TopBar.cs` | `PipifyWindow` | 顶部工具栏：编辑器存档文件 ObjectField + 创建/选择/保存/打开文件夹按钮；`DrawTopBar()` / `OnClickPick()` |
-| `PipifyWindow.LeftList.cs` | `PipifyWindow` | 左侧 Batch 列表：搜索框 / ScrollView / 行点击事件 / 右键菜单 / 新建按钮；`DrawLeftList()` |
-| `PipifyWindow.RightPanel.cs` | `PipifyWindow` | 右侧详情面板：`DrawRightPanel()` / `DrawBatchHeader()` / `DrawItemsList()` / `DrawItemElement()` / `DrawItemParams()` / `DrawParamField()` |
-| `PipifyWindow.RightPanel.Execute.cs` | `PipifyWindow` | 底部执行区：`DrawExecute()` / `OnClickRunBatch(batch)` |
-| `PipifyInputDialog.cs` | `PipifyInputDialog` | 模态单行文本输入弹窗；`Show(title, label, initialValue)` 返回用户输入或 null |
+| [PipifyWindow.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.cs) | `PipifyWindow` | 主文件：`[MenuItem]` 入口 `Open()` |
+| [PipifyWindow.Visitors.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.Visitors.cs) | `PipifyWindow` | 字段声明：常量（含 TopBar 布局常量 / `c_LeftPanelWidth` / `c_LeftRowHeight`）、实例字段（`m_Settings` / `m_SettingsSO` / `m_IsDirty` / `m_SelectedBatchIndex` / `m_Filter` / `m_LeftScroll` / 样式字段） |
+| [PipifyWindow.Methods.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.Methods.cs) | `PipifyWindow` | 总调度 + Batch / Step 辅助：`OnEnable` / `TryAutoBindSettings` / `OnGUI` / `DrawBody` / `DrawMainTitle` / `EnsureStyles` / `RebindSettings` / `OnClickCreate` / `OnClickSave` / `OnClickRevealInFinder` / `ConfirmDiscardDirty` / `MarkDirty` / `OnClickNewBatch` / `OnRenameBatch` / `OnDuplicateBatch` / `OnDeleteBatch` / `ShowBatchContextMenu` / `IsBatchNameDuplicate` / `GenerateUniqueBatchName` / `CopyBatchItemToClipboard` / `PasteBatchItemFromClipboard` / `CloneBatchItem` |
+| [PipifyWindow.TopBar.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.TopBar.cs) | `PipifyWindow` | 顶部工具栏：编辑器存档文件 ObjectField + 创建/选择/保存/打开文件夹按钮；`DrawTopBar()` / `OnClickPick()` |
+| [PipifyWindow.LeftList.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.LeftList.cs) | `PipifyWindow` | 左侧 Batch 列表：搜索框 / ScrollView / 行点击事件 / 右键菜单 / 新建按钮；`DrawLeftList()` |
+| [PipifyWindow.RightPanel.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.RightPanel.cs) | `PipifyWindow` | 右侧详情面板：`DrawRightPanel()` / `DrawBatchHeader()` / `DrawItemsList()` / `DrawItemElement()` / `DrawItemParams()` / `DrawParamField()` |
+| [PipifyWindow.RightPanel.Execute.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyWindow.RightPanel.Execute.cs) | `PipifyWindow` | 底部执行区：`DrawExecute()` / `OnClickRunBatch(batch)` |
+| [PipifyInputDialog.cs](../../../Scripts/Editor/Windows/PipifyWindow/PipifyInputDialog.cs) | `PipifyInputDialog` | 模态单行文本输入弹窗；`Show(title, label, initialValue)` 返回用户输入或 null |
 
 ---
 
@@ -62,7 +62,7 @@ Scene 已切换时若旧 Pipify 有未保存内容，窗口只允许“保存旧
 
 CLI 可使用 `-configMasterGuid` 与 `-pipifySettingsGuid` 成对指定工作区；两者必须同时提供，并经过类型和 Sample 配对校验后一次原子写入。未提供时只使用 Globals 已绑定的配置，不进行全工程首项扫描。
 
-> **铁律：** 框架范围（`Assets/Framework/Scripts`）禁用 `EditorPrefs.*`。EditorPrefs 是 user-level 持久化，会跨项目串味且无法随包分发；存档/选择类状态一律通过项目内资产承载，临时态保留在内存即可。
+> **铁律：** 框架范围（[Scripts](../../../Scripts/)）禁用 `EditorPrefs.*`。EditorPrefs 是 user-level 持久化，会跨项目串味且无法随包分发；存档/选择类状态一律通过项目内资产承载，临时态保留在内存即可。
 
 ---
 

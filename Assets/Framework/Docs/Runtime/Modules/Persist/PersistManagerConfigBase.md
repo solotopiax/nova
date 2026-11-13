@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/PersistManagerConfigBase.cs` | `PersistManagerConfigBase` | 配置基类定义 |
+| [Managers/PersistManagerConfigBase.cs](../../../../Scripts/Runtime/Modules/Persist/Managers/PersistManagerConfigBase.cs) | `PersistManagerConfigBase` | 配置基类定义 |
 
 ---
 

@@ -2,31 +2,107 @@
   "schemaVersion": 1,
   "id": "nova-project-configure-pipeline",
   "kind": "operation",
-  "compatibility": { "framework": ">=0.6.10" },
+  "compatibility": {
+    "framework": ">=0.6.10"
+  },
   "requires": [],
   "actionAdapters": [
-    { "kind": "agent-action", "entry": "nova.project.pipify.inspect-settings", "when": "读取真实Batch和注册Steps的脱敏参数Schema" },
-    { "kind": "agent-action", "entry": "nova.project.pipify.configure-batch", "when": "已冻结具名Batch的创建、克隆、目标顺序与真实基础字段编辑时，只保存目标Settings" },
-    { "kind": "agent-action", "entry": "nova.project.pipify.run-batch", "when": "用户明确要求运行已保存Batch，实际Steps副作用与完整运行范围已获授权时；配置任务默认不运行" }
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.inspect-settings",
+      "when": "读取真实Batch和注册Steps的脱敏参数Schema"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.configure-batch",
+      "when": "已冻结具名Batch的创建、克隆、目标顺序与真实基础字段编辑时，只保存目标Settings"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.run-batch",
+      "when": "用户明确要求运行已保存Batch，实际Steps副作用与完整运行范围已获授权时；配置任务默认不运行"
+    }
   ],
   "inputs": [
-    { "name": "projectRoot", "required": true, "constraint": "从当前消费项目读取并冻结，不要求新手重复抄写可读取事实" },
-    { "name": "pipifySettings", "required": true, "constraint": "读取Assets内现存真实Settings GUID、路径及窗口草稿；两个配置Action用settingsGuid，run-batch用pipifySettingsGuid" },
-    { "name": "batchChangeSet", "required": true, "constraint": "明确create/clone/edit与目标名称；完整steps列表按编辑前sourceIndex保留复制排序，未列条目移除；edits仅真实基础字段和严格JSON token" },
-    { "name": "runRequest", "required": false, "constraint": "默认只保存；运行另按真实Steps冻结副作用、平台、凭据、写集和产物证据，不因配置授权自动运行" }
+    {
+      "name": "projectRoot",
+      "required": true,
+      "constraint": "从当前消费项目读取并冻结，不要求新手重复抄写可读取事实"
+    },
+    {
+      "name": "pipifySettings",
+      "required": true,
+      "constraint": "读取Assets内现存真实Settings GUID、路径及窗口草稿；两个配置Action用settingsGuid，run-batch用pipifySettingsGuid"
+    },
+    {
+      "name": "batchChangeSet",
+      "required": true,
+      "constraint": "明确create/clone/edit与目标名称；新项目先只读参考当前MainDemo相关Batch并按项目目标核对职责/顺序/参数及Batch内外前置，说明保留/调整/不采用依据，不照搬环境或授权；按实际Sample声明定位，来源缺失如实报告。完整steps列表按编辑前sourceIndex保留复制排序，名称和索引仅来自目标Settings内实际来源，跨Settings参考不假装clone；edits仅当前Schema真实基础字段和严格JSON token"
+    },
+    {
+      "name": "runRequest",
+      "required": false,
+      "constraint": "默认只保存；运行另按真实Steps冻结副作用、平台、凭据、写集和产物证据，不因配置授权自动运行"
+    },
+    {
+      "name": "optionalSpriteAtlasProduction",
+      "required": false,
+      "constraint": "仅显式图集分支：先比较Unity原生文件夹图集，普通一文件夹一图集优先原生；按目录需求本身不自动选择生成器。确有批量规则、排除、预演或受控流水线需求时，冻结已保存SpriteAtlasGenerationSettingsSO路径/GUID、Enabled/Format/现有SpritePackerMode、稳定Rules及来源/排除/已存在输出根/归属、预演或生产/恢复意图；说明生成器存具体Sprite列表，成员变化须重跑，无额外合批或实测性能承诺。复杂Rules用原生Inspector/实际Editor通道，不通过ParamsJson或任意C#配置；旧项目/Batch不自动创建或插Step。"
+    }
   ],
-  "effects": ["workspace-write", "unity-write", "credential"],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "credential",
+    "generated-output"
+  ],
   "writeScope": {
-    "allow": ["confirmed target PipifySettingsSO Batch name/description/ordered Steps and exact editable public parameter fields", "explicitly requested saved Batch execution only within separately confirmed Step write sets"],
-    "deny": ["unrelated Batch or Settings assets", "Framework/package sources and handwritten Unity YAML", "read-only, hidden or unsupported Array/List/object/property fields", "arbitrary ParamsJson, Type.Method or C# execution", "automatic pipeline execution, external write, deployment, Git or UPM publication from configuration authorization"]
+    "allow": [
+      "confirmed target PipifySettingsSO Batch name/description/ordered Steps and exact editable public parameter fields",
+      "explicitly requested saved Batch execution only within separately confirmed Step write sets",
+      "optional spriteatlas.generate/recover: only explicitly requested execution of saved Batch, declared owned atlas/meta/manifest output and its settings-GUID recovery transaction; settings source edited only through actual Unity Editor asset channel"
+    ],
+    "deny": [
+      "unrelated Batch or Settings assets",
+      "Framework/package sources and handwritten Unity YAML",
+      "read-only, hidden or unsupported Array/List/object/property fields",
+      "arbitrary ParamsJson, Type.Method or C# execution",
+      "automatic pipeline execution, external write, deployment, Git or UPM publication from configuration authorization",
+      "implicit sprite atlas generation, old Batch insertion, source sprite edits/deletion, automatic Sprite Packer switching, hand-edited ownership manifest or arbitrary recovery directory"
+    ]
   },
-  "locks": ["unity-editor", "pipify-batch", "pipify-settings-assets"],
+  "locks": [
+    "unity-editor",
+    "pipify-batch",
+    "pipify-settings-assets"
+  ],
   "idempotency": "ensure-state",
   "confirmation": {
-    "requiredFor": ["Batch creation, cloning, renaming or saved changes", "step removal or complete list replacement", "credential field changes", "Android DevelopmentBuild AAB signing risk", "explicitly requested Batch execution and its destructive/external/credential steps"],
+    "requiredFor": [
+      "Batch creation, cloning, renaming or saved changes",
+      "step removal or complete list replacement",
+      "credential field changes",
+      "Android DevelopmentBuild AAB signing risk",
+      "explicitly requested Batch execution and its destructive/external/credential steps"
+    ],
     "rule": "已有授权持续有效；展示具体Settings、目标Batch、完整Steps顺序、字段地址与风险，值尤其凭据不回显。确认绑定当前PlanId；输入、资产、Registry或构建环境漂移后重新Plan，重载只Verify不重放。"
   },
   "minimumEvidence": "static",
-  "resultStates": ["success", "partial", "blocked", "not_applicable"],
-  "evidence": ["live Registry StepIds and exact parameter field Schema", "confirmed target Settings GUID/path and full target Batch/Steps change set", "configure-batch complete file/state verification and no-op preservation", "credential redaction, untouched fields and draft protection", "optional requested execution Job final state plus actual Step artifacts/evidence without treating saved configuration as runtime proof", "temporary verification cleanup and retained formal Batch"]
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "live Registry StepIds and exact parameter field Schema",
+    "confirmed target Settings GUID/path and full target Batch/Steps change set",
+    "configure-batch complete file/state verification and no-op preservation",
+    "credential redaction, untouched fields and draft protection",
+    "optional requested execution Job final state plus actual Step artifacts/evidence without treating saved configuration as runtime proof",
+    "temporary verification cleanup and retained formal Batch",
+    "new-project MainDemo reference source and relevant Batch/Step comparison; project-specific prerequisites, platform/coordinate, dependencies, package/version/cache/output/signing and external-effects differences; reference does not rebind workspace, modify Demo, execute Sample Batch, or authorize extra steps",
+    "完整Android/iOS/WebGL打包按PROJECT_STRUCTURE三平台构建与HybridCLR基线：Config/HostKey/NetCmd正式导出、link保留、GenerateAll、当前目标业务编译、AOT/Game DLL拷贝、Bundle、Player，Android另有EDM4U前置。按实际项目、平台和前置适配，平台只读字段不冒充切换；保存Batch不证明安装/启用/生成，不扩大运行或外部副作用授权。",
+    "可选图集：新Step真实Registry/Schema与可信基础DTO、PreviewOnly=true默认、显式生产前差异/源与输出归属；运行后实际图集GUID/成员/manifest及重复no-op，失败恢复保持原写集，未完成事务保留。先生成再Bundle仅由项目保存顺序决定，旧Batch不改，Bundle/子图Play/Player/设备与提效测量分别验收。"
+  ]
 }

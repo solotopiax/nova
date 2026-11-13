@@ -13,36 +13,36 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/EditorUtil.Pipify.cs` | `EditorUtil.Pipify` | 主类骨架 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Visitors.cs` | `EditorUtil.Pipify` | 常量（`c_LogPrefix`） |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Registry.cs` | `EditorUtil.Pipify.Registry` | TypeCache 扫描注册表 |
-| `EditorUtil.Pipify/Definitions/PipifyStepAttribute.cs` | `PipifyStepAttribute` | Step 标注特性 |
-| `EditorUtil.Pipify/Definitions/PipifyStepInfo.cs` | `PipifyStepInfo` | Step 元信息记录 |
-| `EditorUtil.Pipify/Definitions/PipifyContext.cs` | `PipifyContext` | Runner 下行上下文 |
-| `EditorUtil.Pipify/Definitions/IPipifyProgressReporter.cs` | `IPipifyProgressReporter` | 进度汇报接口 |
-| `EditorUtil.Pipify/Definitions/Batch.cs` | `Batch` | 批次数据 |
-| `EditorUtil.Pipify/Definitions/BatchItem.cs` | `BatchItem` | 批次条目 |
-| `EditorUtil.Pipify/Definitions/PipifySettingsSO.cs` | `PipifySettingsSO` | 持久化 SO 存档 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | 参数默认值、旧 Config 参数迁移、CLI 覆盖、Active BuildTarget 平台同步与类型转换工具方法 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs` | `EditorUtil.Pipify.Runner` | 纯执行引擎（internal static class） |
-| `EditorUtil.Pipify/EditorUtil.Pipify.AsyncJob.cs` | `EditorUtil.Pipify` | Editor 外部调用的异步任务启动、状态保存与查询 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
-| `EditorUtil.Pipify/EditorUtil.Pipify.WindowUpload.cs` | `EditorUtil.Pipify` | 窗口构建后、上传尚未开始时的程序集重载交接 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs` | `EditorUtil.Pipify.CliReporter` | CLI 宿主进度 Reporter（纯日志，恒返回 false） |
-| `EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs` | `PipifySteps` | 内置 Step：HybridCLR 分组 10 个 Step（3 个主流程：`hybridclr.validate_linkxml` / `hybridclr.copy_aot_dll` / `hybridclr.copy_game_dll`；仅编译 DLL 入口：`hybridclr.compile_dll_active_build_target`；对齐 HybridCLR/Generate 子菜单的 6 个细粒度入口：`hybridclr.generate_all` / `hybridclr.generate_linkxml` / `hybridclr.generate_method_bridge` / `hybridclr.generate_aot_generic_reference` / `hybridclr.generate_il2cpp_def` / `hybridclr.generate_aot_dlls`） |
-| `EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs` | `PipifySteps` | 内置 Step：构建资源分组 2 个独立入口（`bundlebuilder.build` / DisplayName=Bundles：标准 ScriptableBuildPipeline + AssetBundle；`bundlebuilder.build_raw_file` / DisplayName=Raw Files：PackRawFile 对应 RawFileBuildPipeline + RawBundle）；WebGL 支持纯 CDN、按 Tag 首包和全量首包三种布局 |
-| `EditorUtil.Pipify/Definitions/PipifyDropdownAttribute.cs` | `PipifyDropdownAttribute` | string 字段渲染特性：以接口实现类下拉框形式编辑（存储 FullName） |
-| `EditorUtil.Pipify/Definitions/PipifyDynamicDropdownAttribute.cs` | `PipifyDynamicDropdownAttribute` | string 字段渲染特性：动态选项下拉框（每帧调用 Provider 取 string[]） |
-| `EditorUtil.Pipify/Definitions/PipifyDynamicDefaultAttribute.cs` | `PipifyDynamicDefaultAttribute` | string 字段渲染特性：值为空时显示动态默认值占位（不写回字段） |
-| `EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs` | `PipifyPasswordAttribute` | string 字段渲染特性：PipifyWindow 使用 PasswordField，存储仍为普通字符串 |
-| `EditorUtil.Pipify/Definitions/PipifyReadOnlyAttribute.cs` | `PipifyReadOnlyAttribute` | 字段渲染特性：PipifyWindow 禁用该字段编辑；当前用于随 Unity Active BuildTarget 同步的平台字段 |
-| `EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs` | `PipifyVisibleWhenAttribute` | 字段显隐特性：依赖另一字段当前整型化值匹配 AnyOf 时才显示 |
-| `EditorUtil.Pipify/Steps/PipifySteps.Build.cs` | `PipifySteps` | 内置 Step：打包分组 1 个 Step |
-| `EditorUtil.Pipify/Steps/PipifySteps.GooglePlay.cs` | `PipifySteps` | `googleplay.upload_aab`：同批次成功 AAB 或显式路径上传，默认内部测试草稿，凭据仅填写项目根相对路径，执行时转换为绝对路径 |
-| `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：Config 导出 |
-| `EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs` | `PipifySteps` | 内置 Step：`export.excel.all`，顺序聚合所有 Excel 派生导出，排除 Config 与 Proto |
-| `EditorUtil.Pipify/Steps/PipifySteps.Notification.cs` | `PipifySteps` | 内置 Step：`notification.feishu_webhook`，发送飞书机器人文本消息 |
-| `EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs` | `PipifySteps` | 内置 Step 嵌套参数类集中定义（Config 导出、打包、外壳、飞书 Webhook） |
+| [EditorUtil.Pipify/EditorUtil.Pipify.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.cs) | `EditorUtil.Pipify` | 主类骨架 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Visitors.cs) | `EditorUtil.Pipify` | 常量（`c_LogPrefix`） |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Registry.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Registry.cs) | `EditorUtil.Pipify.Registry` | TypeCache 扫描注册表 |
+| [EditorUtil.Pipify/Definitions/PipifyStepAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyStepAttribute.cs) | `PipifyStepAttribute` | Step 标注特性 |
+| [EditorUtil.Pipify/Definitions/PipifyStepInfo.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyStepInfo.cs) | `PipifyStepInfo` | Step 元信息记录 |
+| [EditorUtil.Pipify/Definitions/PipifyContext.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyContext.cs) | `PipifyContext` | Runner 下行上下文 |
+| [EditorUtil.Pipify/Definitions/IPipifyProgressReporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/IPipifyProgressReporter.cs) | `IPipifyProgressReporter` | 进度汇报接口 |
+| [EditorUtil.Pipify/Definitions/Batch.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/Batch.cs) | `Batch` | 批次数据 |
+| [EditorUtil.Pipify/Definitions/BatchItem.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/BatchItem.cs) | `BatchItem` | 批次条目 |
+| [EditorUtil.Pipify/Definitions/PipifySettingsSO.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifySettingsSO.cs) | `PipifySettingsSO` | 持久化 SO 存档 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs) | `EditorUtil.Pipify` | 参数默认值、旧 Config 参数迁移、CLI 覆盖、Active BuildTarget 平台同步与类型转换工具方法 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs) | `EditorUtil.Pipify.Runner` | 纯执行引擎（internal static class） |
+| [EditorUtil.Pipify/EditorUtil.Pipify.AsyncJob.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.AsyncJob.cs) | `EditorUtil.Pipify` | Editor 外部调用的异步任务启动、状态保存与查询 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs) | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
+| [EditorUtil.Pipify/EditorUtil.Pipify.WindowUpload.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.WindowUpload.cs) | `EditorUtil.Pipify` | 窗口构建后、上传尚未开始时的程序集重载交接 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs) | `EditorUtil.Pipify.CliReporter` | CLI 宿主进度 Reporter（纯日志，恒返回 false） |
+| [EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs) | `PipifySteps` | 内置 Step：HybridCLR 分组 10 个 Step（3 个主流程：`hybridclr.validate_linkxml` / `hybridclr.copy_aot_dll` / `hybridclr.copy_game_dll`；仅编译 DLL 入口：`hybridclr.compile_dll_active_build_target`；对齐 HybridCLR/Generate 子菜单的 6 个细粒度入口：`hybridclr.generate_all` / `hybridclr.generate_linkxml` / `hybridclr.generate_method_bridge` / `hybridclr.generate_aot_generic_reference` / `hybridclr.generate_il2cpp_def` / `hybridclr.generate_aot_dlls`） |
+| [EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs) | `PipifySteps` | 内置 Step：构建资源分组 2 个独立入口（`bundlebuilder.build` / DisplayName=Bundles：标准 ScriptableBuildPipeline + AssetBundle；`bundlebuilder.build_raw_file` / DisplayName=Raw Files：PackRawFile 对应 RawFileBuildPipeline + RawBundle）；WebGL 支持纯 CDN、按 Tag 首包和全量首包三种布局 |
+| [EditorUtil.Pipify/Definitions/PipifyDropdownAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyDropdownAttribute.cs) | `PipifyDropdownAttribute` | string 字段渲染特性：以接口实现类下拉框形式编辑（存储 FullName） |
+| [EditorUtil.Pipify/Definitions/PipifyDynamicDropdownAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyDynamicDropdownAttribute.cs) | `PipifyDynamicDropdownAttribute` | string 字段渲染特性：动态选项下拉框（每帧调用 Provider 取 string[]） |
+| [EditorUtil.Pipify/Definitions/PipifyDynamicDefaultAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyDynamicDefaultAttribute.cs) | `PipifyDynamicDefaultAttribute` | string 字段渲染特性：值为空时显示动态默认值占位（不写回字段） |
+| [EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs) | `PipifyPasswordAttribute` | string 字段渲染特性：PipifyWindow 使用 PasswordField，存储仍为普通字符串 |
+| [EditorUtil.Pipify/Definitions/PipifyReadOnlyAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyReadOnlyAttribute.cs) | `PipifyReadOnlyAttribute` | 字段渲染特性：PipifyWindow 禁用该字段编辑；当前用于随 Unity Active BuildTarget 同步的平台字段 |
+| [EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs) | `PipifyVisibleWhenAttribute` | 字段显隐特性：依赖另一字段当前整型化值匹配 AnyOf 时才显示 |
+| [EditorUtil.Pipify/Steps/PipifySteps.Build.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Build.cs) | `PipifySteps` | 内置 Step：打包分组 1 个 Step |
+| [EditorUtil.Pipify/Steps/PipifySteps.GooglePlay.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.GooglePlay.cs) | `PipifySteps` | `googleplay.upload_aab`：同批次成功 AAB 或显式路径上传，默认内部测试草稿，凭据仅填写项目根相对路径，执行时转换为绝对路径 |
+| [EditorUtil.Pipify/Steps/PipifySteps.Export.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.cs) | `PipifySteps` | 内置 Step：Config 导出 |
+| [EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs) | `PipifySteps` | 内置 Step：`export.excel.all`，顺序聚合所有 Excel 派生导出，排除 Config 与 Proto |
+| [EditorUtil.Pipify/Steps/PipifySteps.Notification.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Notification.cs) | `PipifySteps` | 内置 Step：`notification.feishu_webhook`，发送飞书机器人文本消息 |
+| [EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs) | `PipifySteps` | 内置 Step 嵌套参数类集中定义（Config 导出、打包、外壳、飞书 Webhook） |
 
 ## §5 完整公开 API
 
@@ -110,7 +110,7 @@ Registry 还会在内部统一收集 Batch 中未注册的 StepId。Window 用�
    - 若为旧版空参数 `export.config`：从当前激活 ConfigMaster 初始化 Platform / Channel / DevelopMode，先写入条目并保存所属 PipifySettingsSO；Platform 只是兼容快照，执行期会再次同步 Active BuildTarget
    - 其他有参 Step：ParamsJson 非空则反序列化，否则创建默认参数实例
    - 调用 `ApplyOverridesForItem` 应用仅本次执行有效的 CLI 参数；标记 `[PipifyReadOnly]` 的平台字段会直接跳过 CLI 值解析，随后统一同步到 Unity 当前 Active BuildTarget。故 `export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 的旧 ParamsJson 或 CLI override 不会改变实际平台；其他字段仍按既有规则覆盖且不回写
-   - 在 Step 调用前递归解析参数对象全部公开字符串字段及列表元素中的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`；上下文来自当前激活 ConfigMaster、canonical `Nova.prefab` 默认包、`Application.version` 与该 Step 的统一解析时刻。替换只作用于本次参数快照，不回写 ParamsJson 或 Config 资产；未知占位符保持原样
+   - 在 Step 调用前递归解析参数对象全部公开字符串字段及列表元素中的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`；上下文来自当前激活 ConfigMaster、canonical [Nova.prefab](../../../../Prefabs/Nova.prefab) 默认包、`Application.version` 与该 Step 的统一解析时刻。替换只作用于本次参数快照，不回写 ParamsJson 或 Config 资产；未知占位符保持原样
    - `hybridclr.*` Step 若后续存在 `build.package`：先按同一套参数解析规则（含 CLI override）取得该 Player 构建的 `DevelopmentBuild`，仅在该 HybridCLR Step 执行期间临时镜像到 `EditorUserBuildSettings.development`，并在成功、失败或取消后还原；没有后续 Player 构建的纯热更 Batch 不改全局设置
    - 构造 `PipifyContext` 并下发
    - `reporter.ReportStep(i, name, 0f)` 返回 true 时抛 `OperationCanceledException`（Window 取消按钮）
@@ -189,6 +189,8 @@ Debug.Log($"{job.StateName}: {job.Error}");
 ```
 
 ## §13 关联文档
+
+按需生产主图集时使用 [SpriteAtlasGeneration](../EditorUtil.SpriteAtlasGeneration.md) 的 `spriteatlas.generate` / `spriteatlas.recover`，由项目显式配置顺序；默认不改旧 Batch。新增参数是精确路径与预演布尔值，仍通过原配置 Action、窗口或 CLI 运行，不注册自动构建回调。
 
 - [PipifyStepAttribute.md](./PipifyStepAttribute.md)
 - [PipifyStepInfo.md](./PipifyStepInfo.md)

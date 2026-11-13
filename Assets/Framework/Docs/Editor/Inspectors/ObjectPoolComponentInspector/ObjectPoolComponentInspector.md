@@ -12,9 +12,9 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `ObjectPoolComponentInspector.cs` | `sealed partial ObjectPoolComponentInspector` | 主体：`OnEnable` 绑定属性、`OnInspectorGUI` 绘制入口 |
-| `ObjectPoolComponentInspector.Visitors.cs` | `partial ObjectPoolComponentInspector` | 字段：`m_CurManagerTypeName`、`m_ManagerTypeNames`、`m_SearchText`、`c_PageSize`、`m_PageIndices` |
-| `ObjectPoolComponentInspector.Methods.cs` | `partial ObjectPoolComponentInspector` | 私有方法：`DrawConfigs`、`DrawRuntimeInfos`、`DrawObjectPool`、`ExportObjectPoolCsv`、`DrawSearchBox`、`DrawObjectListPagination` |
+| [ObjectPoolComponentInspector.cs](../../../../Scripts/Editor/Inspectors/ObjectPoolComponentInspector/ObjectPoolComponentInspector.cs) | `sealed partial ObjectPoolComponentInspector` | 主体：`OnEnable` 绑定属性、`OnInspectorGUI` 绘制入口 |
+| [ObjectPoolComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/ObjectPoolComponentInspector/ObjectPoolComponentInspector.Visitors.cs) | `partial ObjectPoolComponentInspector` | 字段：`m_CurManagerTypeName`、`m_ManagerTypeNames`、`m_SearchText`、`c_PageSize`、`m_PageIndices` |
+| [ObjectPoolComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/ObjectPoolComponentInspector/ObjectPoolComponentInspector.Methods.cs) | `partial ObjectPoolComponentInspector` | 私有方法：`DrawConfigs`、`DrawRuntimeInfos`、`DrawObjectPool`、`ExportObjectPoolCsv`、`DrawSearchBox`、`DrawObjectListPagination` |
 
 ---
 

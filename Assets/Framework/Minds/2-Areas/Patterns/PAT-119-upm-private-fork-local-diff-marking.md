@@ -26,7 +26,7 @@ related:
 
 ## 适用场景
 
-- `UPMPackages/` 下存在 Nova 自维护的私有 fork
+- [UPMPackages/](../../../../../UPMPackages/) 下存在 Nova 自维护的私有 fork
 - 为框架集成而改动了包内源码、编辑器工具或配置入口
 - 未来仍需要和上游版本持续同步
 

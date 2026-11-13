@@ -33,8 +33,16 @@
 
 ## 包边界
 
-- `Nova/Scripts/Runtime/Data` 保存公开只读模型和内部持久化数据。
-- `Nova/Scripts/Runtime/Services` 按网络、报价、交易和钱包职责拆分实现。
-- `Nova/Scripts/Runtime/Protos` 只保存 protoc 生成代码，不手工修改。
+- [Nova/Scripts/Runtime/Data](Nova/Scripts/Runtime/Data/) 保存公开只读模型和内部持久化数据。
+- [Nova/Scripts/Runtime/Services](Nova/Scripts/Runtime/Services/) 按网络、报价、交易和钱包职责拆分实现。
+- [Nova/Scripts/Runtime/Protos](Nova/Scripts/Runtime/Protos/) 只保存 protoc 生成代码，不手工修改。
 - Runtime 程序集仅依赖 Nova Runtime、IAP Runtime 和 UniTask，不向 Editor/Test 开放友元程序集。
 - Editor 测试只验证 public API、只读模型和程序集导出边界，不直接访问内部交易状态机。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework.sdk.iap` | `Nova/Doc/INDEX.md` | `Nova/Doc/IAP-Architecture.md#支付打点三维属性` |

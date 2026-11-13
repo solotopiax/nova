@@ -39,7 +39,9 @@ namespace NovaFramework.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
-        private void InternalOpenUIView(int serialID, string assetLocation, UIGroup uiGroup, object uiViewTarget, bool pauseCoveredUIView, bool inObjectPools, bool isNewInstance, float duration, object userData)
+        /// <param name="verifyInitialization">只有新完成入口要求初始化成功，旧入口保持原处理。</param>
+        /// <param name="mayContinue">只有新入口提供的阶段有效性检查；旧入口不创建或调用该委托。</param>
+        private void InternalOpenUIView(int serialID, string assetLocation, UIGroup uiGroup, object uiViewTarget, bool pauseCoveredUIView, bool inObjectPools, bool isNewInstance, float duration, object userData, bool verifyInitialization = false, Func<bool> mayContinue = null)
         {
             try
             {
@@ -48,15 +50,26 @@ namespace NovaFramework.Runtime
                 {
                     throw new InvalidOperationException("视图辅助器创建视图失败。");
                 }
+                if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在挂载期间已结束请求。");
 
                 uiView.OnInit(serialID, assetLocation, uiGroup, pauseCoveredUIView, inObjectPools, isNewInstance, userData);
+                if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在初始化期间已结束请求。");
+                if (verifyInitialization && uiView is UIView initialized && initialized.InitializationException != null)
+                    throw new InvalidOperationException("页面初始化未成功。", initialized.InitializationException);
                 uiGroup.AddUIView(uiView);
                 m_UIViewIndex[serialID] = uiView;
+                if (uiView is UIView managedView) managedView.BeginOpenScope();
+                if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在作用域准备期间已结束请求。");
                 uiView.OnOpen(userData);
+                if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在打开钩子期间已结束请求。");
                 uiGroup.Refresh();
+                if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在分组刷新期间已结束请求。");
             }
             catch (Exception exception)
             {
+                // 可选打开先由请求固定终态再清理，避免 scope 回调重入把 Failed 抢先结算为 Closed。
+                if (mayContinue == null && uiViewTarget is GameObject target && target != null)
+                    target.GetComponent<UIView>()?.EndOpenScope();
                 throw new InvalidOperationException($"打开视图失败，Asset 地址 '{assetLocation}'：{exception.Message}", exception);
             }
         }
@@ -152,10 +165,14 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 分配下一个可用的视图序列编号，自动跳过已占用的编号。
+        /// 只有可选入口分配或仍有资源观察链时，额外保留加载及等待中的序号；旧纯调用策略不变。
         /// </summary>
         /// <returns>可用的序列编号。</returns>
         private int AllocateSerialID()
         {
+            bool reservePending = m_AwaitAllocationDepth > 0 || m_AwaitedUIViews != null && m_AwaitedUIViews.Count > 0;
+            long occupied = m_UIViewIndex.Count;
+            if (reservePending) occupied += (long)m_UIViewsBeingLoaded.Count + m_UIViewsToReleaseOnLoad.Count + (m_AwaitedUIViews?.Count ?? 0);
             int attempts = 0;
             do
             {
@@ -165,14 +182,16 @@ namespace NovaFramework.Runtime
                     m_Serial = 1;
                 }
 
-                if (!m_UIViewIndex.ContainsKey(m_Serial))
+                if (!m_UIViewIndex.ContainsKey(m_Serial) && (!reservePending ||
+                    !m_UIViewsBeingLoaded.ContainsKey(m_Serial) && !m_UIViewsToReleaseOnLoad.Contains(m_Serial) &&
+                    (m_AwaitedUIViews == null || !m_AwaitedUIViews.ContainsKey(m_Serial))))
                 {
                     return m_Serial;
                 }
 
                 attempts++;
             }
-            while (attempts < m_UIViewIndex.Count + 1);
+            while (attempts < occupied + 1);
 
             throw new InvalidOperationException("无法分配视图序列编号，所有编号均已被占用。");
         }
@@ -469,6 +488,7 @@ namespace NovaFramework.Runtime
             GameObject go = uiViewTarget as GameObject;
             if (go != null)
             {
+                go.GetComponent<UIView>()?.EndOpenScope();
                 m_PrefabManager.Destroy(go);
             }
         }

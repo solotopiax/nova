@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|----|
-| `Managers/PersistManagerBase.cs` | `PersistManagerBase<TConfig>` | 泛型抽象基类定义 |
+| [Managers/PersistManagerBase.cs](../../../../Scripts/Runtime/Modules/Persist/Managers/PersistManagerBase.cs) | `PersistManagerBase<TConfig>` | 泛型抽象基类定义 |
 
 ---
 

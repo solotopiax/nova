@@ -1,6 +1,6 @@
 # SerializedTargetEditing
 
-`SerializedTargetEditing` 是 `nova.project.settings.inspect-target`、`nova.project.settings.patch-target` 与存档维护事务共用的内部 Editor 服务。它复用 `SerializedPropertyValues` 的严格 JSON 转换，目标定位、保存、漂移和草稿检查只维护在本服务；消费侧流程见 `Agents/Skills/nova-project-edit-settings/SKILL.md`。
+`SerializedTargetEditing` 是 `nova.project.settings.inspect-target`、`nova.project.settings.patch-target` 与存档维护事务共用的内部 Editor 服务。它复用 `SerializedPropertyValues` 的严格 JSON 转换，目标定位、保存、漂移和草稿检查只维护在本服务；消费侧流程见 [Agents/Skills/nova-project-edit-settings/SKILL.md](../../../../Agents/Skills/nova-project-edit-settings/SKILL.md)。
 
 目标文件必须是 `Assets` 内自有普通 `.prefab` 或单对象 `.asset`；Prefab 组件用 `targetGuid + globalObjectId` 精确定位，SO 可先用 GUID 检查再复用返回标识。对象必须拥有真实匹配类型的 `MonoScript`；脚本可位于项目自有源码，或实际解析的 `com.solotopia.nova.framework` / Nova SDK、Kit 包自有 `Scripts`。脚本来源允许包内不代表包文件可作为编辑目标。
 
@@ -26,6 +26,6 @@ Receipt 只保存身份、源脚本/meta/整体文件与状态摘要和字段地
 
 场景组件、内置组件、Prefab 变体/嵌套和已核实的 UnityEvent 配置由同一个 `nova-project-edit-settings` 分支复用现有 Unity MCP；准确请求、草稿、保存和证据边界见 [共享编辑参考](../../../../Agents/Skills/nova-project-edit-settings/references/unity-mcp-editing.md)。不会为每个组件或参数创建新 Skill，也不会扩大 `SerializedTargetEditing` 自身的输入范围。
 
-当前审查依据是项目解析的 `com.coplaydev.unity-mcp` v10.3.0 `Editor/Tools/ManageComponents.cs`、`Prefabs/ManagePrefabs.cs`、`ManageScene.cs`、`ManageUI.cs`、`ManageAsset.cs` 和 `Editor/Helpers/ComponentOps.cs`，以及当前 Provider Tool Schema；包升级后须复核。`manage_components(set_property)` 支持精确组件索引，使用反射字段/属性或 SerializedProperty，并标脏但不保存；`manage_prefabs(modify_contents)` 在隔离上下文加载并 `SaveAsPrefabAsset` 指定路径，组件字典只选择第一个同类；`manage_scene(save)` 保存活动场景，传不同路径会 Save As。
+当前审查依据是按 [包发现规则](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 定位的项目解析包 `com.coplaydev.unity-mcp` v10.3.0 `Editor/Tools/ManageComponents.cs`、`Prefabs/ManagePrefabs.cs`、`ManageScene.cs`、`ManageUI.cs`、`ManageAsset.cs` 和 `Editor/Helpers/ComponentOps.cs`，以及当前 Provider Tool Schema；包升级后须复核。`manage_components(set_property)` 支持精确组件索引，使用反射字段/属性或 SerializedProperty，并标脏但不保存；`manage_prefabs(modify_contents)` 在隔离上下文加载并 `SaveAsPrefabAsset` 指定路径，组件字典只选择第一个同类；`manage_scene(save)` 保存活动场景，传不同路径会 Save As。
 
 `ComponentOps` 对 UnityEvent 强制走 SerializedProperty，不调用绑定方法；已有监听列表和目标/方法/参数仍须先核实。Prefab override 是否持久必须保存后核对，不能把未显式调用 `RecordPrefabInstancePropertyModifications` 的通用反射路线推断为已保证。`save_prefab_stage`、`manage_ui(update_panel_settings)` 和 `manage_asset(modify)` 会调用全局 `SaveAssets`，没有无关资产脏态证明时不能冒充单文件保存。共享 MCP 没有本服务的整体指纹、一次性收据和自动脱敏；源码审查及发现工具不证明当前项目已执行通过。

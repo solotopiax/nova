@@ -11,7 +11,7 @@ WebSocket 连接就绪状态枚举，对应 HTML5 WebSocket ReadyState 标准定
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketState.cs` | WebSocket 连接状态枚举定义 |
+| [WebSocketState.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/WebSocketState.cs) | WebSocket 连接状态枚举定义 |
 
 ## 枚举值
 

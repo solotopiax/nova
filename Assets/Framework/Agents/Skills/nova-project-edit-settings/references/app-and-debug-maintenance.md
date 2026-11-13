@@ -4,7 +4,7 @@
 
 ## App 大版本更新
 
-按需读取 `Docs/Runtime/Modules/App/AppComponent.md`、`Definitions/AppManagerConfig.md` 和当前启动 Procedure。目标类型为 `NovaFramework.Runtime.AppComponent`；字段经已有 Scene/Prefab 编辑入口保存，不新建 App 专属 Action。
+按需读取 [Docs/Runtime/Modules/App/AppComponent.md](../../../../Docs/Runtime/Modules/App/AppComponent.md)、[Definitions/AppManagerConfig.md](../../../../Docs/Runtime/Modules/App/Definitions/AppManagerConfig.md) 和当前启动 Procedure。目标类型为 `NovaFramework.Runtime.AppComponent`；字段经已有 Scene/Prefab 编辑入口保存，不新建 App 专属 Action。
 
 | 用户意图 | 当前字段及声明默认值 |
 |---|---|
@@ -24,7 +24,7 @@
 
 ## 游戏暂停、恢复、速度与退出业务
 
-只读 `Docs/Runtime/Modules/Nova/Nova.md` 和当前 `Scripts/Runtime/Modules/Nova/Nova.cs/Nova.Visitors.cs`。真实类型为 `NovaFramework.Runtime.Nova`，业务运行门面为 `Nova.Self`；它在 Awake 赋值，其它静态 Component 门面在 Start 收集，不能在尚未就绪或已关闭时调用。
+只读 [Docs/Runtime/Modules/Nova/Nova.md](../../../../Docs/Runtime/Modules/Nova/Nova.md) 和当前 [Nova.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.cs) / [Nova.Visitors.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.Visitors.cs)。真实类型为 `NovaFramework.Runtime.Nova`，业务运行门面为 `Nova.Self`；它在 Awake 赋值，其它静态 Component 门面在 Start 收集，不能在尚未就绪或已关闭时调用。
 
 | 目标 | 已有字段/公开调用与语义 |
 |---|---|
@@ -42,7 +42,7 @@
 
 ## RuntimeDebugger
 
-按需读取 `Docs/Runtime/Modules/Debug/DebugComponent.md`、`Definitions/DebuggerActiveType.md` 和 `Windows/DiskCheckingConfig.md`。目标类型为 `NovaFramework.Runtime.DebugComponent`，当前字段声明在 `Scripts/Runtime/Modules/Debug/Windows/DebugComponent.Visitors.cs`。
+按需读取 [Docs/Runtime/Modules/Debug/DebugComponent.md](../../../../Docs/Runtime/Modules/Debug/DebugComponent.md)、[Definitions/DebuggerActiveType.md](../../../../Docs/Runtime/Modules/Debug/Definitions/DebuggerActiveType.md) 和 [Windows/DiskCheckingConfig.md](../../../../Docs/Runtime/Modules/Debug/Windows/DiskCheckingConfig.md)。目标类型为 `NovaFramework.Runtime.DebugComponent`，当前字段声明在 [Scripts/Runtime/Modules/Debug/Windows/DebugComponent.Visitors.cs](../../../../Scripts/Runtime/Modules/Debug/Windows/DebugComponent.Visitors.cs)。
 
 - `m_DebuggerActiveType=OnlyEnableWhenDevelopment`。精确枚举为 `AlwaysEnable/OnlyEnableWhenDevelopment/OnlyEnableInEditor/AlwaysDisable`；Development 判断使用 `UnityEngine.Debug.isDebugBuild`。
 - `m_MaximumConsoleEntries=3000`。Inspector 提供 0 至 20000 范围；说明内存保留数量和淘汰影响，不把它当编译日志级别。
@@ -53,7 +53,7 @@
 
 ## 固定日志菜单与共享宏入口
 
-`Docs/Runtime/Core/Log/Log.md` 与 `Docs/Editor/Menus/EnableLogsMenuItems.md` 区分三层：RuntimeDebugger 显示过滤、框架 `Log` 调用的编译宏、各 SDK 自身日志配置。`LogLevel` 为 `Debug/Info/Warning/Error/Fatal`，`LogTag` 是字符串常量；没有已核实的全局 Runtime 日志等级字段。Editor 调用始终保留，Player 按 `ENABLE_LOG`、精确等级及 `ENABLE_*_AND_ABOVE_LOG` 裁剪。
+[Docs/Runtime/Core/Log/Log.md](../../../../Docs/Runtime/Core/Log/Log.md) 与 [Docs/Editor/Menus/EnableLogsMenuItems.md](../../../../Docs/Editor/Menus/EnableLogsMenuItems.md) 区分三层：RuntimeDebugger 显示过滤、框架 `Log` 调用的编译宏、各 SDK 自身日志配置。`LogLevel` 为 `Debug/Info/Warning/Error/Fatal`，`LogTag` 是字符串常量；没有已核实的全局 Runtime 日志等级字段。Editor 调用始终保留，Player 按 `ENABLE_LOG`、精确等级及 `ENABLE_*_AND_ABOVE_LOG` 裁剪。
 
 固定切换优先复用当前 `mcpforunity://menu-items` 中存在的菜单，用 `execute_menu_item(menu_path=<exact>)` 执行；先核对源码和菜单存在性，不用每轮临时代码：
 

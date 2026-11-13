@@ -11,7 +11,7 @@ PrefabManager 抽象基类，声明 IPrefabManager 全部成员的 abstract 形�
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/PrefabManager/Implements/PrefabManagerBase.cs` | `PrefabManagerBase` | 基类定义 |
+| [Managers/PrefabManager/Implements/PrefabManagerBase.cs](../../../../../Scripts/Runtime/Modules/Prefab/Managers/PrefabManager/Implements/PrefabManagerBase.cs) | `PrefabManagerBase` | 基类定义 |
 
 ---
 

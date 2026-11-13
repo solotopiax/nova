@@ -2,7 +2,7 @@
 
 **类签名**：`public interface IRemoteConfigPlugin : ISDKPlugin`
 **命名空间**：`NovaFramework.Runtime`
-**源码文件**：`Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Cloud/IRemoteConfigPlugin.cs`
+**源码文件**：[Scripts/Runtime/Modules/SDK/Plugins/Cloud/IRemoteConfigPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Cloud/IRemoteConfigPlugin.cs)
 
 远程配置接口，抽象 Firebase Remote Config 等平台的 Key-Value 下发能力。
 
@@ -24,7 +24,7 @@
 
 | 文件 | 类型 | 说明 |
 |---|---|---|
-| `Plugins/Cloud/IRemoteConfigPlugin.cs` | `IRemoteConfigPlugin` | 接口全部定义 |
+| [Plugins/Cloud/IRemoteConfigPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Cloud/IRemoteConfigPlugin.cs) | `IRemoteConfigPlugin` | 接口全部定义 |
 
 ---
 

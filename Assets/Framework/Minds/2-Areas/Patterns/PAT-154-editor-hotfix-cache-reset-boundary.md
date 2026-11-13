@@ -94,9 +94,9 @@ AssetComponent Inspector 与 `Nova/Clean Hotfix Caches` 菜单统一调用 `Edit
 
 ## 验证依据
 
-- 统一实现：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.cs`
-- Inspector 入口：`Assets/Framework/Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs`
-- 菜单入口：`Assets/Framework/Scripts/Editor/Menus/AssetCacheMenuItems.cs`
+- 统一实现：[Scripts/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.cs)
+- Inspector 入口：[Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs](../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs)
+- 菜单入口：[Scripts/Editor/Menus/AssetCacheMenuItems.cs](../../../Scripts/Editor/Menus/AssetCacheMenuItems.cs)
 - 隔离路径契约：`Assets/Tests/Editor/AssetEditorCacheTests.cs`
 - 临时目录测试验证沙盒整体删除、顶层 `*.version` 删除、DeviceID 与其他文件保留；相关 EditMode 回归曾为 14/14 通过。
 

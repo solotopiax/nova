@@ -3325,6 +3325,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/PipifyConfigureBatchAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/SettingsPatchBuildDefinesAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/SettingsPatchTargetAction.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidGenerateProviderContract.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidHybridClrGenerateEvidenceStore.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveCodeEditorTailContract.cs",
@@ -3370,8 +3371,10 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/PipifyInspectSettingsAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/Psd2UguiInspectAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/SettingsInspectTargetAction.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/UIBindingsInspectAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Package/UpmManageLatestAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Package/UpmUninstallDirectAction.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/UIBindingsActionCommon.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActionContractProvider.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/EditorObjectJson.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Services/FileFragmentMaintenance.cs",
@@ -3408,7 +3411,9 @@
         "nova-project-integrate-persistence",
         "nova-project-onboard-sdk-kit",
         "nova-project-configure-runtime",
-        "nova-project-psd2ugui"
+        "nova-project-psd2ugui",
+        "nova-project-ui-create-view",
+        "nova-project-update-ui-view"
       ],
       "adapters": [
         {
@@ -3485,6 +3490,16 @@
           "entry": "nova.project.psd2ugui.run",
           "kind": "agent-action",
           "when": "仅执行live Schema支持的prepare/sync/patch-nodes/generate/export-images/apply-ai/run-ai/configure/nine-slice固定操作；冻结精确源和写集，经Plan/Execute/Verify；run-ai只识别，成功Verify后绑定本轮jobId单独apply-ai，再检查并按目标generate"
+        },
+        {
+          "entry": "nova.project.ui.inspect-bindings",
+          "kind": "agent-action",
+          "when": "只读发现精确项目普通Prefab内View、对象和直接字段及受阻原因；所有ID/类型来自当前Inspect，不依赖节点名或整数位置。"
+        },
+        {
+          "entry": "nova.project.ui.configure-bindings",
+          "kind": "agent-action",
+          "when": "明确选mode=bind或generate，live Schema经Plan/单次Execute/只读Verify；bind只填空或同引用no-op不改事件/层级，generate只工具归属字段partial与首次meta，本次编译重载后重新Inspect并新Plan绑定。不接管旧页，恢复不完整保留回执和目录，不重放或任意代码恢复。"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
@@ -3540,7 +3555,9 @@
         "psd2ugui.generate",
         "psd2ugui.export-images",
         "psd2ugui.nine-slice",
-        "psd2ugui.ai"
+        "psd2ugui.ai",
+        "ui.bindings.bind",
+        "ui.bindings.generate"
       ]
     },
     {
@@ -5036,11 +5053,13 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.GooglePlay.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Notification.cs",
-        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Shell.cs"
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Shell.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.SpriteAtlas.cs"
       ],
       "docs": [
         "Assets/Framework/Docs/INDEX.md",
-        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md"
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md"
       ],
       "skills": [
         "nova-project-build-bundles",
@@ -5123,7 +5142,8 @@
         "Assets/Framework/package.json",
         "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Editor/NovaFramework.Mcp.Editor.asmdef",
         "UPMPackages/com.solotopia.nova.framework.mcp/package.json",
-        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md"
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md"
       ],
       "navigationInputs": [
         "Assets/Framework/Docs/INDEX.md",
@@ -5140,7 +5160,9 @@
         "hotfix.refresh",
         "hotfix.artifacts",
         "build.cdn.deploy",
-        "android.dependencies"
+        "android.dependencies",
+        "resource.sprite-atlas.generate",
+        "resource.sprite-atlas.recover"
       ]
     },
     {
@@ -8550,6 +8572,8 @@
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/ResourceEncryption/ResourceEncryptionCodec.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/ResourceEncryption/ResourceEncryptionMode.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/ResourceEncryption/ResourceOffsetStream.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/SpriteBinding.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/SpriteBindingLifetime.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/WebGLAssetStrategy.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetDownloadUrlPolicy.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetDownloader.cs",
@@ -8578,6 +8602,7 @@
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetDownloader.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetHandle.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetManager.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetStartupWarmupController.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetWarmupGroup.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IRawFileHandle.cs",
@@ -8586,7 +8611,9 @@
       ],
       "docs": [
         "Assets/Framework/Docs/Runtime/Modules/Asset/AssetComponent.md",
-        "Assets/Framework/Docs/Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md"
+        "Assets/Framework/Docs/Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md",
+        "Assets/Framework/Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetPackageLoader.md",
+        "Assets/Framework/Docs/Runtime/Modules/Asset/SpriteBinding.md"
       ],
       "skills": [
         "nova-project-integrate-resource",
@@ -8624,12 +8651,23 @@
           "entry": "Nova.Asset.LoadManifestAsync / RefreshManifestAsync / ClearUnusedCacheAsync",
           "kind": "csharp-api",
           "when": "运行时冗余Bundle清理分支：经授权项目业务入口编译消费真实package/ct；先确认既有Bootstrap与已激活清单，明确更新目标时沿原链Refresh并核实实际版本，再只清未被当前清单引用的磁盘Bundle。不是MCP Action，不绕过已有业务入口与句柄生命周期；调用返回不证明删除成功，手机目标须设备结果证据。"
+        },
+        {
+          "entry": "Nova.Asset.LoadFromPackageSync/Async<T> / LoadSubsFromPackageSync/Async<T> / LoadAllFromPackageSync/Async<T> / LoadRawFromPackageSync/Async / LoadSceneFromPackageSync/Async",
+          "kind": "csharp-api",
+          "when": "仅在已授权项目业务源码接入显式资源包加载；package/location精确匹配且包/清单由既有链准备；可选接口不扩IAssetManager强制成员，旧Manager不支持时抛NotSupportedException。WebGL只异步，预取消不调度，仅释放已交付Handle，Scene用UnloadAsync；主/子/全/Scene完成不冒充成功。不是MCP Action。"
+        },
+        {
+          "entry": "SpriteBinding(Image) / SpriteBinding(SpriteRenderer) / BindAsync / BindAtlasAsync / Clear / Dispose",
+          "kind": "csharp-api",
+          "when": "仅已授权业务源码选择性接入；通过默认构造沿Nova.Asset默认包加载，每目标一个拥有者，在主线程调用，关闭/回池显式清理或登记UIView.OpenScope.Own；取消/替代false，真实失败抛错，交接前加载失败保旧图。内部Handle/克隆由助手拥有，不重复Release/Destroy；无自动迁移、选包或共享缓存，不是MCP Action。"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "可选图片助手仅主动new才启用、只使用默认包且拥有自己的Handle/图集克隆；显式包入口不初始化/切换默认包，不扩旧IAssetManager强制成员，UI/Prefab现有入口不自动透传包选择；旧项目零迁移是验收目标，运行证据另取。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -8665,7 +8703,9 @@
         "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef",
         "Assets/Framework/Tracks/Tracks.xlsx",
         "Assets/Framework/package.json",
-        "UPMPackages/com.solotopia.nova.framework.mcp/package.json"
+        "UPMPackages/com.solotopia.nova.framework.mcp/package.json",
+        "Assets/Framework/Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetPackageLoader.md",
+        "Assets/Framework/Docs/Runtime/Modules/Asset/SpriteBinding.md"
       ],
       "navigationInputs": [
         "Assets/Framework/Docs/Runtime/Modules/Modules.md",
@@ -8676,7 +8716,9 @@
       "taskRefs": [
         "resource.integrate",
         "scene.content.integrate",
-        "resource.clear-unused-cache"
+        "resource.clear-unused-cache",
+        "resource.load-from-package",
+        "resource.sprite-binding"
       ]
     },
     {
@@ -8712,7 +8754,8 @@
         "nova-project-preflight-build",
         "nova-project-onboard-sdk-kit",
         "nova-project-router",
-        "nova-project-integrate-persistence"
+        "nova-project-integrate-persistence",
+        "nova-project-integrate-procedure"
       ],
       "adapters": [
         {
@@ -10409,8 +10452,10 @@
       "sources": [
         "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/IUIView.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIView.Methods.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIView.Scope.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIView.Visitors.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIView.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIViewScope.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Definitions/IUIGroup.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Implements/UIGroupHelper.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Implements/UIGroupHelperBase.cs",
@@ -10420,6 +10465,8 @@
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/SafeAreaData.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UIManagerConfig.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UISettings.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UIViewOpenResult.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManager.Await.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManager.Methods.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManager.OpenUIViewInfo.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManager.UIGroup.UIViewInfo.cs",
@@ -10430,13 +10477,18 @@
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManagerBase.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Interfaces/ISafeAreaProvider.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Interfaces/IUIManager.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Interfaces/IUIOpenAwaiter.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.Await.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.UIGroup.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.Visitors.cs",
         "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.cs"
       ],
       "docs": [
         "Assets/Framework/Docs/Runtime/Modules/UI/UIComponent.md",
-        "Assets/Framework/Docs/Runtime/Modules/UI/UIManager/UIManager.md"
+        "Assets/Framework/Docs/Runtime/Modules/UI/UIManager/UIManager.md",
+        "Assets/Framework/Docs/Runtime/Modules/UI/Definitions/UIViewScope.md",
+        "Assets/Framework/Docs/Runtime/Modules/UI/Definitions/UIView.md",
+        "Assets/Framework/Docs/Runtime/Modules/UI/UIManager/Interfaces/IUIOpenAwaiter.md"
       ],
       "skills": [
         "nova-project-ui-create-view",
@@ -10464,13 +10516,24 @@
           "entry": "Nova.UI.OpenUIViewSync<T> / OpenUIViewAsync<T> / OpenUIViewSync(string uiViewName, object userData = null) / OpenUIViewAsync(string uiViewName, object userData = null) / OpenUIViewByAssetSync / OpenUIViewByAssetAsync",
           "kind": "csharp-api",
           "when": "在已授权业务源码接入中按类型、UI表Name或唯一AssetLocation选择配置；所有打开先加载UI注册表，分组、暂停与池化以表为准，缺失或歧义返回-1；旧bool重载仅供迁移且不再覆盖表格"
+        },
+        {
+          "entry": "UIView.OpenScope / UIViewScope.Token / IsDisposed / Own / AddCleanup / Subscribe<TEvent> / Dispose",
+          "kind": "csharp-api",
+          "when": "只在已授权业务源码主动接入本次打开工作，scope惰性创建且只清明确登记对象；框架受控关闭/回收/销毁收尾，隐藏/暂停不结束。原手工订阅取消清理不扫描接管，不双重清理；不是MCP Action。"
+        },
+        {
+          "entry": "Nova.UI.OpenUIViewAwaitAsync<T> / OpenUIViewAwaitAsync(string,object,CancellationToken) / OpenUIViewByAssetAwaitAsync",
+          "kind": "csharp-api",
+          "when": "只在已授权业务源码明确需要等待时接入可选IUIOpenAwaiter门面；注册/分组/暂停/池化来源不变，完成需OnInit/OnOpen/组刷新，取消仅本请求，结果当时快照不能长期持池化View；旧入口不迁移，不是MCP Action。"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "UI布局任务先按 UIComponent.md 冻结屏幕适配方案；根缩放复用UIComponent，GetDeviceSafeArea仅返回物理像素而不自动改布局；项目自有UIComponent字段沿edit-settings，方向修改另核对真实Player Settings通道；布局验收按所选UI Skill合同。"
+        "UI布局任务先按 UIComponent.md 冻结屏幕适配方案；根缩放复用UIComponent，GetDeviceSafeArea仅返回物理像素而不自动改布局；项目自有UIComponent字段沿edit-settings，方向修改另核对真实Player Settings通道；布局验收按所选UI Skill合同。",
+        "OpenScope只主动取得并登记才参与收尾，旧页手工订阅/取消/释放不接管；等待打开用独立可选IUIOpenAwaiter且保留旧int入口，Opened只是当时快照，打开请求结束后的token不控制已打开页面；旧项目兼容须实际验证。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -10495,7 +10558,9 @@
         "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef",
         "Assets/Framework/Templates/UITemplate.xlsx",
         "Assets/Framework/package.json",
-        "UPMPackages/com.solotopia.nova.framework.mcp/package.json"
+        "UPMPackages/com.solotopia.nova.framework.mcp/package.json",
+        "Assets/Framework/Docs/Runtime/Modules/UI/Definitions/UIViewScope.md",
+        "Assets/Framework/Docs/Runtime/Modules/UI/UIManager/Interfaces/IUIOpenAwaiter.md"
       ],
       "navigationInputs": [
         "Assets/Framework/Docs/Runtime/Modules/Modules.md",
@@ -10506,7 +10571,9 @@
       "taskRefs": [
         "data.ui.integrate",
         "ui.create",
-        "ui.update"
+        "ui.update",
+        "ui.open-scope.integrate",
+        "ui.await-open.integrate"
       ]
     },
     {
@@ -10604,9 +10671,9 @@
       ],
       "adapters": [
         {
-          "entry": "catalog.json + selected references/contract.json",
+          "entry": "project package binding + package.json + Docs/START_HERE.md + catalog.json + selected references/contract.json",
           "kind": "workspace-inspection",
-          "when": "需要从已发现的消费端 Skill 中选择最窄路径时"
+          "when": "一般 Unity 请求也先只读识别是否接入或明确要求 Nova，再从当前框架能力中选择最窄路径；不要求用户点名 Nova"
         },
         {
           "entry": "nova_project_action(operation=describe, action_id=<selected action id>)",
@@ -10679,20 +10746,23 @@
         "Assets/Framework/Agents/INDEX.md",
         "Assets/Framework/Docs/Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md",
         "Assets/Framework/Docs/START_HERE.md",
-        "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md"
+        "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md",
+        "Assets/Framework/Docs/Onboarding/AI_DEVELOPMENT_WORKFLOW.md",
+        "Assets/Framework/Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md"
       ],
       "skills": [
         "nova-project-router",
         "nova-project-check-readiness",
         "nova-project-export-tables",
         "nova-project-onboard-sdk-kit",
-        "nova-project-update-localization"
+        "nova-project-update-localization",
+        "nova-project-development"
       ],
       "adapters": [
         {
-          "entry": "catalog.json + selected references/contract.json",
+          "entry": "project package binding + package.json + Docs/START_HERE.md + catalog.json + selected references/contract.json",
           "kind": "workspace-inspection",
-          "when": "需要从已发现的消费端 Skill 中选择最窄路径时"
+          "when": "一般 Unity 请求也先只读识别是否接入或明确要求 Nova，再从当前框架能力中选择最窄路径；不要求用户点名 Nova"
         },
         {
           "entry": "nova_project_action(operation=describe, action_id=<selected action id>)",
@@ -10902,7 +10972,9 @@
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md",
         "Assets/Framework/Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md",
         "Assets/Framework/Scripts/Runtime/Core/Definitions/Language.cs",
-        "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md"
+        "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md",
+        "Assets/Framework/Docs/Onboarding/AI_DEVELOPMENT_WORKFLOW.md",
+        "Assets/Framework/Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md"
       ],
       "navigationInputs": [],
       "taskScope": "internal",
@@ -14754,6 +14826,166 @@
       "taskRefs": [
         "persistence.memory-protection.integrate"
       ]
+    },
+    {
+      "id": "data.excel.template",
+      "sources": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py"
+      ],
+      "docs": [
+        "Assets/Framework/Docs/Onboarding/RESOURCE_WORKFLOW.md"
+      ],
+      "skills": [
+        "nova-project-ui-create-view",
+        "nova-project-integrate-sound",
+        "nova-project-integrate-table",
+        "nova-project-update-localization",
+        "nova-project-integrate-network-api",
+        "nova-project-integrate-vibration"
+      ],
+      "adapters": [
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+          "kind": "cli",
+          "when": "仅从当前包白名单官方 UI/Sound 表克隆；按 RESOURCE_WORKFLOW.md 冻结模板/目标摘要与完整业务行，原样保留样式/备注；不导出、不启动Unity，不用于普通叶子编辑"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+          "kind": "cli",
+          "when": "仅source-template-copy分支，mode=copy与table-list/table-map/table-one官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+          "kind": "cli",
+          "when": "仅source-template-copy分支，mode=copy与localization-text/localization-font官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+          "kind": "cli",
+          "when": "仅source-template-copy分支，mode=copy与network-hostkeys/network-cmds官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+          "kind": "cli",
+          "when": "仅source-template-copy分支，mode=copy与vibration-emphasis/vibration-custom官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
+        }
+      ],
+      "exposure": "既有领域Skill的原样模板复制与UI/Sound行填入分支；共享物理复制，不统一业务Schema或Exporter。",
+      "limitations": [
+        "mode=copy逐字节复制Framework全部11官方模板及两份MainDemo原表，不改Sheet/示例值；rows只支持原UI/Sound四来源，不对其他表强加Name/唯一Sheet。",
+        "源复制仅证明物料与样式保真；业务内容、数据导出及运行由各领域既有入口处理。Tracks/SDK/Kit或项目自定义来源按各自规范，缺少保真入口时阻断相关写入。"
+      ],
+      "taskScope": "consumer",
+      "taskRefs": [
+        "ui.source.create",
+        "sound.source.create",
+        "table.source.create",
+        "localization.source.create",
+        "network.source.create",
+        "vibration.source.create"
+      ]
+    },
+    {
+      "id": "editor.tool.EditorUtil.UIBindings",
+      "sources": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.Generation.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.Models.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.cs"
+      ],
+      "docs": [
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.UIBindings.md"
+      ],
+      "skills": [
+        "nova-project-ui-create-view",
+        "nova-project-update-ui-view",
+        "nova-project-router"
+      ],
+      "adapters": [
+        {
+          "entry": "nova.project.ui.inspect-bindings",
+          "kind": "agent-action",
+          "when": "只读发现精确项目普通Prefab内View、对象和直接字段及受阻原因；所有ID/类型来自当前Inspect，不依赖节点名或整数位置。"
+        },
+        {
+          "entry": "nova.project.ui.configure-bindings",
+          "kind": "agent-action",
+          "when": "明确选mode=bind或generate，live Schema经Plan/单次Execute/只读Verify；bind只填空或同引用no-op不改事件/层级，generate只工具归属字段partial与首次meta，本次编译重载后重新Inspect并新Plan绑定。不接管旧页，恢复不完整保留回执和目录，不重放或任意代码恢复。"
+        }
+      ],
+      "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
+      "limitations": [
+        "显式工具只支持项目普通Prefab/真实UIView/直接对象引用；不自动扫描接管，不支持的变体/嵌套/草稿/回调明确受阻。",
+        "bind只填空字段或同引用no-op；generate只预先partial业务类的唯一归属输出，真实编译重载后重新Inspect和新Plan绑定。恢复不完整保留材料；目前无独立恢复Action。"
+      ],
+      "semanticInputs": [
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.UIBindings.md",
+        "Assets/Framework/Scripts/Editor/NovaFramework.Editor.asmdef",
+        "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef",
+        "Assets/Framework/package.json"
+      ],
+      "navigationInputs": [
+        "Assets/Framework/Docs/INDEX.md",
+        "Assets/Framework/Docs/START_HERE.md"
+      ],
+      "taskScope": "consumer",
+      "taskRefs": [
+        "ui.bindings.bind",
+        "ui.bindings.generate"
+      ]
+    },
+    {
+      "id": "editor.tool.EditorUtil.SpriteAtlas",
+      "sources": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/EditorUtil.SpriteAtlasGeneration.Transaction.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/EditorUtil.SpriteAtlasGeneration.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/SpriteAtlasGenerationDefinitions.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/SpriteAtlasGenerationSettingsSO.cs"
+      ],
+      "docs": [
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md"
+      ],
+      "skills": [
+        "nova-project-configure-pipeline",
+        "nova-project-build-bundles",
+        "nova-project-router"
+      ],
+      "adapters": [
+        {
+          "entry": "nova.project.pipify.inspect-settings",
+          "kind": "agent-action",
+          "when": "读取真实Batch和注册Steps的脱敏参数Schema"
+        },
+        {
+          "entry": "nova.project.pipify.configure-batch",
+          "kind": "agent-action",
+          "when": "已冻结具名Batch的创建、克隆、目标顺序与真实基础字段编辑时，只保存目标Settings"
+        },
+        {
+          "entry": "nova.project.pipify.run-batch",
+          "kind": "agent-action",
+          "when": "用户明确要求运行已保存Batch，实际Steps副作用与完整运行范围已获授权时；配置任务默认不运行"
+        }
+      ],
+      "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
+      "limitations": [
+        "新配置默认Enabled=false/空Rules，生成Step默认PreviewOnly=true；不扫描、不改旧Batch/源图片/Collector/SpritePackerMode，不自动接管原图集。",
+        "输出归属settingsGUID；变更原地保持GUID，规则移除/改名只Retained；恢复仅该配置事务，外部改动拒覆盖。生成不等于Bundle/子图运行或提效验收。"
+      ],
+      "semanticInputs": [
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md",
+        "Assets/Framework/Scripts/Editor/NovaFramework.Editor.asmdef",
+        "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef",
+        "Assets/Framework/package.json"
+      ],
+      "navigationInputs": [
+        "Assets/Framework/Docs/INDEX.md",
+        "Assets/Framework/Docs/START_HERE.md"
+      ],
+      "taskScope": "consumer",
+      "taskRefs": [
+        "resource.sprite-atlas.generate",
+        "resource.sprite-atlas.recover"
+      ]
     }
   ],
   "userTasks": [
@@ -14788,7 +15020,8 @@
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "只建立已确认的入口和根 Prefab；业务启动与场景切换需真实 Play 证据",
-          "新项目默认经Unity引入MainDemo固定Resources及完整依赖，冻结唯一键与项目LauncherSettings，保存读回并验证真实启动；不照搬整套Sample或以默认路径代替实物。"
+          "新项目默认经Unity引入MainDemo固定Resources及完整依赖，冻结唯一键与项目LauncherSettings，保存读回并验证真实启动；不照搬整套Sample或以默认路径代替实物。",
+          "新游戏startupPreparationInventory必须覆盖MainDemo标准产品预加载八节点及其结果/依赖；场景和固定Resources仅是其中一环，缺项交既有Operation，不以局部启动代替完整基线或在此擅自省略。"
         ],
         "gaps": []
       },
@@ -16324,7 +16557,7 @@
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "从当前项目取实参与既有Owner；缺现成触发代码时仅在已授权项目源码新增必要业务胶水并复用声明公开API，跨绑定/配置/表/DLL复用对应Operation；真实资源/规则/协议或设备证据缺失不假成功，遵循START_HERE共同测试清场",
           "开始/结算/重开/回大厅和局/页面业务暂停复用business-flow参考；先确认实际入口/Service/Procedure/FSM、局身份、结果/奖励/重开保留范围与清理，缺Service且属授权可补正式项目胶水，不存在Nova.Game门面；全局速度/缓存暂停单独路由runtime.game-control",
-          "新项目业务预加载参考MainDemo依赖顺序并核对实际结果/失败/取消，前置资源配置与环境由既有Operation先准备，不以100%进度当模块可用。"
+          "新游戏/预加载编写或审查按PROJECT_STRUCTURE默认完整落实MainDemo八项标准动作，冻结businessPreloadDependencyPlanAndPreparationEvidence各节点的产品来源/配置/物料/真实结果/平台分支和最小可用证据；不因体量小或单机裁减、不以await/空配置/SDK全局任务完成或100%进度当就绪，按真实缓存任务处理失败和恢复。"
         ],
         "gaps": []
       },
@@ -16944,8 +17177,7 @@
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "默认只保存；完整 Steps 列表按源序号引用，隐藏/数组/复杂参数和任意 Type.Method 不开放",
           "configure-batch参数限当前ParameterPolicy和窗口一致的string/bool/int/float/enum字段；完整Step列表可结构编辑，Array/List/custom converter/属性/隐藏字段和任意Type.Method不进入受控参数写入，缺字段入口明确blocked；Batch保存不等于执行。",
-          "当前源码候选实际第二参数DTO审查：42Framework+1已安装微信无参Step、10DTO/68字段均string/bool/int/float/enum类标量，无真实Array/List/custom converter字段缺口；平台投影只读与条件字段仍按Policy拒写。此为源码/DTO合同，不是当前Unity TypeCache注册、窗口保存或Batch运行验收。",
-          "当前精确验收限定MainDemo Sound导出测试2Step顺序/执行；其它Batch仍按完整副作用写集授权并逐Step产物后验。"
+          "框架新增图集生成/恢复基础DTO只在已核可信默认类型名单内使用；live Registry/Schema、窗口保存或Job及逐Step产物必须在实际任务取得，不以源码静态清单代替运行证据。"
         ],
         "gaps": []
       },
@@ -16980,8 +17212,7 @@
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "真实 Step write set 决定授权与证据；包含部署、凭据、上传、通知时不能由配置授权推断执行授权",
           "仅运行已保存、具名且完整Step/参数/副作用已冻结的Batch；受控configure参数仍仅string/bool/int/float/enum，不能借run绕过Array/List/custom converter边界；Job终态须逐Step实际产物后验，远端host/账号/轨道/凭据等单独精确授权。",
-          "当前源码候选实际第二参数DTO审查：42Framework+1已安装微信无参Step、10DTO/68字段均string/bool/int/float/enum类标量，无真实Array/List/custom converter字段缺口；平台投影只读与条件字段仍按Policy拒写。此为源码/DTO合同，不是当前Unity TypeCache注册、窗口保存或Batch运行验收。",
-          "当前精确验收限定MainDemo Sound导出测试2Step顺序/执行；其它Batch仍按完整副作用写集授权并逐Step产物后验。"
+          "框架新增图集生成/恢复基础DTO只在已核可信默认类型名单内使用；live Registry/Schema、窗口保存或Job及逐Step产物必须在实际任务取得，不以源码静态清单代替运行证据。"
         ],
         "gaps": []
       },
@@ -18504,64 +18735,64 @@
       "functions": [
         "Assets/Samples/AIHelpDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Aihelp.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/AIHelpDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Aihelp.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/AIHelpDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Aihelp.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/AIHelpDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Aihelp.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/AIHelpDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Aihelp.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/AIHelpDemo/Scripts/Runtime/UIs/DemoAIHelpView/DemoAIHelpView.cs#NovaFramework.Sdk.Aihelp.Samples.Runtime.DemoAIHelpView.OnInit(object)",
         "Assets/Samples/AdDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Ad.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/AdDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Ad.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/AdDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Ad.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/AdDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Ad.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/AdDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Ad.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/AdDemo/Scripts/Runtime/UIs/DemoAdView/DemoAdView.Methods.cs#NovaFramework.Sdk.Ad.Samples.Runtime.DemoAdView.OnInit(object)",
         "Assets/Samples/AppleSigninDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Applesignin.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/AppleSigninDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Applesignin.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/AppleSigninDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Applesignin.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/AppleSigninDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Applesignin.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/AppleSigninDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Applesignin.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/AppleSigninDemo/Scripts/Runtime/UIs/DemoAppleSigninView/DemoAppleSigninView.cs#NovaFramework.Sdk.Applesignin.Samples.Runtime.DemoAppleSigninView.OnInit(object)",
         "Assets/Samples/AppsflyerDemo/Scripts/Runtime/Procedures/ProcedureLogin.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.ProcedureLogin.OnEnter(ProcedureOwner)",
         "Assets/Samples/AppsflyerDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/AppsflyerDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/AppsflyerDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/AppsflyerDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/AppsflyerDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/AppsflyerDemo/Scripts/Runtime/UIs/DemoAppsflyerView/DemoAppsflyerView.cs#NovaFramework.Sdk.Appsflyer.Samples.Runtime.DemoAppsflyerView.OnInit(object)",
         "Assets/Samples/DataMasterDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Datamaster.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/DataMasterDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Datamaster.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/DataMasterDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Datamaster.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/DataMasterDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Datamaster.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/DataMasterDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Datamaster.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/DataMasterDemo/Scripts/Runtime/UIs/DemoDataMasterView/DemoDataMasterView.cs#NovaFramework.Sdk.Datamaster.Samples.Runtime.DemoDataMasterView.OnInit(object)",
         "Assets/Samples/FacebookDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Facebook.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/FacebookDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Facebook.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/FacebookDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Facebook.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/FacebookDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Facebook.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/FacebookDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Facebook.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/FacebookDemo/Scripts/Runtime/UIs/DemoFacebookView/DemoFacebookView.cs#NovaFramework.Sdk.Facebook.Samples.Runtime.DemoFacebookView.OnInit(object)",
         "Assets/Samples/FirebaseDemo/Scripts/Runtime/Procedures/ProcedureLogin.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.ProcedureLogin.OnEnter(ProcedureOwner)",
         "Assets/Samples/FirebaseDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/FirebaseDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/FirebaseDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/FirebaseDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/FirebaseDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/FirebaseDemo/Scripts/Runtime/UIs/DemoFirebaseView/DemoFirebaseView.cs#NovaFramework.Sdk.Firebase.Samples.Runtime.DemoFirebaseView.OnInit(object)",
         "Assets/Samples/GameBindDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Kit.Network.GameBind.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/GameBindDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameBind.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/GameBindDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameBind.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/GameBindDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameBind.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/GameBindDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Kit.Network.GameBind.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/GameBindDemo/Scripts/Runtime/UIs/DemoGameBindView/DemoGameBindView.cs#NovaFramework.Kit.Network.GameBind.Samples.Runtime.DemoGameBindView.OnInit(object)",
         "Assets/Samples/GameLoginDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Kit.Network.GameLogin.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/GameLoginDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameLogin.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/GameLoginDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameLogin.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/GameLoginDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameLogin.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/GameLoginDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Kit.Network.GameLogin.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/GameLoginDemo/Scripts/Runtime/UIs/DemoGameLoginView/DemoGameLoginView.cs#NovaFramework.Kit.Network.GameLogin.Samples.Runtime.DemoGameLoginView.OnInit(object)",
         "Assets/Samples/GameSaveDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Kit.Network.GameSave.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/GameSaveDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameSave.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/GameSaveDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameSave.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/GameSaveDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Kit.Network.GameSave.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/GameSaveDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Kit.Network.GameSave.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/GameSaveDemo/Scripts/Runtime/UIs/DemoGameSaveView/DemoGameSaveView.cs#NovaFramework.Kit.Network.GameSave.Samples.Runtime.DemoGameSaveView.OnInit(object)",
         "Assets/Samples/GoogleSigninDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Googlesignin.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/GoogleSigninDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Googlesignin.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/GoogleSigninDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Googlesignin.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/GoogleSigninDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Googlesignin.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/GoogleSigninDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Googlesignin.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/GoogleSigninDemo/Scripts/Runtime/UIs/DemoGoogleSigninView/DemoGoogleSigninView.cs#NovaFramework.Sdk.Googlesignin.Samples.Runtime.DemoGoogleSigninView.OnInit(object)",
         "Assets/Samples/IAPDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.IAP.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/IAPDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.IAP.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/IAPDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.IAP.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/IAPDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.IAP.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/IAPDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.IAP.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/IAPDemo/Scripts/Runtime/UIs/DemoIAPView/DemoIAPView.cs#NovaFramework.Sdk.IAP.Samples.Runtime.DemoIAPView.OnInit(object)",
         "Assets/Samples/MainDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
@@ -18607,12 +18838,12 @@
         "Assets/Samples/TGADemo/Scripts/Runtime/Procedures/ProcedureLogin.cs#NovaFramework.Sdk.Tga.Samples.Runtime.ProcedureLogin.OnEnter(ProcedureOwner)",
         "Assets/Samples/TGADemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Tga.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/TGADemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Tga.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/TGADemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Tga.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/TGADemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Tga.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/TGADemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Tga.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/TGADemo/Scripts/Runtime/UIs/DemoTGAView/DemoTGAView.cs#NovaFramework.Sdk.Tga.Samples.Runtime.DemoTGAView.OnInit(object)",
         "Assets/Samples/WechatMiniGameDemo/Scripts/Runtime/Procedures/ProcedurePlaying.cs#NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.ProcedurePlaying.OnEnter(ProcedureOwner)",
         "Assets/Samples/WechatMiniGameDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.ProcedurePreload.OnEnter(ProcedureOwner)",
-        "Assets/Samples/WechatMiniGameDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.ProcedurePreload.RunPreloadAsync()",
+        "Assets/Samples/WechatMiniGameDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs#NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.ProcedurePreload.RunPreloadAsync(CancellationToken,int,int)",
         "Assets/Samples/WechatMiniGameDemo/Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs#NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.BaseDemoView.OnInit(object)",
         "Assets/Samples/WechatMiniGameDemo/Scripts/Runtime/UIs/DemoWechatMiniGameView/DemoWechatMiniGameView.cs#NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.DemoWechatMiniGameView.OnInit(object)"
       ],
@@ -19142,6 +19373,521 @@
       },
       "verification": {
         "additionalRequired": []
+      }
+    },
+    {
+      "id": "ui.source.create",
+      "goal": "沿用Nova已有风格新建或显式重建UI配表，保留样式和备注",
+      "skill": "nova-project-ui-create-view",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-ui-create-view/SKILL.md",
+      "functions": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#inspect_template(kind,mode)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#plan_clone(root,request)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#execute_plan(root,plan_path,token,receipt_path)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#verify_receipt(root,receipt_path)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+            "kind": "cli",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅source-from-template分支；固定来源/完整字段/类型/行、目标原SHA与精确写集均冻结，沿用用户已有授权。",
+          "新行继承模板样式，非目标ZIP保真；样式与数据一并核验。仅源表创建，不代替模块导出/编译/运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      },
+      "profile": "source-from-template"
+    },
+    {
+      "id": "sound.source.create",
+      "goal": "沿用Nova已有风格新建或显式重建声音配表，保留样式和备注",
+      "skill": "nova-project-integrate-sound",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-integrate-sound/SKILL.md",
+      "functions": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#inspect_template(kind,mode)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#plan_clone(root,request)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#execute_plan(root,plan_path,token,receipt_path)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#verify_receipt(root,receipt_path)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+            "kind": "cli",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅source-from-template分支；固定来源/完整字段/类型/行、目标原SHA与精确写集均冻结，沿用用户已有授权。",
+          "新行继承模板样式，非目标ZIP保真；样式与数据一并核验。仅源表创建，不代替模块导出/编译/运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      },
+      "profile": "source-from-template"
+    },
+    {
+      "id": "table.source.create",
+      "goal": "沿用Nova原有样式原样复制table官方模板，保留完整工作簿结构",
+      "skill": "nova-project-integrate-table",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-integrate-table/SKILL.md",
+      "functions": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#inspect_template(kind,mode)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#plan_clone(root,request)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#execute_plan(root,plan_path,token,receipt_path)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#verify_receipt(root,receipt_path)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+            "kind": "cli",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅source-template-copy分支及所属官方模板，mode=copy不接受业务行/Sheet重命名/标题修改。",
+          "精确模板与目标SHA、写集冻结；整表替换保留既有授权门。Verify证明整文件字节一致，不代替示例内容替换或正式导出/运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      },
+      "profile": "source-template-copy"
+    },
+    {
+      "id": "localization.source.create",
+      "goal": "沿用Nova原有样式原样复制localization官方模板，保留完整工作簿结构",
+      "skill": "nova-project-update-localization",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-update-localization/SKILL.md",
+      "functions": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#inspect_template(kind,mode)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#plan_clone(root,request)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#execute_plan(root,plan_path,token,receipt_path)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#verify_receipt(root,receipt_path)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+            "kind": "cli",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅source-template-copy分支及所属官方模板，mode=copy不接受业务行/Sheet重命名/标题修改。",
+          "精确模板与目标SHA、写集冻结；整表替换保留既有授权门。Verify证明整文件字节一致，不代替示例内容替换或正式导出/运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      },
+      "profile": "source-template-copy"
+    },
+    {
+      "id": "network.source.create",
+      "goal": "沿用Nova原有样式原样复制network官方模板，保留完整工作簿结构",
+      "skill": "nova-project-integrate-network-api",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-integrate-network-api/SKILL.md",
+      "functions": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#inspect_template(kind,mode)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#plan_clone(root,request)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#execute_plan(root,plan_path,token,receipt_path)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#verify_receipt(root,receipt_path)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+            "kind": "cli",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅source-template-copy分支及所属官方模板，mode=copy不接受业务行/Sheet重命名/标题修改。",
+          "精确模板与目标SHA、写集冻结；整表替换保留既有授权门。Verify证明整文件字节一致，不代替示例内容替换或正式导出/运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      },
+      "profile": "source-template-copy"
+    },
+    {
+      "id": "vibration.source.create",
+      "goal": "沿用Nova原有样式原样复制vibration官方模板，保留完整工作簿结构",
+      "skill": "nova-project-integrate-vibration",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-integrate-vibration/SKILL.md",
+      "functions": [
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#inspect_template(kind,mode)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#plan_clone(root,request)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#execute_plan(root,plan_path,token,receipt_path)",
+        "Assets/Framework/Agents/Tools/nova_excel_template.py#verify_receipt(root,receipt_path)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+            "kind": "cli",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅source-template-copy分支及所属官方模板，mode=copy不接受业务行/Sheet重命名/标题修改。",
+          "精确模板与目标SHA、写集冻结；整表替换保留既有授权门。Verify证明整文件字节一致，不代替示例内容替换或正式导出/运行。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": []
+      },
+      "profile": "source-template-copy"
+    },
+    {
+      "id": "resource.load-from-package",
+      "goal": "按需从指定内容包加载资源并保持旧默认包调用，验证两包同址与取消释放",
+      "skill": "nova-project-integrate-resource",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-integrate-resource/references/resource-lifecycle.md",
+      "functions": [
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadFromPackageSync<T>(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadFromPackageSync<T>(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadFromPackageAsync<T>(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadFromPackageAsync<T>(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadSubsFromPackageSync<T>(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadSubsFromPackageSync<T>(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadSubsFromPackageAsync<T>(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadSubsFromPackageAsync<T>(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadAllFromPackageSync<T>(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadAllFromPackageSync<T>(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadAllFromPackageAsync<T>(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadAllFromPackageAsync<T>(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadRawFromPackageSync(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadRawFromPackageSync(string,string)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadRawFromPackageAsync(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadRawFromPackageAsync(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadSceneFromPackageSync(string,string,LoadSceneMode)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadSceneFromPackageSync(string,string,LoadSceneMode)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs#NovaFramework.Runtime.AssetComponent.LoadSceneFromPackageAsync(string,string,LoadSceneMode,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetPackageLoader.cs#NovaFramework.Runtime.IAssetPackageLoader.LoadSceneFromPackageAsync(string,string,LoadSceneMode,CancellationToken)"
+      ],
+      "execution": {
+        "mode": "business-integration",
+        "adapters": [
+          {
+            "entry": "authorized business ObjectBase/IReference/Asset consumer source editing",
+            "kind": "workspace-edit",
+            "relation": "direct"
+          },
+          {
+            "entry": "Nova.Asset.LoadFromPackageSync/Async<T> / LoadSubsFromPackageSync/Async<T> / LoadAllFromPackageSync/Async<T> / LoadRawFromPackageSync/Async / LoadSceneFromPackageSync/Async",
+            "kind": "csharp-api",
+            "relation": "prerequisite"
+          }
+        ],
+        "conditions": [
+          "从实际资源配置/Collector确认精确package/location、真实加载类型、既有Bootstrap与目标Manifest、调用Owner/ct及Scene mode；package不是UPM包名。",
+          "可选IAssetPackageLoader不扩旧IAssetManager强制成员；旧调用不迁移，自定义不支持明确NotSupportedException，不自动初始化/回退默认包。",
+          "主/子/全/Scene沿旧完成判定，IsDone不代成功；Raw沿旧异常；只释放实际交付Handle，Scene用UnloadAsync；实际两包/旧调用/取消/生命周期验证，不推导所有上层API已选包。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "compile",
+          "play"
+        ]
+      }
+    },
+    {
+      "id": "resource.sprite-binding",
+      "goal": "可选为Image或SpriteRenderer绑定普通图或图集子图，淘汰过期请求并释放当前租约",
+      "skill": "nova-project-integrate-resource",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-integrate-resource/references/resource-lifecycle.md",
+      "functions": [
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/SpriteBinding.cs#NovaFramework.Runtime.SpriteBinding.BindAsync(string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/SpriteBinding.cs#NovaFramework.Runtime.SpriteBinding.BindAtlasAsync(string,string,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/SpriteBinding.cs#NovaFramework.Runtime.SpriteBinding.Clear()",
+        "Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/SpriteBinding.cs#NovaFramework.Runtime.SpriteBinding.Dispose()"
+      ],
+      "execution": {
+        "mode": "business-integration",
+        "adapters": [
+          {
+            "entry": "authorized business ObjectBase/IReference/Asset consumer source editing",
+            "kind": "workspace-edit",
+            "relation": "direct"
+          },
+          {
+            "entry": "SpriteBinding(Image) / SpriteBinding(SpriteRenderer) / BindAsync / BindAtlasAsync / Clear / Dispose",
+            "kind": "csharp-api",
+            "relation": "prerequisite"
+          }
+        ],
+        "conditions": [
+          "只主动创建才启用；当前真实目标/默认包地址/子图名/唯一助手Owner和关闭/回池责任明确，旧赋图与Handle流程不接管。",
+          "主线程调用，返回false为替代/取消/清空/结束；真实失败抛错，交接前保旧图，旧租约释放异常可能新图已接管。助手拥有Handle与GetSprite克隆，禁止双重清理；无选包/共享缓存。",
+          "验证反序/跨API替换/单方取消/缺图/关闭池重开/销毁及克隆/Handle释放；真实图集Bundle/Player/设备与旧项目兼容分别取证。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "compile",
+          "play"
+        ]
+      }
+    },
+    {
+      "id": "ui.open-scope.integrate",
+      "goal": "按需集中收尾本次UIView打开的事件、取消与可释放对象，保留旧页手工生命周期",
+      "skill": "nova-project-update-ui-view",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-update-ui-view/SKILL.md",
+      "functions": [
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIViewScope.cs#NovaFramework.Runtime.UIViewScope.Own(IDisposable)",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIViewScope.cs#NovaFramework.Runtime.UIViewScope.AddCleanup(Action)",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIViewScope.cs#NovaFramework.Runtime.UIViewScope.Subscribe<TEvent>(EventHandler<EventData>)",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/Definitions/UIViewScope.cs#NovaFramework.Runtime.UIViewScope.Dispose()"
+      ],
+      "execution": {
+        "mode": "business-integration",
+        "adapters": [
+          {
+            "entry": "project-confirmed business UIView source",
+            "kind": "workspace-edit",
+            "relation": "direct"
+          },
+          {
+            "entry": "UIView.OpenScope / UIViewScope.Token / IsDisposed / Own / AddCleanup / Subscribe<TEvent> / Dispose",
+            "kind": "csharp-api",
+            "relation": "prerequisite"
+          }
+        ],
+        "conditions": [
+          "仅明确选择的新工作主动获取OpenScope并登记；原订阅/CTS/OnClose/OnRecycle归属保留，不自动扫描、不双重释放、不要求旧项目改代码。",
+          "捕获本次scope/token，关闭/回收/销毁结束、隐藏/暂停不结束，原事件分发/回池不变；清理异常逐项继续，手动Dispose最终聚合。",
+          "编译并验证旧页未接入行为、新页打开关闭/池重开/晚到/重复清理/异常/Stop；兼容目标不是既有所有项目已验收。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "play"
+        ]
+      }
+    },
+    {
+      "id": "ui.await-open.integrate",
+      "goal": "为新业务选择等待页面真正打开并处理失败关闭取消结果，保留旧序号入口",
+      "skill": "nova-project-update-ui-view",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-update-ui-view/SKILL.md",
+      "functions": [
+        "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.Await.cs#NovaFramework.Runtime.UIComponent.OpenUIViewAwaitAsync<T>(object,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.Await.cs#NovaFramework.Runtime.UIComponent.OpenUIViewAwaitAsync(string,object,CancellationToken)",
+        "Assets/Framework/Scripts/Runtime/Modules/UI/UIComponent.Await.cs#NovaFramework.Runtime.UIComponent.OpenUIViewByAssetAwaitAsync(string,object,CancellationToken)"
+      ],
+      "execution": {
+        "mode": "business-integration",
+        "adapters": [
+          {
+            "entry": "project-confirmed business UIView source",
+            "kind": "workspace-edit",
+            "relation": "direct"
+          },
+          {
+            "entry": "Nova.UI.OpenUIViewAwaitAsync<T> / OpenUIViewAwaitAsync(string,object,CancellationToken) / OpenUIViewByAssetAwaitAsync",
+            "kind": "csharp-api",
+            "relation": "prerequisite"
+          }
+        ],
+        "conditions": [
+          "实际类型/表Name/唯一地址、注册与组配置、业务调用点和请求取消Owner冻结；新入口可选且旧int签名/旧Manager接口不变，不支持则明确NotSupportedException。",
+          "成功需初始化/OnOpen/组刷新；Failed/Cancelled/Closed/Shutdown准确区分，只取消未完成本请求。Opened是当时快照，结算后请求token不关闭页面，后续工作另绑定页面生命周期。",
+          "编译与实际打开/并发/失败/取消关闭/池重开/Shutdown/迟到释放及未修改旧调用验证；不以轮询超时冒充完成。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "play"
+        ]
+      }
+    },
+    {
+      "id": "ui.bindings.bind",
+      "goal": "为既有普通Prefab整批绑定明确的UIView空字段并保留业务引用、层级和事件",
+      "skill": "nova-project-update-ui-view",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-update-ui-view/references/control-bindings.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.cs#NovaFramework.Editor.EditorUtil.UIBindings.Inspect(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.cs#NovaFramework.Editor.EditorUtil.UIBindings.Preview(BindingRequest)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.cs#NovaFramework.Editor.EditorUtil.UIBindings.Apply(BindingPlan)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.cs#NovaFramework.Editor.EditorUtil.UIBindings.Verify(BindingReceipt)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs#NovaFramework.Editor.UIBindingsConfigureAction.PlanAsync(Request,AgentActionExecutionContext)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs#NovaFramework.Editor.UIBindingsConfigureAction.ExecuteAsync(object,AgentActionExecutionContext)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs#NovaFramework.Editor.UIBindingsConfigureAction.VerifyAsync(string,AgentActionExecutionContext)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.ui.inspect-bindings",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.ui.configure-bindings",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅主动选择工具时调用；先查当前Prefab实际View/Object GlobalObjectId及字段AssemblyQualifiedName，冻结同一View的完整映射；现有PSD2UGUI与原手工绑定不迁移。",
+          "mode=bind；精确Plan/单次Execute/原Receipt或recovery_token只读Verify，不接管不同/失效引用、不改事件/层级，变体嵌套/草稿/回调受阻不自动改结构。",
+          "generate只预先partial业务类的单一归属输出/首次meta，必须本次编译重载Verify后新Inspect与bind计划；bind核实际持久化，Action证据不代页面Play。恢复不完整保留材料，无独立恢复Action，不重放。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "ui.bindings.generate",
+      "goal": "按需为已有partial业务UIView生成独立归属字段文件，编译重载后再计划绑定",
+      "skill": "nova-project-update-ui-view",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-update-ui-view/references/control-bindings.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.Generation.cs#NovaFramework.Editor.EditorUtil.UIBindings.PreviewGeneration(BindingRequest)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.Generation.cs#NovaFramework.Editor.EditorUtil.UIBindings.Generate(GenerationPlan)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UIBindings/EditorUtil.UIBindings.Generation.cs#NovaFramework.Editor.EditorUtil.UIBindings.VerifyGeneration(GenerationReceipt)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs#NovaFramework.Editor.UIBindingsConfigureAction.PlanAsync(Request,AgentActionExecutionContext)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs#NovaFramework.Editor.UIBindingsConfigureAction.ExecuteAsync(object,AgentActionExecutionContext)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs#NovaFramework.Editor.UIBindingsConfigureAction.VerifyAsync(string,AgentActionExecutionContext)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.ui.inspect-bindings",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.ui.configure-bindings",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅主动选择工具时调用；先查当前Prefab实际View/Object GlobalObjectId及字段AssemblyQualifiedName，冻结同一View的完整映射；现有PSD2UGUI与原手工绑定不迁移。",
+          "mode=generate；精确Plan/单次Execute/原Receipt或recovery_token只读Verify，不接管不同/失效引用、不改事件/层级，变体嵌套/草稿/回调受阻不自动改结构。",
+          "generate只预先partial业务类的单一归属输出/首次meta，必须本次编译重载Verify后新Inspect与bind计划；bind核实际持久化，Action证据不代页面Play。恢复不完整保留材料，无独立恢复Action，不重放。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "resource.sprite-atlas.generate",
+      "goal": "显式按项目目录规则预演或增量生成图集，项目选择后放在Bundle之前",
+      "skill": "nova-project-configure-pipeline",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-configure-pipeline/references/sprite-atlas.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/EditorUtil.SpriteAtlasGeneration.cs#NovaFramework.Editor.EditorUtil.SpriteAtlasGeneration.Preview(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/EditorUtil.SpriteAtlasGeneration.cs#NovaFramework.Editor.EditorUtil.SpriteAtlasGeneration.Apply(SpriteAtlasGenerationPlan)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/EditorUtil.SpriteAtlasGeneration.cs#NovaFramework.Editor.EditorUtil.SpriteAtlasGeneration.Generate(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.SpriteAtlas.cs#NovaFramework.Editor.PipifySteps.RunGenerateSpriteAtlases(PipifyContext,SpriteAtlasGenerationStepArgs)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.pipify.inspect-settings",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.pipify.configure-batch",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.pipify.run-batch",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "已保存项目配置/Enabled/Format/当前Packer/真实源排除与已存在输出根、规则归属明确；复杂规则用原生Inspector/实际Editor资产通道，缺通道仅阻断该分支。",
+          "Step spriteatlas.generate 默认PreviewOnly=true，首次独立预演Batch核差异；明确生产才设false，实际生成先于Bundle由项目自己保存顺序。不自动改旧Batch、源图、Collector或Packer。",
+          "差异Create/Update/Reimport/Unchanged/Retained按真实输入；GUID保持/无变更不写/不删旧输出/归属保护和失败恢复分别验收；Job成功不代表Bundle子图/Player/设备或性能。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "resource.sprite-atlas.recover",
+      "goal": "仅恢复项目图集配置自身未完成事务，核对原输出且不重放生成",
+      "skill": "nova-project-configure-pipeline",
+      "reference": "Assets/Framework/Agents/Skills/nova-project-configure-pipeline/references/sprite-atlas.md",
+      "functions": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SpriteAtlas/EditorUtil.SpriteAtlasGeneration.Transaction.cs#NovaFramework.Editor.EditorUtil.SpriteAtlasGeneration.Recover(string)",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.SpriteAtlas.cs#NovaFramework.Editor.PipifySteps.RunRecoverSpriteAtlases(PipifyContext,SpriteAtlasGenerationRecoveryStepArgs)"
+      ],
+      "execution": {
+        "mode": "controlled",
+        "adapters": [
+          {
+            "entry": "nova.project.pipify.configure-batch",
+            "kind": "agent-action",
+            "relation": "prerequisite"
+          },
+          {
+            "entry": "nova.project.pipify.run-batch",
+            "kind": "agent-action",
+            "relation": "direct"
+          }
+        ],
+        "conditions": [
+          "仅明确恢复本配置事务时调用spriteatlas.recover，SettingsAssetPath必须同一已保存配置；恢复目录由settingsGUID推导，不接受任意目录。",
+          "Pending只恢复原事务输出根内已知本工具图集/meta/归属写入，外部或导入回调未知改动拒覆盖；Committed/Restored终态只核输出并继续清理，不依赖已删旧备份、不回滚已提交输出。损坏/漂移保留恢复材料，不重放原生成Batch。",
+          "恢复与生成分开，恢复后重新预演当前输入；旧项目不调用不启用，不影响原Batch。"
+        ],
+        "gaps": []
+      },
+      "verification": {
+        "additionalRequired": [
+          "artifact"
+        ]
       }
     }
   ],

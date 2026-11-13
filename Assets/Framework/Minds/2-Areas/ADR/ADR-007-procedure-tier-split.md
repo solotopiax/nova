@@ -98,7 +98,7 @@ public override async UniTaskVoid OnEnter(IFsm<IProcedureManager> fsm)
 ## 验证依据（Verification）
 
 - Grep 关键词：`RegisterAdditionalProcedures`、`UniTask.Yield()`、`ProcedureLoadDll`
-- AOT 层 Procedure 巡检：`Assets/Framework/Scripts/Runtime/**/Procedures/` 应只保留框架启动链所需状态
+- AOT 层 Procedure 巡检：[Scripts/Runtime/](../../../Scripts/Runtime/) 中的各 `Procedures/` 目录 应只保留框架启动链所需状态
 - 业务 Procedure 巡检：业务 DLL 项目下 Procedure 类应通过 `RegisterAdditionalProcedures` 延迟注册，而非在框架启动阶段直接扫描
 
 ## 关联

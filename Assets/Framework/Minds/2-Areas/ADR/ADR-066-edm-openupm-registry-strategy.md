@@ -73,9 +73,9 @@ EDM（External Dependency Manager for Unity / EDM4U，Google 维护）作用：�
   > 用户：安装完 max 报了个错……`com.google.external-dependency-manager@1.2.182` cannot be found
   > 用户：EDM 目前除了 max 用到了，还有其他模块需要它吗？
   > 用户：工程模板固定 OpenUPM（你最初的想法）
-  > AI 落地：max 0.0.11 曾补回 OpenUPM scope 作双保险；OpenUPM/EDM 公共依赖红线写入 `.nova/RULES.md`
+  > AI 落地：max 0.0.11 曾补回 OpenUPM scope 作双保险；OpenUPM/EDM 公共依赖红线写入 [.nova/RULES.md](../../../../../.nova/RULES.md)
   > 后续修订（2026-06-17 同会话）：发现卸载引用计数与"公共依赖各包不声明"策略冲突——单包声明 OpenUPM 会使卸载时误删工程固定的 registry，殃及其它 EDM 依赖方，故移除 max 的 OpenUPM 声明，公共依赖 registry 只工程固定
 
 ## 关联
 - 相关 ADR：[[ADR-064-plugpals-dependency-detection|ADR-064]]
-- 规则文件：`.nova/RULES.md`「OpenUPM / EDM 公共依赖红线」「破坏性变更与依赖版本下界红线」
+- 规则文件：现行入口见 [UPM 与依赖规则](../../../../../.nova/rules/UPM.md)；“OpenUPM / EDM 公共依赖红线”“破坏性变更与依赖版本下界红线”为当时的规则标题。

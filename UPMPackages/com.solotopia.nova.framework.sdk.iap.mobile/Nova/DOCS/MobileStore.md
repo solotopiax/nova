@@ -1,7 +1,7 @@
 ﻿# MobileStore
 
 > 最后更新：2026-09-21
-> 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
+> 当前代码事实：[Nova/Scripts/Runtime/](../Scripts/Runtime/)（本包内）
 
 **类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable, IIAPStorePauseListener, IIAPStoreFocusListener`
 **命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
@@ -57,7 +57,7 @@
 1. 在 `Nova → Open PlugPals → 外网仓库` 安装 `com.solotopia.nova.framework.sdk.iap.mobile`，确认 UPM 已解析父包与 Unity IAP `5.4.4` 等清单依赖。支持 Unity `6000.4.x`，最低 `6000.4.2f1`。
 2. 在 ConfigMaster 启用 IAP、添加并启用 `MobileStoreConfig`。通过 IAP Products / SKU Excel 维护商品；Mobile 读取 `ProductID`，不使用 `ThirdProductID`。商品必须与目标平台后台实际商品匹配；平台注册会 Trim SKU，后续表查询使用原值，因此配置中不要保留 SKU 首尾空白。
 3. 在 Network 配置中登记所用平台的查单、普通验单及订阅验单 NetCmd 和对应 Host，完成项目正式导出与加载。上表默认值只是命令名称，不会创建路由、服务端接口或商店商品；协议见 [MobileUtils.md](./MobileUtils.md#mobileiapnetservice)。
-4. 将 IAP、商品与 Network 配置正式导出到当前坐标的 `ConfigRuntimeSO`。Excel 导入和 Inspector 编辑只修改配置源，不会自动更新运行时导出物；如需提交商品目录，另按 [父包商品目录协议](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPProductCatalogProtocol.md) 操作。
+4. 将 IAP、商品与 Network 配置正式导出到当前坐标的 `ConfigRuntimeSO`。Excel 导入和 Inspector 编辑只修改配置源，不会自动更新运行时导出物；如需提交商品目录，另按 [父包商品目录协议](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/IAPProductCatalogProtocol.md`） 操作。
 5. 后端登录成功时调用 `Nova.SDK.Login(uid, userProperties)`，由 SDKManager 在 IAP Ready 后交付或补交最新 UID；业务仍需调用 `CheckLocalOrdersAsync`。用户主动恢复购买使用 `RestorePurchasesAsync`，不要把它用于每次启动或后台订阅刷新。
 6. 按商品类型接入 `PaySuccess`、`SubscriptionRestored` 和 `NonConsumeRestored`，并在退出所属业务生命周期时释放订阅。返回值与事件可能重复指向同一订单，均交给同一业务幂等入口；实际发货必须检查 `IsSuccess && CanDeliver`。
 7. 在目标平台准备真实商品、测试账号与可用验单后，分别验证主动购买、取消、验单失败补单、跨启动恢复、平台确认及实际履约。Editor 模拟成功、配置导出、商店连接和商品查询各自只证明对应环节，不能替代设备、服务端或实际支付证据。

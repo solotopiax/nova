@@ -13,7 +13,7 @@ ConfigWindow 单个配置面板的维度启用掩码；记录该面板是否按�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/PanelDimensionMask.cs` | `PanelDimensionMask` | 维度掩码数据容器 |
+| [Editor/Config/Definitions/PanelDimensionMask.cs](../../../../Scripts/Editor/Config/Definitions/PanelDimensionMask.cs) | `PanelDimensionMask` | 维度掩码数据容器 |
 
 ---
 

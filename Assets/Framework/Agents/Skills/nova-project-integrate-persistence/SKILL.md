@@ -5,19 +5,19 @@ description: 在 Nova 项目中接入业务存储或关键 int/long 内存防护
 
 # Nova 接入业务存储与内存防护
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在当前决策分支按需读取：确认三种入口、加载顺序和现有组件配置时读 `Docs/Runtime/Modules/Persist/PersistComponent.md`；选 PlayerPrefs、FileFragment 或 SQLite 时只读对应的 `Docs/Runtime/Modules/Persist/PlayerPrefsManager.md`、`FileFragmentManager.md` 或 `SQLiteManager.md`；确认自动保存时读 `Docs/Runtime/Modules/Persist/PersistManagerConfigBase.md`；核验 AES 前置时读 `Docs/Runtime/Modules/Config/PrivacyConfigs.md`。仅在排查现有设置时读 `Docs/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.md` 或 `Docs/Editor/Windows/ConfigWindow.md`；不要递归加载全部 Persist、Config 或加密文档。
+再读取 [references/contract.json](references/contract.json)。仅在当前决策分支按需读取：确认三种入口、加载顺序和现有组件配置时读 [Docs/Runtime/Modules/Persist/PersistComponent.md](../../../Docs/Runtime/Modules/Persist/PersistComponent.md)；选 PlayerPrefs、FileFragment 或 SQLite 时只读对应的 [Docs/Runtime/Modules/Persist/PlayerPrefsManager.md](../../../Docs/Runtime/Modules/Persist/PlayerPrefsManager.md)、[FileFragmentManager.md](../../../Docs/Runtime/Modules/Persist/FileFragmentManager.md) 或 [SQLiteManager.md](../../../Docs/Runtime/Modules/Persist/SQLiteManager.md)；确认自动保存时读 [Docs/Runtime/Modules/Persist/PersistManagerConfigBase.md](../../../Docs/Runtime/Modules/Persist/PersistManagerConfigBase.md)；核验 AES 前置时读 [Docs/Runtime/Modules/Config/PrivacyConfigs.md](../../../Docs/Runtime/Modules/Config/PrivacyConfigs.md)。仅在排查现有设置时读 [Docs/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.md](../../../Docs/Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.md) 或 [Docs/Editor/Windows/ConfigWindow.md](../../../Docs/Editor/Windows/ConfigWindow.md)；不要递归加载全部 Persist、Config 或加密文档。
 
 检查旧存档、清理测试分类、设计数据结构迁移或处理 AES/Cipher 变化时，只追加读 [日常存档维护](references/maintenance.md)。先区分只读诊断、业务源码实现、运行测试与真实数据维护；自然语言“存不下来”“清缓存”“换存档结构”不能自动转成全盘删除或加密开关变更。热更资源缓存由该参考路由到资源能力，避免与业务存档混用。
 
-“保护金币/体力等关键数值”“接入 ProtectedInt/ProtectedLong”“检测内存修改”“未安装 ACTk 能否正常运行”进入 [内存防护接入](references/memory-protection.md)。先发现独立核心包 `com.solotopia.nova.framework.memory.protection` 的 `Nova/Docs/INDEX.md`；缺包复用已有包管理 Operation，不能从 Framework 或本 Skill 原有版本下界推断已安装。本分支编辑已授权业务源码，并只增加必要的 `NovaFramework.MemoryProtection.Runtime` 程序集引用和隔离探针；公开命名空间仍为 `NovaFramework.Runtime`，不创建模块或场景组件，不调用存档加密维护 Action。独立示例为本包 `MemoryProtectionDemo`，MainDemo 不再承载内存防护页。
+“保护金币/体力等关键数值”“接入 ProtectedInt/ProtectedLong”“检测内存修改”“未安装 ACTk 能否正常运行”进入 [内存防护接入](references/memory-protection.md)。先发现独立核心包 `com.solotopia.nova.framework.memory.protection` 的 [Nova/Docs/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)；缺包复用已有包管理 Operation，不能从 Framework 或本 Skill 原有版本下界推断已安装。本分支编辑已授权业务源码，并只增加必要的 `NovaFramework.MemoryProtection.Runtime` 程序集引用和隔离探针；公开命名空间仍为 `NovaFramework.Runtime`，不创建模块或场景组件，不调用存档加密维护 Action。独立示例为本包 `MemoryProtectionDemo`，MainDemo 不再承载内存防护页。
 
 ## 冻结输入与阻断门
 
-先按 `Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md` 的 NA-001/002 核对真实消费入口。当前 `PersistComponent.PlayerPrefs/FileFragment/SQLite` 直接返回 Manager 接口，尚无对应业务 CRUD/保存门面；以下存储调用说明用于理解既有实现和诊断，不授权新增、持有、传递或包装 Manager 的普通业务代码。需要这类入口的新增/修改分支保持 `blocked`，列出所需行为、已查接口与影响范围，待框架补齐合规入口后再继续；已经完成的独立部分可报 `partial`。普通 DTO/业务规则、只读诊断、不依赖存储的内存防护，以及合同已开放的类型化维护可按原边界继续；不因此修改存量调用或扩大维护权限。
+先按 [NA-001：正常业务通过 Component 使用框架](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-001正常业务通过-component-使用框架) 与 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 核对真实消费入口。当前 `PersistComponent.PlayerPrefs/FileFragment/SQLite` 直接返回 Manager 接口，尚无对应业务 CRUD/保存门面；以下存储调用说明用于理解既有实现和诊断，不授权新增、持有、传递或包装 Manager 的普通业务代码。需要这类入口的新增/修改分支保持 `blocked`，列出所需行为、已查接口与影响范围，待框架补齐合规入口后再继续；已经完成的独立部分可报 `partial`。普通 DTO/业务规则、只读诊断、不依赖存储的内存防护，以及合同已开放的类型化维护可按原边界继续；不因此修改存量调用或扩大维护权限。
 
 先区分内存防护接入与下述存储/维护分支。仅做内存防护时，按参考冻结业务字段及 owner、可信初值来源、当前 Config 加载责任、失败后的结算/保存边界、允许写集和隔离验证；代码路径、类型、现有调用点及配置事实由 Agent 查询，不要求用户手填。没有实际存档调用时，不要求 `classify/item`、存储选型、耐久性/删除探针或 AES/Cipher 凭据；不能为补这些输入扩大到真实存档或配置维护。缺少玩法规则或可信恢复来源时，仅阻断依赖它们的步骤。
 
@@ -57,7 +57,7 @@ SQLite Cipher 与 Privacy Key/IV 分别复用同三 Action 的独立类型化分
 内存防护分支遵循参考的独立验收：业务源码与编译、当前后端实际状态、失败阻断、普通整数 JSON、owner 释放及探针清场分别取证；插件缺失可完成普通存取接入，但不能宣称防护已生效。涉及正式存档读写时仍叠加原持久化边界。下述五项适用于存储接入，不因内存分支跳过而削弱真实存档维护的权限与验证。
 
 1. 先通过上方消费入口门，再确认当前 ConfigRuntime 坐标已可加载、PersistComponent 已配置并且选择的实现支持目标平台。入口仍缺失时不得继续新增 Manager 调用或以 Play 通过报告接入成功。SQLite 目标为 WebGL 时返回 `not_applicable`；缺少当前坐标 Privacy AES 前置或需要改配置资产时返回 `blocked`。
-2. 只编辑冻结的业务 C# 源码和本地 Play 探针；不修改 PersistComponent、ConfigMaster/ConfigRuntime、`Nova.prefab`、Prefab、Scene、存储实现、插件、密钥或生成物。任何 Unity 资产设置变更均属于独立且需确认的配置任务。
+2. 只编辑冻结的业务 C# 源码和本地 Play 探针；不修改 PersistComponent、ConfigMaster/ConfigRuntime、[Nova.prefab（定位）](../../../Docs/Onboarding/PROJECT_STRUCTURE.md)、Prefab、Scene、存储实现、插件、密钥或生成物。任何 Unity 资产设置变更均属于独立且需确认的配置任务。
 3. 在业务读取前等待 Config 再等待 Persist；按选择的实现使用统一 `classify -> item -> value` 调用面。把保存时机写清楚：需要耐久检查点才显式 Save，不能把同一进程内的 Set 后 Get 当作落盘成功。
 4. 清理仅在已确认的测试数据范围执行：先验证 `RemoveItem` 或 `RemoveAll` 对目标分类/条目的语义，再执行该实现要求的保存或独立读取。不得以清理真实用户存档作为普通 Play 探针。
 5. 只有加载顺序、选型、编译、选定存储的写入/保存后独立读取，以及本次范围内的清理语义均有 Play 证据时报告 `success`。已完成允许的源码步骤但缺少独立耐久性 Play 证据时最高为 `partial`；前置、范围或保存/清理策略不唯一时为 `blocked`；目标依赖 SQLite WebGL 或要求 Framework 存储实现改造时为 `not_applicable`。

@@ -1,6 +1,8 @@
 # Batch 配置参考
 
-完整代码事实见当前 Framework 的 `Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md`。本参考只保留构造请求时容易误用的边界。
+完整代码事实见当前 Framework 的 [Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md](../../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md)。本参考只保留构造请求时容易误用的边界。
+
+新项目先按 [MainDemo Batch 参考](../../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md#新项目的-batch-参考) 核对步骤及项目差异，再构造请求。`sourceBatchName` 与 `sourceIndex` 都指向目标 Settings 内实际存在的来源，不能把另一个 Demo Settings 的名称/索引直接带入。跨 Settings 参考时使用当前已注册的 Step 为项目 `create`，按目标 Schema 填入已核对参数；不假设存在跨资产 clone 接口。
 
 | 意图 | 请求 |
 |---|---|

@@ -68,21 +68,22 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 关闭并清理管理器；Release ConfigRuntimeSO 句柄使引用计数归零，清空内部引用。
         /// </summary>
-        /// <remarks>先摘取并清空旧字段，再释放句柄，最后通知旧等待者；取消回调异常仍可能阻止后续 Dispose 和通知。清字段不代表底层资源请求已经结束。</remarks>
+        /// <remarks>先摘取并清空旧字段，再释放句柄；取消回调异常也会进入清理 finally 并结束启动等待。取消请求不代表底层传输已经退出。</remarks>
         public override void Shutdown()
         {
             CancellationTokenSource lifecycle = m_LifecycleCts;
             UniTaskCompletionSource load = m_ConfigLoadTcs;
             UniTaskCompletionSource<bool> refresh = m_AppConfigRefreshTcs;
+            UniTaskCompletionSource<bool> startup = m_StartupAppConfigTcs;
             IAssetHandle<ConfigRuntimeSO> handle = m_ConfigHandle;
             m_LifecycleCts = null;
             m_ConfigLoadTcs = null;
             m_AppConfigRefreshTcs = null;
+            m_StartupAppConfigTcs = null;
             m_ConfigHandle = null;
             m_Runtime = null;
             m_AppConfigSnapshot = null;
             m_Custom = null;
-            m_HasStartedAppConfigRefresh = false;
             m_IsLoadOver = false;
             m_AssetLocation = null;
             m_AssetManager = null;
@@ -93,10 +94,17 @@ namespace NovaFramework.Runtime
             }
             finally
             {
-                lifecycle?.Cancel();
-                lifecycle?.Dispose();
-                refresh?.TrySetCanceled();
-                load?.TrySetCanceled();
+                try
+                {
+                    lifecycle?.Cancel();
+                }
+                finally
+                {
+                    lifecycle?.Dispose();
+                    refresh?.TrySetCanceled();
+                    startup?.TrySetResult(false);
+                    load?.TrySetCanceled();
+                }
             }
         }
 
@@ -379,10 +387,33 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 等待本次启动自动拉取的最终结果；只读取保留的完成源，不启动或重试请求。
+        /// </summary>
+        /// <param name="cancellationToken">只取消当前等待者，不取消共享启动任务。</param>
+        /// <returns>启动拉取成功返回 true；尚未加载、跳过、失败或关闭返回 false。</returns>
+        public override UniTask<bool> WaitForStartupAppConfigAsync(CancellationToken cancellationToken = default)
+        {
+            return m_StartupAppConfigTcs != null
+                ? m_StartupAppConfigTcs.Task.AttachExternalCancellation(cancellationToken)
+                : UniTask.FromResult(false);
+        }
+
+        /// <summary>
         /// 显式拉取一轮 GM 后台应用配置；并发调用合并为同一请求，失败时保留当前快照。
         /// </summary>
         /// <returns>远端快照已成功解析并切换到内存返回 true。</returns>
-        public override async UniTask<bool> RefreshAppConfigAsync()
+        /// <remarks>独立发起时沿用普通业务请求超时；并发合流已有启动请求时，沿用该请求的单次超时设置。</remarks>
+        public override UniTask<bool> RefreshAppConfigAsync()
+        {
+            return RefreshAppConfigWithTimeoutAsync(-1f);
+        }
+
+        /// <summary>
+        /// 合流一轮应用配置刷新；新请求将单次超时传到主备请求链，已有请求保持原设置。
+        /// </summary>
+        /// <param name="requestTimeout">每次物理请求独享的超时秒数；负数使用普通业务请求超时。</param>
+        /// <returns>本轮远端快照已应用返回 true，失败或关闭返回 false。</returns>
+        private async UniTask<bool> RefreshAppConfigWithTimeoutAsync(float requestTimeout)
         {
             if (!m_IsLoadOver || m_AppConfigSnapshot == null)
             {
@@ -400,7 +431,7 @@ namespace NovaFramework.Runtime
             bool succeeded = false;
             try
             {
-                succeeded = await RefreshAppConfigCoreAsync();
+                succeeded = await RefreshAppConfigCoreAsync(requestTimeout);
             }
             catch (OperationCanceledException)
             {
@@ -425,9 +456,17 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 单次远端拉取核心流程：解析 NetCmd、发送 Proto、校验完整 JSON、持久化并切换内存快照。
         /// </summary>
+        /// <param name="requestTimeout">每次主备请求独享的超时秒数；负数使用普通业务请求超时。</param>
         /// <returns>远端快照已切换到内存返回 true。</returns>
-        private async UniTask<bool> RefreshAppConfigCoreAsync()
+        private async UniTask<bool> RefreshAppConfigCoreAsync(float requestTimeout)
         {
+            CancellationTokenSource lifecycle = m_LifecycleCts;
+            AppConfigSnapshot snapshot = m_AppConfigSnapshot;
+            if (lifecycle == null || lifecycle.IsCancellationRequested || snapshot == null)
+            {
+                return false;
+            }
+            CancellationToken ct = lifecycle.Token;
             AppConfigs appConfigs = m_Runtime?.AppConfigs;
             if (!HasAppConfigRemoteRefreshSettings(appConfigs))
             {
@@ -457,9 +496,13 @@ namespace NovaFramework.Runtime
             NetResponse<PbNetAppCustomConfigResp> response = await NetService.SendAsync(
                 cmdRow,
                 request,
-                PbNetAppCustomConfigResp.Parser);
+                PbNetAppCustomConfigResp.Parser,
+                requestTimeout,
+                ct);
 
-            if (m_LifecycleCts == null || m_LifecycleCts.IsCancellationRequested)
+            // 旧请求即使在关闭、重新初始化后迟到，也不能写入新生命周期或新快照。
+            if (ct.IsCancellationRequested || !ReferenceEquals(m_LifecycleCts, lifecycle) ||
+                !ReferenceEquals(m_AppConfigSnapshot, snapshot))
             {
                 return false;
             }
@@ -471,7 +514,7 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
-            if (!m_AppConfigSnapshot.TryParseRemoteJson(
+            if (!snapshot.TryParseRemoteJson(
                     response.Data.Value,
                     out JObject remoteRoot,
                     out string parseError))
@@ -492,7 +535,7 @@ namespace NovaFramework.Runtime
                 Log.Warning(LogTag.Config, "应用配置磁盘缓存写入失败，本轮仅更新内存：{0}", cacheError);
             }
 
-            m_AppConfigSnapshot.ApplyRemote(remoteRoot);
+            snapshot.ApplyRemote(remoteRoot);
             Log.Debug(LogTag.Config, "应用配置拉取成功：{0}", JsonFormatter.Default.Format(response.Data));
             return true;
         }
@@ -538,17 +581,23 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 发起每次进程生命周期唯一一轮自动刷新；方法立即返回，不阻塞 Config.LoadAsync。
+        /// 建立本次启动唯一的结果并发起后台刷新；方法立即返回，不阻塞 Config.LoadAsync。
         /// </summary>
         private void BeginStartupAppConfigRefresh()
         {
-            if (m_HasStartedAppConfigRefresh || !HasAppConfigRemoteRefreshSettings(m_Runtime?.AppConfigs))
+            if (m_StartupAppConfigTcs != null)
             {
                 return;
             }
 
-            m_HasStartedAppConfigRefresh = true;
-            WaitNetworkAndRefreshAppConfigAsync().Forget();
+            var completion = new UniTaskCompletionSource<bool>();
+            m_StartupAppConfigTcs = completion;
+            if (!HasAppConfigRemoteRefreshSettings(m_Runtime?.AppConfigs))
+            {
+                completion.TrySetResult(false);
+                return;
+            }
+            WaitNetworkAndRefreshAppConfigAsync(completion, m_LifecycleCts).Forget();
         }
 
         /// <summary>
@@ -562,12 +611,21 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 后台等待标准 NetworkManager 路由就绪后自动刷新；自定义 Manager 未实现信号时安全跳过。
+        /// 后台等待标准 NetworkManager 路由就绪后自动刷新，并保留成功、失败或跳过的最终结果。
         /// </summary>
-        private async UniTaskVoid WaitNetworkAndRefreshAppConfigAsync()
+        /// <param name="completion">本次启动专属的完成源；不会被后续手动刷新替换。</param>
+        /// <param name="lifecycle">发起时的生命周期；关闭或重新初始化后不再开始旧请求。</param>
+        private async UniTaskVoid WaitNetworkAndRefreshAppConfigAsync(
+            UniTaskCompletionSource<bool> completion,
+            CancellationTokenSource lifecycle)
         {
+            bool succeeded = false;
             try
             {
+                if (lifecycle == null)
+                {
+                    return;
+                }
                 INetworkReadySignal readySignal = FrameworkManagersGroup.GetManager<INetworkReadySignal>();
                 if (readySignal == null)
                 {
@@ -575,17 +633,27 @@ namespace NovaFramework.Runtime
                     return;
                 }
 
-                CancellationToken ct = m_LifecycleCts != null ? m_LifecycleCts.Token : default;
+                CancellationToken ct = lifecycle.Token;
                 await readySignal.WaitUntilReadyAsync(ct);
-                await RefreshAppConfigAsync();
+                ct.ThrowIfCancellationRequested();
+                if (!ReferenceEquals(m_LifecycleCts, lifecycle))
+                {
+                    return;
+                }
+                succeeded = await RefreshAppConfigWithTimeoutAsync(readySignal.StartupAppConfigRequestTimeout);
             }
             catch (OperationCanceledException)
             {
-                // 框架关闭时结束后台等待属于正常生命周期，不输出错误。
+                // 框架关闭时结束等待。
             }
             catch (Exception e)
             {
                 Log.Warning(LogTag.Config, "应用配置自动刷新异常，继续使用当前快照：{0}", e);
+            }
+            finally
+            {
+                // 失败同样固化结果；后续等待或预加载重试不得再次发送本轮启动请求。
+                completion.TrySetResult(succeeded);
             }
         }
 

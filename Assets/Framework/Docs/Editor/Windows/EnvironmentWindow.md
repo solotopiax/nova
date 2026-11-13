@@ -28,7 +28,7 @@ Luban 的启动静默检查通过 `EditorApplication.delayCall` 调度，未就�
 
 | 职责 | 当前位置 |
 |---|---|
-| 打开窗口、默认选中项、环境检测 UI | `Scripts/Editor/Windows/ConfigWindow/`；`ConfigWindow.Open()` 与 `OpenLubanSection(result)` |
+| 打开窗口、默认选中项、环境检测 UI | [Scripts/Editor/Windows/ConfigWindow/](../../../Scripts/Editor/Windows/ConfigWindow/)；`ConfigWindow.Open()` 与 `OpenLubanSection(result)` |
 | Luban 检测与启动静默检查 | `EditorUtil.Environment.LubanChecker`；该嵌套类为 internal，供框架 Editor 内部使用 |
 | Python3 检测 | `EditorUtil.Environment.Python3Checker` |
 | HybridCLR 检测 | `EditorUtil.Environment.HybridCLRChecker` |

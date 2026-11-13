@@ -8,13 +8,13 @@
 
 | 包后缀 / 用户目标 | 顶层 Config 与真实字段 | INDEX 后按需页面 |
 |---|---|---|
-| `kit.network.gamelogin` / 游戏账号登录 | `LoginKitConfig`：`LoginCmdName/DeleteCmdName` | `Nova/Docs/Login.md`、`LoginKitConfig.md` |
-| `kit.network.gamebind` / 绑定、查询和冲突裁决 | `BindKitConfig`：`BindingQueryCmdName/BindCmdName/BindConflictCmdName/BindResolveCmdName` | `Nova/Docs/Bind.md`、`BindKitConfig.md`、`AccountLoginAndThirdPartyBindFlow.md` |
-| `kit.network.gamesave` / 云进度读取与上传 | `SaveKitConfig`：`GetCmdName/SetCmdName` | `Nova/Docs/Save.md`、`SaveKitConfig.md` |
-| `sdk.googlesignin` / Google 身份 | `GoogleSignInPluginConfig`：`ClientId/RequestEmail/FilterByAuthorizedAccounts/AutoSelectEnabled/AutoRestoreOnInitialize` | `Nova/Docs/GoogleSignInPluginConfig.md`、`GoogleSignInPlugin.md` |
-| `sdk.applesignin` / Apple 身份 | `AppleSignInPluginConfig.RequestFullName` | `Nova/Docs/AppleSignInPluginConfig.md`、`AppleSignInPlugin.md` |
-| `sdk.facebook` / Facebook 身份及资料 | `FacebookPluginConfig`：`FacebookAppId/FacebookClientToken/AutoDownloadAvatarOnLogin/AvatarSize` | `Nova/Doc/FacebookPlugin.md` |
-| `sdk.wechat.minigame` / 微信身份 | `WeChatMiniGamePluginConfig.VerifyLoginCmdName` 与 `AppId` | [微信平台](wechat-platform.md)，目标包 `RUNTIME_API.md/SERVER_CONTRACT.md` |
+| `kit.network.gamelogin` / 游戏账号登录 | `LoginKitConfig`：`LoginCmdName/DeleteCmdName` | [Nova/Docs/Login.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[LoginKitConfig.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| `kit.network.gamebind` / 绑定、查询和冲突裁决 | `BindKitConfig`：`BindingQueryCmdName/BindCmdName/BindConflictCmdName/BindResolveCmdName` | [Nova/Docs/Bind.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[BindKitConfig.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[AccountLoginAndThirdPartyBindFlow.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| `kit.network.gamesave` / 云进度读取与上传 | `SaveKitConfig`：`GetCmdName/SetCmdName` | [Nova/Docs/Save.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[SaveKitConfig.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| `sdk.googlesignin` / Google 身份 | `GoogleSignInPluginConfig`：`ClientId/RequestEmail/FilterByAuthorizedAccounts/AutoSelectEnabled/AutoRestoreOnInitialize` | [Nova/Docs/GoogleSignInPluginConfig.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[GoogleSignInPlugin.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| `sdk.applesignin` / Apple 身份 | `AppleSignInPluginConfig.RequestFullName` | [Nova/Docs/AppleSignInPluginConfig.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[AppleSignInPlugin.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| `sdk.facebook` / Facebook 身份及资料 | `FacebookPluginConfig`：`FacebookAppId/FacebookClientToken/AutoDownloadAvatarOnLogin/AvatarSize` | [Nova/Doc/FacebookPlugin.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| `sdk.wechat.minigame` / 微信身份 | `WeChatMiniGamePluginConfig.VerifyLoginCmdName` 与 `AppId` | [微信平台](wechat-platform.md)，目标包 [RUNTIME_API.md/SERVER_CONTRACT.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
 
 Kit 的 CmdName 是指令名，Host/Path 从消费项目正式 HostKey/NetCmd 表解析，不能把示例指令名、域名或默认空值当成项目已配置。先复用 Network Operation 核对权威表源、正式数据/访问类型、Config 引用与运行时加载。绑定四条指令属于 BindKitConfig，不向 LoginKitConfig 添加历史字段。
 
@@ -23,7 +23,7 @@ Google `ClientId` 是网页客户端编号而非客户端秘密；初始化默�
 ## 接入与已有业务复用
 
 1. 按共用路径安装已确认包，扫描精确 Config FullName，再经 Config Operation 启用、编辑并导出。Google/Apple/Facebook 是 SDK；Login/Bind/Save 是 Network Kit。不因为安装登录 SDK 就重新实现整个账号系统。
-2. 从匹配版本的 Nova `Scripts/Runtime` 平台服务和构建文档确认目标支持。Google Android 使用 Credential Manager；Apple 原生登录由 iOS 路径执行。非目标平台或 Editor 的可编译/可初始化不能证明授权弹窗成功。Android Manifest/ProGuard、iOS capability 等复用包文档化构建入口，不手写原生文件。
+2. 从 [目标包的实际根目录](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 定位该版本的 `Scripts/Runtime` 平台服务和构建文档，确认目标支持。Google Android 使用 Credential Manager；Apple 原生登录由 iOS 路径执行。非目标平台或 Editor 的可编译/可初始化不能证明授权弹窗成功。Android Manifest/ProGuard、iOS capability 等复用包文档化构建入口，不手写原生文件。
 3. 已有账号入口优先复用。三方 `IAuthPlugin.LoginAsync(provider, ct)` 返回 `AuthResult`，目标平台身份还需游戏服按当前协议确认；UID 与 OpenID 分别处理。微信 `LoginAndVerifyAsync` 校验微信身份但不直接建立游戏 UID。
 4. Login/Bind/Save 的公开 Service 分别由 `Nova.Network.Kit<Login/Bind/Save>()` 获取；按文档对应的 `Async`、`QueryBindingAsync/BindAsync/QueryConflictAsync/ResolveAsync`、`GetAsync/GetFullAsync/SetAsync/SetFullAsync` 使用。Header 只保留已确认的会话 UID/OpenID，候选登录或绑定目标只放业务 Body，不直接写内部 `NetService`。
 

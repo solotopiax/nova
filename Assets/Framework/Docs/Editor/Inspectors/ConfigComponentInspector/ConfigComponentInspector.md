@@ -12,9 +12,9 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `ConfigComponentInspector.cs` | `sealed partial ConfigComponentInspector` | 主体：`OnEnable`（绑定 SerializedProperty、收集管理器类型名）/ `OnDisable` / `OnInspectorGUI` |
-| `ConfigComponentInspector.Visitors.cs` | `partial ConfigComponentInspector` | 字段：`m_CurManagerTypeName` / `m_AssetLocationSP` / `m_ManagerTypeNames` |
-| `ConfigComponentInspector.Methods.cs` | `partial ConfigComponentInspector` | 私有方法：`DrawConfigs` / `DrawRuntimeInfo` / `DrawPluginConfig` / `DrawReadonlyKeyValue` / `DrawDllAssetEntryList` |
+| [ConfigComponentInspector.cs](../../../../Scripts/Editor/Inspectors/ConfigComponentInspector/ConfigComponentInspector.cs) | `sealed partial ConfigComponentInspector` | 主体：`OnEnable`（绑定 SerializedProperty、收集管理器类型名）/ `OnDisable` / `OnInspectorGUI` |
+| [ConfigComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/ConfigComponentInspector/ConfigComponentInspector.Visitors.cs) | `partial ConfigComponentInspector` | 字段：`m_CurManagerTypeName` / `m_AssetLocationSP` / `m_ManagerTypeNames` |
+| [ConfigComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/ConfigComponentInspector/ConfigComponentInspector.Methods.cs) | `partial ConfigComponentInspector` | 私有方法：`DrawConfigs` / `DrawRuntimeInfo` / `DrawPluginConfig` / `DrawReadonlyKeyValue` / `DrawDllAssetEntryList` |
 
 ---
 

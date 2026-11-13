@@ -2,7 +2,7 @@
 
 已有非敏感译文标量复用[共享表源 CLI](../../nova-project-integrate-table/references/source-edit.md)。先 inspect 实际源、Sheet、字段、Name 键及语言列，冻结 sourceHash、完整源/生成根、beforeValue 和真实 string 类型，再 plan/execute/verify。该标量分支保留原限制，不增删 Key、语言列、FontMark、行页、公式或格式。
 
-用户明确追加 Key 或语言时，复用同 `nova_table_source.py` 的 `inspect --layout localization-texts` 和原 plan/execute/verify，读取随包[专用请求与边界](../../../../Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md)。严格请求含 `source/sourceHash/sourceRoots/generatedRoots/layout`，并有 `addLanguages` 或 `addKeys`。语言来自当前 `NovaFramework.Runtime.Language`，Plan 冻结随包 `Language.cs` SHA；新增语言须覆盖工作簿全部有效 Sheet 和各原 Key 的显式译文，新 Key 必须包含全部最终语言。同计划可同时追加语言与 Key；合计1–256项、最多8192格。只追加 Key 行和最右字段后的相邻空白物理语言列，不移动、删改名或重排已有结构，不修改公式、FontMark、字体或其他 ZIP 成员。
+用户明确追加 Key 或语言时，复用同 [nova_table_source.py](../../../Tools/nova_table_source.py) 的 `inspect --layout localization-texts` 和原 plan/execute/verify，读取随包[专用请求与边界](../../../../Docs/Onboarding/LOCALIZATION_SOURCE_EDIT.md)。严格请求含 `source/sourceHash/sourceRoots/generatedRoots/layout`，并有 `addLanguages` 或 `addKeys`。语言来自当前 `NovaFramework.Runtime.Language`，Plan 冻结随包 [Language.cs](../../../../Scripts/Runtime/Core/Definitions/Language.cs) SHA；新增语言须覆盖工作簿全部有效 Sheet 和各原 Key 的显式译文，新 Key 必须包含全部最终语言。同计划可同时追加语言与 Key；合计1–256项、最多8192格。只追加 Key 行和最右字段后的相邻空白物理语言列，不移动、删改名或重排已有结构，不修改公式、FontMark、字体或其他 ZIP 成员。
 
 每个源文件成功后，原 Operation 核对全部有效 Localization Unit 的最终语言集合；再调用 `nova.project.localization.export` 的完整文本/类型/支持语言输出并验证 Config、资源与绑定。字体含复杂数据、其他结构变化或表头不兼容时使用项目已确认的专门源编辑器，缺入口明确阻断。`.xls/.xlsm`、宏、删除或改名不扩入此分支；源结构 Verify 不证明运行显示。
 

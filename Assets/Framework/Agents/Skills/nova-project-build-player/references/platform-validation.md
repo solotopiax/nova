@@ -43,7 +43,7 @@ Config Export Action 与 Pipify `export.config` 不修改 Master 当前 Channel/
 | iOS Pods | 当前工程的 Podfile、解析结果/lock、必要资源与成功安装记录 | 无 Pods 依赖时说明不适用；不以 Podfile 存在代替 pod install 成功 |
 | iOS 原生编译 | 已发现 Xcode/SDK、实际 workspace/project 与 scheme/configuration/destination、本次 xcodebuild 结果与产物 | 模拟器与 iphoneos 分开报告；未签名编译不能标为签名设备通过 |
 | iOS 签名设备 | 明确团队/证书/profile/entitlements 与设备、匹配的签名产物、安装启动及业务探针 | 缺有效签名权限或设备时保留已完成层级，组合任务为 partial，不凭编译推断设备运行 |
-| WebGL 构建与浏览器 | 本次 BuildReport、Wasm/数据/loader、首包与 `nova-webgl-layout.txt`，正确 HTTP MIME/压缩响应及真实浏览器启动/业务探针 | 页面打开或 Wasm 下载不等于 Nova 启动成功；记录 Console/请求中的实际失败 |
+| WebGL 构建与浏览器 | 本次 BuildReport、Wasm/数据/loader、首包与 [nova-webgl-layout.txt（本次构建定位）](../../../../Docs/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)，正确 HTTP MIME/压缩响应及真实浏览器启动/业务探针 | 页面打开或 Wasm 下载不等于 Nova 启动成功；记录 Console/请求中的实际失败 |
 
 Android 输出格式、签名和安装/启动以用户任务为准，已授权完整运行验收时发现可用工具后继续必要本地步骤；需要新设备、额外账号或凭据时才说明缺口。iOS 原生与签名验收先发现当前 Xcode、Pods、工程、证书/profile 与设备，避免将本机可读事实重新交给新手填写；不自动变更团队、购买证书或上传商店。
 
@@ -71,7 +71,7 @@ WebGL 使用相同 origin/浏览器 profile，在存储提交后关闭并创建�
 
 ## 按需来源
 
-当前实现与 API 细节从随包 `Docs/INDEX.md` 导航到 `EditorUtil.Pipify/PipifySteps.md`、`EditorUtil.Pipify.Runner.md`、`EditorUtil.Build.md`、`EditorUtil.HybridCLR.md`、`ConfigWindow.md`、`AssetComponent.md` 与 `PlayerPrefsManager.md`。只读当前决策所需文档，不依赖 Nova 开发仓 `.nova`、Minds 或固定机器路径。
+当前实现与 API 细节从随包 [Docs/INDEX.md](../../../../Docs/INDEX.md) 导航到 [EditorUtil.Pipify/PipifySteps.md](../../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)、[EditorUtil.Pipify.Runner.md](../../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Runner.md)、[EditorUtil.Build.md](../../../../Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md)、[EditorUtil.HybridCLR.md](../../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)、[ConfigWindow.md](../../../../Docs/Editor/Windows/ConfigWindow.md)、[AssetComponent.md](../../../../Docs/Runtime/Modules/Asset/AssetComponent.md) 与 [PlayerPrefsManager.md](../../../../Docs/Runtime/Modules/Persist/PlayerPrefsManager.md)。只读当前决策所需文档，不依赖 Nova 开发仓 `.nova`、Minds 或固定机器路径。
 
 WebGL 计划遇到包回调门时，按需读 [BuildEvents 与 UGUI 本地报告合同](../../../../Docs/Editor/PlayerBuildEventsContract.md)、[SRP/Adaptive 与精确包空分支](../../../../Docs/Editor/PlayerEmptyUsageBuildContract.md) 和 [原生 usage 范围](../../../../Docs/Editor/PlayerBuiltinUsageBuildContract.md)。这些现有合同负责准确准入、副作用与回执验收；不得改 SDK/Analytics 设置、清统计或私调 callback 来制造可执行条件。
 

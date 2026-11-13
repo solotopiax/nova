@@ -2,7 +2,7 @@
 
 **类签名**：`public interface IAuthPlugin : ISDKPlugin`
 **命名空间**：`NovaFramework.Runtime`
-**源码文件**：`Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Account/IAuthPlugin.cs`
+**源码文件**：[Scripts/Runtime/Modules/SDK/Plugins/Account/IAuthPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Account/IAuthPlugin.cs)
 
 第三方登录接口，抽象 Google、Apple、Facebook 等平台的登录能力。
 

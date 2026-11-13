@@ -39,7 +39,7 @@ Nova Framework 同时存在三套访问 Manager 的入口：
 
 | 调用方所在层 | 合法访问路径 | 违规示例 |
 |---|---|---|
-| **框架层** `Assets/Framework/Scripts/Runtime/**` | Manager → Manager：`FrameworkManagersGroup.GetManager<IXxxManager>()`；Component → Component：不允许 | `Nova.Config.xxx` / `Nova.UI.xxx` 等任何 `Nova.XXX` |
+| **框架层** [Scripts/Runtime/](../../../Scripts/Runtime/) 及子目录 | Manager → Manager：`FrameworkManagersGroup.GetManager<IXxxManager>()`；Component → Component：不允许 | `Nova.Config.xxx` / `Nova.UI.xxx` 等任何 `Nova.XXX` |
 | **业务层** `Assets/Game/**`（含 `Test/`、`Procedures/`、业务 MonoBehaviour） | `Nova.XXX.属性 / 方法`（Component 薄封装 API） | 直接 `FrameworkManagersGroup.GetManager<I...>()` 或引用 `IXxxManager` |
 
 **框架层 Component 对外封装规则：**
@@ -76,7 +76,7 @@ Nova Framework 同时存在三套访问 Manager 的入口：
 - grep 关键词（应零命中）：框架层路径下出现 `Nova\.(Config|UI|Event|Asset|...)`
 - grep 关键词（应零命中）：业务层路径下出现 `IXxxManager` 或 `FrameworkManagersGroup`
 - 历史踩坑：内部 Manager 通过 `Nova.Config` 读取配置，把业务聚合器反向吸进框架层
-- 待修缺口：`Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIViewManager/Definitions/UIView.Methods.cs:95` 仍存 `Nova.UI.CloseUIView(this)`，需改为 `FrameworkManagersGroup.GetManager<IUIManager>()?.CloseUIView(this)`
+- 历史待修缺口（以下为当时的开发态路径，原路径已失效；当前视图入口见 [UIView 说明](../../../Docs/Runtime/Modules/UI/Definitions/UIView.md)）：`Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIViewManager/Definitions/UIView.Methods.cs:95` 仍存 `Nova.UI.CloseUIView(this)`，需改为 `FrameworkManagersGroup.GetManager<IUIManager>()?.CloseUIView(this)`
 
 ## 关联
 

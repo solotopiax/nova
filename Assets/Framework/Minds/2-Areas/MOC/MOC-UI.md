@@ -110,7 +110,7 @@ Modules/UI/
 
 ## 先往哪看
 
-配置来源与打开契约以当前 [UIComponent 文档](../../../Docs/Runtime/Modules/UI/UIComponent.md)、[IUIManager 文档](../../../Docs/Runtime/Modules/UI/UIManager/Interfaces/IUIManager.md) 和 `UIManager.Methods.cs` 中的配置行解析与打开链为准。
+配置来源与打开契约以当前 [UIComponent 文档](../../../Docs/Runtime/Modules/UI/UIComponent.md)、[IUIManager 文档](../../../Docs/Runtime/Modules/UI/UIManager/Interfaces/IUIManager.md) 和 [UIManager.Methods.cs](../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManager.Methods.cs) 中的配置行解析与打开链为准。
 
 - 改模块边界：[[ADR-001-component-manager-three-layer]]
 - 改访问方式：[[ADR-016-framework-vs-business-access]]

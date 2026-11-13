@@ -51,6 +51,11 @@
       "kind": "unity-editor-automation",
       "entry": "Unity compilation and existing WebSocket business entry Play state, message and lifecycle probe",
       "when": "编译后从实际入口验证唯一通道、连接/认证、消息/ack、断开与注销；重连仅精确授权测试环境，缺初始化/服务器/设备保留partial，不用Mock证明真服务"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+      "when": "仅source-template-copy分支，mode=copy与network-hostkeys/network-cmds官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
     }
   ],
   "inputs": [
@@ -124,6 +129,11 @@
       "name": "activeConfigMasterAndGeneratedNamespace",
       "required": false,
       "description": "仅 export-code-data 按目标必需：Sound、Vibration 及 Network 含 hostkey/netcmd 的 all/code 导出，从 ProjectSettings/Nova/Globals.json 核 configMasterGuid、configMasterPathHint 与实际可加载 ConfigMasterSO 的一致身份，冻结其顶层 Namespace（RuntimeProvider.GetNamespace 的当前来源）及预期生成类型全名和既有消费者；未绑定、身份或值漂移时 blocked，不以 ConfigRuntime.Namespace、维度解析值或第一个 Master 代替。已绑定 Master 明确空 Namespace 时允许 global namespace 并按冻结预期验收。Network 仅 proto 时记录 Master 前置不适用，改核已确认 Schema/protoc 的命名空间与类型全名；不要求 ConfigRuntime、Collector、账号或端点，hostkey 原 DevelopMode 前置仍保留。"
+    },
+    {
+      "name": "officialTemplateCopySourceAndTarget",
+      "required": false,
+      "description": "仅source-template-copy必需：mode=copy、network-hostkeys/network-cmds中实际来源、目标Assets内xlsx及原SHA/新建null、真实sourceRoots/generatedRoots；模板SHA由Plan冻结，禁止rows/sheetName/title。"
     }
   ],
   "effects": [
@@ -140,7 +150,8 @@
       "confirmed project-owned WebSocket service, message encoding/dispatch, connection owner, subscriptions, error/exit and idempotent ack consumer source",
       "confirmed WebSocket component fields and necessary business binding only through selected nova-project-edit-settings or UI Operation and Unity Editor/MCP",
       "confirmed project-owned HTTP Service creation/reuse, DTO/error mapping and finite idempotent business retry/signature renewal; standard Proto requestFactory only maps the supplied Header once, public facade does not manage identity",
-      "confirmed project-owned HTTP request lifecycle owner passing ct-last overloads, active Cancel, late-result guard and exactly-once HttpResponse finally return; optional ICancellableHttpManager support checked from the actual manager"
+      "confirmed project-owned HTTP request lifecycle owner passing ct-last overloads, active Cancel, late-result guard and exactly-once HttpResponse finally return; optional ICancellableHttpManager support checked from the actual manager",
+      "source-template-copy: exact confirmed project-owned Assets/**/*.xlsx target plus TableSource plan/receipt; source template is read-only"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -163,7 +174,8 @@
     "business-network-entry",
     "active-scene",
     "websocket-connection-owner-and-message-consumer",
-    "websocket-test-channel-address-and-session"
+    "websocket-test-channel-address-and-session",
+    "table-source-shared-write-lock"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -174,7 +186,7 @@
       "create or replace a business request entry, WebSocket service/dispatch, Proto schema, generated type or NetworkComponent setting beyond existing authorized scope",
       "credential use, production request, server-side write, delete, external write, Git commit or push"
     ],
-    "rule": "先确认transport；HTTP冻结唯一路由，WebSocket冻结精确地址/通道、消息、认证/心跳与初始化、ack、连接拥有者/退出和消息池所有权。共用协议、重放、业务source与写集、测试端点、测试账号和成功探针，项目可读事实由Agent取得；现有精确授权持续有效，语义或目标变化后重新冻结。当前effects仅本地实现/配置/导出，真实服务请求及其自动副作用另行精确授权。 HTTP既有单URL生命周期维护复核现协议/认证与原URL、owner、真实取消能力和response所有权，跳过无关表导出/Network.LoadAsync/新账号；新协议及实际用表分支才要求对应全链输入。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。"
+    "rule": "先确认transport；HTTP冻结唯一路由，WebSocket冻结精确地址/通道、消息、认证/心跳与初始化、ack、连接拥有者/退出和消息池所有权。共用协议、重放、业务source与写集、测试端点、测试账号和成功探针，项目可读事实由Agent取得；现有精确授权持续有效，语义或目标变化后重新冻结。当前effects仅本地实现/配置/导出，真实服务请求及其自动副作用另行精确授权。 HTTP既有单URL生命周期维护复核现协议/认证与原URL、owner、真实取消能力和response所有权，跳过无关表导出/Network.LoadAsync/新账号；新协议及实际用表分支才要求对应全链输入。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。 source-template-copy只确认冻结的官方来源与模板SHA、目标原SHA和精确写集，不要求完整业务输入；已有替换授权持续有效，原危险副作用门不变。"
   },
   "taskProfiles": [
     {
@@ -203,6 +215,30 @@
         "unity-write",
         "generated-output"
       ]
+    },
+    {
+      "id": "source-template-copy",
+      "description": "只原样复制所属领域官方模板作为建表物料，保留全部样式/Sheet/合并；不修改示例值、不宣称业务数据、导出或运行已完成。",
+      "taskIds": [
+        "network.source.create"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "officialTemplateCopySourceAndTarget"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write"
+      ]
     }
   ],
   "minimumEvidence": "play",
@@ -221,6 +257,7 @@
     "WebSocket时的编译和真实业务入口Play证据：连接与认证、请求/响应/ack、退出，范围含重连时的精确测试与离线去重；源码、入队、Mock、Editor不能代替真实服务或WebGL/设备证据",
     "临时连接/订阅/runner/meta/日志/配置清场、必要Refresh与目标保存范围核对",
     "SendProtoAsync current public signature and preserved NetService chain; local Unity 11 cases and three-platform managed compilation are partial layer evidence, not ready request success, external response, AOT/Player or device acceptance",
-    "ordinary HTTP cancellation: exact ct-last public overloads and actual ICancellableHttpManager, accepted real connection Abort/terminal failure response, pre-cancel no-send, old custom implementation/default-call compatibility, exactly-once pooled response return and existing UWR aborted telemetry; local loopback/Editor evidence does not prove business server rollback, platform/device or external endpoint acceptance"
+    "ordinary HTTP cancellation: exact ct-last public overloads and actual ICancellableHttpManager, accepted real connection Abort/terminal failure response, pre-cancel no-send, old custom implementation/default-call compatibility, exactly-once pooled response return and existing UWR aborted telemetry; local loopback/Editor evidence does not prove business server rollback, platform/device or external endpoint acceptance",
+    "source-template-copy: inspect/plan/execute/verify绑定实际模板与目标SHA，目标整文件与冻结模板字节一致；该分支仅物料准备，业务修改/导出/运行各自验收。"
   ]
 }

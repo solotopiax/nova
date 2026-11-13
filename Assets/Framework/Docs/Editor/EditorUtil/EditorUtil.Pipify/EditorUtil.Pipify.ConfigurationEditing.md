@@ -11,6 +11,16 @@
 
 GUID 应由项目现存资产定位，用户不必记忆。两个 Action 共用现有 `describe → plan → execute → verify` 协议；配置 Action 必须确认 Plan，保存成功不表示 Step、构建、服务器或真机已验证。
 
+## 新项目的 Batch 参考
+
+创建新项目的 Pipify Batch 时，先按当前包 [Sample 声明](../../../../package.json) 和 [Sample 定位规则](../../../Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 找到 MainDemo 的实际来源或导入根，只读查找其 `PipifySettingsSO`，选择与本次目标相关的 Batch。包内 Sample 源可读时不为参考强制导入；受控 inspect 仍遵守资产范围，不能为读取示例改绑持久化工作区。来源不可获得时说明参考缺项，继续依据当前 Step 文档与 Registry 核实方案，不凭记忆重建示例。
+
+- 参考步骤的职责、相互依赖、顺序和参数含义，再判断当前项目的配置/表导出、DLL/AOT、资源构建及其它前置是在 Batch 外已完成，还是需纳入本次 Batch。示例的单项构建任务不自动成为新项目的完整构建链，也不要求把所有准备步骤重复塞进每个 Batch。
+- 按项目有效平台、渠道/开发模式、HybridCLR 策略、已安装 Step、Package/Collector、首包方式、版本/缓存、输出路径、签名及外部部署目标逐项适配。保留、调整或不采用影响本次结果的步骤/参数时说明依据，不照抄示例的环境、路径、固定版本或凭据；Demo 临时物料按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 处理。
+- 示例资产的保存 token 不代表本次有效平台。检查 `valueJson` 与 `effectiveValueJson`；只读的 Target/Platform 由当前 Unity Active BuildTarget 同步，需切平台时使用对应入口，不把示例保存值当作可写参数照搬。
+- 由当前 Registry 和 live Schema 确认 Step 与字段，通过既有配置 Skill 的 inspect → configure → verify 保存项目自己的 Batch。参考不等于克隆整个 Settings；目标资产、工作区绑定和参数分别核实，Demo 源保持原样。
+- 上传、CDN、通知、删除及其它外部/破坏性步骤按本次目标和原合同判断，不因参考 Batch 含有这些步骤就获得运行授权。保存配置、实际运行及产物/设备验收仍分别完成；不运行 MainDemo Batch 来“试一下”。
+
 ## 请求语义
 
 | 字段 | 作用与默认 |

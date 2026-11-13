@@ -3,8 +3,8 @@
 Copyright (c) Solotopia
 
 The Google Sign-In package layer in this directory is Solotopia/Nova content.
-This includes the Nova C# adapter layer under `Nova/**` and the Nova native
-bridge code under `Core/Plugins/Android/**`.
+This includes the Nova C# adapter layer under [Nova/**](Nova/) and the Nova native
+bridge code under [Core/Plugins/Android/**](Core/Plugins/Android/).
 
 Unless a file states otherwise, that Solotopia/Nova content is licensed under
 the MIT License:
@@ -33,6 +33,6 @@ code shipped in this package.
 
 Third-party dependencies resolved at build time by EDM4U or Gradle retain their
 own upstream licenses, notices, and service terms. Those dependencies are not
-relicensed as MIT by this package. See `THIRD_PARTY_NOTICES.md` for the
+relicensed as MIT by this package. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the
 dependency list currently declared by this package, and recheck the actual
 resolved dependency versions and license terms for each release build.

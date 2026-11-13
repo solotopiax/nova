@@ -1,6 +1,6 @@
 # Editor — Menus
 
-**目录**：`Assets/Framework/Scripts/Editor/Menus/`
+**目录**：[Scripts/Editor/Menus/](../../../Scripts/Editor/Menus/)
 **命名空间**：`NovaFramework.Editor`
 
 Nova 顶级菜单下的所有菜单项实现，按功能分组拆分为独立文件。每个文件内部就近定义菜单路径常量与优先级常量。

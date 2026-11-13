@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Interfaces/IAssetDownloader.cs` | `IAssetDownloader` | 接口定义 |
+| [Managers/AssetManager/Interfaces/IAssetDownloader.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetDownloader.cs) | `IAssetDownloader` | 接口定义 |
 
 ---
 

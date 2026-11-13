@@ -1,7 +1,7 @@
 ﻿# IAPPlugin
 
 > 最后更新：2026-08-17
-> 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/**`
+> 当前代码事实：[Nova/Scripts/Runtime/](../Scripts/Runtime/)（本包内）
 
 **类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener, ISDKLoginReceiver, ISDKInitializationDependencies`
 **命名空间**：`NovaFramework.SDK.IAP.Runtime`
@@ -48,7 +48,7 @@
 
 IAP Products 支持在 Inspector 中通过 Excel 批量维护：
 
-- `导出 SKU 模板`：从包内 `Nova/Templates/IAPProductsTemplate.xlsx` 复制模板到用户选择的位置。
+- `导出 SKU 模板`：从包内 [Nova/Templates/IAPProductsTemplate.xlsx](../Templates/IAPProductsTemplate.xlsx) 复制模板到用户选择的位置。
 - `导入 SKU Excel`：读取用户选择的 Excel，校验通过后全量覆盖当前 `IAPPluginConfig.Products`。
 - 导入时优先读取历史固定 Sheet `Products`；若不存在，则读取工作簿中的第一个 Sheet。
 - 模板使用 `##comment`、`##var`、`##type`、`##comment` 元信息行；`##var` 行字段固定为 `TableId`、`Name`、`ProductID`、`ThirdProductID`、`ProductType`、`SubGroupID`、`Price`、`Currency`、`EditorNote`。
@@ -116,7 +116,7 @@ public readonly ReplayEvent<IReadOnlyList<IAPResult>> NonConsumeRestored
 | `IsSuccess=true` 且 `CanDeliver=false` | 本次流程成功结束，但该结果不允许再次发货，例如已发货订单或补单批次完成 |
 | `IsSuccess=false` | 展示或记录 `ErrorDesc`，结合 `ErrorSource + ErrorCode` 判断失败；不能据此撤销其他已成功的历史订单 |
 
-Android ThirdPay 购买前查询可能命中当前商品的多笔历史订单。各笔可发货订单沿 `PaySuccess` 返回，全部验单成功后，当前 `PayAsync` 返回 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空` 的批次完成结果；其本身不是另一笔交易，不能拿空订单号发货或建立订单去重记录。部分订单成功、部分仍未完成时，已发布的成功事件保留，当前调用可汇总返回失败。完整时序见 [ThirdPay 购买前补单规则](../../../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询)。
+Android ThirdPay 购买前查询可能命中当前商品的多笔历史订单。各笔可发货订单沿 `PaySuccess` 返回，全部验单成功后，当前 `PayAsync` 返回 `IsRecoveredOrder=true、CanDeliver=false、OrderId=空` 的批次完成结果；其本身不是另一笔交易，不能拿空订单号发货或建立订单去重记录。部分订单成功、部分仍未完成时，已发布的成功事件保留，当前调用可汇总返回失败。完整时序见 [ThirdPay 购买前补单规则](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/ThirdPayStore.md#android-重复点击补单查询`）。
 
 `PaySuccess`、返回值及恢复结果应复用项目已有的订单幂等消费者。Replay 事件订阅时也可能立即重放已有结果；`IsRecoveredOrder` 只表示来源，不能单独决定是否发货。
 

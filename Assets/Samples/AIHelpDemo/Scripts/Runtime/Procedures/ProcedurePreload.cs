@@ -10,6 +10,7 @@
  ***************************************************************/
 
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using ProcedureOwner = NovaFramework.Runtime.IFsm<NovaFramework.Runtime.IProcedureManager>;
@@ -40,19 +41,37 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
         private bool m_AllLoaded;
 
         /// <summary>
-        /// 进入流程时调用。
+        /// 当前进入代际，防止旧流程任务与回调修改重入后的状态。
+        /// </summary>
+        private int m_EnterGeneration;
+
+        /// <summary>
+        /// 当前预加载尝试代际，重试后使旧弹窗回调失效。
+        /// </summary>
+        private int m_AttemptGeneration;
+
+        /// <summary>
+        /// 当前进入是否已有预加载任务，避免重复重试并发执行。
+        /// </summary>
+        private bool m_PreloadRunning;
+
+        /// <summary>
+        /// 进入流程时创建本次任务身份，显示进度并启动预加载。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
         protected override void OnEnter(ProcedureOwner procedureOwner)
         {
             base.OnEnter(procedureOwner);
 
+            m_EnterGeneration++;
+            m_AttemptGeneration = 0;
+            m_PreloadRunning = false;
             m_CompletedSteps = 0;
             m_AllLoaded = false;
 
             LauncherUIController.ShowProgress(LauncherStage.Preload);
             Log.Debug(LogTag.Procedure, "ProcedurePreload — 开始预加载。");
-            RunPreloadAsync().Forget();
+            StartPreload(CancellationToken, m_EnterGeneration, m_AttemptGeneration);
         }
 
         /// <summary>
@@ -72,7 +91,7 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
         }
 
         /// <summary>
-        /// 离开流程时调用。
+        /// 离开流程时取消任务、使旧回调失效并销毁启动面板。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
         /// <param name="isShutdown">是否因流程管理器关闭而离开。</param>
@@ -80,81 +99,173 @@ namespace NovaFramework.Sdk.Aihelp.Samples.Runtime
         {
             base.OnLeave(procedureOwner, isShutdown);
 
+            m_EnterGeneration++;
+            m_PreloadRunning = false;
             LauncherUIController.DestroyAll();
         }
 
         /// <summary>
-        /// 按步骤顺序预加载：Persist -> Localization -> Network -> SDK -> Table -> UI -> Sound -> Vibrate。
+        /// 为当前进入启动唯一预加载尝试；重试从零进度开始，过期与重复请求忽略。
         /// </summary>
-        private async UniTaskVoid RunPreloadAsync()
+        /// <param name="cancellationToken">本次进入时冻结的流程取消令牌。</param>
+        /// <param name="enterGeneration">本次进入的代际。</param>
+        /// <param name="expectedAttemptGeneration">触发回调所属的尝试代际。</param>
+        private void StartPreload(CancellationToken cancellationToken, int enterGeneration, int expectedAttemptGeneration)
         {
-            try
+            if (!IsCurrentPreload(cancellationToken, enterGeneration, expectedAttemptGeneration)
+                || m_PreloadRunning || m_AllLoaded)
             {
-                Log.Debug(LogTag.Procedure, "Preload Step 1/8 — 加载持久化数据。");
-                await Nova.Persist.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 2/8 — 加载本地化数据。");
-                await Nova.Localization.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                await Nova.Localization.InitCurrentLanguageAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 3/8 — 加载网络配置。");
-                await Nova.Network.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 4/8 — 初始化 SDK。");
-                await Nova.SDK.InitializeTask;
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 5/8 — 加载数据表。");
-                await Nova.Table.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 6/8 — 加载UI配置。");
-                await Nova.UI.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 7/8 — 加载声音数据。");
-                await Nova.Sound.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 8/8 — 加载振动数据。");
-                await Nova.Vibrate.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "预加载全部完成。");
-                m_AllLoaded = true;
+                return;
             }
-            catch (OperationCanceledException)
+
+            m_PreloadRunning = true;
+            int attemptGeneration = ++m_AttemptGeneration;
+            m_CompletedSteps = 0;
+            m_AllLoaded = false;
+            LauncherUIController.HideDialog();
+            LauncherUIController.UpdateProgress(0f);
+            RunPreloadAsync(cancellationToken, enterGeneration, attemptGeneration).Forget();
+        }
+
+        /// <summary>
+        /// 判断令牌、进入代际与尝试代际是否仍属于当前有效预加载任务。
+        /// </summary>
+        /// <param name="cancellationToken">任务启动时冻结的流程取消令牌。</param>
+        /// <param name="enterGeneration">任务所属的进入代际。</param>
+        /// <param name="attemptGeneration">任务所属的尝试代际。</param>
+        /// <returns>任务仍属于当前进入且未被取消时返回 true。</returns>
+        private bool IsCurrentPreload(CancellationToken cancellationToken, int enterGeneration, int attemptGeneration)
+        {
+            return !cancellationToken.IsCancellationRequested
+                && enterGeneration == m_EnterGeneration
+                && attemptGeneration == m_AttemptGeneration;
+        }
+
+        /// <summary>
+        /// 在关键等待后检查本次令牌与任务身份，阻止旧任务继续产生副作用。
+        /// </summary>
+        /// <param name="cancellationToken">任务启动时冻结的流程取消令牌。</param>
+        /// <param name="enterGeneration">任务所属的进入代际。</param>
+        /// <param name="attemptGeneration">任务所属的尝试代际。</param>
+        private void ThrowIfPreloadObsolete(CancellationToken cancellationToken, int enterGeneration, int attemptGeneration)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!IsCurrentPreload(cancellationToken, enterGeneration, attemptGeneration))
             {
-            }
-            catch (Exception e)
-            {
-                Log.Error(LogTag.Procedure, Txt.Format("预加载异常: {0}", e.Message));
-                LauncherUIController.ShowDialog(
-                    LauncherDialogType.PreloadFailed,
-                    () => RunPreloadAsync().Forget(),
-                    () => UnityEngine.Application.Quit());
+                throw new OperationCanceledException(cancellationToken);
             }
         }
 
         /// <summary>
-        /// 单步完成时更新进度。
+        /// 按八步顺序预加载，统一处理步骤结果、进度和任务身份。
         /// </summary>
-        private void OnStepComplete()
+        /// <param name="cancellationToken">本次进入时冻结的流程取消令牌。</param>
+        /// <param name="enterGeneration">本次进入的代际。</param>
+        /// <param name="attemptGeneration">本次预加载尝试的代际。</param>
+        private async UniTaskVoid RunPreloadAsync(CancellationToken cancellationToken, int enterGeneration, int attemptGeneration)
         {
-            m_CompletedSteps++;
-            LauncherUIController.UpdateProgress((float)m_CompletedSteps / c_TotalSteps);
+            // 统一检查任务身份与加载结果，成功后推进进度；无返回值的任务使用默认成功结果。
+            void CompleteStep(bool succeeded = true)
+            {
+                ThrowIfPreloadObsolete(cancellationToken, enterGeneration, attemptGeneration);
+                EnsureLoadSucceeded(succeeded, $"预加载步骤 {m_CompletedSteps + 1}");
+                m_CompletedSteps++;
+                LauncherUIController.UpdateProgress((float)m_CompletedSteps / c_TotalSteps);
+            }
+
+            try
+            {
+                ThrowIfPreloadObsolete(cancellationToken, enterGeneration, attemptGeneration);
+                Log.Debug(LogTag.Procedure, "Preload Step 1/8 — 加载持久化数据。");
+                await Nova.Persist.LoadAsync();
+                CompleteStep();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 2/8 — 加载本地化数据。");
+                EnsureLoadSucceeded(await Nova.Localization.LoadAsync(), "本地化基础数据");
+                ThrowIfPreloadObsolete(cancellationToken, enterGeneration, attemptGeneration);
+                Language language = await Nova.Localization.InitCurrentLanguageAsync();
+                CompleteStep(language != Language.Unspecified && Nova.Localization.Language == language);
+
+                Log.Debug(LogTag.Procedure, "Preload Step 3/8 — 加载网络配置。");
+                EnsureLoadSucceeded(await Nova.Network.LoadAsync(), "网络配置");
+                ThrowIfPreloadObsolete(cancellationToken, enterGeneration, attemptGeneration);
+                // 等待启动时已经发起的唯一一轮 GM 拉取；失败沿用缓存或本地默认值，不触发重拉或阻断启动。
+                await Nova.Config.WaitForStartupAppConfigAsync(cancellationToken);
+                CompleteStep();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 4/8 — 初始化 SDK。");
+                await Nova.SDK.InitializeTask;
+                ThrowIfPreloadObsolete(cancellationToken, enterGeneration, attemptGeneration);
+                // 全局任务只表示所有插件已结束，不以此声称厂商服务可用。
+                EnsureLoadSucceeded(Nova.SDK.IsInitialized, "SDK 初始化调度");
+                SDKPluginInitializationState sdkState = Nova.SDK.GetPluginInitializationState<NovaFramework.SDK.AIHelp.Runtime.AIHelpPlugin>();
+                EnsureLoadSucceeded(sdkState != SDKPluginInitializationState.NotEnabled, "AIHelp SDK 启用配置");
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+                EnsureLoadSucceeded(sdkState == SDKPluginInitializationState.Ready
+                    && Nova.SDK.TryGet<NovaFramework.SDK.AIHelp.Runtime.AIHelpPlugin>(out _), $"AIHelp SDK（{sdkState}）");
+#else
+                // 原厂客服页面只支持 Android / iOS Player，其他平台保留页面的不可用提示。
+                Log.Debug(LogTag.Procedure, "当前平台不验证 AIHelp 原厂页面可用性，请在 Android 或 iOS 真机体验。");
+#endif
+                CompleteStep();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 5/8 — 加载数据表。");
+                CompleteStep(await Nova.Table.LoadAsync());
+
+                Log.Debug(LogTag.Procedure, "Preload Step 6/8 — 加载UI配置。");
+                CompleteStep(await Nova.UI.LoadAsync());
+
+                Log.Debug(LogTag.Procedure, "Preload Step 7/8 — 加载声音数据。");
+                CompleteStep(await Nova.Sound.LoadAsync());
+
+                Log.Debug(LogTag.Procedure, "Preload Step 8/8 — 加载振动数据。");
+                CompleteStep(await Nova.Vibrate.LoadAsync());
+
+                Log.Debug(LogTag.Procedure, "预加载全部完成。");
+                m_AllLoaded = true;
+            }
+            catch (OperationCanceledException) when (!IsCurrentPreload(cancellationToken, enterGeneration, attemptGeneration))
+            {
+            }
+            catch (Exception e)
+            {
+                if (!IsCurrentPreload(cancellationToken, enterGeneration, attemptGeneration))
+                {
+                    return;
+                }
+
+                Log.Error(LogTag.Procedure, Txt.Format("预加载异常: {0}", e.Message));
+                LauncherUIController.ShowDialog(
+                    LauncherDialogType.PreloadFailed,
+                    () => StartPreload(cancellationToken, enterGeneration, attemptGeneration),
+                    () =>
+                    {
+                        if (IsCurrentPreload(cancellationToken, enterGeneration, attemptGeneration))
+                        {
+                            UnityEngine.Application.Quit();
+                        }
+                    });
+            }
+            finally
+            {
+                if (IsCurrentPreload(cancellationToken, enterGeneration, attemptGeneration))
+                {
+                    m_PreloadRunning = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将模块明确返回的失败转换为预加载失败，禁止继续累计进度或进入业务。
+        /// </summary>
+        /// <param name="succeeded">模块结果或当前必需数据的实际检查结果。</param>
+        /// <param name="stepName">失败步骤的中文名称，仅用于诊断。</param>
+        private static void EnsureLoadSucceeded(bool succeeded, string stepName)
+        {
+            if (!succeeded)
+            {
+                throw new InvalidOperationException(Txt.Format("{0}加载失败，请检查配置、资源及前序错误。", stepName));
+            }
         }
     }
 }

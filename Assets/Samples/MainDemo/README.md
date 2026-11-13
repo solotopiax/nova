@@ -4,7 +4,7 @@
 
 使用入口见本目录的 [DEMO-INDEX.md](DEMO-INDEX.md)。[DESIGN.md](DESIGN.md) 保留建设时的设计背景；实际 API、配置与演示状态以当前源码和随包 Docs 为准。消费项目无需主仓的 Minds 或开发工具。
 
-`PSD2UGUI/` 制作示例（原 `PSD2UGUIDemo`）随 MainDemo 提供，插件源码和 DLL 不包含在其中。未安装插件时自动收起其专用编辑数据，普通 uGUI 产物仍可使用；它不参与 MainDemo 启动。导入后路径会调整到当前 Sample 目录，详见 [PSD2UGUI 使用说明](PSD2UGUI/README.md)，卸载插件前先保存并关闭编辑树。
+[PSD2UGUI/](PSD2UGUI/) 制作示例（原 `PSD2UGUIDemo`）随 MainDemo 提供，插件源码和 DLL 不包含在其中。未安装插件时自动收起其专用编辑数据，普通 uGUI 产物仍可使用；它不参与 MainDemo 启动。导入后路径会调整到当前 Sample 目录，详见 [PSD2UGUI 使用说明](PSD2UGUI/README.md)，卸载插件前先保存并关闭编辑树。
 
 ---
 
@@ -14,7 +14,9 @@
 
 `DemoAppView` 的版本检查、下载和商店跳转固定发起时的取消令牌与页面打开身份；关闭、销毁或重新打开后的旧成功与旧异常不会写入新页面，取消回调异常时仍释放令牌源。内置 APK 下载由 `AppManager.DownloadAsync` 调用 `AppApkDownloader.DownloadAsync`，仅支持已启用更新、命中推荐或强制更新且采用 Apk 路由的 Android Player；冻结 HTTPS 主备地址后流式下载，经过文件大小和 APK 归档结构检查再原子提交。Editor、iOS、WebGL 明确拒绝该文件下载入口。返回路径只表示下载文件完成，不证明 APK 签名、目标版本或安装成功；商店跳转结果也不表示应用已更新。
 
-`DemoConfigView` 的远端应用配置刷新固定页面打开身份，关闭再重开后不接收旧反馈；刷新属于全局配置能力，关闭页面不会取消或回滚它。快照只显示当前 `Nova.Config` 值，空 SDK 配置项会跳过并提示，不把配置实例数当作 SDK 初始化完成数。
+`ProcedurePreload` 保持现有八步顺序；网络表加载成功后等待本次启动自动发起的同一轮 GM 应用配置拉取，成功、失败或超时后都继续。失败沿用缓存/本地默认值，预加载重试与重复等待不会再次请求。该轮使用 Network Inspector“启动时GM配置请求超时时间（秒）”，默认每次请求 5 秒，主备请求和重试分别计时，因此整轮总耗时可能超过 5 秒；单独发起的手动刷新和其他业务请求仍沿用普通业务超时设置。
+
+`DemoConfigView` 的远端应用配置刷新固定页面打开身份，关闭再重开后不接收旧反馈；刷新属于全局配置能力，关闭页面不会取消或回滚它。该按钮仍是显式重新拉取，不改变启动那一轮保存的结果。快照只显示当前 `Nova.Config` 值，空 SDK 配置项会跳过并提示，不把配置实例数当作 SDK 初始化完成数。
 
 `DemoNativeView` 只在页面打开且已有本次令牌时发起操作，通知查询、权限请求、评价请求和设置跳转的结果与异常都受原页面身份约束。关闭只取消本页等待，无法撤回已交给系统的通知或评价请求；设置跳转没有取消入口。`RequestDispatched` 只表示请求已交给系统，设置入口的 `true` 只表示已发起跳转，均不证明系统提示展示、权限修改、评价或提交完成。
 
@@ -34,7 +36,9 @@
 
 `DemoProcedureView` 合并框架与当前已加载业务程序集的流程快照，并提供“重新预加载”。请求只在当前 `ProcedurePlaying` 接受，同一帧重复请求被拒绝，下一次轮询切回 `ProcedurePreload`，仍按 Persist → Localization → Network → SDK → Table → UI → Sound → Vibrate 的八步顺序执行。入口页面接受请求后关闭自己；主流程退出时只关闭自己拥有的导航，重入后再打开一个新导航。每次预加载固定 token 与进入/尝试代际，离开后的旧任务、重试弹窗和 finally 不接管重入状态；取消不代表底层加载立即停止。
 
-当前 `ProcedurePreload.RunPreloadAsync()` 没有检查各加载调用的布尔结果，例如 `Nova.Table.LoadAsync()` 返回 `false` 后仍会计步并继续，最后可以设置 `m_AllLoaded=true`。进度完成只说明调用链未抛异常且任务身份仍有效；业务接入还须核对目标表、注册项与资源是否实际可用。
+预加载集中处理六个模块的加载返回值，并核对语言是否实际生效；失败不累计该步进度、不进入业务，重试从零计步。SDK 全局任务只表示初始化调度结束，本示例当前未启用 SDK，不代表任何厂商服务可用；接入产品时须补充其必需插件的就绪检查。Persist、SDK 共享任务可能缓存首次失败，重试不会凭空重新初始化，配置或原生环境修复后可能需要重新启动应用。
+
+预加载完成后，业务接入仍须核对目标表、注册项与资源是否实际可用，不能用八步进度完成代替产品功能验证。
 
 `DemoIntegrationTableUiView` 从已加载的 `TbDemo_Item` 按 `Id` 扫描唯一行，显示编号、名称、图标地址和价格。每次打开默认读取明确编号 `1001`；可输入 `1002` 查看另一行，输入 `999999` 或非整数查看错误处理。错误会清空上次详情，池化重开会重新读表；图标地址仅作文字展示。导航的 4.5 入口只合并本页面的重复打开，已加载时回焦，关闭后保留原导航。
 
@@ -50,7 +54,7 @@
 
 ## 业务进度结构迁移
 
-`Scripts/Runtime/UIs/DemoPersistView/DemoProgressMigration.cs` 是可复用的项目业务入口，通过公开 `IFileFragmentManager` 读取旧进度、保存新版并读取、更新实际业务值，不创建框架 Manager 或维护 Action。它不自动接管存档；调用方须先明确源/目标分类并独占写入，确保既有启动链已完成 `Nova.Persist.LoadAsync()`，再注入 `Nova.Persist.FileFragment`。
+[Scripts/Runtime/UIs/DemoPersistView/DemoProgressMigration.cs](Scripts/Runtime/UIs/DemoPersistView/DemoProgressMigration.cs) 是可复用的项目业务入口，通过公开 `IFileFragmentManager` 读取旧进度、保存新版并读取、更新实际业务值，不创建框架 Manager 或维护 Action。它不自动接管存档；调用方须先明确源/目标分类并独占写入，确保既有启动链已完成 `Nova.Persist.LoadAsync()`，再注入 `Nova.Persist.FileFragment`。
 
 ```csharp
 var migration = new DemoProgressMigration(Nova.Persist.FileFragment, "PlayerProgressV1", "PlayerProgressV2");
@@ -122,15 +126,15 @@ DemoNavTreeView（树形导航主菜单）
 
 | 路径 | 说明 |
 |---|---|
-| `Scripts/Runtime/UIs/` | 35 个 DemoXxxView 脚本 + BaseDemoView 基类 + DemoNavTree |
-| `Scripts/Runtime/DataTypes/` | Tables / Sounds / Vibrates / Localizations / Networks 数据类型 |
-| `Scripts/Runtime/Procedures/` | 业务侧 Procedure 实现 |
-| `Scripts/Editor/` | 业务侧 Inspector / EditorWindow |
-| `Prefabs/UIs/` | DemoNavTreeView prefab + 对应 DemoXxxView prefab；页面新增须完成持久绑定与 UI 注册导出 |
-| `Configs/` | 框架 ScriptableObject 配置示例 |
-| `Jsons/` | 多语言 / 表格 JSON 资源 |
-| `Resources/BuiltIn/Prefabs/` | Launcher 启动期 UI Prefab（SplashPanel / ProgressPanel / DialogPanel） |
-| `Fonts/` | 演示用字体资源 |
+| [Scripts/Runtime/UIs/](Scripts/Runtime/UIs/) | 35 个 DemoXxxView 脚本 + BaseDemoView 基类 + DemoNavTree |
+| [Scripts/Runtime/DataTypes/](Scripts/Runtime/DataTypes/) | Tables / Sounds / Vibrates / Localizations / Networks 数据类型 |
+| [Scripts/Runtime/Procedures/](Scripts/Runtime/Procedures/) | 业务侧 Procedure 实现 |
+| [Scripts/Editor/](Scripts/Editor/) | 业务侧 Inspector / EditorWindow |
+| [Prefabs/UIs/](Prefabs/UIs/) | DemoNavTreeView prefab + 对应 DemoXxxView prefab；页面新增须完成持久绑定与 UI 注册导出 |
+| [Configs/](Configs/) | 框架 ScriptableObject 配置示例 |
+| [Jsons/](Jsons/) | 多语言 / 表格 JSON 资源 |
+| [Resources/BuiltIn/Prefabs/](Resources/BuiltIn/Prefabs/) | Launcher 启动期 UI Prefab（SplashPanel / ProgressPanel / DialogPanel） |
+| [Fonts/](Fonts/) | 演示用字体资源 |
 
 详细 demo 索引（编号 / 类名 / 变体 / API / 资源依赖）见 [`DEMO-INDEX.md`](DEMO-INDEX.md)。
 
@@ -143,26 +147,26 @@ DemoNavTreeView（树形导航主菜单）
 导入 Demo 后，Editor 会自动弹窗：
 
 1. **检测旧版本** — 若工程已有其他版本的 Nova Framework Demo，提示一键清理。
-2. **设置启动场景** — 询问是否将 `MainDemo.unity` 设为 Build Settings 第一项。
+2. **设置启动场景** — 询问是否将 [MainDemo.unity](MainDemo.unity) 设为 Build Settings 第一项。
 
 先核对旧目录是否含自己的改动，再决定清理或设置场景。配置、资源、编译和目标平台就绪后点 Play；弹窗处理完成不代表启动、在线服务或全部页面已验收。
 
 ### Google Play 上传示例
 
-`Editor/PipifySettings.asset` 提供构建 AAB 后上传的组合批次，以及手动上传已有 AAB 的独立批次。组合批次使用本次成功构建产物；独立批次中的 AAB 路径是开发示例，导入后必须同时填写自己的有效 AAB 路径和应用包名。两种批次都需填写自己的服务账号凭据路径，公开副本不会附带凭据文件。配置要求见已安装 Framework 的 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`。
+[Editor/PipifySettings.asset](Editor/PipifySettings.asset) 提供构建 AAB 后上传的组合批次，以及手动上传已有 AAB 的独立批次。组合批次使用本次成功构建产物；独立批次中的 AAB 路径是开发示例，导入后必须同时填写自己的有效 AAB 路径和应用包名。两种批次都需填写自己的服务账号凭据路径，公开副本不会附带凭据文件。配置要求见已安装 Framework 的 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`）。
 
 保存的全量、HybridCLR 与 Bundle 组合批次，会先导出配置和网络代码/数据，再验证、生成和编译热更新 DLL，随后构建资源与 Player。修改源表后应沿用这个顺序，避免 DLL 使用上一轮导出结果。保存批次只更新配置；运行包含 CDN、商店上传等步骤的批次前，仍需核对目标和本次授权。
 
 ### 手动
 
-1. `File > Build Settings...`，把实际导入目录中的 `MainDemo.unity` 拖到 `Scenes In Build` 第一项；不要套用其他版本的目录名。
+1. `File > Build Settings...`，把实际导入目录中的 [MainDemo.unity](MainDemo.unity) 拖到 `Scenes In Build` 第一项；不要套用其他版本的目录名。
 2. 点 Play。
 
 ---
 
 ## 通过 Codex 使用
 
-可以直接描述目标，例如“帮我运行主框架示例”“解释这个字段并改成适合移动端的配置”“照这个页面做一个由表格驱动的背包”。Codex 从实际安装的 Framework 包读取 `Docs/START_HERE.md`、`Agents/INDEX.md`，按目标复用现有配置、表格、UI、流程、资源或诊断 Skill；不需要记住 Skill 名称，也不为每个演示按钮建立新 Skill。
+可以直接描述目标，例如“帮我运行主框架示例”“解释这个字段并改成适合移动端的配置”“照这个页面做一个由表格驱动的背包”。Codex 从实际安装的 Framework 包读取 [Docs/START_HERE.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/START_HERE.md`）、[Agents/INDEX.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Agents/INDEX.md`），按目标复用现有配置、表格、UI、流程、资源或诊断 Skill；不需要记住 Skill 名称，也不为每个演示按钮建立新 Skill。
 
 先读取实际工程、场景、配置坐标、输入资产和当前工具能力，再按既有入口执行并验证。示例按钮可能发起联网、账号、存档、权限或商店操作；学习和查阅示例不等于授权这些实际操作。在线结果、声音播放、DLL 加载和真机行为需要各自证据，不能由编译或页面打开推断成功。
 
@@ -174,7 +178,7 @@ DemoNavTreeView（树形导航主菜单）
 
 1. **设计期（步 1-3）**：确认用户目标、包依赖和独立输入输出，复用本 Sample 的三段式页面；用已有 Skill、Action、CLI 或 Pipify 表达可复用操作，不把内部方法逐个变成 Skill。
 2. **源数据期（步 4-6）**：在对应模块 xlsx 追加 `Demo_` 前缀数据行 → Pipify 导出 → read_console 确认编译。
-3. **资源期（步 7-9）**：按实际需求维护 Prefab、图片和声音及其采集规则。当前 `Editor/BundleCollectorSetting.asset` 使用 `AddressByFileName`，地址为不带扩展名的文件名；UI 注册填写 `DemoXxxView`，不得写成 `UIs/DemoXxxView`。
+3. **资源期（步 7-9）**：按实际需求维护 Prefab、图片和声音及其采集规则。当前 [Editor/BundleCollectorSetting.asset](Editor/BundleCollectorSetting.asset) 使用 `AddressByFileName`，地址为不带扩展名的文件名；UI 注册填写 `DemoXxxView`，不得写成 `UIs/DemoXxxView`。
 4. **代码期（步 10-13）**：继承 `BaseDemoView`，正确配对打开、关闭、句柄释放和异步取消；UI Excel 追加注册行并正式导出，再更新 `DemoTreeData.cs` 叶子节点。
 5. **Prefab 期（步 14-16）**：UnityMCP 串行 clone BaseDemoView.prefab → 绑定字段 → read_console 确认 Missing Reference 为零。
 6. **验证期（步 17）**：Play Mode 全链路验证（树形菜单点叶子 → 子页面打开 → 反馈区出日志 → X 关闭）。
@@ -196,4 +200,12 @@ UPM 标准行为：升级 Nova Framework 后，Package Manager 会把重新导�
 
 如果 Demo 内某个接口示例有错或不易理解，请反馈到 Nova Framework 主仓库 issue。
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Agents/INDEX.md`<br>`Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`<br>`Docs/INDEX.md`<br>`Docs/Onboarding/PROJECT_STRUCTURE.md`<br>`Docs/START_HERE.md` |

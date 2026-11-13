@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingValidator.cs` | `internal static class TextLocalizingValidator` | Inspector 按钮工具（不挂 `[MenuItem]`），扫描 Assets/ 下所有 Prefab（含 inactive 节点），为缺失 `TextLocalizing` 的 `TextMeshProUGUI` 节点补挂并保存 |
+| [Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingValidator.cs](../../../../Scripts/Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingValidator.cs) | `internal static class TextLocalizingValidator` | Inspector 按钮工具（不挂 `[MenuItem]`），扫描 Assets/ 下所有 Prefab（含 inactive 节点），为缺失 `TextLocalizing` 的 `TextMeshProUGUI` 节点补挂并保存 |
 
 ---
 

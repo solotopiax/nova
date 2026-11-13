@@ -11,8 +11,8 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Core/FrameworkManager.cs` | `abstract FrameworkManager` | 基类：Priority / Update / Shutdown |
-| `Core/FrameworkManagersGroup.cs` | `static FrameworkManagersGroup` | 全局调度表，按 Priority 驱动 Update，逆序 Shutdown |
+| [Core/FrameworkManager.cs](../../../Scripts/Runtime/Core/FrameworkManager.cs) | `abstract FrameworkManager` | 基类：Priority / Update / Shutdown |
+| [Core/FrameworkManagersGroup.cs](../../../Scripts/Runtime/Core/FrameworkManagersGroup.cs) | `static FrameworkManagersGroup` | 全局调度表，按 Priority 驱动 Update，逆序 Shutdown |
 
 ---
 

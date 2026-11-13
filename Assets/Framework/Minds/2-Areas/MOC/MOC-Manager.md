@@ -62,7 +62,7 @@ FrameworkComponent
 
 ## Priority 速查
 
-完整优先级以 `Docs/ARCHITECTURE.md` 和源码为准；这里保留高频心智模型：
+完整优先级以 [Docs/ARCHITECTURE.md](../../../Docs/ARCHITECTURE.md) 和源码为准；这里保留高频心智模型：
 
 - `Persist`、`Debug` 最靠前
 - `Event`、`ObjectPool` 先于大多数业务模块

@@ -29,7 +29,7 @@ related:
 
 ## 适用场景
 
-- 规划或维护 `UPMPackages/` 下的 Nova 框架包
+- 规划或维护 [UPMPackages/](../../../../../UPMPackages/) 下的 Nova 框架包
 - 评估某个第三方依赖该以 Nova 包壳方式集成，还是直接保留原厂包名分发
 - 设计 Plugin 云插件服务中心、内部云仓库与自动安装链路时统一包名和依赖口径
 

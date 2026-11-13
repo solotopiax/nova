@@ -11,7 +11,7 @@ UI 视图分组辅助器接口，负责将逻辑深度映射到 Canvas.sortingOr
 
 | 文件 | 说明 |
 |------|------|
-| `IUIGroupHelper.cs` | 接口定义，位于 `Managers/UIGroupHelper/Interfaces/` |
+| [IUIGroupHelper.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Interfaces/IUIGroupHelper.cs) | 接口定义，位于 [Managers/UIGroupHelper/Interfaces/](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Interfaces/) |
 
 ## 公开 API
 

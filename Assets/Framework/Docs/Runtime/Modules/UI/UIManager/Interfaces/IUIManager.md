@@ -1,5 +1,7 @@
 # IUIManager
 
+等待打开结果通过独立可选的 [IUIOpenAwaiter](IUIOpenAwaiter.md) 扩展；本接口不增加强制实现成员，既有 serialID 打开入口和自定义实现保留。
+
 `IUIManager` 定义的是 UI 运行时契约，不是实现细节目录。  
 调用方真正应该依赖的是这些语义是否稳定，而不是接口里一共有多少个重载。
 

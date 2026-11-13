@@ -92,6 +92,7 @@ namespace NovaFramework.Runtime
             {
                 IUIView uiView = m_RecycleQueue.Dequeue();
                 bool inObjectPools = uiView.InObjectPools;
+                if (uiView is UIView managedView) managedView.EndOpenScope();
                 uiView.OnRecycle();
                 if (inObjectPools)
                 {
@@ -116,6 +117,7 @@ namespace NovaFramework.Runtime
         public override void Shutdown()
         {
             m_IsShutdown = true;
+            CompleteAllAwaitedOpens(UIViewOpenStatus.Shutdown, "UI 管理器已经关闭。");
             OnOpenUIViewFail = null;
             CloseAllLoadingUIViews();
             CloseAllLoadedUIViews();
@@ -302,6 +304,7 @@ namespace NovaFramework.Runtime
             {
                 m_UIViewsToReleaseOnLoad.Add(serialID);
                 m_UIViewsBeingLoaded.Remove(serialID);
+                CompleteAwaitedOpen(serialID, UIViewOpenStatus.Closed, null, "页面在加载完成前已关闭。");
                 return;
             }
 
@@ -327,6 +330,9 @@ namespace NovaFramework.Runtime
                 throw new ArgumentNullException(nameof(uiView), "视图无效。");
             }
 
+            // 只有仍在可选打开阶段的视图隔离收尾异常；旧入口和已成功打开页面继续原关闭路径。
+            if (TryCloseAwaitedView(uiView, userData)) return;
+
             UIGroup uiGroup = (UIGroup)uiView.UIGroup;
             if (uiGroup == null)
             {
@@ -335,9 +341,18 @@ namespace NovaFramework.Runtime
 
             uiGroup.RemoveUIView(uiView);
             m_UIViewIndex.Remove(uiView.SerialID);
-            uiView.OnClose(m_IsShutdown, userData);
-            uiGroup.Refresh();
-            m_RecycleQueue.Enqueue(uiView);
+            int closingSerialID = uiView.SerialID;
+            if (uiView is UIView managedView) managedView.EndOpenScope();
+            try
+            {
+                uiView.OnClose(m_IsShutdown, userData);
+                uiGroup.Refresh();
+                m_RecycleQueue.Enqueue(uiView);
+            }
+            finally
+            {
+                CompleteAwaitedOpen(closingSerialID, UIViewOpenStatus.Closed, null, "页面在打开完成前已关闭。");
+            }
         }
 
         /// <summary>
@@ -369,12 +384,17 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void CloseAllLoadingUIViews()
         {
+            List<int> awaited = m_AwaitedUIViews != null && m_AwaitedUIViews.Count > 0
+                ? new List<int>(m_UIViewsBeingLoaded.Keys) : null;
             foreach (KeyValuePair<int, string> entry in m_UIViewsBeingLoaded)
             {
                 m_UIViewsToReleaseOnLoad.Add(entry.Key);
             }
 
             m_UIViewsBeingLoaded.Clear();
+            if (awaited != null)
+                foreach (int serialID in awaited)
+                    CompleteAwaitedOpen(serialID, UIViewOpenStatus.Closed, null, "加载中的页面已统一关闭。");
         }
 
         /// <summary>

@@ -102,6 +102,12 @@ namespace NovaFramework.Editor
                 "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。";
 
             /// <summary>
+            /// 项目组 Skill 首个正文段落使用准确包内相对链接时必须声明的共同底线。
+            /// </summary>
+            private const string c_ProjectSkillLinkedCommonBaseline =
+                "触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。";
+
+            /// <summary>
             /// 项目组 Skill 声明按需加载资料时使用的固定章节标题。
             /// </summary>
             private const string c_ProgressiveDisclosureHeading = "## 渐进式披露";
@@ -1263,7 +1269,8 @@ namespace NovaFramework.Editor
 
                 string firstBodyParagraph = ReadFirstSkillBodyParagraph(skillFile);
                 if (firstBodyParagraph == null
-                    || firstBodyParagraph.IndexOf(c_ProjectSkillCommonBaseline, StringComparison.Ordinal) < 0)
+                    || (firstBodyParagraph.IndexOf(c_ProjectSkillCommonBaseline, StringComparison.Ordinal) < 0
+                        && firstBodyParagraph.IndexOf(c_ProjectSkillLinkedCommonBaseline, StringComparison.Ordinal) < 0))
                 {
                     throw new InvalidOperationException(
                         $"{skillId} 的 SKILL.md 首个正文段落必须包含“{c_ProjectSkillCommonBaseline}”。");

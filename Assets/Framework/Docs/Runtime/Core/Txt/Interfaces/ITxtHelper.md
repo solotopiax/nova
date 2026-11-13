@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Interfaces/ITxtHelper.cs` | 接口定义 |
+| [ITxtHelper.cs](../../../../../Scripts/Runtime/Core/Txt/ITxtHelper.cs) | 接口定义 |
 
 ## 公开 API
 

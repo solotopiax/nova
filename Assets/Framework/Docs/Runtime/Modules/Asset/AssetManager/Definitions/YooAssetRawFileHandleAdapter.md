@@ -13,7 +13,7 @@ YooAsset `AssetHandle` / `RawFileObject` 到 `IRawFileHandle` 的内部适配器
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Definitions/YooAssetRawFileHandleAdapter.cs` | `YooAssetRawFileHandleAdapter` | 适配器实现 + IReference 实现 |
+| [Managers/AssetManager/Definitions/YooAssetRawFileHandleAdapter.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/YooAssetRawFileHandleAdapter.cs) | `YooAssetRawFileHandleAdapter` | 适配器实现 + IReference 实现 |
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.alibabacloud.oss",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "license": "Apache-2.0",
   "coreVersion": "892c0209b9808b352f9e0814e7da32c49496ea16",
   "displayName": "Alibaba Cloud OSS Editor Tool",
@@ -19,5 +19,8 @@
   "author": {
     "name": "Solotopia"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "nova": {
+    "releaseTime": "2026-11-13T07:05:21Z"
+  }
 }

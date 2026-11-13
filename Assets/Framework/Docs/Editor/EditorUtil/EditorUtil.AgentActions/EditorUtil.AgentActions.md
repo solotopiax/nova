@@ -16,7 +16,7 @@ TMP、Facebook、Generate SceneVisibility、输入设置、NativePreview 等相�
 
 `table.export` 的 `scope` 在校验、选择、Plan 冻结与 Execute 共用去除首尾空白、忽略大小写的规范值；例如 `" code "` 只导出代码，不会落入全量导出分支。
 
-Registry 当前注册 39 个 Action，全部进入 MCP 显式白名单：
+当前 Action 在 Registry 与 MCP 显式白名单中成对登记，实际可调用集合仍以 live `describe` 为准：
 
 | Action ID | Operation | RequiredEvidence | MCP |
 |---|---|---|---|
@@ -40,6 +40,8 @@ Registry 当前注册 39 个 Action，全部进入 MCP 显式白名单：
 | `nova.project.build.inspect-readiness` | Inspect | Static | 开放 |
 | `nova.project.table.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.ui.export` | Generate | Compile + Artifact | 开放 |
+| `nova.project.ui.inspect-bindings` | Inspect | Static | 开放；只读既有普通 Prefab |
+| `nova.project.ui.configure-bindings` | Ensure | Static + Artifact；generate 另需本次 Compile/Reload | 开放；bind / generate 分开计划 |
 | `nova.project.psd2ugui.inspect` | Inspect | Static | 开放；需要可选 PSD2UGUI 包 |
 | `nova.project.psd2ugui.run` | Generate | Static + Artifact | 开放；需要兼容自动化桥，AI 单独核验 |
 | `nova.project.network.export` | Generate | Static + Artifact | 开放 |
@@ -121,7 +123,7 @@ Plan 冻结 Master/Runtime 两对象内存摘要、Master/Runtime及各自meta�
 
 2xx 的 `http-accepted` 只证明 HTTP 接受；当前协议没有权威后台应用响应或查询契约，Execute/Verify 最高 `partial`。精确 HTTP409 且 `code=CATALOG_VERSION_CONFLICT` 表示新目录未应用，不能自动改版本或重发。其他错误、取消或仅剩意图均保留实际未知边界；回执只含发送事实、状态码、响应长度/SHA、有限分类和时间，不含原响应、异常正文或请求Body。
 
-Verify 使用原 Core recovery token，只读原 attempt 和指纹，不 Prepare、Submit 或查询后台；重载后原计划失效，不能恢复 Execute。原记录缺失/损坏、只有意图或结果未保存时保持 `partial`，不得推定远端没写入。正式意图/结果及 Operation 保留为证据。旧 Inspector 与 `iap.product_catalog.upload` Step 的精确409 Warning兼容不变，通用Batch未自动获得目录预冻结，Batch终态不证明目录应用。该分支不创建订单、不验单、不发货，也不改变原IAP业务任务的验收目标。参数、协议和调用边界见既有 `nova-project-onboard-sdk-kit` 的[按需目录引用](../../../../Agents/Skills/nova-project-onboard-sdk-kit/references/product-catalog-upload.md)及已解析 IAP 包 `Nova/Doc/IAPProductCatalogProtocol.md`。
+Verify 使用原 Core recovery token，只读原 attempt 和指纹，不 Prepare、Submit 或查询后台；重载后原计划失效，不能恢复 Execute。原记录缺失/损坏、只有意图或结果未保存时保持 `partial`，不得推定远端没写入。正式意图/结果及 Operation 保留为证据。旧 Inspector 与 `iap.product_catalog.upload` Step 的精确409 Warning兼容不变，通用Batch未自动获得目录预冻结，Batch终态不证明目录应用。该分支不创建订单、不验单、不发货，也不改变原IAP业务任务的验收目标。参数、协议和调用边界见既有 `nova-project-onboard-sdk-kit` 的[按需目录引用](../../../../Agents/Skills/nova-project-onboard-sdk-kit/references/product-catalog-upload.md)及已解析 IAP 包 [按包定位：Nova/Doc/IAPProductCatalogProtocol.md](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)。
 
 ## 代码组织
 
@@ -219,7 +221,7 @@ MCP 必须使用含 `expectedActionId` 的 Execute 重载。Core 原子消费 Pl
 
 当前 Nova MCP 网关在同一个 `operation=plan` 内提供可选 `plan_mode=start/status/forget`；未提供时仍同步等待原 Plan。Agent 预先生成并保留 N 格式 GUID `request_id`，登记后下一次 Editor update 仍调用原 Provider/Core Plan，按同号查询完整脱敏响应。外层 `completed` 仅表示传输结果保存，须继续检查原响应是否 `ready`；`plan_candidate` 也只标示同域与期限候选，执行仍校验 Registry generation、输入与一次性消费。域重载、过期或请求冲突不会恢复或自动重跑。
 
-收件箱仅保存 SessionState 中的请求摘要和脱敏响应；它不是 PlanStore、OperationStore 或另一套领域执行器。一次活动计划、16 条记录、一小时 TTL 与每响应 2 MiB 上限均明确拒绝超限；过期墓碑需显式忘记，忘记不删除领域状态。完整字段、故障及清场协议以已安装 `com.solotopia.nova.framework.mcp/Nova/Docs/INDEX.md` 为准。此能力解决慢 Plan 断线后取回，不解除未知回调、字体或 Android/iOS 构建门。
+收件箱仅保存 SessionState 中的请求摘要和脱敏响应；它不是 PlanStore、OperationStore 或另一套领域执行器。一次活动计划、16 条记录、一小时 TTL 与每响应 2 MiB 上限均明确拒绝超限；过期墓碑需显式忘记，忘记不删除领域状态。完整字段、故障及清场协议以已安装 [按包定位：com.solotopia.nova.framework.mcp/Nova/Docs/INDEX.md](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 为准。此能力解决慢 Plan 断线后取回，不解除未知回调、字体或 Android/iOS 构建门。
 
 ## PlanStore
 
@@ -329,6 +331,8 @@ nova.project.player.build
 nova.project.android.resolve-dependencies
 nova.project.table.export
 nova.project.ui.export
+nova.project.ui.inspect-bindings
+nova.project.ui.configure-bindings
 nova.project.network.export
 nova.project.sound.export
 nova.project.vibration.export
@@ -398,6 +402,10 @@ WebGL Generate 在同一内部 Player partial adapter 中复用准确 callbacks�
 ### UI 单次导出
 
 `ui.export` 复用既有 UI Exporter。Request 指定 `scope=all|code|data`，可选 `sourcePath` 为精确单文件相对路径；单文件只支持 code/data，全量才支持 all。Plan 冻结已保存场景、UISettings、激活 Master Namespace、Excel/模板/_configs 与精确替换和删除集。Execute 单次导出；Verify 需对应本次编译证据与准确产物/删除状态，不能借旧编译、旧产物或手写生成代码判成功。具体范围以 live Schema 和 [UI Exporter](../EditorUtil.UI/EditorUtil.UI.Exporter.md) 为准。
+
+### 可选控件绑定与字段生成
+
+`ui.inspect-bindings` 只读当前普通 Prefab 的真实对象/UIView/字段；`ui.configure-bindings` 用 `mode=bind|generate` 分别绑定空字段或生成归属 partial，不默认扫描或接管旧页。Plan 冻结同一目标、完整对象状态、原始来源与精确写集；生成只写实际脚本同目录的单一字段文件及首次 meta，须本次编译/重载 Verify 后重新 Inspect，再新计划绑定。绑定只保存原 Prefab，不改层级/事件/旧引用。失败回执保留，Verify 不恢复或重放；当前恢复失败没有独立恢复 Action。完整输入、限制与证据见 [UIBindings](../EditorUtil.UIBindings.md)。
 
 ### 数据导出的来源与编译验收
 

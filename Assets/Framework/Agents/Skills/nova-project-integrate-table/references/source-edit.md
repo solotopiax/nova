@@ -1,12 +1,14 @@
 # 按行键编辑 Excel / CSV 表源
 
-适用于“把物品 1001 的价格改为 120”等已存在行的标量编辑。先从有效 TableSettings 的 ConfigPath 找 `luban.conf`，结合 `dataDir/schemaFiles` 和实际 `tables.xml` 的 `input` 确认源文件与 Sheet；从代码/数据输出描述取得生成目录。不能把生成 JSON/访问代码、包快照或其他 Demo 的同名表当源。
+适用于“把物品 1001 的价格改为 120”等已存在行的标量编辑。先从有效 TableSettings 的 ConfigPath 找 `luban.conf`，结合 `dataDir/schemaFiles` 和实际 [tables.xml（当前表源定位）](../../../../Docs/Runtime/Modules/Table/Definitions/TableSettings.md) 的 `input` 确认源文件与 Sheet；从代码/数据输出描述取得生成目录。不能把生成 JSON/访问代码、包快照或其他 Demo 的同名表当源。
 
-工具位于当前 Framework 解析根的 `Agents/Tools/nova_table_source.py`。用消费项目现有 Python 执行，不依赖开发仓绝对路径；xlsx 要可导入 `openpyxl`，缺依赖准确返回 blocked，未经授权不安装全局环境。CSV 使用 UTF-8/BOM；`.xls/.xlsm`、含宏/二进制扩展、行插入/删除、外部 Schema/行键/公式、数组/ref/enum等复杂类型不在本 CLI 范围；已有自描述 xlsx 的普通字段追加使用下文专用分支，保留对应模块的既有专门入口。
+工具位于当前 Framework 解析根的 [Agents/Tools/nova_table_source.py](../../../Tools/nova_table_source.py)。用消费项目现有 Python 执行，不依赖开发仓绝对路径；xlsx 要可导入 `openpyxl`，缺依赖准确返回 blocked，未经授权不安装全局环境。CSV 使用 UTF-8/BOM；`.xls/.xlsm`、含宏/二进制扩展、行插入/删除、外部 Schema/行键/公式、数组/ref/enum等复杂类型不在本 CLI 范围；已有自描述 xlsx 的普通字段追加使用下文专用分支，保留对应模块的既有专门入口。
 
 ## 固定执行
 
-先运行 `python3 -B <frameworkRoot>/Agents/Tools/nova_table_source.py --project-root <projectRoot> inspect --source <relativeSource>`，取得实际 Sheet、唯一表头、字段/`##type`、行数与 `sourceHash`。随后指定 `--sheet/--row-key/--key-json/--column` 定向读取安全字段原值；普通 Excel / CSV 没有 `##type` 时还要明确 `--row-key-type/--type`，不推断数字文本应是 int 还是 string。类型仅支持 `int/long/float/double/bool/string`，请求原值和新值须为相应 JSON 类型。
+先按 [框架位置与文档入口](../../../../Docs/START_HERE.md#先确定框架位置与文档入口) 定位物理根，并将真实路径赋给当前终端变量 `FRAMEWORK_ROOT`。
+
+先运行 `python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_table_source.py" --project-root <projectRoot> inspect --source <relativeSource>`，取得实际 Sheet、唯一表头、字段/`##type`、行数与 `sourceHash`。随后指定 `--sheet/--row-key/--key-json/--column` 定向读取安全字段原值；普通 Excel / CSV 没有 `##type` 时还要明确 `--row-key-type/--type`，不推断数字文本应是 int 还是 string。类型仅支持 `int/long/float/double/bool/string`，请求原值和新值须为相应 JSON 类型。
 
 从项目实际声明确认 rowKey，不能把 `ID/Id` 大小写、第一列或行号当约定。多字段编辑仍按每项唯一 key 定位。`inspect` 只读，目录锁和 Plan 文件属于后续执行状态。
 
@@ -42,7 +44,7 @@ Execute 先保存 `completed=false` Receipt，再持久消费 Plan，然后替�
 
 xlsx 写入仅替换目标 Sheet 的 cell XML，保留其样式属性和所有其他 ZIP 成员，不通过整书 save 重建；其他单元格的公式、样式与资源不变。xlsx 字符串按文本保存，64 位整数超过精确浮点表示范围时按数值文本保存以免失真。CSV 仅替换目标字段文本，保留 BOM、其他字段、引号、空行与换行；新增 string 若去除前导空白后以 `= / + / @ / -` 开头，因可能被表格软件解释为公式而拒绝，数值型负数按其明确类型写入。含宏工作簿明确拒绝，不能称为支持宏编辑。
 
-请求、计划、Receipt 与写锁仅放项目本地 `Library/Nova/AgentActions/TableSource/`，属于不入 Git 的操作缓存；`.agents/` 保留可版本管理的 Agent 配置。固定状态根以外的 `Library/` JSON 不作为状态输入，`Library/` 内任何文件仍不能作为普通表源。计划/Receipt 包含已冻结的非敏感数据；凭据/身份字段不能用本工具读写，秘密不进入请求、计划或报告。执行摘要只报告地址、类型与 hash。CLI 退出码 success=0、blocked=2、partial=3；必须读 `status`。
+请求、计划、Receipt 与写锁仅放项目本地 [Library/Nova/AgentActions/TableSource/（项目本地位置）](../../../../Docs/START_HERE.md#执行任务与清场的共同约束)，属于不入 Git 的操作缓存；[.agents/（项目发现入口）](../../../../Docs/START_HERE.md#先确定框架位置与文档入口) 保留可版本管理的 Agent 配置。固定状态根以外的 [Library/（项目本地位置）](../../../../Docs/START_HERE.md#执行任务与清场的共同约束) JSON 不作为状态输入，[Library/（项目本地位置）](../../../../Docs/START_HERE.md#执行任务与清场的共同约束) 内任何文件仍不能作为普通表源。计划/Receipt 包含已冻结的非敏感数据；凭据/身份字段不能用本工具读写，秘密不进入请求、计划或报告。执行摘要只报告地址、类型与 hash。CLI 退出码 success=0、blocked=2、partial=3；必须读 `status`。
 
 ## 追加已有自描述表的普通字段
 
@@ -51,7 +53,7 @@ xlsx 写入仅替换目标 Sheet 的 cell XML，保留其样式属性和所有�
 只读接口：
 
 ```text
-python3 -B <frameworkRoot>/Agents/Tools/nova_table_source.py --project-root <projectRoot> inspect --source <relative.xlsx> --layout table-fields --schema <relative.xml> --table <exact table name> --sheet <exact Sheet> --row-key <existing field> --row-key-type int
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_table_source.py" --project-root <projectRoot> inspect --source <relative.xlsx> --layout table-fields --schema <relative.xml> --table <exact table name> --sheet <exact Sheet> --row-key <existing field> --row-key-type int
 ```
 
 `row-key-type` 可为 `int/long/string`，须与实际 `##type` 一致。Schema 必须唯一声明 `readSchemaFromFile="true"` 和精确 `Sheet@xlsx`，文件相对于 Schema 所在目录解析；其他 `inputFiles`、外部字段 Schema 或复杂映射明确 blocked。inspect 返回 `sourceHash/schemaHash`、原字段及其类型/列/注释、元数据行和全部有效行键，不读取其他数据值。

@@ -2,7 +2,7 @@
 
 框架基础层，不依赖任何 Component，可在任意层级使用。
 
-编译边界以 `Scripts/Runtime/NovaFramework.Runtime.asmdef` 当前 name、references、平台、define 与引擎/unsafe 开关为准；目录和 namespace 不等于程序集身份，生成 DLL 与实际加载阶段还应分别核对。依赖与最低 Unity 版本以 Framework 的 `package.json` 以及消费项目 Resolve 后的有效包为准，不从函数说明复制一份版本表。Nova MCP 包的 `package.json` 另声明自身依赖与 `nova.requiredFrameworkApiVersion`；安装版本不等于已连接 Provider 或已暴露 Action。精确 GUID、调用位置和清单字段在命中任务时读取真实输入，本文不提供自动消费者反查或静态配置即运行成功的承诺。
+编译边界以 [Scripts/Runtime/NovaFramework.Runtime.asmdef](../../../Scripts/Runtime/NovaFramework.Runtime.asmdef) 当前 name、references、平台、define 与引擎/unsafe 开关为准；目录和 namespace 不等于程序集身份，生成 DLL 与实际加载阶段还应分别核对。依赖与最低 Unity 版本以 Framework 的 `package.json` 以及消费项目 Resolve 后的有效包为准，不从函数说明复制一份版本表。Nova MCP 包的 `package.json` 另声明自身依赖与 `nova.requiredFrameworkApiVersion`；安装版本不等于已连接 Provider 或已暴露 Action。精确 GUID、调用位置和清单字段在命中任务时读取真实输入，本文不提供自动消费者反查或静态配置即运行成功的承诺。
 
 ## 子目录
 
@@ -21,7 +21,7 @@
 
 ## HTTP 候选规划与执行游标
 
-`Core/HttpFallback` 是 App、Asset、Network 共用的内部纯规划层。它不发送请求、不裁决业务成功、不 Abort UWR，也不持久化偏好；各模块持有独立游标并负责实际网络与资源生命周期。`HttpFallbackCandidate` 保存完整 URL、规范端点、原配置角色和原索引；`HttpFallbackStep` 保存候选及从零开始的重试周期、轮次、候选位置、候选总数和物理发送序号，`AdditionalRetriesUsed` 等于周期索引。值构造器仅赋值，不验证 URL、负坐标或跨字段一致性；读取这些值不证明已经发送或成功。
+[Core/HttpFallback](../../../Scripts/Runtime/Core/HttpFallback/) 是 App、Asset、Network 共用的内部纯规划层。它不发送请求、不裁决业务成功、不 Abort UWR，也不持久化偏好；各模块持有独立游标并负责实际网络与资源生命周期。`HttpFallbackCandidate` 保存完整 URL、规范端点、原配置角色和原索引；`HttpFallbackStep` 保存候选及从零开始的重试周期、轮次、候选位置、候选总数和物理发送序号，`AdditionalRetriesUsed` 等于周期索引。值构造器仅赋值，不验证 URL、负坐标或跨字段一致性；读取这些值不证明已经发送或成功。
 
 `HttpFallbackPlanner.Build` 跳过空白 URL，按完整字符串 Ordinal 去重，所以 path/query 的大小写不同仍是不同候选。角色由去重前索引决定：0 为 Primary、1 为 Fallback，其余为 Other；偏好只把已存在的匹配端点移首，不修改原角色。`GetEndpointId` 仅接受绝对 HTTP(S) URL，去除 path/query/fragment 与默认端口，非法输入返回 `null`；Build 不因此拒绝其非空 URL，也不证明地址可达。空/null 列表形成零候选计划，空偏好不调整顺序。
 
@@ -33,4 +33,4 @@
 
 ## 可选核心扩展
 
-内存数值防护由独立包 `com.solotopia.nova.framework.memory.protection` 提供，主 Framework 不包含其代码或强制依赖。请从 [MemoryProtection 包文档](../../../../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/INDEX.md) 安装和接入；业务 asmdef 需显式引用 `NovaFramework.MemoryProtection.Runtime`。
+内存数值防护由独立包 `com.solotopia.nova.framework.memory.protection` 提供，主 Framework 不包含其代码或强制依赖。请从 MemoryProtection 包文档（包 `com.solotopia.nova.framework.memory.protection`，包内 [按包定位：Nova/Docs/INDEX.md](../Modules/SDK/INDEX.md#sdk--kit-包文档发现)） 安装和接入；业务 asmdef 需显式引用 `NovaFramework.MemoryProtection.Runtime`。

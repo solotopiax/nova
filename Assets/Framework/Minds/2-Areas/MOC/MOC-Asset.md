@@ -67,7 +67,7 @@ related:
 - 包名/keyId 决定解密密钥；当前编号只用于构建。保留仍被首包、缓存和热更资源使用的旧密钥，源码在 ConfigRuntime 资源加载前可用，避免循环依赖。
 - Offset/XOR 是混淆，AES 带完整性认证；客户端自带密钥可被逆向提取，内存与流式不是强弱等级。
 
-当前格式、平台限制与操作入口见 `Assets/Framework/Docs/Runtime/Modules/Asset/ResourceEncryption.md`；来源与发布约束见 [[ADR-090-resource-keys-before-config-loading|ADR-090]]。
+当前格式、平台限制与操作入口见 [Docs/Runtime/Modules/Asset/ResourceEncryption.md](../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md)；来源与发布约束见 [[ADR-090-resource-keys-before-config-loading|ADR-090]]。
 
 ## 常见误区
 
@@ -82,8 +82,8 @@ related:
 ## 推荐阅读顺序
 
 1. [GLO-07](../Glossary/GLO-07-asset-location.md)
-2. `Assets/Framework/Docs/Runtime/Modules/Asset/AssetComponent.md`
-3. `Assets/Framework/Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md`
+2. [Docs/Runtime/Modules/Asset/AssetComponent.md](../../../Docs/Runtime/Modules/Asset/AssetComponent.md)
+3. [Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md)
 4. 如需追溯历史决策，再看相关 `ADR`
 
 ## 关联

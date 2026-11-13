@@ -1,7 +1,7 @@
 # Nova Framework - MemoryProtection
 
 > 包名：`com.solotopia.nova.framework.memory.protection`
-> 当前版本：`0.1.3`
+> 当前版本：`0.1.4`
 > Unity：`6000.4.x`（最低 `6000.4.2f1`）
 
 Nova 独立核心扩展包，提供 `ProtectedInt` / `ProtectedLong`、异常隔离、密钥轮换和脱敏埋点。主 Framework 不强制依赖本包；安装本包后无需增加 SDK、Component 或场景节点。
@@ -10,13 +10,13 @@ Nova 独立核心扩展包，提供 `ProtectedInt` / `ProtectedLong`、异常隔
 
 先安装 **Nova Framework - MemoryProtection**（`com.solotopia.nova.framework.memory.protection`）。NovaSpark 会默认安装本包；已有项目可打开 **Nova → Open PlugPals**，找到本包并安装。实际内存防篡改还需要兼容的 Anti-Cheat Toolkit，NovaSpark 不会自动安装该内网商业插件；安装方式见下文。
 
-本包依赖 Framework `0.7.3` 及 Newtonsoft `3.2.2`。已发布的旧版 Framework `0.6.39` 不包含本包所需的通用隐私接口，不能作为消费端配对版本。
+本包依赖 Framework `0.7.9` 及 Newtonsoft `3.2.2`。随包示例使用新版启动配置等待能力，安装本包时也需要升级 Framework；已发布的旧版 Framework `0.6.39` 不包含本包所需的通用隐私接口，不能作为消费端配对版本。
 
-本包以 `nova.requiredFrameworkApiVersion = 0.7.0` 声明新接口的发布基线，本轮须与 Framework `0.7.3` 配对发布，或确认目标仓库已有该依赖版本；发布器会在打包写入前阻断错误配对。
+本包运行时通用隐私接口的基线仍为 `nova.requiredFrameworkApiVersion = 0.7.0`；包含新版示例后的清单依赖下界为 Framework `0.7.9`。本轮须与该版本配对发布，或确认目标仓库已有声明版本；发布器会在打包写入前阻断错误配对。
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.memory.protection": "0.1.3"
+  "com.solotopia.nova.framework.memory.protection": "0.1.4"
 }
 ```
 
@@ -34,7 +34,7 @@ Nova 独立核心扩展包，提供 `ProtectedInt` / `ProtectedLong`、异常隔
 
 包内 Editor 通过主框架通用隐私面板扩展提供检测、换钥开关，默认均开启。设置保存在 `PrivacyConfigs.ExtensionConfigsJson` 的本包键内，沿用原三维配置导出链；旧配置已有的 `false` 自动迁移并保持关闭。
 
-Package Manager 可导入本包 `MemoryProtectionDemo` Sample；主仓开发入口为 `Assets/Samples/MemoryProtectionDemo/MemoryProtectionDemo.unity`。MainDemo 已移除原 Core 1.10 演示。埋点表位于 `Nova/Tracks/Tracks.xlsx`，由主框架 TrackRegistry 自动汇总。
+Package Manager 可导入本包 `MemoryProtectionDemo` Sample，入口为实际导入目录内的同名场景；源码开发态来源见本包 [示例清单](nova-samples.json)。MainDemo 已移除原 Core 1.10 演示。埋点表位于 [Nova/Tracks/Tracks.xlsx](Nova/Tracks/Tracks.xlsx)，由主框架 TrackRegistry 自动汇总。
 
 ## 维护与协议
 

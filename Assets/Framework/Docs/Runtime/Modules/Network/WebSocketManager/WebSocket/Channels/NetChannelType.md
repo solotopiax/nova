@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.NetChannelType.cs` | 通道类型枚举定义 |
+| [WebSocketScope.NetChannelType.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.NetChannelType.cs) | 通道类型枚举定义 |
 
 ## 枚举值
 

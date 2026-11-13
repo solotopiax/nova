@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-development",
+  "kind": "router",
+  "compatibility": {
+    "framework": ">=0.7.8"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "current project rules and effective Packages/manifest.json or PackageInfo.resolvedPath + resolved Framework/package.json + Docs/START_HERE.md + selected module Docs and Skill references/contract.json",
+      "when": "需要比较玩法方案、梳理复杂需求变化或阶段依赖时，只读核实项目、目标、已有能力与相关合同；不承担日常原则的唯一入口，不创建项目记忆、计划、资产或配置"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory --kind features --query <goal> --detail summary --json",
+      "when": "macOS/Linux 需要按当前能力导航寻找相关功能族和已有任务入口时；查询只读项目业务，派生缓存按工具自身合同管理"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_capabilities.py\" --root <projectRoot> inventory --kind features --query <goal> --detail summary --json",
+      "when": "Windows 需要按当前随包工具寻找相关能力时；不将方法选路当作执行授权或运行验收"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true,
+      "constraint": "当前 Nova 消费项目根；从实际工程与已解析包确定，不猜开发仓路径"
+    },
+    {
+      "name": "developmentGoal",
+      "required": true,
+      "constraint": "本轮需要集中梳理的玩法选择、复杂变化或阶段依赖及用户结果；明确单点任务直接交原 Operation。区分只读安排与实际实施，不能将后者缩为路由报告"
+    },
+    {
+      "name": "constraintsAndAcceptance",
+      "required": false,
+      "constraint": "复用本轮已有规则、目标平台、范围、现有实现与验收要求；可读取事实自行查明，关键业务选择缺失时只阻断依赖部分"
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "any project source, asset, generated output, project memory or persistent plan write within this routing contract",
+      "Framework package snapshot, managed skill projection or third-party source edits",
+      "Unity mutation, package installation, build, external request or Git operation under the authority of routing alone"
+    ]
+  },
+  "locks": [],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [
+      "a missing business decision that materially changes the goal, acceptance or permitted side effects"
+    ],
+    "rule": "只读选路无需额外确认。已有同范围授权持续有效；选路后切换到所选 Skill 或项目既有源码编辑合同继续实施，每项动作单独满足其参数来源、写集、确认、锁、幂等、恢复和证据要求。本 Router 的 requires=[] 不建立或继承任何动态 Operation DAG，也不扩大用户授权。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "当前消费工程、已解析 Framework 身份及需要集中梳理的问题，明确只读安排或实际实施范围",
+    "关键未知或方案取舍、最小实验或阶段依赖、下一步及当前可复用入口；日常原则已从共同入口读取，不以选中本 Skill 为前提",
+    "所选任务的合同、实际 Adapter 与本轮最低验收要求；本 Router 不证明工具已连接或功能已运行",
+    "用户要求实施时继续原授权任务，最终按完整用户目标报告实际达到的证据、未完成条件和清场；静态选路成功不代替任何所选任务的完成证据"
+  ]
+}

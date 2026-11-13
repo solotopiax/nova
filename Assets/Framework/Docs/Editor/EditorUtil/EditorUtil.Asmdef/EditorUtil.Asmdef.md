@@ -12,7 +12,7 @@ Assembly Definition 命名空间解析工具，从指定路径向上逐级查找
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil/EditorUtil.Asmdef/EditorUtil.Asmdef.cs` | `EditorUtil.Asmdef` | 命名空间解析工具完整实现 |
+| [EditorUtil/EditorUtil.Asmdef/EditorUtil.Asmdef.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Asmdef/EditorUtil.Asmdef.cs) | `EditorUtil.Asmdef` | 命名空间解析工具完整实现 |
 
 ---
 

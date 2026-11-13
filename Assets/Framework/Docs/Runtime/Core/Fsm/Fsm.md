@@ -12,10 +12,10 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Core/Fsm/IFsm.cs` | `interface IFsm<T>` | FSM 公开接口：Owner / CurrentState / Start / HasState / GetState / ChangeState / 黑板 API |
-| `Core/Fsm/Fsm.cs` | `sealed Fsm<T>` | FSM 内部实现：状态字典 / 黑板 / 切换逻辑 / 静态 Create / Update / Shutdown / AddStates |
-| `Core/Fsm/Fsm.Visitors.cs` | `sealed Fsm<T>` | 字段与属性（含 m_IsChangingState 重入保护） |
-| `Core/Fsm/Fsm.Methods.cs` | `sealed Fsm<T>` | 私有方法（AddStateInternal / ChangeStateInternal） |
+| [Core/Fsm/IFsm.cs](../../../../Scripts/Runtime/Core/Fsm/IFsm.cs) | `interface IFsm<T>` | FSM 公开接口：Owner / CurrentState / Start / HasState / GetState / ChangeState / 黑板 API |
+| [Core/Fsm/Fsm.cs](../../../../Scripts/Runtime/Core/Fsm/Fsm.cs) | `sealed Fsm<T>` | FSM 内部实现：状态字典 / 黑板 / 切换逻辑 / 静态 Create / Update / Shutdown / AddStates |
+| [Core/Fsm/Fsm.Visitors.cs](../../../../Scripts/Runtime/Core/Fsm/Fsm.Visitors.cs) | `sealed Fsm<T>` | 字段与属性（含 m_IsChangingState 重入保护） |
+| [Core/Fsm/Fsm.Methods.cs](../../../../Scripts/Runtime/Core/Fsm/Fsm.Methods.cs) | `sealed Fsm<T>` | 私有方法（AddStateInternal / ChangeStateInternal） |
 
 ---
 

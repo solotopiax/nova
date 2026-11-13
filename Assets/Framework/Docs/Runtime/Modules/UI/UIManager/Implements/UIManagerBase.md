@@ -1,5 +1,7 @@
 # UIManagerBase
 
+可等待打开通过 [IUIOpenAwaiter](../Interfaces/IUIOpenAwaiter.md) 的新增可选 virtual 方法提供；默认抛 `NotSupportedException`，不要求旧派生实现新增 abstract 成员。旧返回序号入口保持原签名。
+
 **类签名**：`internal abstract class UIManagerBase : FrameworkManager, IUIManager`
 **命名空间**：`NovaFramework.Runtime`
 
@@ -11,7 +13,7 @@ UI 管理器抽象基类，继承 FrameworkManager 并实现 IUIManager 全部�
 
 | 文件 | 说明 |
 |------|------|
-| `UIManagerBase.cs` | 抽象基类，位于 `Managers/UIManager/Implements/` |
+| [UIManagerBase.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/UIManagerBase.cs) | 抽象基类，位于 [Managers/UIManager/Implements/](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Implements/) |
 
 ## 关键字段/属性
 

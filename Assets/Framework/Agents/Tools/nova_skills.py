@@ -86,6 +86,10 @@ COMMON_BASELINE_SENTENCE = (
     "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，"
     "作为所有 `nova-project-*` Skill 的共同底线。"
 )
+# 同包相对链接与旧版文字引用指向同一入口；准确匹配目标，不能放过错误链接。
+COMMON_BASELINE_LINK_SENTENCE = COMMON_BASELINE_SENTENCE.replace(
+    "`Docs/START_HERE.md`", "[Docs/START_HERE.md](../../../Docs/START_HERE.md)"
+)
 PROGRESSIVE_DISCLOSURE_HEADING = "## 渐进式披露"
 SHA256_HEX_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 RECONCILE_ACTIONS = {"add", "update", "remove"}
@@ -219,7 +223,10 @@ def _validate_skill_progressive_disclosure(skill_id: str, skill_path: Path) -> l
     if body is None:
         return [f"{skill_id} 的 SKILL.md 缺少可解析的 frontmatter"]
     first_paragraph = _first_body_paragraph(body)
-    if first_paragraph is None or COMMON_BASELINE_SENTENCE not in first_paragraph:
+    if first_paragraph is None or not any(
+        sentence in first_paragraph
+        for sentence in (COMMON_BASELINE_SENTENCE, COMMON_BASELINE_LINK_SENTENCE)
+    ):
         errors.append(f"{skill_id} 的共同底线必须位于 frontmatter 后首个正文段落")
     if PROGRESSIVE_DISCLOSURE_HEADING not in body or "仅在" not in body:
         errors.append(f"{skill_id} 的 SKILL.md 必须声明渐进式披露的按需读取路由")
@@ -1141,7 +1148,7 @@ def execution_coverage_report(
         if reference_path is None or not reference_path.is_file():
             task_errors.append("任务 reference 不可达")
         if isinstance(reference, str) and (reference.startswith((".nova/", ".agents/")) or "/Minds/" in reference):
-            task_errors.append("消费任务 reference 不得依赖主仓开发规则、投影或 Minds")
+            task_errors.append("消费任务 reference 须指向当前执行入口，不得用开发仓规则、投影或 Minds 历史条目替代")
         functions = task.get("functions")
         if not isinstance(functions, list) or not functions or any(not isinstance(x, str) or re.fullmatch(r"[^#]+#.+", x) is None for x in functions):
             task_errors.append("任务 functions 需非空精确函数 ID 数组")

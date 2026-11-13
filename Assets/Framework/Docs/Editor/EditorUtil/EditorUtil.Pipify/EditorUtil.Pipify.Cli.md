@@ -13,7 +13,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/EditorUtil.Pipify.Cli.cs` | `EditorUtil.Pipify.Cli` | 完整实现 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Cli.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Cli.cs) | `EditorUtil.Pipify.Cli` | 完整实现 |
 
 ## §5 公开 API
 
@@ -38,7 +38,7 @@
 - `-configMasterGuid` 与 `-pipifySettingsGuid` 必须成对提供；显式工作区一次原子写入 Globals
 - 未提供显式 GUID 时必须已有有效 Globals 工作区；缺失或漂移直接失败，不允许 `FindAssets()[0]` 降级
 - `Log` 级别：Error（不可恢复）/ Debug（正常流程）；禁 Log.Info
-- `c_LogPrefix` 复用 `EditorUtil.Pipify.Visitors.cs` 中的同名常量
+- `c_LogPrefix` 复用 [EditorUtil.Pipify.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Visitors.cs) 中的同名常量
 
 ## §11 使用示例
 

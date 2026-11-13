@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Runtime/Core/Definitions/ChannelType.cs` | `ChannelType` | 枚举定义 |
+| [Runtime/Core/Definitions/ChannelType.cs](../../../../Scripts/Runtime/Core/Definitions/ChannelType.cs) | `ChannelType` | 枚举定义 |
 
 ---
 

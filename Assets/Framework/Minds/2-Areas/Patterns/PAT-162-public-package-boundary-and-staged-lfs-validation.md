@@ -1,7 +1,7 @@
 ---
 id: PAT-162
 title: 公开快照按包边界分类，并按暂存态验收 Git LFS
-summary: 公开包边界与暂存态 LFS 验收
+summary: 公开物料边界、整库知识与暂存态LFS验收
 category: workflow
 type: pattern
 status: active
@@ -13,6 +13,8 @@ keywords:
   - PAT-162
   - PUBLIC_EXCLUDE
   - 公开同步
+  - Minds
+  - 整库分发
   - Git LFS
   - LFS pointer
   - 暂存态
@@ -64,6 +66,15 @@ related:
 - 只有普通 push 完成后，远端目标分支和 release tag 都指向预期 commit，且 `git lfs status` 对目标远端无待推对象，才算公开同步完成。
 - LFS pointer 仅表示 Git history 中不含大二进制；它不替代远端 LFS 对象上传和可下载性的验证。
 
+### 4. 整库知识公开时区分内容与本机状态
+
+- Minds 的公开范围是全部知识，不按主题、状态或扩展名筛选。索引、工作指引、现行与退役条目、资源、历史归档、画布、视图及配套 metadata 一起保留；归档状态只影响阅读判断，不决定是否分发。
+- `.obsidian/` 工作区与插件配置、系统 `.DS_Store` 缓存属于本机程序状态，不作为知识发布。真实敏感值只在公开副本脱敏，不以删掉整篇知识代替处理，也不回写主仓源文件。
+- 对照实际源文件集合验证 UPM 与公开快照的完整性，不能只抽查一篇 ADR 或只统计 Markdown。复制后逐项核对，脱敏后仍核对完整集合，最终包与脱敏副本核对内容；通用排除器、npm 规则和签名打包都不能各自漏项。
+- 消费端只读当前已解析包的知识，从索引按需展开；当前行为以核实后的源码与 Docs 为准。历史开发仓路径、旧命令和内部仓引用不成为消费端执行前置，不能用历史笔记替代当前任务合同或运行验收。
+
+当前消费入口见 [Docs/START_HERE.md](../../../Docs/START_HERE.md#设计依据与历史知识)，知识目录边界见 [[0-Index-FolderGuide|文件夹指南]]。本地完整性验证只证明候选副本与包的内容，不证明远端已发布或消费工程已升级。
+
 ## 原因
 
 - 将适配层与原厂包一并排除会破坏公开安装入口；反过来，把原厂包当作“当前未出现所以安全”会在未来引入时造成泄漏。
@@ -72,9 +83,9 @@ related:
 
 ## 当前待对齐项
 
-- `UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/AGENTS.md` 仍保留“本包含商业 SDK 依赖，不进入公开仓同步”的旧表述，与当前获准的适配层公开边界不一致。
-- `.agents/skills/_shared/public_exclude.py` 尚未显式排除 `UPMPackages/com.starlus.sdk.datamaster/`；该目录当前不存在并不构成未来公开同步的安全保证。
-- `sync_public.py` 与 `sync_public_repo.py` 都在 `git add -A` 前以 `git lfs ls-files --name-only` 豁免大文件，尚未落实本条的暂存态 pointer 验收。
+- [UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/AGENTS.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/AGENTS.md) 仍保留“本包含商业 SDK 依赖，不进入公开仓同步”的旧表述，与当前获准的适配层公开边界不一致。
+- [.agents/skills/_shared/public_exclude.py](../../../../../.agents/skills/_shared/public_exclude.py) 尚未显式排除 `UPMPackages/com.starlus.sdk.datamaster/`；该目录当前不存在并不构成未来公开同步的安全保证。
+- [sync_public.py](../../../../../.agents/skills/nova-github/scripts/sync_public.py) 与 [sync_public_repo.py](../../../../../.agents/skills/nova-publish/scripts/sync_public_repo.py) 都在 `git add -A` 前以 `git lfs ls-files --name-only` 豁免大文件，尚未落实本条的暂存态 pointer 验收。
 
 这些项是后续规则/脚本修复范围；本条记录不替代对相关文件的单独修改授权。
 
@@ -89,7 +100,7 @@ related:
 ## 验证依据
 
 - 公开边界：`com.solotopia.nova.framework.sdk.datamaster.abtest` 的 `package.json` 明确其为 Nova DataMaster 对接层，并把 `com.starlus.sdk.datamaster` 声明为商业依赖；`upm-release-2026.08.13-01` 公开 tag 包含该适配层，不含原厂包。
-- 排除机制：`.agents/skills/_shared/public_exclude.py` 目前不包含原厂 DataMaster 包前缀；`sync_public.py` 使用候选清单与该共享排除器重建公开快照。
+- 排除机制：[.agents/skills/_shared/public_exclude.py](../../../../../.agents/skills/_shared/public_exclude.py) 目前不包含原厂 DataMaster 包前缀；[sync_public.py](../../../../../.agents/skills/nova-github/scripts/sync_public.py) 使用候选清单与该共享排除器重建公开快照。
 - LFS 行为：公开 tag 中 Firebase `FirebaseCppApp-13_14_0.bundle` 的工作树文件为 111,527,216 字节，而 Git blob 仅 134 字节，并受 `.gitattributes` 的 `filter=lfs` 约束。
 - 脚本顺序：两个公开同步入口都在大文件检查之后才执行 `git add -A`，因此不能用当前 HEAD 的 LFS 列表替代暂存态检查。
 - 发布闭环：本轮公开 `main` 与 `upm-release-2026.08.13-01` 均指向 `d7065fcf`，`git lfs status` 无待推对象。

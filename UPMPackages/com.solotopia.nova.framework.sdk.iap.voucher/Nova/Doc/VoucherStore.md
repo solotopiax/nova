@@ -3,7 +3,7 @@
 Voucher 使用服务端礼券和赠币钱包抵扣商品价格。它不拉起现金支付页，也不支持余额不足时自动切换其他 Store 或现金补差。
 
 
-支付打点统一包含 `nova_platform`、`nova_channel`、`nova_store_type`：前两项来自商店初始化时的 `PlatformType` / `ChannelType` 枚举名称，商店类型固定为 `Voucher`；三项名称按实例缓存，发送时只复制缓存，重新初始化时刷新。不再把商店类型写入 `nova_channel`。大小写、缺失配置和路由失败边界见 [父包三维属性](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md#支付打点三维属性)。
+支付打点统一包含 `nova_platform`、`nova_channel`、`nova_store_type`：前两项来自商店初始化时的 `PlatformType` / `ChannelType` 枚举名称，商店类型固定为 `Voucher`；三项名称按实例缓存，发送时只复制缓存，重新初始化时刷新。不再把商店类型写入 `nova_channel`。大小写、缺失配置和路由失败边界见 [父包三维属性](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/IAP-Architecture.md#支付打点三维属性`）。
 ## 接入与验收顺序
 
 1. 按 [包安装说明](../../README.md#安装) 安装 Voucher 及声明依赖，在 `IAPPluginConfig.StoreConfigs` 添加并启用 `VoucherStoreConfig`，在 `Products` 登记允许支付的 `TableId`。Voucher 请求不使用 `MobileProductID` 或 `ThirdProductID`；礼券档位、券码和赠币余额由服务端钱包提供。
@@ -102,7 +102,7 @@ journal 先修改内存再调用保存，保存异常没有回滚；首次添加
 
 ## 5. 服务端契约
 
-协议源为 `Nova/Protos/pb_net_gift_voucher.proto`，生成代码为 `Nova/Scripts/Runtime/Protos/PbNetGiftVoucher.cs`。下列路径是包内协议约定，实际发送地址仍由当前项目 NetCmd 的 Host/Path 决定。
+协议源为 [Nova/Protos/pb_net_gift_voucher.proto](../Protos/pb_net_gift_voucher.proto)，生成代码为 [Nova/Scripts/Runtime/Protos/PbNetGiftVoucher.cs](../Scripts/Runtime/Protos/PbNetGiftVoucher.cs)。下列路径是包内协议约定，实际发送地址仍由当前项目 NetCmd 的 Host/Path 决定。
 
 | 配置入口 | 协议约定路径 | 请求/响应作用 |
 |---|---|---|

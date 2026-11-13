@@ -20,6 +20,9 @@ namespace NovaFramework.Runtime
         /// </summary>
         private sealed class UIViewInstanceObject : ObjectBase
         {
+            private IPrefabManager m_PrefabOwner;
+
+            /// <summary>建立由引用池管理的视图包装。</summary>
             public UIViewInstanceObject()
             {
             }
@@ -30,7 +33,8 @@ namespace NovaFramework.Runtime
             /// <param name="name">实例名称（用于对象池检索）。</param>
             /// <param name="uiViewTarget">视图目标对象。</param>
             /// <returns>视图实例对象。</returns>
-            public static UIViewInstanceObject Create(string name, object uiViewTarget)
+            /// <param name="prefabOwner">新完成入口捕获的实例拥有者；旧入口留空并沿用原查找路径。</param>
+            public static UIViewInstanceObject Create(string name, object uiViewTarget, IPrefabManager prefabOwner = null)
             {
                 if (uiViewTarget == null)
                 {
@@ -39,20 +43,32 @@ namespace NovaFramework.Runtime
 
                 UIViewInstanceObject obj = ReferencePool.Get<UIViewInstanceObject>();
                 obj.Initialize(name, uiViewTarget);
+                obj.m_PrefabOwner = prefabOwner;
                 return obj;
             }
 
+            /// <summary>归池时断开捕获的拥有者引用。</summary>
             public override void Clear()
             {
+                m_PrefabOwner = null;
                 base.Clear();
             }
 
+            /// <summary>仅在新等待入口接管池命中时补记原实例接口；不改变旧入口的默认查找行为。</summary>
+            /// <param name="owner">本次明确的实例拥有者。</param>
+            public void CapturePrefabOwner(IPrefabManager owner)
+            {
+                m_PrefabOwner ??= owner;
+            }
+
+            /// <summary>经对应实例拥有者销毁目标；旧包装仍沿用全局接口查询。</summary>
+            /// <param name="isShutdown">对象池是否正在关闭。</param>
             protected internal override void Release(bool isShutdown)
             {
                 GameObject go = Target as GameObject;
                 if (go != null)
                 {
-                    FrameworkManagersGroup.GetManager<IPrefabManager>().Destroy(go);
+                    (m_PrefabOwner ?? FrameworkManagersGroup.GetManager<IPrefabManager>()).Destroy(go);
                 }
             }
         }

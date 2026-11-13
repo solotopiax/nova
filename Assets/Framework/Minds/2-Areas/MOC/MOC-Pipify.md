@@ -50,9 +50,9 @@ PipifyWindow / CLI
 | 主线 | 入口 | 作用 |
 |---|---|---|
 | 导出 | `PipifySteps.Export.*` | 把表格/配置源转换成运行时产物 |
-| HybridCLR | `PipifySteps.HybridCLR.cs` | 生成并拷贝 AOT metadata / 业务 DLL 资产 |
-| Bundle | `PipifySteps.BundleBuilder.cs` | 触发 YooAsset 资源构建 |
-| 构建期补充 | `PipifySteps.Build.cs` / `BuildProcessor/` | App Build 与构建期规则注入 |
+| HybridCLR | [PipifySteps.HybridCLR.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs) | 生成并拷贝 AOT metadata / 业务 DLL 资产 |
+| Bundle | [PipifySteps.BundleBuilder.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs) | 触发 YooAsset 资源构建 |
+| 构建期补充 | [PipifySteps.Build.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Build.cs) / `BuildProcessor/` | App Build 与构建期规则注入 |
 
 ## 边界
 
@@ -87,7 +87,7 @@ PipifyWindow / CLI
 - 改批锁 / 刷新相关假设：[[ADR-027-rule-ban-editor-refcount-batch-apis]]、[[PAT-49-pipify-step-no-batch-lock-assumption]]
 - 改 HybridCLR 构建顺序：[[ADR-028-hybridclr-copy-aot-after-buildplayer]]
 - 改失败策略：[[PAT-58-pipeline-fail-fast-no-silent-skip]]
-- Google Play 上传与远端结果验收：[[PAT-169-google-play-upload-artifact-and-remote-stage-boundary|PAT-169]]；当前参数与默认值见 `Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`
+- Google Play 上传与远端结果验收：[[PAT-169-google-play-upload-artifact-and-remote-stage-boundary|PAT-169]]；当前参数与默认值见 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)
 
 ## 关联
 

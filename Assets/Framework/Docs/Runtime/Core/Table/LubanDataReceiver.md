@@ -9,7 +9,7 @@
 
 | 文件 | 作用 |
 |---|---|
-| `LubanDataReceiver.cs` | Luban JSON 拆分、合并、冲突校验实现 |
+| [LubanDataReceiver.cs](../../../../Scripts/Runtime/Core/Table/LubanDataReceiver.cs) | Luban JSON 拆分、合并、冲突校验实现 |
 
 ## 关键字段
 

@@ -10,7 +10,7 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Luban.MapPropGen.cs` | `EditorUtil.Luban.MapPropGen` | JSON 键值提取 + partial class 代码生成 + 旧生成块替换 |
+| [EditorUtil.Luban.MapPropGen.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.MapPropGen.cs) | `EditorUtil.Luban.MapPropGen` | JSON 键值提取 + partial class 代码生成 + 旧生成块替换 |
 
 ---
 

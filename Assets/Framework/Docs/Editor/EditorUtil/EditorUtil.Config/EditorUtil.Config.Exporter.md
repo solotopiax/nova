@@ -13,7 +13,7 @@ ConfigWindow 保存时自动按当前维度归一设计态配置；本导出器�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs` | `EditorUtil.Config.Exporter` | 导出工具类 |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs) | `EditorUtil.Config.Exporter` | 导出工具类 |
 
 ---
 

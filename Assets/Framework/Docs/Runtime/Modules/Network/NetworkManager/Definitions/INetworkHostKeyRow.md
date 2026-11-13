@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Definitions/INetworkHostKeyRow.cs` | `INetworkHostKeyRow` | 域名数据行接口定义 |
+| [INetworkHostKeyRow.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/NetworkManager/Definitions/INetworkHostKeyRow.cs) | `INetworkHostKeyRow` | 域名数据行接口定义 |
 
 ---
 

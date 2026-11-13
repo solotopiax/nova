@@ -61,8 +61,8 @@ related:
 ## 验证依据
 
 - 既有维度决策：[[ADR-058-per-panel-dimension-mask|ADR-058]]。
-- 公共标题入口：`Assets/Framework/Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` 中的 `DrawPanelTitleWithMask`。
-- 投影实现：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs`。
+- 公共标题入口：[Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs) 中的 `DrawPanelTitleWithMask`。
+- 投影实现：[Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs)。
 - 2026-08-13 隐私配置面板接入了独立 `PrivacyConfigsMask`、三维标题、同组广播与单格导出，并由 `PrivacyConfigAesContractTests` 覆盖。
 - 资源密钥页复用统一头部，ConfigMaster.ResourceEncryption 保存当前编号维度选择；`Assets/Tests/Editor/ResourceEncryptionTests.cs` 覆盖八种掩码、加减维保留组、旧文件兼容、路径平台与缺失平台的清单阻断。
 

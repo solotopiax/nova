@@ -12,8 +12,8 @@ SQLiteManager 的内嵌类，表示单张 SQLite 表的内存缓存与写缓冲�
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/SQLite/SQLiteManager.Table.cs` | CRUD 实现与事务提交逻辑 |
-| `Managers/SQLite/SQLiteManager.Table.Visitors.cs` | 字段与属性定义 |
+| [Managers/SQLite/SQLiteManager.Table.cs](../../../../Scripts/Runtime/Modules/Persist/Managers/SQLite/SQLiteManager.Table.cs) | CRUD 实现与事务提交逻辑 |
+| [Managers/SQLite/SQLiteManager.Table.Visitors.cs](../../../../Scripts/Runtime/Modules/Persist/Managers/SQLite/SQLiteManager.Table.Visitors.cs) | 字段与属性定义 |
 
 ## 关键字段/属性
 

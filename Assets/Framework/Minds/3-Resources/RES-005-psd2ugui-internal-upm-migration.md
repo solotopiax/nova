@@ -34,7 +34,7 @@ related:
 以下版本、DLL 校验值和早期验证描述记录的是 2026-08-26 的封装基线，不代表当前工作区或内部云仓库状态。后续官方升级、兼容补丁和当前输入/输出校验值以内部包的 `Nova/Docs/UPGRADE_GUIDE.md` 为准；已发布版本须实时查询内部 registry，不能由本条历史记录推断。
 
 - 官方交付物：`PSD2UGUI_PRO_2026.8.6.unitypackage`。
-- 内部包：`../Nova-internal/UPMPackages/cn.efunstudio.psd2ugui`。
+- 内部包：`cn.efunstudio.psd2ugui`；当时的开发仓来源为项目根下的 `../Nova-internal/UPMPackages/cn.efunstudio.psd2ugui`。消费工程按该包有效 `resolvedPath` 定位，不将此历史来源当作本文相对路径。
 - 包名：`cn.efunstudio.psd2ugui`，版本：`1.0.0`，核心版本：`release-2026.8.6`。
 - 该插件是商业资产，只允许保存在 `Nova-internal`，不进入公开 Nova 仓库或公开镜像。
 - 官方原始 unitypackage 原样归档在包内 `Nova/Docs/`，作为升级对比和来源证明；官方输入 SHA-256 为 `6d360e3ace9043e090d8a08b82665f125f6626f57c509aa5ec736dda07ceba48`。

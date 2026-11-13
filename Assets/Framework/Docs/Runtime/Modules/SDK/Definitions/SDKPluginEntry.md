@@ -11,7 +11,7 @@ SDK 插件条目，Inspector 序列化结构，一条记录对应一个 Plugin �
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/Definitions/SDKPluginEntry.cs` | `SDKPluginEntry` | 全部定义 |
+| [Managers/Definitions/SDKPluginEntry.cs](../../../../../Scripts/Runtime/Modules/SDK/Managers/Definitions/SDKPluginEntry.cs) | `SDKPluginEntry` | 全部定义 |
 
 ---
 

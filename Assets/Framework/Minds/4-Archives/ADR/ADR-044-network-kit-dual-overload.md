@@ -23,6 +23,8 @@ related: []
 
 # ADR-044：业务网络 Service 入口统一双重载（cmdName + cmdRow）
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../Docs/INDEX.md) 或 [Minds 索引](../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 背景（Context）
 
 `com.solotopia.nova.framework.kit.network.*` 系列业务 Service（`Login`、`GameSave` 等）通过 `Nova.Network.Kit<T>()` 暴露给业务侧。早期入口只接受 `INetworkCmdRow cmdRow`，调用方必须自己先 `Nova.Network.ResolveNetCmdRow(cmdName)` 拿到行数据再传入，模板代码冗余且易抄错。
@@ -72,6 +74,8 @@ related: []
 | `cmdName` 重载内部用 `async/await` 转发 | 多生成一层状态机 + 异常栈包装；纯转发不需要状态机 |
 
 ## 验证依据（Verification）
+
+以下 `Login.cs`、`GameSave.cs` 原路径已失效；当前网络模块入口见 [NetworkComponent 说明](../../../Docs/Runtime/Modules/Network/NetworkComponent.md)。
 
 - `UPMPackages/com.solotopia.nova.framework.kit.network.login/Nova/Scripts/Runtime/Login.cs`
 - `UPMPackages/com.solotopia.nova.framework.kit.network.gamesave/Nova/Scripts/Runtime/GameSave.cs`

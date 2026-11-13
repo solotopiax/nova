@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Interfaces/ILogHelper.cs` | 接口定义 |
+| [ILogHelper.cs](../../../../../Scripts/Runtime/Core/Log/ILogHelper.cs) | 接口定义 |
 
 ## 公开 API
 

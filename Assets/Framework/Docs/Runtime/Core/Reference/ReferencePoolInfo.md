@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `ReferencePoolInfo.cs` | 结构体定义 |
+| [ReferencePoolInfo.cs](../../../../Scripts/Runtime/Core/Reference/ReferencePoolInfo.cs) | 结构体定义 |
 
 ## 关键属性
 

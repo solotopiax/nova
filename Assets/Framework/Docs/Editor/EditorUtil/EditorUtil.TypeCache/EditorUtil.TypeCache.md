@@ -10,7 +10,7 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.TypeCache.cs` | `EditorUtil.TypeCache` | 类型缓存核心（缓存字典 + 编译回调 + 延迟加载） |
+| [EditorUtil.TypeCache.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.TypeCache/EditorUtil.TypeCache.cs) | `EditorUtil.TypeCache` | 类型缓存核心（缓存字典 + 编译回调 + 延迟加载） |
 
 ---
 

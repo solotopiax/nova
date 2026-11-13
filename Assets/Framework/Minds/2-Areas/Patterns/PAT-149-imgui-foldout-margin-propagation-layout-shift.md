@@ -99,9 +99,9 @@ Table Inspector 的复现中，展开前工程子标题的真实横坐标为 `x=
 
 验证来源：
 
-- `Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs`
-- `Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Foldout.cs`
-- `Assets/Framework/Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs`
+- [Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs)
+- [Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Foldout.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Foldout.cs)
+- [Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs](../../../Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs)
 - Unity 6.4 Inspector 的收起、展开导出描述、展开 Excel 清单三态实测。
 
 ## 深度反省

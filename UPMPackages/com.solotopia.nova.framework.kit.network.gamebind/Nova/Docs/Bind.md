@@ -4,7 +4,7 @@
 
 `Bind` 是账号绑定业务网络 Service，封装绑定状态查询、绑定、冲突查询、裁决协议的发送逻辑全链路（Header 构建 → Proto 序列化 → AES 加密 → HTTP POST → 解析）。
 
-**所在文件：** `Nova/Scripts/Runtime/Bind.cs`
+**所在文件：** [Nova/Scripts/Runtime/Bind.cs](../Scripts/Runtime/Bind.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameBind.Runtime`
 **类签名：** `public sealed partial class Bind`
 
@@ -168,4 +168,4 @@ else // "existing"
 
 - 同包：[BindKitConfig.md](./BindKitConfig.md) — 账号绑定 Kit 配置
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

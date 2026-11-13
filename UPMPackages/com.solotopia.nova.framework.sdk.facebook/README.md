@@ -1,6 +1,6 @@
 # Nova Framework - SDK - Facebook
 
-> 当前版本：`0.1.18`
+> 当前版本：`0.2.0`
 
 Package name: `com.solotopia.nova.framework.sdk.facebook`
 
@@ -10,10 +10,10 @@ This package wraps the official Facebook Unity SDK `18.0.0` in Nova's UPM packag
 
 ## What This Package Contains
 
-- `Nova/**`: Solotopia / Nova-owned adapter layer, including `FacebookPlugin`, configuration, runtime data models, editor integration, App Events acquisition tracking, and package documentation.
-- `Core/FacebookSDK/**`: vendored upstream Facebook Unity SDK material.
-- `Core/Editor/DisableBitcode.cs`: imported with the Facebook SDK package and treated as upstream SDK material unless replaced by a Nova-owned implementation.
-- `Core/FacebookSDK/Plugins/Editor/Dependencies.xml`: EDM4U dependency declarations for Android artifacts and iOS CocoaPods used by the upstream SDK.
+- [Nova/**](Nova/): Solotopia / Nova-owned adapter layer, including `FacebookPlugin`, configuration, runtime data models, editor integration, App Events acquisition tracking, and package documentation.
+- [Core/FacebookSDK/**](Core/FacebookSDK/): vendored upstream Facebook Unity SDK material.
+- [Core/Editor/DisableBitcode.cs](Core/Editor/DisableBitcode.cs): imported with the Facebook SDK package and treated as upstream SDK material unless replaced by a Nova-owned implementation.
+- [Core/FacebookSDK/Plugins/Editor/Dependencies.xml](Core/FacebookSDK/Plugins/Editor/Dependencies.xml): EDM4U dependency declarations for Android artifacts and iOS CocoaPods used by the upstream SDK.
 
 ## What This Package Does Not Contain
 
@@ -44,18 +44,26 @@ Release builds must recheck the current Facebook platform policy, App Review per
 
 This package is not a pure MIT package.
 
-- `Nova/**` and Solotopia-authored package documentation/metadata are the Nova adapter layer and are provided under the Solotopia / Nova MIT license in `LICENSE.md`.
-- `Core/FacebookSDK/**` is upstream Facebook Unity SDK material and remains subject to the upstream Facebook SDK license, platform terms, developer policies, and third-party notices.
-- Public distribution must retain `LICENSE.md`, `THIRD_PARTY_NOTICES.md`, and `Core/FacebookSDK/LICENSE.txt`.
+- [Nova/**](Nova/) and Solotopia-authored package documentation/metadata are the Nova adapter layer and are provided under the Solotopia / Nova MIT license in [LICENSE.md](LICENSE.md).
+- [Core/FacebookSDK/**](Core/FacebookSDK/) is upstream Facebook Unity SDK material and remains subject to the upstream Facebook SDK license, platform terms, developer policies, and third-party notices.
+- Public distribution must retain [LICENSE.md](LICENSE.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [Core/FacebookSDK/LICENSE.txt](Core/FacebookSDK/LICENSE.txt).
 - Do not describe the full package as MIT-only or as free of Facebook platform obligations.
 
-See `Nova/Doc/OpenSourceCompliance.md` for the package compliance summary and release checklist details.
+See [Nova/Doc/OpenSourceCompliance.md](Nova/Doc/OpenSourceCompliance.md) for the package compliance summary and release checklist details.
 
 ## Release Checklist
 
 - Confirm no private Facebook app credentials are stored in this package.
 - Confirm the official Facebook SDK `Examples` folder and example-only media are not included.
-- Confirm `LICENSE.md`, `THIRD_PARTY_NOTICES.md`, and `Core/FacebookSDK/LICENSE.txt` are present.
+- Confirm [LICENSE.md](LICENSE.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [Core/FacebookSDK/LICENSE.txt](Core/FacebookSDK/LICENSE.txt) are present.
 - Recheck Facebook SDK license, developer policies, platform review requirements, ATT guidance, and trademark usage at release time.
-- Recheck EDM4U Android and iOS dependency declarations against `Core/FacebookSDK/Plugins/Editor/Dependencies.xml`.
+- Recheck EDM4U Android and iOS dependency declarations against [Core/FacebookSDK/Plugins/Editor/Dependencies.xml](Core/FacebookSDK/Plugins/Editor/Dependencies.xml).
 - Separately scan project-level samples, Unity assets, and local build settings for public `appIds`, sample `clientTokens`, and local keystore paths before any public release.
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Onboarding/PROJECT_STRUCTURE.md` |

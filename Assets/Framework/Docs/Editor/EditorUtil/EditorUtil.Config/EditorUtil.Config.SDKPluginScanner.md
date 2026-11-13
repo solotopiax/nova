@@ -11,8 +11,8 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/SDKPluginConfigPanelActionAttribute.cs` | `SDKPluginConfigPanelActionAttribute` | SDK Editor 程序集声明 Config 面板快捷动作的程序集特性 |
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.cs` | `EditorUtil.Config.SDKPluginScanner` | 扫描器工具类 |
+| [Editor/Config/Definitions/SDKPluginConfigPanelActionAttribute.cs](../../../../Scripts/Editor/Config/Definitions/SDKPluginConfigPanelActionAttribute.cs) | `SDKPluginConfigPanelActionAttribute` | SDK Editor 程序集声明 Config 面板快捷动作的程序集特性 |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.cs) | `EditorUtil.Config.SDKPluginScanner` | 扫描器工具类 |
 
 ---
 

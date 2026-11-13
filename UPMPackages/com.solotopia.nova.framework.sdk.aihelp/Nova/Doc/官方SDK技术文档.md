@@ -50,6 +50,6 @@ SDK 通过 `RegisterAsyncEventListener(EventType, listener)` 注册异步事件�
 
 ## 平台差异
 
-- iOS：原生库随包分发在 `Core/Plugins/iOS/AIHelpSDK/`（`AIHelpSupportSDK.framework` + `AIHelpUnity.mm`/`.h` 桥接层）。
+- iOS：原生库随包分发在 [Core/Plugins/iOS/AIHelpSDK/](../../Core/Plugins/iOS/AIHelpSDK/)（`AIHelpSupportSDK.framework` + `AIHelpUnity.mm`/`.h` 桥接层）。
 - Android：原生库不随包分发，构建期由本包 `AIHelpBuildProcessor`（`IPostGenerateGradleAndroidProject`）把 Maven 坐标 `net.aihelp:android-aihelp-aar:6.0.+` 注入导出后的 Android gradle 工程（`unityLibrary/build.gradle`）；不经 EDM4U，包内也无 Dependencies.xml。
-- managed C# 封装层（`Core/AIHelp/`）按平台内部分发到 `Core/AIHelp/Core/iOS/` 与 `Core/AIHelp/Core/Android/`，由 `AIHelpCore` 统一路由。
+- managed C# 封装层（[Core/AIHelp/](../../Core/AIHelp/)）按平台内部分发到 [Core/AIHelp/Core/iOS/](../../Core/AIHelp/Core/iOS/) 与 [Core/AIHelp/Core/Android/](../../Core/AIHelp/Core/Android/)，由 `AIHelpCore` 统一路由。

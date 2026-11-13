@@ -11,7 +11,7 @@ Network 管理器抽象基类，声明所有 abstract 成员，Priority = 10，�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `NetworkManagerBase.cs` | `abstract NetworkManagerBase` | 基类声明：Priority = 10，全部 abstract 方法 |
+| [NetworkManagerBase.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/NetworkManager/Implements/NetworkManagerBase.cs) | `abstract NetworkManagerBase` | 基类声明：Priority = 10，全部 abstract 方法 |
 
 ---
 

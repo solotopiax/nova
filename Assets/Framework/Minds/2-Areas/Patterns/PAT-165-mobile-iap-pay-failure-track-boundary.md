@@ -66,21 +66,21 @@ related:
 - 检查 `TrackReturnedPayFailureInternal` 未调用任何 `TryConsume*`、`Mark*Failure*` 或失败 key 去重方法。
 - 检查 `HandlePurchaseFailed` 仅在 `payTcs == null`、即不存在 `PayAsync` 返回链路时调用 `TrackLocalPayFailInternal`。
 - 检查 `HandleConfirmFailed` 仍直接调用 `TrackLocalPayFailInternal`，并与普通购买失败回调分开处理。
-- 检查 `TrackLocalPayFailInternal` 在 `MobileStore.Track.cs` 构造 Mobile 失败字段并直接发送事件，不登记运行期失败去重状态。
+- 检查 `TrackLocalPayFailInternal` 在 [MobileStore.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.Track.cs) 构造 Mobile 失败字段并直接发送事件，不登记运行期失败去重状态。
 - 检查源码契约测试覆盖“活跃回调不直接打点”“返回边界统一上报”和“无返回链路回调兜底”。
 - 检查 `nova_reason_detail` 对非 Mobile 错误源保留原始 `ErrorSource:ErrorCode`。
 
 ## 来源与验证依据
 
 - 代码事实：
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.Track.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Purchase/MobilePurchaseService.Methods.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/Internal/IAPStoreBase.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/Internal/IAPStoreBase.Track.cs`
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/MobileStore.Track.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Purchase/MobilePurchaseService.Methods.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Purchase/MobilePurchaseService.Methods.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/Internal/IAPStoreBase.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/Internal/IAPStoreBase.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/Internal/IAPStoreBase.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/Internal/IAPStoreBase.Track.cs)
 - 文档事实：
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md`
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md)
 - 回归依据：
   - `Assets/Tests/Editor/IAP/IAPPayFailureTrackContractTests.cs`
 - 关联约束：

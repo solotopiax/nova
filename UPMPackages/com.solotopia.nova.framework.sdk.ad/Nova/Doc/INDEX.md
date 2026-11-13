@@ -26,9 +26,9 @@ Banner 首次显示选择、固定显示归属及 `AdPlugin.TryShowBanner()` 的
 
 ## 广告收益上报 Proto（协议层）
 
-广告包提供 `Nova/Protos/pb_net_iaa_report.proto` 作为 广告收益上报的唯一协议源，并由 `Nova/Scripts/Runtime/Protos/PbNetIaaReport.cs` 提供生成类型。协议包含 `PbIAAReportData`、`PbNetIAAReportReq` 和 `PbNetIAAReportResp`，接口注释为 `POST /v1/taijiv2/report`；请求通过 `ad_channel` 记录渠道，IAA 业务数据放在 `iaa` 嵌套消息中，响应 `iaa_report_id` 回显业务 ID，`error_code` 保留字段号 `100`。请求和响应复用框架公共 `pb_net_header.proto` 的 `PbNetReqHeader` / `PbNetRespHeader`，不在本包重复定义 Header。
+广告包提供 [Nova/Protos/pb_net_iaa_report.proto](../Protos/pb_net_iaa_report.proto) 作为 广告收益上报的唯一协议源，并由 [Nova/Scripts/Runtime/Protos/PbNetIaaReport.cs](../Scripts/Runtime/Protos/PbNetIaaReport.cs) 提供生成类型。协议包含 `PbIAAReportData`、`PbNetIAAReportReq` 和 `PbNetIAAReportResp`，接口注释为 `POST /v1/taijiv2/report`；请求通过 `ad_channel` 记录渠道，IAA 业务数据放在 `iaa` 嵌套消息中，响应 `iaa_report_id` 回显业务 ID，`error_code` 保留字段号 `100`。请求和响应复用框架公共 `pb_net_header.proto` 的 `PbNetReqHeader` / `PbNetRespHeader`，不在本包重复定义 Header。
 
-运行时协议由 `AdChannelPluginBase.StartRevenueReport` 统一承接：配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，MAX 在 `TrackMaxAdIlrd` 派发时显式调用，Banner 共用 ILRD 的同一份累计和存档。AdMob 在原厂 `Paid` 入口显式接入同一渠道累计。`RaiseRevenue` / `RaiseRevenueImmediately` 只发布逐次业务通知。基类通过 `Nova/Scripts/Runtime/Services/AdRevenueReportNetService.cs` 构造并发送 `PbNetIAAReportReq`。NetCmd/Host 由消费项目配置，旧资产字段为空时不上报；自定义派生渠道须显式接入协议入口。
+运行时协议由 `AdChannelPluginBase.StartRevenueReport` 统一承接：配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，MAX 在 `TrackMaxAdIlrd` 派发时显式调用，Banner 共用 ILRD 的同一份累计和存档。AdMob 在原厂 `Paid` 入口显式接入同一渠道累计。`RaiseRevenue` / `RaiseRevenueImmediately` 只发布逐次业务通知。基类通过 [Nova/Scripts/Runtime/Services/AdRevenueReportNetService.cs](../Scripts/Runtime/Services/AdRevenueReportNetService.cs) 构造并发送 `PbNetIAAReportReq`。NetCmd/Host 由消费项目配置，旧资产字段为空时不上报；自定义派生渠道须显式接入协议入口。
 
 ### 收益回调、打点与后台请求的分工
 
@@ -75,7 +75,7 @@ public UniTask<NetResponse<PbNetIAAReportResp>> Async(string cmdName, AdEvent re
 3. 以 `Content-Type: application/octet-stream` 发送原始密文；额外请求头为 `app_id` 与 `Encoding-Aes`，后者是 IV 的 UTF-8 字节经 Base64 编码后的值。
 4. HTTP 成功响应使用同一 Key / IV 解密，先解析 `PbNetBaseResponse.code / message / data`，再解析 data 中的 `PbNetIAAReportResp`；外层业务码与响应体的 `error_code` 分开判断。
 
-日志中的 JSON 用于查看业务参数，不是 HTTP 请求体。Key / IV 不使用隐私配置的默认密钥，也不在广告包内硬编码；配置、取消、主备和错误码边界沿用 [NetService](../../../../Assets/Framework/Docs/Runtime/Modules/Network/NetService.md)。
+日志中的 JSON 用于查看业务参数，不是 HTTP 请求体。Key / IV 不使用隐私配置的默认密钥，也不在广告包内硬编码；配置、取消、主备和错误码边界沿用 [NetService](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/Network/NetService.md`）。
 
 ### 收益日志排查
 
@@ -101,4 +101,4 @@ public UniTask<NetResponse<PbNetIAAReportResp>> Async(string cmdName, AdEvent re
 
 本插件由 ConfigMaster 启用；聚合插件就绪表示渠道已创建，不代表全部原厂初始化成功，`InitResult` 是单渠道结果。初始化是否等待其他 SDK 由插件的 `ISDKInitializationDependencies` 能力声明决定，`Priority` 不控制启动先后；业务只需目标能力时使用 `Nova.SDK.WaitForPluginAsync<T>()` 并检查 `Ready`。游戏后端登录成功后调用 `Nova.SDK.Login(uid, userProperties)`，框架会在插件就绪后补交最新账号；切换账号再次调用，登出调用 `EndLoginSession()`。新接入 SDK 按框架 SDK 插件契约实现。现有 `IAdChannelConfig` 保持真实 ID 访问器，具体配置类另外提供组表达式。
 
-广告初始化不自动请求 Rewarded、Interstitial、AppOpen 或创建 Banner；由业务登录、隐私与资源准备流程决定何时显式调用 `RequestAsync`。SDK 账号分发与网络请求身份是不同职责：协议公共头读取 GameLogin 等业务流程写回的 `NetService` 身份，调用 `Nova.SDK.Login` 不代替后端登录。AdDemo 的登录按钮和操作门禁见 [Sample README](../../../../Assets/Samples/AdDemo/README.md#先登录再操作广告)，广告基类本身不负责发起账号登录。
+广告初始化不自动请求 Rewarded、Interstitial、AppOpen 或创建 Banner；由业务登录、隐私与资源准备流程决定何时显式调用 `RequestAsync`。SDK 账号分发与网络请求身份是不同职责：协议公共头读取 GameLogin 等业务流程写回的 `NetService` 身份，调用 `Nova.SDK.Login` 不代替后端登录。AdDemo 的登录按钮和操作门禁见 [Sample README](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Sample AdDemo / README.md#先登录再操作广告`），广告基类本身不负责发起账号登录。

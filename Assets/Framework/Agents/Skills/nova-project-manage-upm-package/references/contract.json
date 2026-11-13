@@ -10,7 +10,7 @@
     {
       "kind": "agent-action",
       "entry": "nova.project.upm.manage-latest",
-      "when": "通过 describe、plan、execute、verify 完成 install-latest 或 upgrade-latest；执行仍需一次性计划和用户确认"
+      "when": "通过describe、plan、execute、verify完成install-latest或upgrade-latest；执行仍绑定当前一次性计划与有效授权，任务必要安装可由NA-014长期授权覆盖，不逐包重复询问"
     },
     {
       "kind": "agent-action",
@@ -29,7 +29,8 @@
     },
     {
       "name": "packageName",
-      "required": true
+      "required": true,
+      "constraint": "Agent可按当前Nova项目任务从PlugPals已配置仓库主动选定所需包和必要依赖；核对用途、当前安装状态、兼容来源/版本与平台，不要求用户先报包名；仅本Skill支持的install-latest受NA-014长期安装授权覆盖"
     },
     {
       "name": "configuredRegistryUrlForDisambiguation",
@@ -37,7 +38,8 @@
     },
     {
       "name": "confirmedPlanId",
-      "required": false
+      "required": false,
+      "constraint": "执行使用当前精确PlanId作为token；有效长期安装授权与一次性计划绑定分别核对，不把重新Plan误作必须重新请求同范围授权"
     }
   ],
   "effects": [
@@ -70,12 +72,12 @@
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
-      "every install-latest, upgrade-latest or uninstall-direct execution",
+      "every install-latest, upgrade-latest or uninstall-direct execution must bind the current exact plan and a valid authorization source",
       "the exact action, packageName, currentVersion, targetVersion and selected configured registry",
       "the exact manifest and scoped registry diff",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "Plan 只读；确认只绑定一次性 planId 及其精确输入和前置指纹。manifest、lock、远端版本、registry 状态或 Editor domain 任一变化后旧确认失效，必须重新计划。"
+    "rule": "Plan只读；授权依据与一次性计划绑定分别核对。NA-014长期安装授权覆盖的任务必要install-latest，在说明选型及精确计划后可继续执行，不重复请求逐包批准。升级/卸载等动作仍需其适用授权。manifest、lock、远端版本、registry或Editor domain漂移使旧Plan/token失效，必须重新计划并核对原授权是否仍覆盖；不自动重放、不关闭确认门。多个必要包逐包Resolve/Verify后再计划下一包。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -86,10 +88,11 @@
   ],
   "evidence": [
     "只读 Plan 中冻结的动作、包名、当前版本、目标版本、registry、依赖和消费者",
-    "用户针对一次性 planId 的明确确认",
+    "本次有效授权依据（NA-014长期必要安装授权或其它精确用户授权），以及当前一次性PlanId/token的匹配；不能把机器token当作人类授权",
     "Execute 返回的 partial receipt，且没有自动重放",
     "Unity 稳定后 manifest 与 packages-lock 的精确版本和 registry 来源，或卸载后的双重消失证据",
     "未执行 SDK/Kit 启用、Sample、业务改动、构建、发布或 Git 操作的边界说明",
-    "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。"
+    "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。",
+    "按任务选择必要PlugPals包的用途/兼容来源/版本/平台及依赖依据；已有足够能力不重复安装，多个必要包串行验收，正常传递依赖不无故提升为direct dependency"
   ]
 }

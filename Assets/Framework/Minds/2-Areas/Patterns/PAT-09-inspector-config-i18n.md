@@ -28,7 +28,7 @@ related:
 
 ## 适用场景
 
-- `Assets/Framework/Scripts/Editor/Inspectors/**` 下的 `*ComponentInspector`
+- [Scripts/Editor/Inspectors/](../../../Scripts/Editor/Inspectors/) 下的 `*ComponentInspector`
 - `ConfigWindow` 等在同一面板内绘制多个配置类别的 EditorWindow
 - 一个配置区包含多个业务簇，直接平铺会明显增加阅读成本
 - 需要把字段语义、默认行为、推荐值、边界条件直接暴露给面板使用者

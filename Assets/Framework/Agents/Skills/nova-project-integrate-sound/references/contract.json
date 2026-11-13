@@ -41,6 +41,11 @@
       "kind": "unity-editor-automation",
       "entry": "Play Mode AudioSource playback inspection",
       "when": "等待异步 AudioClip 加载后检查目标 AudioSource 播放、停止及本 Owner 的资源句柄释放；Release 的 void 调用记录或 Stop bool 不能替代释放证据，helper.clip 非空也不等于句柄仍保留，不保证 Unity 立即卸载内存"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+      "when": "仅从当前包白名单官方 UI/Sound 表克隆；按 RESOURCE_WORKFLOW.md 冻结模板/目标摘要与完整业务行，原样保留样式/备注；不导出、不启动Unity，不用于普通叶子编辑"
     }
   ],
   "inputs": [
@@ -86,6 +91,11 @@
       "name": "activeConfigMasterAndGeneratedNamespace",
       "required": false,
       "description": "仅 export-code-data 按目标必需：Sound、Vibration 及 Network 含 hostkey/netcmd 的 all/code 导出，从 ProjectSettings/Nova/Globals.json 核 configMasterGuid、configMasterPathHint 与实际可加载 ConfigMasterSO 的一致身份，冻结其顶层 Namespace（RuntimeProvider.GetNamespace 的当前来源）及预期生成类型全名和既有消费者；未绑定、身份或值漂移时 blocked，不以 ConfigRuntime.Namespace、维度解析值或第一个 Master 代替。已绑定 Master 明确空 Namespace 时允许 global namespace 并按冻结预期验收。Network 仅 proto 时记录 Master 前置不适用，改核已确认 Schema/protoc 的命名空间与类型全名；不要求 ConfigRuntime、Collector、账号或端点，hostkey 原 DevelopMode 前置仍保留。"
+    },
+    {
+      "name": "officialTemplateAndSourceRows",
+      "required": false,
+      "description": "仅source-from-template必需：实际官方template、target及原SHA/新建null、真实sourceRoots/generatedRoots、Sheet名、全部字段/类型/业务行与可选标题；来源选择与保真验收按RESOURCE_WORKFLOW.md。"
     }
   ],
   "effects": [
@@ -99,7 +109,8 @@
       "confirmed AudioClip asset, existing Collector membership and address",
       "confirmed SoundComponent, SoundSettings, SoundGroupShell or AudioMixer settings through Unity Editor or MCP",
       "confirmed project-owned business trigger and its single stop/release owner; reuse existing implementation or create minimal authorized source glue using declared public APIs",
-      "confirmed existing target Prefab binding directly related to the sound trigger"
+      "confirmed existing target Prefab binding directly related to the sound trigger",
+      "source-from-template: confirmed project-owned Assets/**/*.xlsx target and exact TableSource plan/receipt; official template remains read-only"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -121,7 +132,8 @@
     "sound-export-output",
     "business-sound-entry",
     "selected-target-prefab",
-    "active-scene"
+    "active-scene",
+    "table-source-shared-write-lock"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -132,7 +144,7 @@
       "replace a non-generated asset, create or change an existing target Prefab binding, remove a source row or clean generated output",
       "delete, external write, credential use, Bundle or Player build, Git commit or push"
     ],
-    "rule": "确认激活 ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 的有效路径、真实 AudioClip、唯一地址、Sound 表和导出范围、SoundComponent 加载入口、声音组、业务触发与停止生命周期、实际播放成功探针及最小写入集；任一输入或范围变化后旧确认失效。 当前精确业务授权持续有效，可在冻结项目源码补必要胶水；缺现成调用点不单独构成永久阻断，缺真实资源/规则/协议和设备证据按依赖保留blocked或partial。测试后遵循START_HERE共同清场规则。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。"
+    "rule": "确认激活 ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 的有效路径、真实 AudioClip、唯一地址、Sound 表和导出范围、SoundComponent 加载入口、声音组、业务触发与停止生命周期、实际播放成功探针及最小写入集；任一输入或范围变化后旧确认失效。 当前精确业务授权持续有效，可在冻结项目源码补必要胶水；缺现成调用点不单独构成永久阻断，缺真实资源/规则/协议和设备证据按依赖保留blocked或partial。测试后遵循START_HERE共同清场规则。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。 source-from-template仅确认该分支冻结的模板、目标原SHA和完整行/写集，不要求完整业务输入；替换已有表沿用精确授权，不降低危险副作用门。"
   },
   "taskProfiles": [
     {
@@ -162,6 +174,30 @@
         "unity-write",
         "generated-output"
       ]
+    },
+    {
+      "id": "source-from-template",
+      "description": "只从官方原表克隆项目自有Sound Excel并核验数据/样式；显式整表替换须完整原SHA与已有精确授权，不用于普通已有格编辑；不导出或声称完整业务接入。",
+      "taskIds": [
+        "sound.source.create"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "officialTemplateAndSourceRows"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write"
+      ]
     }
   ],
   "minimumEvidence": "play",
@@ -177,6 +213,7 @@
     "Play Mode 中 Nova.Sound.LoadAsync、HasSoundGroup、按 Name 或唯一 AssetLocation 的业务触发和实际 AudioSource 播放证据；核对 loop、priority、最终音量及 spatialBlend 与表配置一致，-1 拒绝且非负 serialID 也不替代实际播放",
     "本 Owner 的 BGM / SFX 显式结束、替换或关闭时 StopSound(serialID, 0f) 后 ReleaseAssetBySerialID 的停止与句柄释放证据；覆盖本次涉及的加载中停止，Pause/Resume 保留请求与资源，自然结束仍需履行释放责任",
     "资源释放不能只凭 Stop bool、Release 的 void 调用记录或 helper AudioSource.clip 是否非空判断；使用受控只读诊断或等价资源句柄探针，不保证 Unity 立即卸载内存",
-    "本轮测试态、临时runner/脚本/meta/marker/日志/产物清场、必要Refresh与目标工作树核对；正式交付和原有工作保留"
+    "本轮测试态、临时runner/脚本/meta/marker/日志/产物清场、必要Refresh与目标工作树核对；正式交付和原有工作保留",
+    "source-from-template: inspect/Plan/Execute/Verify、来源与输出样式/非目标ZIP保真、实际改动区域渲染与业务行/字段一致；该分支不代表导出或Play成功。"
   ]
 }

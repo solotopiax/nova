@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Interfaces/IAllAssetsHandle.cs` | `IAllAssetsHandle`, `IAllAssetsHandle<T>` | 非泛型基接口 + 强类型泛型接口 |
+| [Managers/AssetManager/Interfaces/IAllAssetsHandle.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAllAssetsHandle.cs) | `IAllAssetsHandle`, `IAllAssetsHandle<T>` | 非泛型基接口 + 强类型泛型接口 |
 
 ---
 

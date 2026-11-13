@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/Definitions/ObjectPoolBase.cs` | 抽象基类定义 |
+| [Managers/Definitions/ObjectPoolBase.cs](../../../../Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/ObjectPoolBase.cs) | 抽象基类定义 |
 
 ## 关键字段/属性
 

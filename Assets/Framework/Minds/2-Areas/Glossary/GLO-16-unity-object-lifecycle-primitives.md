@@ -54,7 +54,7 @@ related:
 
 ## 来源
 
-- `.nova/RULES.md`：Manager / Component 分层、生命周期与显式依赖红线。
+- [.nova/RULES.md](../../../../../.nova/RULES.md)：Manager / Component 分层、生命周期与显式依赖红线。
 - [[PAT-30-framework-usage-redlines|PAT-30]]：框架使用红线汇总。
 
 ---

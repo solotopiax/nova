@@ -10,9 +10,9 @@ Network 组件的 Inspector。它提供三个管理器实现类选择器、HostK
 
 | 文件 | 说明 |
 |---|---|
-| NetworkComponentInspector.cs | OnEnable 属性绑定、OnDisable 清理 FileWatcher、OnInspectorGUI 绘制调度 |
-| NetworkComponentInspector.Visitors.cs | SerializedProperty、类型名列表、导出与 FileWatcher 状态 |
-| NetworkComponentInspector.Methods.cs | 管理器选择、表格导出、Proto、HTTP 和 WebSocket 绘制方法 |
+| [NetworkComponentInspector.cs](../../../../Scripts/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.cs) | OnEnable 属性绑定、OnDisable 清理 FileWatcher、OnInspectorGUI 绘制调度 |
+| [NetworkComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.Visitors.cs) | SerializedProperty、类型名列表、导出与 FileWatcher 状态 |
+| [NetworkComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.Methods.cs) | 管理器选择、表格导出、Proto、HTTP 和 WebSocket 绘制方法 |
 
 ## 关键绑定
 
@@ -49,7 +49,9 @@ OnInspectorGUI()
 
 ## HTTP 设置
 
-HTTP Foldout 按顺序展示“启用 UWR 网络埋点”、“业务请求优先最近成功域名”、“业务主备候选轮数”、“业务请求重试次数”与 HTTP 请求超时。默认分别为 `true`、`true`、`1`、`1` 和 `60`。每个配置项下方都有独立的简短 HelpBox，只说明该配置对使用者产生的直接效果。
+HTTP Foldout 按顺序展示“启用 UWR 网络埋点”、“业务请求优先最近成功域名”、“业务主备候选轮数”、“业务请求重试次数”、“业务请求超时时间（秒）”和“启动时GM配置请求超时时间（秒）”。默认分别为 `true`、`true`、`1`、`1`、`60` 和 `5`。同组标签按最长文案加当前缩进及留白计算统一宽度，每个配置项下方都有独立的简短 HelpBox。
+
+业务请求超时和启动 GM 请求超时均按每个物理请求分别计时；主备切换与重试的每次发送都获得完整的独立时限。启动项 HelpBox 仅说明“单次启动 GM 配置请求的超时时间；主备请求分别计时。”，整轮总耗时可能超过该值。独立手动刷新及其他业务请求仍使用业务请求超时；并发刷新合流时沿用先发起请求的设置，详见 [ConfigComponent](../../../Runtime/Modules/Config/ConfigComponent.md)。修改后在下一次初始化生效。
 
 普通 HTTP API 只使用调用方给出的 URL；该 HelpBox 描述的是 HostKey + NetCmd 业务路由，不为单 URL 请求自动增加备用地址。
 

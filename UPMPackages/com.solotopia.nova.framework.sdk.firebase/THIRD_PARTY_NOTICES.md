@@ -8,16 +8,16 @@
 - `Firebase Unity SDK`
   - Upstream project: `https://github.com/firebase/firebase-unity-sdk`
   - License: `Apache-2.0` (Google)
-  - Corresponding content in this repo: `Core/analytics/**`, `Core/application/**`, `Core/crashlytics/**`, `Core/messaging/**`, `Core/remote-config/**`
+  - Corresponding content in this repo: [Core/analytics/**](Core/analytics/), [Core/application/**](Core/application/), [Core/crashlytics/**](Core/crashlytics/), [Core/messaging/**](Core/messaging/), [Core/remote-config/**](Core/remote-config/)
   - Bundled upstream license files:
-    - `Core/analytics/LICENSE.md`
-    - `Core/application/LICENSE.md`
-    - `Core/crashlytics/LICENSE.md`
-    - `Core/messaging/LICENSE.md`
-    - `Core/remote-config/LICENSE.md`
+    - [Core/analytics/LICENSE.md](Core/analytics/LICENSE.md)
+    - [Core/application/LICENSE.md](Core/application/LICENSE.md)
+    - [Core/crashlytics/LICENSE.md](Core/crashlytics/LICENSE.md)
+    - [Core/messaging/LICENSE.md](Core/messaging/LICENSE.md)
+    - [Core/remote-config/LICENSE.md](Core/remote-config/LICENSE.md)
 
 ## Nova packaging boundary
-- `Nova/**`, the root `package.json`, `README.md`, `CHANGELOG.md`, and `LICENSE.md` are the Solotopia / Nova adaptation layer, UPM packaging, and integration documentation.
+- [Nova/**](Nova/), the root [package.json](package.json), [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), and [LICENSE.md](LICENSE.md) are the Solotopia / Nova adaptation layer, UPM packaging, and integration documentation.
 - These packaging contents do not override the original license boundary of each Firebase sub-package.
 
 ## Public distribution requirements
@@ -38,17 +38,17 @@
 
 - `Firebase Unity SDK`
   - 上游项目：`https://github.com/firebase/firebase-unity-sdk`
-  - 本仓库内对应内容：`Core/analytics/**`、`Core/application/**`、`Core/crashlytics/**`、`Core/messaging/**`、`Core/remote-config/**`
+  - 本仓库内对应内容：[Core/analytics/**](Core/analytics/)、[Core/application/**](Core/application/)、[Core/crashlytics/**](Core/crashlytics/)、[Core/messaging/**](Core/messaging/)、[Core/remote-config/**](Core/remote-config/)
   - 当前包内许可文件：
-    - `Core/analytics/LICENSE.md`
-    - `Core/application/LICENSE.md`
-    - `Core/crashlytics/LICENSE.md`
-    - `Core/messaging/LICENSE.md`
-    - `Core/remote-config/LICENSE.md`
+    - [Core/analytics/LICENSE.md](Core/analytics/LICENSE.md)
+    - [Core/application/LICENSE.md](Core/application/LICENSE.md)
+    - [Core/crashlytics/LICENSE.md](Core/crashlytics/LICENSE.md)
+    - [Core/messaging/LICENSE.md](Core/messaging/LICENSE.md)
+    - [Core/remote-config/LICENSE.md](Core/remote-config/LICENSE.md)
 
 ## Nova 封装边界
 
-- `Nova/**`、包根 `package.json`、`README.md`、`CHANGELOG.md`、`LICENSE.md` 为 Solotopia / Nova 的适配层、UPM 封装和接入说明。
+- [Nova/**](Nova/)、包根 [package.json](package.json)、[README.md](README.md)、[CHANGELOG.md](CHANGELOG.md)、[LICENSE.md](LICENSE.md) 为 Solotopia / Nova 的适配层、UPM 封装和接入说明。
 - 这些封装内容不覆盖各 Firebase 子包的原始许可证边界。
 
 ## 公开分发要求

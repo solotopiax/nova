@@ -11,9 +11,9 @@ UI 视图分组辅助器，每个 UIGroup 对应一个实例，控制 Canvas 渲
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Interfaces/IUIGroupHelper.cs` | `interface IUIGroupHelper` | 深度设置接口 |
-| `Implements/UIGroupHelperBase.cs` | `abstract UIGroupHelperBase : MonoBehaviour, IUIGroupHelper` | 基类：Canvas 缓存、深度计算、全屏 RectTransform 初始化 |
-| `Implements/UIGroupHelper.cs` | `internal sealed class UIGroupHelper : UIGroupHelperBase` | 默认实现（空继承，可扩展） |
+| [IUIGroupHelper.cs](../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Interfaces/IUIGroupHelper.cs) | `interface IUIGroupHelper` | 深度设置接口 |
+| [UIGroupHelperBase.cs](../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Implements/UIGroupHelperBase.cs) | `abstract UIGroupHelperBase : MonoBehaviour, IUIGroupHelper` | 基类：Canvas 缓存、深度计算、全屏 RectTransform 初始化 |
+| [UIGroupHelper.cs](../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Implements/UIGroupHelper.cs) | `internal sealed class UIGroupHelper : UIGroupHelperBase` | 默认实现（空继承，可扩展） |
 
 ---
 

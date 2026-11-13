@@ -4,7 +4,7 @@
 
 普通存储接入、默认元数据检查、Editor 值 AES、SQLite Cipher 和 Privacy 默认 AES 轮换都复用此 Skill。三种存储与独立轮换分支复用同 `inspect-data/migrate-encryption/recover-maintenance`，分别冻结 scope 与备份/恢复契约；元数据成功不代替迁移前置，不按密码、存储或字段增加 Skill。
 
-本机备份、操作日志与维护标记统一保存在项目 `Library/Nova/AgentActions/PersistenceMaintenance/`，不进入 `.agents/` 或 Git。未结束维护前不清理其缓存。
+本机备份、操作日志与维护标记统一保存在项目 [Library/Nova/AgentActions/PersistenceMaintenance/（项目本地位置）](../../../../Docs/START_HERE.md#执行任务与清场的共同约束)，不进入 [.agents/（项目发现入口）](../../../../Docs/START_HERE.md#先确定框架位置与文档入口) 或 Git。未结束维护前不清理其缓存。
 
 ## 按用户目标选路线
 
@@ -19,13 +19,13 @@
 | “换 SQLite 数据库密码” | 同 `migrate-encryption` 的 `rotate-sqlite-cipher` 分支 | macOS Editor 标准 SQLite 非空→不同非空密码，同库轮换，唯一组件字段与独立封存恢复；不处理明文转换、任意 schema/SQL/值编辑 |
 | “轮换现有 Privacy AES 密钥并保留存档” | 同三 Action 的 `inspect-privacy-aes/rotate-privacy-aes` 分支 | macOS 当前 Editor 标准三存储、当前 Privacy 逻辑组与配对 Master/Runtime；全局 Save、默认消费者边界需明确；设备与外部消费者独立验收 |
 | “任意批量编辑玩家存档” | 冻结业务模型、完整目标与恢复条件，先复用授权业务方法 | 当前固定维护不开放任意 schema/SQL/值编辑；缺业务规则或精确授权时保持对应 `blocked`，不使用字段 patch/旧 Inspector/反射绕过 |
-| “清理热更缓存重新下载” | 路由 `nova-project-integrate-resource`，定向读 `Docs/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.md` | 与业务存档删除不同。已有 `Nova/Clean Hotfix Caches` 菜单只清 YooAsset Editor 沙盒及顶层 `*.version`，保留 DeviceID、其他文件与首包；调用前须由命中的资源契约声明当前宿主入口和精确删除范围 |
+| “清理热更缓存重新下载” | 路由 `nova-project-integrate-resource`，定向读 [Docs/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.md](../../../../Docs/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.md) | 与业务存档删除不同。已有 `Nova/Clean Hotfix Caches` 菜单只清 YooAsset Editor 沙盒及顶层 `*.version`，保留 DeviceID、其他文件与首包；调用前须由命中的资源契约声明当前宿主入口和精确删除范围 |
 
 只读源码或文件快照不能证明当前缓存值、设备数据或下次启动耐久性。生产数据内容、AES Key/IV、数据库密码、账号和订单只按授权脱敏，报告使用分类、条目身份及计数，避免回显值。
 
 ## 受控元数据检查
 
-先按 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md` 读取当前分支。复用同一 `inspect-data`，提供自有普通 Prefab 中唯一标准 PersistComponent 的 `targetGuid/globalObjectId`、精确 `storage=PlayerPrefs` 或 `SQLite`、`dataScope=current-editor-global-data`；不传 `enableAES/sourceSha256`、路径、密码或 SQL。保持 EditMode，无 Persist Inspector、运行实例、编译、目标草稿和目标 PrefabStage；不主动关闭或保存它们。
+先按 [Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md](../../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md) 读取当前分支。复用同一 `inspect-data`，提供自有普通 Prefab 中唯一标准 PersistComponent 的 `targetGuid/globalObjectId`、精确 `storage=PlayerPrefs` 或 `SQLite`、`dataScope=current-editor-global-data`；不传 `enableAES/sourceSha256`、路径、密码或 SQL。保持 EditMode，无 Persist Inspector、运行实例、编译、目标草稿和目标 PrefabStage；不主动关闭或保存它们。
 
 - PlayerPrefs 仅默认 Unity provider，小游戏 provider 返回 `not_applicable`。读取两类已知索引及 HasKey，不读取条目值或未知键；结果为计数、引用缺项、索引 UTF8 大小与整集 `metadataSha256`。缺项返回 `partial`，非法/重复/超限或双次观察变化返回 `blocked`；不存在分类索引不等于没有存档。完整键空间、全局 dirty 和落盘状态仍为 `unknown`。
 - SQLite 不开任何连接，仅读当前 Editor `Persist/SQLite/game.db` 及 `-wal/-shm/-journal` 固定文件的存在性、大小、SHA256；未知目录项只计数。固定路径必须无链接/目录，单文件及合集最多 64 MiB，目录最多 32 项；双次有界读取变化或范围/占用不满足时 `blocked`。孤立伴随文件、零字节主库或未知项为 `partial`。不验证数据库格式、schema、玩家值或 Cipher；不生成 `-shm`。全部文件不存在只报告空观察。
@@ -35,7 +35,7 @@
 
 ## 保存、删除与平台差异
 
-先按 `Docs/Runtime/Modules/Persist/PersistComponent.md` 核对 Config 后 Persist 的实际加载顺序，再只读所选实现的 Docs。
+先按 [Docs/Runtime/Modules/Persist/PersistComponent.md](../../../../Docs/Runtime/Modules/Persist/PersistComponent.md) 核对 Config 后 Persist 的实际加载顺序，再只读所选实现的 Docs。
 
 - PlayerPrefs 分类保存底层仍是全局 `Save()`；`SetXxx` 后同进程 `GetXxx` 不能证明落盘。删除仅使用 Persist 管理的已确认分类/条目，不调用 `UnityEngine.PlayerPrefs.DeleteAll()`。
 - FileFragment 删除最后一个条目或 `RemoveAll(classify)` 后，还需 `Save()` 处理正式文件、`.bak` 和残留 `.tmp`。恢复成功可能重建正式文件；无法恢复的坏档可能被隔离为 `.corrupt.<UTC 时间>`，不能把空返回值直接解释为玩家没有存档。
@@ -58,7 +58,7 @@ SQLite 当前 Nova factory、Runtime 与 Inspector 的登记连接由 `SQLiteMai
 
 ### 开发仓隔离 schema 示例
 
-仅验证迁移策略时，可读取长期测试 [PersistenceSchemaMigrationExampleTests.cs](../../../../../Tests/Editor/PersistenceSchemaMigrationExampleTests.cs)，在 Unity Test Runner 的 EditMode 中筛选 `NovaFramework.Tests.Editor.PersistenceSchemaMigrationExampleTests`。示例只在每例唯一的系统临时目录操作固定 `save-v1.json/save-v2.json`：v1 的整数 `level/coins` 与可选 `name` 转为 v2 的 `progress.level/wallet.coins/displayName`，缺省名称为空；等级至少1、金币非负，均限Int32，未知字段、重复字段、坏类型与不支持版本拒绝。已有等价 v2 保留其原字节，冲突目标不合并或覆盖；原 v1 字节保留到用例结束，再由测试只清理自身目录。
+仅在 Nova 开发仓验证迁移策略时，可读取开发仓 `Assets/Tests/Editor/PersistenceSchemaMigrationExampleTests.cs`；该测试不随包分发，消费项目沿 [存档维护边界](../../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md) 完成自身验收，不以该文件存在为前置。开发仓可在 Unity Test Runner 的 EditMode 中筛选 `NovaFramework.Tests.Editor.PersistenceSchemaMigrationExampleTests`。示例只在每例唯一的系统临时目录操作固定 [save-v1.json/save-v2.json（存档版本示例）](../../../../Docs/Runtime/Modules/Persist/FileFragmentManager.md)：v1 的整数 `level/coins` 与可选 `name` 转为 v2 的 `progress.level/wallet.coins/displayName`，缺省名称为空；等级至少1、金币非负，均限Int32，未知字段、重复字段、坏类型与不支持版本拒绝。已有等价 v2 保留其原字节，冲突目标不合并或覆盖；原 v1 字节保留到用例结束，再由测试只清理自身目录。
 
 该示例独立发布新目标文件并重新读盘，覆盖发布前失败保留/重试、发布后失败幂等、目标竞争与来源变化拒绝；不调用 `Nova.Persist`、PlayerPrefs、Config、AES、数据库或 Keychain，不声明多写者锁、跨文件事务或掉电耐久性。它是测试程序集内的 DTO/文件适配器，不是新生产入口或维护 Action。隔离示例的 EditMode 证据只证明本示例策略；`persistence.migration.source` 的真实业务模型、加载/保存调用与独立 Play 仍需另验，真实玩家数据运行仍需精确授权。
 
@@ -70,25 +70,25 @@ MainDemo 的 `DemoProgressMigration` 及 README“业务进度结构迁移”可
 
 ## 受控 FileFragment AES 分支
 
-先按 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md` 核对真实请求与范围。`targetGuid/globalObjectId` 必须定位自有普通 Prefab 的唯一标准 FileFragment PersistComponent；`storage=FileFragment`、`dataScope=current-editor-global-data` 明确当前 Editor 的整个共享目录，不能解释为该 Prefab 专属、某个账号槽或设备数据。保持 EditMode，无 Persist Inspector、Runtime、编译和配置草稿。
+先按 [Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md](../../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md) 核对真实请求与范围。`targetGuid/globalObjectId` 必须定位自有普通 Prefab 的唯一标准 FileFragment PersistComponent；`storage=FileFragment`、`dataScope=current-editor-global-data` 明确当前 Editor 的整个共享目录，不能解释为该 Prefab 专属、某个账号槽或设备数据。保持 EditMode，无 Persist Inspector、Runtime、编译和配置草稿。
 
 本任务若已授权建立或整理维护目标，先通过 Unity Editor 正规保存普通 Prefab，核对完整序列化差异并形成干净磁盘基线，再开始检查与 Plan；下述其它维护分支也沿用此前置。首次保存可能补齐其它既有序列化内容，不能夹带进维护的唯一字段写集。未授权草稿或额外变化保持 `blocked`；写入后失败的旧 Operation 保留 `partial`，按原 token 独立恢复，不重放迁移。
 
 1. `inspect-data` 严格只读现存全部 `.dat`/`.dat.bak`，不传 `enableAES/sourceSha256`；内部使用当前 AES 凭据，执行也须确认当前实际 Plan，已明确的同范围授权不重复问。保存返回的 `beforeSha256`。坏档、孤立备份、残留 `.tmp/.corrupt`、链接和容量超限会阻断，检查不暗中恢复。
 2. `migrate-encryption` 传相同目标/scope、显式 `enableAES` 和 `sourceSha256=beforeSha256`。确认当前真实 Plan 后执行一次；固定调用直接复用 Action，不重复生成转换代码。Key/IV仅由服务从冻结的当前 Master 读取，不出现在请求或报告。
-3. 用原迁移 `recoveryToken` Verify。成功需全集文件、全部主/备历史值、单字段保存及原字节备份均核验；保留 `Library/Nova/AgentActions/PersistenceMaintenance/<operationId>/backup/` 和 journal，不当临时测试文件删除。
+3. 用原迁移 `recoveryToken` Verify。成功需全集文件、全部主/备历史值、单字段保存及原字节备份均核验；保留 [Library/Nova/AgentActions/PersistenceMaintenance/&lt;operationId&gt;/backup/（项目本地位置）](../../../../Docs/START_HERE.md#执行任务与清场的共同约束) 和 journal，不当临时测试文件删除。
 4. `partial` 后禁止重放迁移；使用维护收据 `operationId` 与原迁移 `recoveryToken` 作为 `migrationRecoveryToken`，新建 `recover-maintenance` Plan、确认、执行、Verify。只恢复原/新已知字节与完整资产状态；第三方写入、原凭据丢失或恢复材料漂移会阻断。
 
 该分支成功只表示 Editor 本地维护。旧 Inspector 文本解密失败可返回空字符串，SQLite `RefreshCipherEncrypt` 先删库再建库；这些旧方法不作为受控值维护实现，不能根据字段读回推断全量转换或恢复。
 
 ## PlayerPrefs 与 SQLite 值 AES 维护
 
-先按 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md` 核当前全部字段。目标仍是唯一标准组件的自有普通 Prefab，稳定 EditMode，无运行实例、Persist Inspector、编译和配置草稿；隐私 Key/IV 只由服务内部取得。请求不包含玩家值、路径、密码、SQL 或额外字段。
+先按 [Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md](../../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md) 核当前全部字段。目标仍是唯一标准组件的自有普通 Prefab，稳定 EditMode，无运行实例、Persist Inspector、编译和配置草稿；隐私 Key/IV 只由服务内部取得。请求不包含玩家值、路径、密码、SQL 或额外字段。
 
 1. PlayerPrefs 用 `inspect-data(storage=PlayerPrefs, dataScope=current-editor-managed-indexed-data)` 获取已索引字符串 `sourceSha256`，会内部读取值但不输出。迁移相同目标/scope，显式 `enableAES/sourceSha256/acknowledgeGlobalSave=true`；缺索引、缺项、非字符串或非法名称阻断。默认 metadata scope 保持无值检查。
 2. SQLite 先默认四文件检查取得 `metadata.metadataSha256`；迁移使用 `storage=SQLite/dataScope=current-editor-sqlite-managed-data/sourceSha256=<metadata SHA>/enableAES`。该 SHA 仅是 Plan 前物理变化探测；Plan/Verify 经 Nova lease 与真实 `BEGIN IMMEDIATE` 冻结 schema/值并另记录逻辑 SHA，可能改变 WAL/SHM。Execute 原厂一致逻辑备份后，再在同库新写事务重核和逐行转换/commit，不删除或替换主库。
 3. SQLite 只接受 Nova `Name TEXT PRIMARY KEY, Value TEXT` 两列标准表，无额外约束/触发器/自定义索引、值均 TEXT；schema/空表也进摘要，最多16384行/结构记录与64MiB内容，未知或坏数据阻断。Nova factory、Runtime 与 Inspector 的登记连接由 `SQLiteMaintenanceLease` 约束；已有连接拒维护，不主动提交/关闭。外部 raw 连接由实际写事务隔离，不声称操作系统绝对排他。
-4. 严格 AES/UTF8 解码，坏值不变空串、不跳过；原/新值写受保护 `before-values.bin/after-values.bin`。SQLite 通过参数绑定的 `ATTACH DATABASE … KEY …`、`BEGIN IMMEDIATE` 与 `sqlcipher_export` 生成受保护 `before-sqlite.db`，提交并分离备份连接后独立核验；原厂 backup API 不支持此处明文/Cipher 跨格式保护，不能替代该流程。schema2 `values-journal.json` 绑定原字段收据、目标、逻辑/恢复摘要与阶段；Key/IV 和玩家值不进入 Request/Receipt。数据提交后字段保存失败为 `partial`，保留正式恢复材料。
+4. 严格 AES/UTF8 解码，坏值不变空串、不跳过；原/新值写受保护 `before-values.bin/after-values.bin`。SQLite 通过参数绑定的 `ATTACH DATABASE … KEY …`、`BEGIN IMMEDIATE` 与 `sqlcipher_export` 生成受保护 `before-sqlite.db`，提交并分离备份连接后独立核验；原厂 backup API 不支持此处明文/Cipher 跨格式保护，不能替代该流程。schema2 [values-journal.json（定位）](../../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md) 绑定原字段收据、目标、逻辑/恢复摘要与阶段；Key/IV 和玩家值不进入 Request/Receipt。数据提交后字段保存失败为 `partial`，保留正式恢复材料。
 5. 恢复使用原 `operationId/migrationRecoveryToken` 建独立 Plan。PP 只接受已知键的原/新值；SQLite 只接受完整原或新逻辑并用同库新事务恢复原值后保存原字段，拒第三方漂移。成功需当前限定数据、单字段与备份独立重读；不以测试或代码审查代替真实任务后验。
 
 成功限定当前 Editor 本地值 AES 维护，真实设备重启耐久性另验。CipherPassword 与 Privacy Key/IV 使用下方独立分支；任意数据编辑和 schema 迁移由授权业务实现处理。正式恢复目录保留，不当测试垃圾删除。

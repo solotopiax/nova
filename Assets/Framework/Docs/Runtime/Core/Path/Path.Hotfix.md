@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Path.Hotfix.cs` | 热更新路径常量 |
+| [Path.Hotfix.cs](../../../../Scripts/Runtime/Core/Path/Path.Hotfix.cs) | 热更新路径常量 |
 
 ## 关键字段
 

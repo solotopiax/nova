@@ -1,7 +1,7 @@
 # SqlCipher4Unity3D
 
 > 包名：`com.solotopia.sqlcipher4unity3d`
-> 当前版本：`10.0.3`
+> 当前版本：`10.0.6`
 
 SQLite Cipher 加密数据库访问库
 
@@ -11,7 +11,7 @@ SQLite Cipher 加密数据库访问库
 
 ```json
 "dependencies": {
-  "com.solotopia.sqlcipher4unity3d": "10.0.0"
+  "com.solotopia.sqlcipher4unity3d": "10.0.6"
 }
 ```
 
@@ -21,11 +21,11 @@ SQLite Cipher 加密数据库访问库
 
 ## 当前开源状态
 
-- 当前结论：包根第三方声明已补齐，可按“保留 `Core/LICENSE`、各源文件头版权声明、原生库归属说明与包根说明文件”的方式进入公开仓。
+- 当前结论：包根第三方声明已补齐，可按“保留 [Core/LICENSE](Core/LICENSE)、各源文件头版权声明、原生库归属说明与包根说明文件”的方式进入公开仓。
 - 后续若替换任意平台的原生 `sqlcipher` / `libcrypto` 产物，仍需按新版本重新复核。
 
 ## 许可与第三方声明
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。

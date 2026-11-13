@@ -1,7 +1,7 @@
 # UniTask
 
 > 包名：`com.solotopia.unitask`
-> 当前版本：`10.0.6`
+> 当前版本：`10.0.7`
 > 上游核心版本：`2.5.11`
 
 Unitask 高性能异步任务库
@@ -12,7 +12,7 @@ Unitask 高性能异步任务库
 
 ```json
 "dependencies": {
-  "com.solotopia.unitask": "10.0.6"
+  "com.solotopia.unitask": "10.0.7"
 }
 ```
 
@@ -22,10 +22,10 @@ Unitask 高性能异步任务库
 
 ## 当前开源状态
 
-- 当前结论：包根第三方声明已补齐，可按“保留 `Core/` 内上游许可文件 + 包根说明文件”的方式进入公开仓。
+- 当前结论：包根第三方声明已补齐，可按“保留 [Core/](Core/) 内上游许可文件 + 包根说明文件”的方式进入公开仓。
 
 ## 许可与第三方声明
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。

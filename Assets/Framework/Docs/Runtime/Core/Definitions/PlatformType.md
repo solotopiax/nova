@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Runtime/Core/Definitions/PlatformType.cs` | `PlatformType` | 枚举定义 |
+| [Runtime/Core/Definitions/PlatformType.cs](../../../../Scripts/Runtime/Core/Definitions/PlatformType.cs) | `PlatformType` | 枚举定义 |
 
 ---
 

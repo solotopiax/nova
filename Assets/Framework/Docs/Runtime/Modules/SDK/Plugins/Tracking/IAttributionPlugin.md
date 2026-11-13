@@ -2,7 +2,7 @@
 
 **类签名**：`public interface IAttributionPlugin : ISDKPlugin`
 **命名空间**：`NovaFramework.Runtime`
-**源码文件**：`Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Tracking/IAttributionPlugin.cs`
+**源码文件**：[Scripts/Runtime/Modules/SDK/Plugins/Tracking/IAttributionPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Tracking/IAttributionPlugin.cs)
 
 归因接口，获取安装来源、Campaign 及 Conversion 数据。
 
@@ -24,7 +24,7 @@
 
 | 文件 | 类型 | 说明 |
 |---|---|---|
-| `Plugins/Tracking/IAttributionPlugin.cs` | `IAttributionPlugin` | 接口全部定义 |
+| [Plugins/Tracking/IAttributionPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Tracking/IAttributionPlugin.cs) | `IAttributionPlugin` | 接口全部定义 |
 
 ---
 

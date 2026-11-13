@@ -11,7 +11,7 @@ UI 视图分组辅助器抽象基类。每个视图分组对应一个辅助器�
 
 | 文件 | 说明 |
 |------|------|
-| `UIGroupHelperBase.cs` | 抽象基类实现，位于 `Managers/UIGroupHelper/Implements/` |
+| [UIGroupHelperBase.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Implements/UIGroupHelperBase.cs) | 抽象基类实现，位于 [Managers/UIGroupHelper/Implements/](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIGroupHelper/Implements/) |
 
 ## 关键字段/属性
 

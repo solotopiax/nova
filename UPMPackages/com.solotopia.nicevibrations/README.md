@@ -1,7 +1,7 @@
 # Nice Vibrations
 
 > 包名：`com.solotopia.nicevibrations`
-> 当前版本：`10.0.3`
+> 当前版本：`10.0.7`
 
 跨平台触觉反馈库
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nicevibrations": "10.0.0"
+  "com.solotopia.nicevibrations": "10.0.7"
 }
 ```
 
@@ -21,12 +21,12 @@
 
 ## 当前开源状态
 
-- 当前结论：包根第三方声明已补齐，可按“保留上游 MIT 许可证、`Core/3RD-PARTY-LICENSES.md` 与包根说明文件”的方式进入公开仓。
+- 当前结论：包根第三方声明已补齐，可按“保留上游 MIT 许可证、[Core/3RD-PARTY-LICENSES.md](Core/3RD-PARTY-LICENSES.md) 与包根说明文件”的方式进入公开仓。
 
 ## 许可与第三方声明
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
 
 Editor 域重载时，已存在的宏列表若与补齐结果完全相同则不再回写 PlayerSettings；缺失宏仍按原顺序补齐并写入。

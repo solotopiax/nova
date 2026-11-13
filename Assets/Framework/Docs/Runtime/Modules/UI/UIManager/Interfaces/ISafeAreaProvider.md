@@ -11,9 +11,9 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Interfaces/ISafeAreaProvider.cs` | `interface ISafeAreaProvider` | 接口定义 |
-| `Definitions/SafeAreaData.cs` | `struct SafeAreaData` | 安全区域原始数据（Left/Right/Top/Bottom/PixelRatio/ScreenHeight） |
-| `Definitions/DefaultSafeAreaProvider.cs` | `sealed class DefaultSafeAreaProvider : ISafeAreaProvider` | 基于 `Screen.safeArea` 的默认实现 |
+| [ISafeAreaProvider.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Interfaces/ISafeAreaProvider.cs) | `interface ISafeAreaProvider` | 接口定义 |
+| [SafeAreaData.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/SafeAreaData.cs) | `struct SafeAreaData` | 安全区域原始数据（Left/Right/Top/Bottom/PixelRatio/ScreenHeight） |
+| [DefaultSafeAreaProvider.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/DefaultSafeAreaProvider.cs) | `sealed class DefaultSafeAreaProvider : ISafeAreaProvider` | 基于 `Screen.safeArea` 的默认实现 |
 
 ---
 

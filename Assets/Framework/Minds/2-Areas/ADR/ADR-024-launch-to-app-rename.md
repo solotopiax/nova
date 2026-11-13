@@ -62,8 +62,8 @@ related:
 
 ## 验证依据（Verification）
 
-- 代码：`Assets/Framework/Scripts/Runtime/Modules/App/`（整目录）
-- 接口：`Assets/Framework/Scripts/Runtime/Modules/App/Managers/AppManager/Interfaces/IAppManager.cs`
-- 编排：`Assets/Framework/Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs`
+- 代码：[Scripts/Runtime/Modules/App/](../../../Scripts/Runtime/Modules/App)（整目录）
+- 接口：[Scripts/Runtime/Modules/App/Managers/AppManager/Interfaces/IAppManager.cs](../../../Scripts/Runtime/Modules/App/Managers/AppManager/Interfaces/IAppManager.cs)
+- 编排：[Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs)
 - grep 残留检查：`LaunchComponent | LaunchManager | LaunchCheckResult | DownloadAppAsync | PrepareAsync | m_PreparedPackages` 全工程零命中（doc-writer 报告）
 - qa-reviewer 三路径运行时 [PASS]：URL 留空降级、LoadManifestAsync 调用成功、清单幂等

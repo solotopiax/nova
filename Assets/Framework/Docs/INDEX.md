@@ -2,23 +2,25 @@
 
 > 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
 >
-> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 34 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
+> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 35 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
 >
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
-自然语言开发与源码/XML、参数及工具导航见 [开发入口](Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) 和 [Nova Project Skills](../Agents/INDEX.md)；历史验收档案不随框架保留。
+自然语言开发与源码/XML、参数及工具导航见 [开发入口](Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) 和 [Nova Project Skills](../Agents/INDEX.md)；设计依据、术语和既有历史归档见整库公开的 [Minds 索引](../Minds/0-Index/0-Index.md)。历史记录不替代当前任务验收。
 
 ## 按任务类型快速定位
 
-> 找到你的任务，直接跳转必读文档，不必逐行阅读索引。
+> 找到你的任务，直接跳转必读文档，不必逐行阅读索引。独立包条目中的包名与包内路径按 [SDK / Kit 包文档发现](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 定位，不能从 Framework 包根猜相邻目录。
 
 | 任务 | 必读文档（按顺序） |
 |------|-------------------|
-| **选择框架 API、审查业务边界、热更、状态、保存或异步归属** | [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md)：按 NA-001～NA-016 选择本次相关条目，再进入所属模块 Docs。 |
+| **选择框架 API、审查业务边界、热更、状态、保存或异步归属** | [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md)：按该页[规则导航表](Onboarding/DEVELOPMENT_CONSTRAINTS.md#1-适用范围与执行原则)选择本次相关条目，再进入所属模块 Docs。 |
 | **当前 Skills 覆盖的日常 Nova 项目任务** | 用自然语言描述任务 → [Nova Project Skills](../Agents/INDEX.md)（确认匹配 Skill、影响范围与证据门）→ 该 Skill 引用的模块 Docs；全量可发现不代表全量顺序执行。 |
-| **从 PSD/PSB 制作 uGUI、同步来源或 AI 识别** | [nova-project-psd2ugui](../Agents/Skills/nova-project-psd2ugui/SKILL.md) → 当前已安装商业插件的 README / `Nova/Docs/`；Agent 先查询配置、树与输出，按模式调用受控操作，业务 UIView 继续既有页面接入。 |
+| **日常研发方法与复杂需求梳理** | [共同原则](Onboarding/DEVELOPMENT_CONSTRAINTS.md#日常研发的最小原则)由[共同入口](START_HERE.md#日常研发的共同入口)读取；[方法手册](Onboarding/AI_DEVELOPMENT_WORKFLOW.md#按需阅读导航)按需展开，只有比较方案、复杂变化和阶段依赖才使用[梳理 Skill](../Agents/Skills/nova-project-development/SKILL.md)。 |
+| **查询设计取舍、术语、过往模式与历史归档** | [知识读取边界](START_HERE.md#设计依据与历史知识) → [Minds 索引](../Minds/0-Index/0-Index.md) → 最相关索引和条目；按需只读，不整库载入上下文。 |
+| **从 PSD/PSB 制作 uGUI、同步来源或 AI 识别** | [nova-project-psd2ugui](../Agents/Skills/nova-project-psd2ugui/SKILL.md) → 当前已安装商业插件的 README / [按包定位：Nova/Docs/](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)；Agent 先查询配置、树与输出，按模式调用受控操作，业务 UIView 继续既有页面接入。 |
 | **理解 Skill、Router、Workflow、Operation、Action 与 MCP 的关系** | [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)：分别看任务拆解和请求传递，理解 Nova 为什么复用 Unity MCP。 |
 | **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
 | **检查场景 / Resources 边界或构建前置条件** | [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
@@ -66,14 +68,14 @@
 | **多语言本地化**（显示文本/切换语言/字体适配） | [LocalizationComponent.md · 初始化时序+GetText](Runtime/Modules/Localization/LocalizationComponent.md) → [LocalizationManager.md · ResolveLanguage+状态机](Runtime/Modules/Localization/LocalizationManager.md) → [LocalizationSettings.md · 文本Map+字体List双组设置](Runtime/Modules/Localization/LocalizationSettings.md) → [TextLocalizing.md · TMP专用+字体刷新链](Runtime/Modules/Localization/TextLocalizing.md) |
 | **理解 FSM 工具** | [FsmState.md · 状态基类](Runtime/Core/Fsm/FsmState.md) → [Fsm.md · FSM 实现+接口](Runtime/Core/Fsm/Fsm.md) |
 | **业务短连接（Proto / AES / 主备 / 取消）与普通 HTTP** | [NetworkComponent.md · SendProtoAsync 标准门面及普通 Get/Post](Runtime/Modules/Network/NetworkComponent.md) → [NetService.md · 内部 Proto 传输链](Runtime/Modules/Network/NetService.md) → [HttpManager.md · UnityWebRequest 与主备候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [HttpResponse.md · 响应所有权与交付状态](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
-| **Alibaba Cloud OSS Runtime 上传/下载** | [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
-| **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Editor/Config/ConfigMasterSO.md) → [CDNEditorConfigs.md · 12 字段定义](Editor/Config/Definitions/CDNEditorConfigs.md) → [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
+| **Alibaba Cloud OSS Runtime 上传/下载** | Alibaba Cloud OSS C# SDK v2 包文档（包 `com.solotopia.alibabacloud.oss`，包内 [按包定位：Nova/Docs/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） |
+| **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Editor/Config/ConfigMasterSO.md) → [CDNEditorConfigs.md · 12 字段定义](Editor/Config/Definitions/CDNEditorConfigs.md) → Alibaba Cloud OSS C# SDK v2 包文档（包 `com.solotopia.alibabacloud.oss`，包内 [按包定位：Nova/Docs/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） |
 | **WebSocket 长连接（认证/心跳/重连）** | [NetworkComponent.md · ConnectServer/SendMessage](Runtime/Modules/Network/NetworkComponent.md) → [WebSocketManager.md · 状态机+协程链](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) |
 | **NetCmd URL 路由配置（Host+Path）** | [NetworkManager.md · Luban 加载+URL 路由算法](Runtime/Modules/Network/NetworkManager/NetworkManager.md) → [NetworkSettings.md · HostKeySettings/NetCmdSettings](Runtime/Modules/Network/Definitions/NetworkSettings.md) |
 | **新增 SDK 插件**（UPM 拔插式） | [SDK/INDEX.md · 模块入口与目录导航](Runtime/Modules/SDK/INDEX.md) → [ARCHITECTURE.md · 当前结构与分层](Runtime/Modules/SDK/ARCHITECTURE.md) → [Definitions/SDKPluginBase.md · 纯C#抽象基类+模板方法](Runtime/Modules/SDK/Definitions/SDKPluginBase.md) → [SDKComponent.md · InitializeAsync+使用示例](Runtime/Modules/SDK/SDKComponent.md) → [Definitions/ISDKPlugin.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPlugin.md) |
-| **接入第三方支付**（ThirdPay） | [ThirdPay 包文档入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/INDEX.md) → [接入与验收顺序](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#接入与验收顺序) → [购买前补单与升级说明](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询) → [Store 配置](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStoreConfig.md) |
-| **支付、多商店恢复与发货判断** | [IAP 核心入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md) → [结果与发货资格](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md#支付返回值与发货资格)；官方内购与金券分别查 [Mobile](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/INDEX.md)、[Voucher](../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.voucher/Nova/Doc/INDEX.md) |
-| **广告请求、展示、Banner 与收益上报** | [广告聚合入口](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md) → [配置](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginConfig.md) → [事件语义](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginEvents.md)；渠道差异查 [MAX](../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/INDEX.md)、[AdMob](../../../UPMPackages/com.solotopia.nova.framework.sdk.admob/Nova/Doc/INDEX.md) |
+| **接入第三方支付**（ThirdPay） | ThirdPay 包文档入口（包 `com.solotopia.nova.framework.sdk.iap.thirdpay`，包内 [按包定位：Nova/Doc/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） → 接入与验收顺序（包 `com.solotopia.nova.framework.sdk.iap.thirdpay`，包内 [按包定位：Nova/Doc/ThirdPayStore.md#接入与验收顺序](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） → 购买前补单与升级说明（包 `com.solotopia.nova.framework.sdk.iap.thirdpay`，包内 [按包定位：Nova/Doc/ThirdPayStore.md#android-重复点击补单查询](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） → Store 配置（包 `com.solotopia.nova.framework.sdk.iap.thirdpay`，包内 [按包定位：Nova/Doc/ThirdPayStoreConfig.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） |
+| **支付、多商店恢复与发货判断** | IAP 核心入口（包 `com.solotopia.nova.framework.sdk.iap`，包内 [按包定位：Nova/Doc/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） → 结果与发货资格（包 `com.solotopia.nova.framework.sdk.iap`，包内 [按包定位：Nova/Doc/IAPPlugin.md#支付返回值与发货资格](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)）；官方内购与金券分别查 Mobile（包 `com.solotopia.nova.framework.sdk.iap.mobile`，包内 [按包定位：Nova/DOCS/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)）、Voucher（包 `com.solotopia.nova.framework.sdk.iap.voucher`，包内 [按包定位：Nova/Doc/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） |
+| **广告请求、展示、Banner 与收益上报** | 广告聚合入口（包 `com.solotopia.nova.framework.sdk.ad`，包内 [按包定位：Nova/Doc/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） → 配置（包 `com.solotopia.nova.framework.sdk.ad`，包内 [按包定位：Nova/Doc/AdPluginConfig.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） → 事件语义（包 `com.solotopia.nova.framework.sdk.ad`，包内 [按包定位：Nova/Doc/AdPluginEvents.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)）；渠道差异查 MAX（包 `com.solotopia.nova.framework.sdk.max`，包内 [按包定位：Nova/Doc/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)）、AdMob（包 `com.solotopia.nova.framework.sdk.admob`，包内 [按包定位：Nova/Doc/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） |
 | **触觉振动反馈**（NiceVibrations） | [VibrateComponent.md · Play/StopAll/LoadAsync](Runtime/Modules/Vibrate/VibrateComponent.md) → [VibrateManager.md · 链式播放+CTS](Runtime/Modules/Vibrate/VibrateManager.md) |
 | **播放声音 / 管理声音组**（Sound） | [SoundComponent.md · PlaySound+LoadAsync](Runtime/Modules/Sound/SoundComponent.md) → [SoundManager.md · 优先级抢占+按name查表算法](Runtime/Modules/Sound/SoundManager.md) → [PlaySoundParams.md · 参数池化](Runtime/Modules/Sound/PlaySoundParams.md) |
 | 理解框架启动顺序 / Manager 优先级 | [ARCHITECTURE.md · 启动与销毁顺序](ARCHITECTURE.md) → [Nova.md](Runtime/Modules/Nova/Nova.md) |
@@ -85,7 +87,7 @@
 | 文档 | 说明 |
 |------|------|
 | [Core/Core.md](Runtime/Core/Core.md) | 核心层概览 |
-| [MemoryProtection 包文档](../../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/INDEX.md) | 独立可选核心扩展：敏感整数防护、可选 Anti-Cheat Toolkit、隐私配置迁移与存档兼容 |
+| MemoryProtection 包文档（包 `com.solotopia.nova.framework.memory.protection`，包内 [按包定位：Nova/Docs/INDEX.md](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)） | 独立可选核心扩展：敏感整数防护、可选 Anti-Cheat Toolkit、隐私配置迁移与存档兼容 |
 | [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) | 所有 Component 基类 |
 | [FrameworkManager.md](Runtime/Modules/FrameworkManager.md) | 所有 Manager 基类 |
 | [Definitions.md](Runtime/Core/Definitions/Definitions.md) | 框架级枚举（渠道/平台/模式/语言类型） |
@@ -172,6 +174,8 @@
 | [AssetComponent.md](Runtime/Modules/Asset/AssetComponent.md) | 资源加载 Component（全 Load/Warmup/Release API 薄代理入口） |
 | [AssetCallbacks.md](Runtime/Modules/Asset/AssetCallbacks.md) | 说明旧回调式资源契约已被当前 Handle 模式取代 |
 | [IAssetManager.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md) | Asset Manager 接口（全量契约，所有 LoadXxx 返回 Handle） |
+| [IAssetPackageLoader.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetPackageLoader.md) | 可选的精确资源包加载；旧接口及默认包用法保留 |
+| [SpriteBinding.md](Runtime/Modules/Asset/SpriteBinding.md) | Image/SpriteRenderer 异步换图、过期请求与图集克隆所有权 |
 | [IAssetHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md) | 主资源句柄接口（非泛型基接口 + 泛型 `IAssetHandle<T>`） |
 | [ISubAssetsHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/ISubAssetsHandle.md) | 子资源批量句柄接口（ISubAssetsHandle + `ISubAssetsHandle<T>`，整批同生共死） |
 | [IAllAssetsHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAllAssetsHandle.md) | 全资源批量句柄接口（IAllAssetsHandle + `IAllAssetsHandle<T>`，整批同生共死） |
@@ -288,6 +292,8 @@
 | [IUIViewRow.md](Runtime/Modules/UI/UIManager/Definitions/IUIViewRow.md) | UI 视图数据行接口（替代已删除的 UIViewEntry） |
 | [IUIView.md](Runtime/Modules/UI/Definitions/IUIView.md) | UIView 接口 |
 | [UIView.md](Runtime/Modules/UI/Definitions/UIView.md) | UIView 抽象基类（MonoBehaviour） |
+| [UIViewScope.md](Runtime/Modules/UI/Definitions/UIViewScope.md) | 可选的每次打开作用域；旧页手工生命周期不被接管 |
+| [IUIOpenAwaiter.md](Runtime/Modules/UI/UIManager/Interfaces/IUIOpenAwaiter.md) | 可选的可等待打开结果，保留旧 serialID 入口 |
 | [UIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/UIGroupHelper.md) | Canvas 分层/深度排序 |
 | [UIGroupHelperBase.md](Runtime/Modules/UI/UIGroupHelper/Implements/UIGroupHelperBase.md) | UIGroup 辅助器抽象基类 |
 | [IUIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/Interfaces/IUIGroupHelper.md) | UIGroup 辅助器接口 |
@@ -447,7 +453,7 @@
 > 完整模块文档树见 [Runtime/Modules/SDK/INDEX.md](Runtime/Modules/SDK/INDEX.md)
 > 本索引只覆盖主框架内的 SDK 公共层。各 SDK / Kit 子包可以单向依赖这些公共契约，但文档仍由各自 UPM 包独立维护，不在主框架索引中逐包建立反向链接。
 >
-> Agent 处理具体独立包（核心扩展、SDK、Kit 等）任务时，应从任务关键字识别当前工程中的候选包，再查找包内 `Nova/{Doc,Docs,DOCS}/INDEX.md`。开发仓优先搜索 `UPMPackages/<package>/Nova/{Doc,Docs,DOCS}/INDEX.md`；消费工程依次搜索 `Packages/<package>/...` 与 `Library/PackageCache/<package>@<version>/...`。查阅已安装包文档是允许进入 `Library/PackageCache` 的定向场景。先读包内 INDEX，再按 INDEX 进入具体文档；不要因主框架索引未列出包名就判定“没有文档”。
+> Agent 处理具体独立包（核心扩展、SDK、Kit 等）任务时，按 [SDK / Kit 包文档发现](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 从当前有效包根查找 `Nova/{Doc,Docs,DOCS}/INDEX.md`。先读包内 INDEX，再进入具体文档；不要因主框架索引未列出包名就判定“没有文档”，也不要从开发仓相邻目录或缓存哈希推断当前安装位置。
 
 | 文档 | 说明 |
 |------|------|
@@ -530,7 +536,9 @@
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate、严格 DLL 拷贝及 Sample Editor 自动同步；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
-| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 39 项 |
+| [EditorUtil.SpriteAtlasGeneration.md](Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md) | 可选的目录图集预演、增量生成和恢复；原流程不自动启用 |
+| [EditorUtil.UIBindings.md](Editor/EditorUtil/EditorUtil.UIBindings.md) | 既有普通 Prefab 精确字段绑定与可选 partial 生成 |
+| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 41 项，实际集合以 live describe 为准 |
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
 | [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
 | [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 `Find<T>` / `CreateAt<T>` / `LoadAt<T>`） |

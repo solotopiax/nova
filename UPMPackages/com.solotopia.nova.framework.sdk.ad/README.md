@@ -1,7 +1,7 @@
 # AdPlugin
 
 > 包名：`com.solotopia.nova.framework.sdk.ad`
-> 当前版本：`1.2.3`
+> 当前版本：`1.2.4`
 
 广告聚合插件基类，调度 Rewarded / Interstitial / Banner / AppOpen / Native 格式（具体支持由渠道实现决定，当前 MAX 与独立 AdMob 支持前四种），内置多渠道调度、广告位状态机、重试与打点。
 
@@ -11,11 +11,11 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.ad": "1.2.3"
+  "com.solotopia.nova.framework.sdk.ad": "1.2.4"
 }
 ```
 
-本包只提供聚合与渠道基类，不包含可独立出广告的原厂 SDK。项目组可在 Nova PlugPals 的内部云仓库安装本包及所选渠道包，需有对应内部 registry 的访问权限；操作入口见 [PlugPals](../../Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md)。当前四格式渠道见 [MAX](../com.solotopia.nova.framework.sdk.max/README.md) 与 [独立 AdMob](../com.solotopia.nova.framework.sdk.admob/README.md)，各自的官方外网依赖、安装条件与平台边界以渠道说明为准。`Native` 枚举存在不表示这两个渠道已实现原生广告展示。
+本包只提供聚合与渠道基类，不包含可独立出广告的原厂 SDK。项目组可在 Nova PlugPals 的内部云仓库安装本包及所选渠道包，需有对应内部 registry 的访问权限；操作入口见 [PlugPals](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Editor/Windows/PlugPalsWindow.md`）。当前四格式渠道见 [MAX](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `README.md`） 与 [独立 AdMob](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.admob` 包内 `README.md`），各自的官方外网依赖、安装条件与平台边界以渠道说明为准。`Native` 枚举存在不表示这两个渠道已实现原生广告展示。
 
 ## 当前行为
 
@@ -58,3 +58,16 @@ MAX的RVPlacementGroups、InterPlacementGroups、AppOpenPlacementGroups保持字
 ## 维护
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。日常变更写入 CHANGELOG 的 `[Unreleased]`，发版时由发布流程归入版本节；已发布历史保持不变。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Editor/Windows/PlugPalsWindow.md`<br>`Docs/Runtime/Modules/Network/NetService.md`<br>`Docs/Runtime/Modules/SDK/Definitions/Data.md`<br>`Docs/Runtime/Modules/SDK/Definitions/ISDKPlugin.md`<br>`Docs/Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md`<br>`Docs/Runtime/Modules/SDK/Events/ObservableEvent.md`<br>`Scripts/Runtime/Modules/SDK/Plugins/Ad/IAdPlugin.cs`<br>`Scripts/Runtime/Modules/SDK/Plugins/Ad/IBannerControl.cs` |
+| `com.solotopia.nova.framework.sdk.ad` | `Nova/Doc/INDEX.md` | `Sample AdDemo / README.md#先登录再操作广告` |
+| `com.solotopia.nova.framework.sdk.admob` | `Nova/Doc/INDEX.md` | `Nova/Doc/AdMobAdPlugin.md`<br>`README.md` |
+| `com.solotopia.nova.framework.sdk.max` | `Nova/Doc/INDEX.md` | `Nova/Doc/MaxAdPlugin.md`<br>`Nova/Doc/MaxAdPlugin.md#本地调用与回调日志`<br>`Nova/Scripts/Runtime/MaxAdPlugin.RV.cs`<br>`README.md` |
+
+`Sample 名称 / 相对路径` 表示该包导入的示例内容；通过 Package Manager 和实际导入清单定位当前副本，再从其 README 进入。不要把开发仓源目录或某个版本的导入目录当作固定位置。

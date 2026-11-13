@@ -26,6 +26,8 @@ related:
 
 # ADR-079：业务 API 双域名与 DoH 指定连接 IP 采用传输能力门控
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../Docs/INDEX.md) 或 [Minds 索引](../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 > [!warning] 已被替代
 > 自 2026-09-01 起，本决策由 [[ADR-083-uwr-primary-fallback-network|ADR-083]] 替代。BestHTTP、DoH、IP 注入及其专属遥测已退出 Nova；本文仅保留为历史决策与既有验证记录。
 
@@ -111,7 +113,7 @@ Nova 的 BestHTTP 适配包在进程内只反射检测一次该方法：
 
 ## 当前事实来源（Sources）
 
-- `Assets/Framework/Docs/Runtime/Modules/Network/HttpManager/HttpManager.md`
-- `Assets/Framework/Docs/Runtime/Modules/Network/DoHManager/DoHManager.md`
-- `Assets/Framework/Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md`
-- `UPMPackages/com.solotopia.nova.framework.besthttp/README.md`
+- [Assets/Framework/Docs/Runtime/Modules/Network/HttpManager/HttpManager.md](../../../Docs/Runtime/Modules/Network/HttpManager/HttpManager.md)
+- 历史目标（现已失效）：`Assets/Framework/Docs/Runtime/Modules/Network/DoHManager/DoHManager.md`
+- [Assets/Framework/Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md](../../../Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md)
+- 历史目标（现已失效）：`UPMPackages/com.solotopia.nova.framework.besthttp/README.md`

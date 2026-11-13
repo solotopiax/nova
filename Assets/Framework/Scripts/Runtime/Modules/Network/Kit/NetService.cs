@@ -182,10 +182,33 @@ namespace NovaFramework.Runtime
         /// <returns>包含业务响应数据或错误信息的 NetResponse。</returns>
         /// <remarks>HTTP 失败、解密失败及协议解析失败分别映射既有错误码；底层 POST 抛异常仍向上传播。取得的 HttpResponse 在 finally 唯一归池；业务错误响应体解析失败保留原错误码，仅省略 data。</remarks>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
+        public static UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
             INetworkCmdRow cmdRow,
             TReq request,
             MessageParser<TResp> parser,
+            CancellationToken cancellationToken)
+            where TReq : IMessage<TReq>
+            where TResp : IMessage<TResp>
+        {
+            return SendAsync(cmdRow, request, parser, -1f, cancellationToken);
+        }
+
+        /// <summary>
+        /// 按指定的单次请求超时发送 Protobuf；主备切换和重试的每次发送分别计时。
+        /// </summary>
+        /// <typeparam name="TReq">请求 Proto 消息类型。</typeparam>
+        /// <typeparam name="TResp">响应 Proto 消息类型。</typeparam>
+        /// <param name="cmdRow">NetCmd 指令行数据。</param>
+        /// <param name="request">直接传入的业务 Proto Body。</param>
+        /// <param name="parser">响应 Proto 消息解析器。</param>
+        /// <param name="requestTimeout">单次物理请求超时秒数；负数使用普通业务请求超时。</param>
+        /// <param name="cancellationToken">取消令牌；取消会终止整条请求链。</param>
+        /// <returns>包含业务响应数据或错误信息的 NetResponse。</returns>
+        internal static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
+            INetworkCmdRow cmdRow,
+            TReq request,
+            MessageParser<TResp> parser,
+            float requestTimeout,
             CancellationToken cancellationToken)
             where TReq : IMessage<TReq>
             where TResp : IMessage<TResp>
@@ -243,7 +266,7 @@ namespace NovaFramework.Runtime
                     cmdRow?.HostKey,
                     netCmdName,
                     bodyBytes,
-                    -1f,
+                    requestTimeout,
                     headerInfos,
                     cancellationToken
                 );

@@ -85,7 +85,7 @@ related:
 - Runtime：`WeChatMiniGamePaymentModels`、`WeChatMiniGamePaymentOrderRepository`、`WeChatMiniGameBackend`、`WeChatMiniGameCommerce`、`WeChatMiniGamePlugin.Payment`。
 - 协议与配置：六项 `PbNetWechat*` 协议、六项 NetCmd、`WeChatMiniGamePluginConfig` 与 ConfigRuntime。
 - Demo：`WechatMiniGameDemo` 覆盖游戏币、道具、本地订单读取、单笔验单、全部补单和项目发货器接入点。
-- Docs：微信小游戏包 `RUNTIME_API.md`、`SERVER_CONTRACT.md`、`CAPABILITY_MATRIX.md`。
+- Docs：微信小游戏包 [RUNTIME_API.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame/Nova/Docs/RUNTIME_API.md)、[SERVER_CONTRACT.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame/Nova/Docs/SERVER_CONTRACT.md)、[CAPABILITY_MATRIX.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame/Nova/Docs/CAPABILITY_MATRIX.md)。
 
 ## 2026-09-24 协议契约更新
 

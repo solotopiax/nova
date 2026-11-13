@@ -11,8 +11,8 @@ UI 配置设置，实现 `IDataTableSettings`，供 Luban 导出流水线统一�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/UIManager/Definitions/UISettings.cs` | `UISettings` | 可序列化配置数据类，含编辑器专用字段（`#if UNITY_EDITOR`） |
-| `Managers/UIManager/Definitions/UISettings.cs` | `UIUnitSetting` | 单个 UI 数据源的单元设置，固定 Map 模式，索引字段 "Name" |
+| [Managers/UIManager/Definitions/UISettings.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UISettings.cs) | `UISettings` | 可序列化配置数据类，含编辑器专用字段（`#if UNITY_EDITOR`） |
+| [Managers/UIManager/Definitions/UISettings.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UISettings.cs) | `UIUnitSetting` | 单个 UI 数据源的单元设置，固定 Map 模式，索引字段 "Name" |
 
 ---
 

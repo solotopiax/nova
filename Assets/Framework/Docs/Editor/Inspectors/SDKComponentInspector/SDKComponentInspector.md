@@ -12,10 +12,10 @@ SDK 模块 Inspector，负责绘制 `ISDKManager` 类型选择器、SDK Plugin �
 
 | 文件 | 类型 | 说明 |
 |------|------|------|
-| `SDKComponentInspector.cs` | `SDKComponentInspector` | 主体：`OnEnable` 绑定属性、初始化 Drawer、订阅 Config 保存事件，`OnInspectorGUI` 调度绘制 |
-| `SDKComponentInspector.Visitors.cs` | `SDKComponentInspector` | `SerializedProperty` 字段与 Drawer 引用声明 |
-| `SDKComponentInspector.Methods.cs` | `SDKComponentInspector` | 私有绘制方法：`DrawConfigs`、`DrawPluginEntries` |
-| `SDKComponentInspector.PluginEntriesDrawer.cs` | `SDKComponentInspector.PluginEntriesDrawer` | 嵌套绘制器：active ConfigMaster 过滤、分组渲染、Missing 检测与清理 |
+| [SDKComponentInspector.cs](../../../../Scripts/Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.cs) | `SDKComponentInspector` | 主体：`OnEnable` 绑定属性、初始化 Drawer、订阅 Config 保存事件，`OnInspectorGUI` 调度绘制 |
+| [SDKComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.Visitors.cs) | `SDKComponentInspector` | `SerializedProperty` 字段与 Drawer 引用声明 |
+| [SDKComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.Methods.cs) | `SDKComponentInspector` | 私有绘制方法：`DrawConfigs`、`DrawPluginEntries` |
+| [SDKComponentInspector.PluginEntriesDrawer.cs](../../../../Scripts/Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.PluginEntriesDrawer.cs) | `SDKComponentInspector.PluginEntriesDrawer` | 嵌套绘制器：active ConfigMaster 过滤、分组渲染、Missing 检测与清理 |
 
 ---
 
@@ -37,7 +37,7 @@ OnInspectorGUI
   FinalRefreshInspectorGUI()
 ```
 
-“打开打点表”按钮位于 Inspector 底部独立“打点工具”区域，会按当前工程所有 `Tracks.xlsx` 直接生成 `Library/Nova/Tracks/Tracks.generated.xlsx`，生成成功后再打开 Excel。生成逻辑由 `EditorUtil.TrackRegistry` 承担，扫描路径按固定优先级追加：`Assets/Framework/Tracks/Tracks.xlsx` → `com.solotopia.nova.framework/Tracks/Tracks.xlsx` → `UPMPackages/*/Nova/Tracks/Tracks.xlsx` → `Packages/*/Nova/Tracks/Tracks.xlsx`。导出 Sheet 名严格沿用源 Excel 的 Sheet 名，重名时直接失败并提示冲突来源。
+“打开打点表”按钮位于 Inspector 底部独立“打点工具”区域，会按当前工程所有 [Tracks.xlsx](../../../../Tracks/Tracks.xlsx) 直接生成 `Library/Nova/Tracks/Tracks.generated.xlsx`，生成成功后再打开 Excel。生成逻辑由 `EditorUtil.TrackRegistry` 承担，扫描路径按固定优先级追加：开发态固定候选 [Tracks/Tracks.xlsx](../../../../Tracks/Tracks.xlsx) → 当前有效 `com.solotopia.nova.framework` 包根下的 [Tracks/Tracks.xlsx](../../../../Tracks/Tracks.xlsx) → `UPMPackages/*/Nova/Tracks/Tracks.xlsx` → `Packages/*/Nova/Tracks/Tracks.xlsx`。导出 Sheet 名严格沿用源 Excel 的 Sheet 名，重名时直接失败并提示冲突来源。
 
 ---
 

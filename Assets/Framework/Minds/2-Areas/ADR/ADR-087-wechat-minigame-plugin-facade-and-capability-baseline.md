@@ -93,7 +93,7 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 - `RuntimePublicApi_DoesNotExposeVendorTypes` 递归检查公开类型、接口、基类、泛型和委托边界。
 - `StatefulWrappers_AreDisposable` 固定有状态包装器的释放契约。
 - 初版历史验证：微信专项 EditMode 包内契约与消费端契约共 52 项通过；当时 Unity Console 无编译错误。
-- 当前事实文档：微信小游戏包 `ARCHITECTURE.md`、`RUNTIME_API.md`、`SERVER_CONTRACT.md` 和 `CAPABILITY_MATRIX.md`。
+- 当前事实文档：微信小游戏包 `ARCHITECTURE.md`、[RUNTIME_API.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame/Nova/Docs/RUNTIME_API.md)、[SERVER_CONTRACT.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame/Nova/Docs/SERVER_CONTRACT.md) 和 [CAPABILITY_MATRIX.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame/Nova/Docs/CAPABILITY_MATRIX.md)。
 - 2026-09-28 增量：微信包 49 项 EditMode 契约测试通过；Unity 临时加载 Demo Prefab 可看到 5 个输入框和文本安全按钮，且无独立 GameLogin 按钮。引力引擎 Unity SDK 5.0.45 源码在 Editor 完成编译；微信开发者工具/真机的键盘、触摸、支付、通知送达和引力数据回传仍未实测。
 
 ## 当前消费边界补充

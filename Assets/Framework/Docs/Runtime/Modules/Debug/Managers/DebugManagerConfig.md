@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Runtime/Modules/Debug/Managers/DebugManagerConfig.cs` | 配置类定义 |
+| [Runtime/Modules/Debug/Managers/DebugManagerConfig.cs](../../../../../Scripts/Runtime/Modules/Debug/Managers/DebugManagerConfig.cs) | 配置类定义 |
 
 ## 关键字段/属性
 

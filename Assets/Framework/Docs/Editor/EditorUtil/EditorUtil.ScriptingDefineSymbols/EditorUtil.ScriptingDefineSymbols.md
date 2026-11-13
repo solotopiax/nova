@@ -5,7 +5,7 @@
 ```csharp
 public static partial class EditorUtil { public static class ScriptingDefineSymbols }
 namespace NovaFramework.Editor
-// Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.ScriptingDefineSymbols/EditorUtil.ScriptingDefineSymbols.cs
+// 包内源码见下方文件表：Scripts/Editor/EditorUtil/EditorUtil.ScriptingDefineSymbols/EditorUtil.ScriptingDefineSymbols.cs
 ```
 
 脚本宏定义（Scripting Define Symbols）增删查工具，支持对固定目标列表批量操作，使用 `NamedBuildTarget` API。目标列表见下表，不代表覆盖 Unity 的全部目标。
@@ -16,7 +16,7 @@ namespace NovaFramework.Editor
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `EditorUtil.ScriptingDefineSymbols.cs` | `EditorUtil.ScriptingDefineSymbols` | 唯一文件 |
+| [EditorUtil.ScriptingDefineSymbols.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.ScriptingDefineSymbols/EditorUtil.ScriptingDefineSymbols.cs) | `EditorUtil.ScriptingDefineSymbols` | 唯一文件 |
 
 ---
 
@@ -86,7 +86,7 @@ Plan 只读展示全部原宏、最终集合及新增/移除，冻结真实 Play
 
 `PlayerSettings` 是原生项目设置，Action 不以 `AssetDatabase.SaveAssetIfDirty` 作为其文件已落盘的证据。它用公有 `Object.Instantiate` 创建唯一 PlayerSettings 的非持久副本，完整快照相等后用公有 `UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget` 保存副本；随后独立加载正式文件核完整状态，在 finally 销毁副本与加载对象。文件 SHA 必须真实改变，完整预期快照与其他 ProjectSettings 均核对通过后才清除提交时的脏标志。Verify 不保存或清脏，允许重载重新标脏但必须完整快照及文件精确匹配。不得全局 SaveAssets 或用 JSON 覆写原生 PlayerSettings。Unity 宏 Set 还会同步活动 Build Profile 的覆盖设置，因此 Action 在 `BuildProfile.GetActiveBuildProfile()` 非 null 时阻断，不切 Profile，也不扩大写入范围。
 
-这里只维护项目显式脚本宏，不代替 asmdef `versionDefines/defineConstraints`、包依赖或 SDK/Kit 接入。移除宏会改变编译分支；不能为了消除编译报错盲目清空。长期 [SettingsPatchBuildDefinesActionTests](../../../../../Tests/Editor/AgentActions/SettingsPatchBuildDefinesActionTests.cs) 覆盖严格请求、空集合、真实目标键、范围外字段保护、顺序与未知序列化结构；测试不清空生产宏。真实写入与恢复由已授权项目验收单独执行。
+这里只维护项目显式脚本宏，不代替 asmdef `versionDefines/defineConstraints`、包依赖或 SDK/Kit 接入。移除宏会改变编译分支；不能为了消除编译报错盲目清空。长期 开发仓测试 `SettingsPatchBuildDefinesActionTests`（`Assets/Tests/Editor/AgentActions/SettingsPatchBuildDefinesActionTests.cs`，不随 Framework 包分发；消费项目按 [当前验证规则](../../../Onboarding/VALIDATION.md#agent-验证顺序) 验收） 覆盖严格请求、空集合、真实目标键、范围外字段保护、顺序与未知序列化结构；测试不清空生产宏。真实写入与恢复由已授权项目验收单独执行。
 
 ## §13 关联文档
 

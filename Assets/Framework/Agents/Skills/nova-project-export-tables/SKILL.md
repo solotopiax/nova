@@ -5,13 +5,15 @@ description: Use when 项目组只需按有效 TableSettings 导出 Table 代码
 
 # Nova 导出 Tables
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-先读取 `references/contract.json`，再通过 `nova_project_action` 对 `nova.project.table.export` 执行 `describe`。仅在 Action 报告配置或范围不明确时，才读取 `Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md` 和相关 TableSettings 文档；不要为一次明确导出重新审计完整表接入链。
+先读取 [references/contract.json](references/contract.json)，再通过 `nova_project_action` 对 `nova.project.table.export` 执行 `describe`。仅在 Action 报告配置或范围不明确时，才读取 [Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md](../../../Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) 和相关 TableSettings 文档；不要为一次明确导出重新审计完整表接入链。
 
 用户同时要求修改已有源数据或追加普通字段再导出时，读取[源编辑前置](references/source-edit.md)，复用共享的按键 CLI；纯导出不读取工作簿或建立源编辑计划。
+
+只要求从 List/Map/One 官方模板新建表源物料时，转入 `nova-project-integrate-table` 的 `source-template-copy` 分支；复制保留整书样式与结构，不执行本 Skill 的导出，也不替换其中示例值。原有数据/字段编辑仍使用上文源编辑入口并遵守 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充)。
 
 ## 直接执行
 

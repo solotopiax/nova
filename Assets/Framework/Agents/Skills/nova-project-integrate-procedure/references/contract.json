@@ -90,7 +90,7 @@
     {
       "name": "businessPreloadDependencyPlanAndPreparationEvidence",
       "required": false,
-      "constraint": "新项目/业务预加载分支必需：参考当前MainDemo ProcedurePreload按实际Persist/Localization/Network/SDK/Table/UI/Sound/Vibrate依赖冻结保留/跳过理由、结果判定、失败重试/取消/代际与Launcher收尾；所需环境/Resources/配置/正式导出先由对应Operation准备。普通既有Procedure或游戏Service局改不扩大。"
+      "constraint": "新游戏/编写或重建业务预加载/开工准备/产品基线评估分支必需：按 Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线 读取当前实际版本MainDemo源码，冻结八节点各自来源、产品配置/物料/正式导出、公开调用、成功条件、平台能力分支、验证状态与负责Operation；状态用已就绪/待准备/阻塞，不能因体量小/单机/离线或当前只用部分模块整体标不适用或裁减。具体平台限制保留在节点内，只有用户明确改变产品范围才记调整及影响。原环境/Resources/程序集/HybridCLR分层仍保留，未完成不报完整基线就绪；已有工程局改不自动迁移，不新增Action请求字段。 预加载实现还冻结各等待的结果判定、进入/尝试代次、重复并发保护、失败提示与按真实共享任务契约可执行的重试/恢复；不能虚构Reset、丢弃false或照搬Demo计步成功。跨资源/场景/配置仍转交已有Operation。"
     }
   ],
   "effects": [
@@ -153,6 +153,7 @@
     "游戏控制分支时真实可达入口、现有Service公开调用、输入/结果/错误、合法状态、局/账号/操作身份、重复/取消、数据及资源/事件拥有者源码证据",
     "游戏控制分支编译与原入口Play实际行为，不以API存在、Ready或Mock证明外部服务；必要Unity绑定/生成/持久化链由选中Operation独立验证",
     "本轮探针/runner/meta/日志/测试态数据清场、必要Refresh与原入口/场景及目标写集核对",
-    "预加载分支逐模块实际成功/可用、失败不进入业务、重试/取消/代际与启动UI收尾证据；Demo八步/100%或未检查bool不能当准备就绪，场景/配置/资源写入由匹配Operation承担。"
+    "预加载分支逐模块实际成功/可用、失败不进入业务、重试/取消/代际与启动UI收尾证据；Demo八步/100%或未检查bool不能当准备就绪，场景/配置/资源写入由匹配Operation承担。",
+    "新游戏或预加载分支：MainDemo八项标准动作的真实代码/配置/物料、全部bool及模块真实结果、必需SDK插件Ready、必要可用性探针和取消/代次/失败恢复/启动UI收尾证据；小体量/单机不能省略，空配置或全局任务完成不替代，缺项按该Operation合同报告待准备/阻塞与未验证，不宣称标准基线就绪。规范维护本身不证明现有项目已整改或已运行。"
   ]
 }

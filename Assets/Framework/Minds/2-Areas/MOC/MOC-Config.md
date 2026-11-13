@@ -123,9 +123,9 @@ Config 的核心分工是：`ConfigMasterSO` 负责编辑期全量主数据，`C
 
 ## 来源
 
-- `Assets/Framework/Scripts/Editor/Config/ConfigMasterSO.cs`
-- `Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Interfaces/IConfigManager.cs`
-- `Assets/Framework/Docs/Editor/Config/ConfigMasterSO.md`、`Assets/Framework/Docs/Runtime/Modules/Asset/ResourceEncryption.md`
+- [Scripts/Editor/Config/ConfigMasterSO.cs](../../../Scripts/Editor/Config/ConfigMasterSO.cs)
+- [Scripts/Runtime/Modules/Config/Managers/Interfaces/IConfigManager.cs](../../../Scripts/Runtime/Modules/Config/Managers/Interfaces/IConfigManager.cs)
+- [Docs/Editor/Config/ConfigMasterSO.md](../../../Docs/Editor/Config/ConfigMasterSO.md)、[Docs/Runtime/Modules/Asset/ResourceEncryption.md](../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md)
 
 ## 关联
 

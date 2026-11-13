@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.cs` | `EditorUtil.Config.RuntimeProvider` | 访问器实现 |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.cs) | `EditorUtil.Config.RuntimeProvider` | 访问器实现 |
 
 ---
 

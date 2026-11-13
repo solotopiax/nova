@@ -18,7 +18,7 @@ UniTask<NativeAppInstallResult> InstallApkAsync(string apkPath, CancellationToke
 
 `NativeAppInstallResult.IsInstalled` 仅在 `Status == Installed` 为 true。下载返回路径仅是文件提交完成，系统确认发起、权限设置跳转及元数据解析均不代表安装成功。
 
-平台桥接与依赖随 Framework 的 `Plugins/Android/NovaNativeAppInstaller.androidlib` 发布，纯 Java `com.android.tools.build:apksig:8.13.2` 不使用构建主机 `apksigner.jar`，consumer ProGuard 保留 JNI/receiver 与验签库。依赖与 JNI 保留规则的源码存在不等于构建或设备通过；Gradle/R8、最终 Manifest 和 Android 真机安装须按本次目标验证。
+平台桥接与依赖随 Framework 的 [Plugins/Android/NovaNativeAppInstaller.androidlib](../../../../../../Plugins/Android/NovaNativeAppInstaller.androidlib/) 发布，纯 Java `com.android.tools.build:apksig:8.13.2` 不使用构建主机 `apksigner.jar`，consumer ProGuard 保留 JNI/receiver 与验签库。依赖与 JNI 保留规则的源码存在不等于构建或设备通过；Gradle/R8、最终 Manifest 和 Android 真机安装须按本次目标验证。
 
 相关入口：[NativeComponent](../../NativeComponent.md)、[NativeManagerConfig](../Definitions/NativeManagerConfig.md)、[ProcedureAppDownload](../../../Procedure/Procedures/ProcedureAppDownload.md)。
 

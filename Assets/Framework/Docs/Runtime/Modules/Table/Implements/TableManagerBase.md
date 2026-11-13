@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/Implements/TableManagerBase.cs` | 抽象基类定义 |
+| [Managers/Implements/TableManagerBase.cs](../../../../../Scripts/Runtime/Modules/Table/Managers/Implements/TableManagerBase.cs) | 抽象基类定义 |
 
 ## 继承关系
 

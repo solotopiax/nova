@@ -5,19 +5,22 @@ description: Use when 项目组要正式导出已有 Emphasis 或 Custom 振动�
 
 # Nova 接入业务振动
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
+仅要求从官方模板新建配表时，选择合同 `source-template-copy` 分支，按 [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 的“配表模板与样式”使用同一 [nova_excel_template.py](../../Tools/nova_excel_template.py) 的 `mode=copy`（来源 `vibration-emphasis/vibration-custom`）。整书原样复制并核对 SHA，不套用 UI/Sound 行模型、不改多 Sheet、合并或示例值；此步只准备表源物料，不要求 Unity 或完整接入输入。随后按本领域既有入口编辑业务内容并保留样式；入口不支持时停止对应写入，不从空白工作簿重建。
+
+
 以下资料仅在当前决策分支按需读取。
 
-再读取 `references/contract.json`。确定性导出先通过 `nova_project_action` 对 `nova.project.vibration.export` 执行 `describe`；只有 Action 报告配置问题时才读 Exporter 文档。确认 Emphasis / Custom 双区域、`DataFormat`、Unit 和行字段时读 `Docs/Runtime/Modules/Vibrate/VibrateSettings.md`、`VibrateUnitSetting.md`、`IVibrateRow.md`；配置场景入口时读 `Docs/Editor/Inspectors/VibrateComponentInspector/VibrateComponentInspector.md`；运行时加载、播放、停止和平台能力核验时读 `Docs/Runtime/Modules/Vibrate/VibrateComponent.md`、`VibrateManager.md`、`IVibrateManager.md` 与 `VibrateType.md`。不要递归加载全部 Vibrate、Luban、Pipify 或第三方插件文档。
+再读取 [references/contract.json](references/contract.json)。确定性导出先通过 `nova_project_action` 对 `nova.project.vibration.export` 执行 `describe`；只有 Action 报告配置问题时才读 Exporter 文档。确认 Emphasis / Custom 双区域、`DataFormat`、Unit 和行字段时读 [Docs/Runtime/Modules/Vibrate/VibrateSettings.md](../../../Docs/Runtime/Modules/Vibrate/VibrateSettings.md)、[VibrateUnitSetting.md](../../../Docs/Runtime/Modules/Vibrate/VibrateUnitSetting.md)、[IVibrateRow.md](../../../Docs/Runtime/Modules/Vibrate/IVibrateRow.md)；配置场景入口时读 [Docs/Editor/Inspectors/VibrateComponentInspector/VibrateComponentInspector.md](../../../Docs/Editor/Inspectors/VibrateComponentInspector/VibrateComponentInspector.md)；运行时加载、播放、停止和平台能力核验时读 [Docs/Runtime/Modules/Vibrate/VibrateComponent.md](../../../Docs/Runtime/Modules/Vibrate/VibrateComponent.md)、[VibrateManager.md](../../../Docs/Runtime/Modules/Vibrate/VibrateManager.md)、[IVibrateManager.md](../../../Docs/Runtime/Modules/Vibrate/IVibrateManager.md) 与 [VibrateType.md](../../../Docs/Runtime/Modules/Vibrate/VibrateType.md)。不要递归加载全部 Vibrate、Luban、Pipify 或第三方插件文档。
 
 ## 仅导出已有数据和代码
 
 用户只要求导出已有振动配置的 `all` / `code` 产物时，选择合同中的 `taskProfiles[id=export-code-data]`，对应 `vibration.export`。冻结项目根、已保存活动场景、唯一 `Nova` / `VibrateComponent`、现有 `VibrateSettings`、一个明确的 `emphasis` 或 `custom` 区域、Unit、真实源文件、共享 DataFormat 和正式输出范围；不要求运行时资源归属、业务 Owner、真机或体感反馈。两区域分别计划和执行，不能合并为一次未确认的写入；`data` 单独导出不属于此 profile。
 
-追加冻结 `activeConfigMasterAndGeneratedNamespace`：从 `ProjectSettings/Nova/Globals.json` 读取 `configMasterGuid` / `configMasterPathHint`，经当前 Action 的 `describe/plan` 与 Unity Editor / MCP 只读配置查阅核对实际可加载 `ConfigMasterSO` 的 GUID、资产路径和顶层 `Namespace`。Luban 的 `RuntimeProvider.GetNamespace()` 读取这个顶层值，不读取 `ConfigRuntimeSO.Namespace`，也不调用 `DimensionalResolver.ResolveNamespace`；可按需读取 `Docs/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md` 核对来源。缺少绑定或身份不一致时 `blocked`，不得依据场景、第一个候选 Master 或旧生成代码补猜。已绑定 Master 明确空值时允许 global namespace，并冻结该预期。
+追加冻结 `activeConfigMasterAndGeneratedNamespace`：从 [ProjectSettings/Nova/Globals.json（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) 读取 `configMasterGuid` / `configMasterPathHint`，经当前 Action 的 `describe/plan` 与 Unity Editor / MCP 只读配置查阅核对实际可加载 `ConfigMasterSO` 的 GUID、资产路径和顶层 `Namespace`。Luban 的 `RuntimeProvider.GetNamespace()` 读取这个顶层值，不读取 `ConfigRuntimeSO.Namespace`，也不调用 `DimensionalResolver.ResolveNamespace`；可按需读取 [Docs/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md](../../../Docs/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md) 核对来源。缺少绑定或身份不一致时 `blocked`，不得依据场景、第一个候选 Master 或旧生成代码补猜。已绑定 Master 明确空值时允许 global namespace，并冻结该预期。
 
 Plan 必须记录上述身份与命名空间期望，Execute 在任何写入前复核；身份、值或适用目标漂移时重新计划，不能沿用旧 `PlanId`。以当前 live Action 返回的字段和已发布实现为准；当前宿主若未提供相应冻结或复核门，代码导出为 `blocked`，不得称该防护已实现或已验证。验收同时核对生成命名空间、完整类型名和既有消费者与冻结预期一致；SHA 与编译分别保留，不能替代类型身份兼容性检查。
 

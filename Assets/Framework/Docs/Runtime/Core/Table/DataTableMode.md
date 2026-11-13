@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Runtime/Core/Table/DataTableMode.cs` | `DataTableMode` | 枚举定义 |
+| [Runtime/Core/Table/DataTableMode.cs](../../../../Scripts/Runtime/Core/Table/DataTableMode.cs) | `DataTableMode` | 枚举定义 |
 
 ---
 

@@ -11,7 +11,7 @@ Editor-only 的纯 Excel Sheet 扫描器。它读取一个数据源文件并返�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil.Luban.DataTypeNameHelper.cs` | `EditorUtil.Luban.DataTypeNameHelper` | 读取 Excel、筛选有效 Sheet，并返回稳定顺序的名称列表 |
+| [EditorUtil.Luban.DataTypeNameHelper.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.cs) | `EditorUtil.Luban.DataTypeNameHelper` | 读取 Excel、筛选有效 Sheet，并返回稳定顺序的名称列表 |
 
 ---
 

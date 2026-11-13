@@ -50,9 +50,9 @@ ConfigRuntime 自身通过资源系统加载。如果解密密钥也只能从该
 ## 来源与验证依据
 
 - 用户确认的职责划分：Config 全局保存只保存配置，导出才生成客户端源码；密钥在 Config 管理，三个构建字段对齐官方 Bundle Builder。
-- 配置与导出：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/` 下的 `ResourceKeyStore.cs`、`ResourceKeyCodeGenerator.cs`；Player 门禁：`Assets/Framework/Scripts/Editor/BuildProcessor/Core/ResourceKeyBuildPreprocessor.cs`。
-- 构建与客户端来源隔离：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/ResourceEncryptors.cs`、`Assets/Framework/Scripts/Runtime/Modules/Asset/Definitions/ResourceEncryption/ResourceBundleDecryptors.cs`；默认加载注入：`Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs`。
-- Docs：`Assets/Framework/Docs/Runtime/Modules/Asset/ResourceEncryption.md`。
+- 配置与导出：[Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/](../../../Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption) 下的 [ResourceKeyStore.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/ResourceKeyStore.cs)、[ResourceKeyCodeGenerator.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/ResourceKeyCodeGenerator.cs)；Player 门禁：[Scripts/Editor/BuildProcessor/Core/ResourceKeyBuildPreprocessor.cs](../../../Scripts/Editor/BuildProcessor/Core/ResourceKeyBuildPreprocessor.cs)。
+- 构建与客户端来源隔离：[Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/ResourceEncryptors.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.ResourceEncryption/ResourceEncryptors.cs)、[Scripts/Runtime/Modules/Asset/Definitions/ResourceEncryption/ResourceBundleDecryptors.cs](../../../Scripts/Runtime/Modules/Asset/Definitions/ResourceEncryption/ResourceBundleDecryptors.cs)；默认加载注入：[Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs)。
+- Docs：[Docs/Runtime/Modules/Asset/ResourceEncryption.md](../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md)。
 - `Assets/Tests/Editor/ResourceEncryptionTests.cs` 覆盖四种格式、认证篡改、密钥错误、随机访问、八种掩码、加减维、旧配置兼容和构建平台解析；不据此声明 Android/iOS 真机验证完成。
 - 长期 UI 契约遵循 [[PAT-161-configwindow-new-panel-dimension-header]]，保存归一遵循 [[ADR-058-per-panel-dimension-mask]]。
 

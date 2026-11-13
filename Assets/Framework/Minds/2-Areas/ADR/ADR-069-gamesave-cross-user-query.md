@@ -51,8 +51,8 @@ related: []
 
 ## 验证依据（Verification）
 
-- proto：`UPMPackages/com.solotopia.nova.framework.kit.network.gamesave/Nova/Protos/pb_net_save.proto`（PbNetGetGameDataReq.target_uid）
-- API：`Save.cs` 的 `GetFullAsync(string targetUid)` 重载 + `SendGetFullAsync(cmdRow, targetUid)`
+- proto：[UPMPackages/com.solotopia.nova.framework.kit.network.gamesave/Nova/Protos/pb_net_save.proto](../../../../../UPMPackages/com.solotopia.nova.framework.kit.network.gamesave/Nova/Protos/pb_net_save.proto)（PbNetGetGameDataReq.target_uid）
+- API：[Save.cs](../../../../../UPMPackages/com.solotopia.nova.framework.kit.network.gamesave/Nova/Scripts/Runtime/Save.cs) 的 `GetFullAsync(string targetUid)` 重载 + `SendGetFullAsync(cmdRow, targetUid)`
 - Demo：GameSaveDemo 与 GameBindDemo 均加「查询指定 uid 存档」input+button 演示
 
 ## 来源（Origin）

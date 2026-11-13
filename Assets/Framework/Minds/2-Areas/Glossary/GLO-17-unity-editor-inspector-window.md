@@ -47,7 +47,7 @@ related:
 
 ## 来源
 
-- `Assets/Framework/Scripts/Editor/AGENTS.md` 与 `Inspectors/AGENTS.md`。
+- [Scripts/Editor/AGENTS.md](../../../Scripts/Editor/AGENTS.md) 与 `Inspectors/AGENTS.md`。
 - [[ADR-047-editor-active-master-anchor|ADR-047]]：编辑器激活配置锚点。
 
 ---

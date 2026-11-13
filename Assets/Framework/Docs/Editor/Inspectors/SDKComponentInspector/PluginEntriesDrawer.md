@@ -2,7 +2,7 @@
 
 **类签名**：`internal sealed class PluginEntriesDrawer : IDisposable`
 **命名空间**：`NovaFramework.Editor`
-**所属文件**：`SDKComponentInspector.PluginEntriesDrawer.cs`
+**所属文件**：[SDKComponentInspector.PluginEntriesDrawer.cs](../../../../Scripts/Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.PluginEntriesDrawer.cs)
 **宿主类**：`SDKComponentInspector`（嵌套类）
 
 Plugin 条目列表绘制器，封装 active ConfigMaster 驱动的 Plugin 可见列表同步、分组渲染与 Missing 清理逻辑。
@@ -13,7 +13,7 @@ Plugin 条目列表绘制器，封装 active ConfigMaster 驱动的 Plugin 可�
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `SDKComponentInspector.PluginEntriesDrawer.cs` | `SDKComponentInspector.PluginEntriesDrawer` | 本类全部实现（嵌套于 `SDKComponentInspector`） |
+| [SDKComponentInspector.PluginEntriesDrawer.cs](../../../../Scripts/Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.PluginEntriesDrawer.cs) | `SDKComponentInspector.PluginEntriesDrawer` | 本类全部实现（嵌套于 `SDKComponentInspector`） |
 
 ---
 

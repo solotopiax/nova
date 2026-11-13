@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `ReferenceStrictCheckType.cs` | 枚举定义 |
+| [ReferenceStrictCheckType.cs](../../../../Scripts/Runtime/Core/Reference/ReferenceStrictCheckType.cs) | 枚举定义 |
 
 ## 枚举值
 

@@ -11,7 +11,7 @@ Proto 协议导出工具，读取 `ProtoSettings` 配置，按每个 `ProtoUnitS
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.ProtoExporter.cs` | `EditorUtil.Network.ProtoExporter` | Proto 导出工具类 |
+| [Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.ProtoExporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.ProtoExporter.cs) | `EditorUtil.Network.ProtoExporter` | Proto 导出工具类 |
 
 ---
 

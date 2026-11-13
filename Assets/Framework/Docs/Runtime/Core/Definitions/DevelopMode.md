@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Core/Definitions/DevelopMode.cs` | `DevelopMode` | 枚举定义 |
+| [Core/Definitions/DevelopMode.cs](../../../../Scripts/Runtime/Core/Definitions/DevelopMode.cs) | `DevelopMode` | 枚举定义 |
 
 ---
 

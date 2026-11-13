@@ -11,7 +11,7 @@ DLL 运行期寻址条目（单字段），供 `ConfigRuntimeSO` 持有。仅承
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Runtime/Modules/Config/Definitions/DllAssetEntry.cs` | `DllAssetEntry` | 结构体定义：一个 `[SerializeField]` 私有字段 + 只读属性 |
+| [Runtime/Modules/Config/Definitions/DllAssetEntry.cs](../../../../../Scripts/Runtime/Modules/Config/Definitions/DllAssetEntry.cs) | `DllAssetEntry` | 结构体定义：一个 `[SerializeField]` 私有字段 + 只读属性 |
 
 ---
 

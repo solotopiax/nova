@@ -24,12 +24,12 @@ related:
 
 ## 定义
 
-Fsm 是 Nova Core 的通用有限状态机（`Assets/Framework/Scripts/Runtime/Core/Fsm/`）：`IFsm<T>` 持有一组 `FsmState<T>` 并按 `ChangeState` 切换。Nova 的启动/热更流程（Procedure）就是 Fsm 的应用：`ProcedureOwner` 即 `IFsm<IProcedureManager>`，每个 `ProcedureBase` 是一个 `FsmState`。
+Fsm 是 Nova Core 的通用有限状态机（[Scripts/Runtime/Core/Fsm/](../../../Scripts/Runtime/Core/Fsm)）：`IFsm<T>` 持有一组 `FsmState<T>` 并按 `ChangeState` 切换。Nova 的启动/热更流程（Procedure）就是 Fsm 的应用：`ProcedureOwner` 即 `IFsm<IProcedureManager>`，每个 `ProcedureBase` 是一个 `FsmState`。
 
 ## 边界
 
 - 状态生命周期回调固定五段：`OnInit -> OnEnter -> OnUpdate -> OnLeave -> OnDestroy`。
-- 流程推进用 `ChangeState<TState>(procedureOwner)`，且必须在 `OnUpdate` 最后一行调用；调用后会同步触发新状态 `OnEnter`，之后不得再执行逻辑（`ProcedureBase.cs` 顶部约定）。
+- 流程推进用 `ChangeState<TState>(procedureOwner)`，且必须在 `OnUpdate` 最后一行调用；调用后会同步触发新状态 `OnEnter`，之后不得再执行逻辑（[ProcedureBase.cs](../../../Scripts/Runtime/Modules/Procedure/Definitions/ProcedureBase.cs) 顶部约定）。
 - FSM 切换过程中禁止追加 Procedure（`IProcedureManager` 注释：由 `Fsm.AddStates` 守卫）。
 - 当前 Fsm 的唯一正式消费者是 Procedure 模块；不要为新业务自建平行状态机框架。
 
@@ -51,6 +51,6 @@ protected internal override void OnUpdate(ProcedureOwner procedureOwner)
 
 ## 来源与验证
 
-- `Assets/Framework/Scripts/Runtime/Core/Fsm/`：`IFsm<T>`（`ChangeState<TState>`）、`FsmState<T>`（五段回调与受保护 `ChangeState`）。
-- `Assets/Framework/Scripts/Runtime/Modules/Procedure/Definitions/ProcedureBase.cs`：`ProcedureOwner = IFsm<IProcedureManager>` 别名与 ChangeState 调用约定。
-- `ProcedureCheckVersion.cs` 等：`ChangeState<ProcedureLoadDll>` 实际调用点。
+- [Scripts/Runtime/Core/Fsm/](../../../Scripts/Runtime/Core/Fsm)：`IFsm<T>`（`ChangeState<TState>`）、`FsmState<T>`（五段回调与受保护 `ChangeState`）。
+- [Scripts/Runtime/Modules/Procedure/Definitions/ProcedureBase.cs](../../../Scripts/Runtime/Modules/Procedure/Definitions/ProcedureBase.cs)：`ProcedureOwner = IFsm<IProcedureManager>` 别名与 ChangeState 调用约定。
+- [ProcedureCheckVersion.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs) 等：`ChangeState<ProcedureLoadDll>` 实际调用点。

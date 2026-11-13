@@ -11,7 +11,7 @@ Pipify 导出 Step 共用辅助方法：定位 ConfigMasterSO 和从当前活动
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.Helpers.cs` | `PipifySteps.Helpers` | 导出辅助方法（嵌套于 PipifySteps） |
+| [Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.Helpers.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.Helpers.cs) | `PipifySteps.Helpers` | 导出辅助方法（嵌套于 PipifySteps） |
 
 ---
 

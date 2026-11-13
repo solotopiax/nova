@@ -2,7 +2,7 @@
 
 `IDiskUtilProvider` 已不在当前源码中。
 
-当前磁盘空间检测直接收敛在 `DebugManager.Methods.cs` 内，通过条件编译调用 `SimpleDiskUtils`，不再额外抽一层 provider 接口。
+当前磁盘空间检测直接收敛在 [DebugManager.Methods.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/Implements/DebugManager.Methods.cs) 内，通过条件编译调用 `SimpleDiskUtils`，不再额外抽一层 provider 接口。
 
 这意味着：
 

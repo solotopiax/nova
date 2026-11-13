@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `NovaMultiDictionary.cs` | 多值字典类主体及内部 `Enumerator` 结构体 |
+| [NovaMultiDictionary.cs](../../../../Scripts/Runtime/Core/Collections/NovaMultiDictionary.cs) | 多值字典类主体及内部 `Enumerator` 结构体 |
 
 ## 关键属性
 

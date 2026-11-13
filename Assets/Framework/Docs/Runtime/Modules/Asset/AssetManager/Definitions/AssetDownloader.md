@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Definitions/AssetDownloader.cs` | `AssetDownloader` | IAssetDownloader 实现，包装 YooAsset 下载操作 |
+| [Managers/AssetManager/Definitions/AssetDownloader.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetDownloader.cs) | `AssetDownloader` | IAssetDownloader 实现，包装 YooAsset 下载操作 |
 
 ---
 

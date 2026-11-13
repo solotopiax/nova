@@ -65,7 +65,7 @@ PinOption(name) 匹配所有同名项，PinAllOptions(category) 按精确分类�
 
 ## 构建边界
 
-反射依赖成员保留。`Core/Options/link.xml` 当前仍写 `Assembly-CSharp`/无命名空间 `DebugOptions`，而源码类型为 `NovaFramework.Runtime.DebugOptions`，编译归属为 `NovaFramework.Runtime`；不能用这份旧声明证明当前选项类型已被裁剪保留。源码启用分支有 Preserve，但业务容器、属性与方法还需按真实构建保留策略处理，不能把 Editor 扫描成功当作 Player/AOT 结果。
+反射依赖成员保留。[Core/Options/link.xml](../../../../../Scripts/Runtime/Modules/Debug/Core/Options/link.xml) 当前仍写 `Assembly-CSharp`/无命名空间 `DebugOptions`，而源码类型为 `NovaFramework.Runtime.DebugOptions`，编译归属为 `NovaFramework.Runtime`；不能用这份旧声明证明当前选项类型已被裁剪保留。源码启用分支有 Preserve，但业务容器、属性与方法还需按真实构建保留策略处理，不能把 Editor 扫描成功当作 Player/AOT 结果。
 
 ## 同步规则
 

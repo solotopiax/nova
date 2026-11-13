@@ -11,7 +11,7 @@ Unity 平台默认日志实现，实现 `ILogHelper` 接口。支持日志分级
 
 | 文件 | 说明 |
 |------|------|
-| `Implements/LogHelper.cs` | Unity 默认日志实现 |
+| [LogHelper.cs](../../../../../Scripts/Runtime/Core/Log/LogHelper.cs) | Unity 默认日志实现 |
 
 ## 关键字段
 

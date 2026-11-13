@@ -64,7 +64,7 @@ ConfigWindow 或受控固定字段 Action（用户明确修改 Namespace）
 
 > **ADR-058 扩展注**（2026-06-02）：写入目标从顶层单字段 `ConfigMasterSO.Namespace` 扩展为“顶层默认值 + `NamespaceOverrides` 维度差异值”。两层经 `DimensionalResolver.ResolveNamespace` 解析后再写入 `ConfigRuntimeSO.Namespace`。当时的编辑入口为 ConfigWindow；当前受控入口扩展见下方，禁止直接修改 Runtime 的约束不变。详见 [[ADR-058-per-panel-dimension-mask|ADR-058]]。
 
-> **共享设计态入口扩展**（2026-10-12）：为降低项目组自然语言配置成本，`nova.project.config.patch-coordinate` 与 ConfigWindow 共用 `EditorUtil.Config.DesignTimeEditing`。Action 只编辑固定字段，在工作副本预演并冻结逻辑组和真实序列化叶子写集，保护未保存草稿；不直接修改 Runtime、不开放反射或任意字段路径，不修改 asmdef，也不替代程序集一致性检查。当前不允许借字段请求新增 Namespace Override 或修复其他结构。唯一真源仍为 Master，Exporter 仍是 Runtime 快照生成入口。源码依据为 `EditorUtil.Config.DesignTimeEditing.cs`、`EditorUtil.Config.CoordinatePatchService.cs`、`ConfigPatchCoordinateAction.cs`；执行与测试证据以当前 Docs/函数审查记录为准，不能从入口扩展推断热更运行已验收。
+> **共享设计态入口扩展**（2026-10-12）：为降低项目组自然语言配置成本，`nova.project.config.patch-coordinate` 与 ConfigWindow 共用 `EditorUtil.Config.DesignTimeEditing`。Action 只编辑固定字段，在工作副本预演并冻结逻辑组和真实序列化叶子写集，保护未保存草稿；不直接修改 Runtime、不开放反射或任意字段路径，不修改 asmdef，也不替代程序集一致性检查。当前不允许借字段请求新增 Namespace Override 或修复其他结构。唯一真源仍为 Master，Exporter 仍是 Runtime 快照生成入口。源码依据为 [EditorUtil.Config.DesignTimeEditing.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DesignTimeEditing.cs)、[EditorUtil.Config.CoordinatePatchService.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.CoordinatePatchService.cs)、[ConfigPatchCoordinateAction.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/ConfigPatchCoordinateAction.cs)；执行与测试证据以当前 Docs/函数审查记录为准，不能从入口扩展推断热更运行已验收。
 
 ### 3. Assembly.Load / LoadMetadataForAOTAssembly 单一调用点
 
@@ -109,8 +109,8 @@ ConfigWindow 或受控固定字段 Action（用户明确修改 Namespace）
 
 - 规范落点：程序集与命名空间一致性约束
 - Grep 关键词：`Assembly.Load(`、`LoadMetadataForAOTAssembly(`、`ConfigRuntimeSO.Namespace`
-- 唯一调用点验证：除 `Util.HybridCLR.cs` 外搜索上述两 API 应零命中
-- 配置面板：`Assets/Framework/Scripts/Editor/ConfigWindow/HybridCLR/*`
+- 唯一调用点验证：除 [Util.HybridCLR.cs](../../../Scripts/Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs) 外搜索上述两 API 应零命中
+- 配置面板历史开发态路径：`Assets/Framework/Scripts/Editor/ConfigWindow/HybridCLR/*`；该旧目录已失效，当前入口见 [HybridCLR 配置与导出说明](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)。
 
 ### 2026-07-29 Demo 导出命名空间一致性审计
 

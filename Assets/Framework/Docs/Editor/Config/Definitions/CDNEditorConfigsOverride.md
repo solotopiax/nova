@@ -13,7 +13,7 @@ CDN 面板维度 Override 单项（仅 Editor 期消费）；对应 `ConfigMaste
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/CDNEditorConfigsOverride.cs` | `CDNEditorConfigsOverride` | CDN 面板维度 Override 单项（Editor-only） |
+| [Editor/Config/Definitions/CDNEditorConfigsOverride.cs](../../../../Scripts/Editor/Config/Definitions/CDNEditorConfigsOverride.cs) | `CDNEditorConfigsOverride` | CDN 面板维度 Override 单项（Editor-only） |
 
 ---
 

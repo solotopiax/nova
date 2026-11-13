@@ -27,7 +27,7 @@ related:
 
 在使用 Sandbox 文件系统的平台上，策略 B（启动切片 + 运行时增量）下，某 tag 资源更新后，**旧版本的 bundle 会变成"无主缓存"堆在 persistentDataPath 沙盒里**——它们不在当前 manifest 中，既不会被加载也不会自动删除，长期运行会持续占用磁盘。
 
-现状 `IAssetManager.CleanupAsync`（`AssetManager.Cleanup.cs`）只做 YooAsset `UnloadUnusedAssetsAsync`，即**内存引用计数级**回收（销毁 RefCount=0 的 Provider/BundleLoader），完全不触碰磁盘缓存文件。磁盘上的无主旧 bundle 没有任何清理入口。
+现状 `IAssetManager.CleanupAsync`（[AssetManager.Cleanup.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Cleanup.cs)）只做 YooAsset `UnloadUnusedAssetsAsync`，即**内存引用计数级**回收（销毁 RefCount=0 的 Provider/BundleLoader），完全不触碰磁盘缓存文件。磁盘上的无主旧 bundle 没有任何清理入口。
 
 容易把这两件事混为一谈：「版本检查会不会漏掉某 tag」是**寻址正确性**问题（已由 manifest hash 比对保证），「旧 bundle 占磁盘」是**存储清理**问题——两码事，需分层独立处理。
 
@@ -35,7 +35,7 @@ related:
 
 ### 1. 新增磁盘级清理 API
 
-`IAssetManager` 新增 `ClearUnusedCacheAsync(string package = null, CancellationToken ct = default)`，落在 `AssetManager.Cleanup.cs`，底层调 YooAsset `pkg.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles)`。
+`IAssetManager` 新增 `ClearUnusedCacheAsync(string package = null, CancellationToken ct = default)`，落在 [AssetManager.Cleanup.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Cleanup.cs)，底层调 YooAsset `pkg.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles)`。
 
 ### 2. 两层清理职责严格分离
 
@@ -70,7 +70,7 @@ WebGL 不使用上述 Sandbox 磁盘模型。`IAssetWarmupGroup.Release()` 与 `
 | 完全不提供磁盘清理（依赖 OS） | 移动端沙盒不会被 OS 自动清，磁盘会无限增长 |
 
 ## 验证依据（Verification）
-- 源码：`AssetManager.Cleanup.cs`（新增 ClearUnusedCacheAsync 与现有 CleanupAsync 并列）、`AssetComponent.Visitors.cs`（m_AutoClearUnusedCacheOnHotfix）、`ProcedureHotfix.cs`（成功后按开关自动清）
+- 源码：[AssetManager.Cleanup.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Cleanup.cs)（新增 ClearUnusedCacheAsync 与现有 CleanupAsync 并列）、[AssetComponent.Visitors.cs](../../../Scripts/Runtime/Modules/Asset/AssetComponent.Visitors.cs)（m_AutoClearUnusedCacheOnHotfix）、[ProcedureHotfix.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureHotfix.cs)（成功后按开关自动清）
 - grep 关键词：`ClearUnusedCacheAsync` / `ClearCacheFilesAsync` / `AutoClearUnusedCacheOnHotfix`
 - 审查要点：两方法职责不得交叉；默认开关 false
 

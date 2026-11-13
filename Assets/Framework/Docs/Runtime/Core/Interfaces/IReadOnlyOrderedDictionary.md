@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `IReadOnlyOrderedDictionary.cs` | 接口定义 |
+| [IReadOnlyOrderedDictionary.cs](../../../../Scripts/Runtime/Core/Interfaces/IReadOnlyOrderedDictionary.cs) | 接口定义 |
 
 ## 公开 API
 

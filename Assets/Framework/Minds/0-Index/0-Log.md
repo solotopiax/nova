@@ -10,7 +10,7 @@ date: 2026-06-05
 
 旧版明细记录已归档到：
 
-- `4-Archives/Records/0-Log-legacy-2026-06-05.md`
+- [4-Archives/Records/0-Log-legacy-2026-06-05.md](../4-Archives/Records/0-Log-legacy-2026-06-05.md)
 
 ## 记录原则
 
@@ -77,7 +77,7 @@ date: 2026-06-05
 ### redundant-content-cleanup
 
 - 将 `PAT-63 / PAT-81 / ADR-038 / ADR-044` 从活跃区迁入 `4-Archives`，保留取代关系与历史背景。
-- 将 Unity 学习资料迁入 `3-Resources/Unity`，将旧协作 Canvas 迁入 `4-Archives/Collaboration/Canvas`。
+- 将 Unity 学习资料迁入 [3-Resources/Unity](../3-Resources/Unity/)，将旧协作 Canvas 迁入 [4-Archives/Collaboration/Canvas](../4-Archives/Collaboration/Canvas/)。
 
 ## [2026-06-11 21:44] index-rebuild | 0-Index/0-Index-{ADR,PAT,GLO,RES}.md 重建
 
@@ -86,13 +86,13 @@ date: 2026-06-05
 ### active-layer-governance-pass
 
 - 将 `ADR-019`、`PAT-100`、`MOC-Workflow`、`ExternalLinks` 移出活跃层；其中 `keyword-rebuild-suggestions-2026-05-24.md` 作为一次性自动建议表直接删除。
-- `0-Index-MOC.md` 补入 `MOC-App`，同时移除已归档的 `MOC-Workflow` 入口。
+- [0-Index-MOC.md](0-Index-MOC.md) 补入 `MOC-App`，同时移除已归档的 `MOC-Workflow` 入口。
 
 ### frontmatter-normalization
 
 - 扩充 Layer-1 合法 `category` 枚举以覆盖 `config / governance / upm / methodology / demo`。
 - 批量修正超长 `summary`、缺失 `type`、遗留 `PAT-DRAFT` alias 和错误 wikilink，降低索引噪音。
-- 生成逐项审计结果 `4-Archives/Records/2026-06-08-minds-audit.md`，固化当前 258 篇 Markdown 的保留/优化判定。
+- 生成逐项审计结果 [4-Archives/Records/2026-06-08-minds-audit.md](../4-Archives/Records/2026-06-08-minds-audit.md)，固化当前 258 篇 Markdown 的保留/优化判定。
 
 ### index-rebuild
 
@@ -100,7 +100,7 @@ date: 2026-06-05
 
 ### legacy-draft-normalization
 
-- `4-Archives/Inbox-Legacy` 下 3 篇 PAT 草稿统一改为归档态，删除 `session_id`、hook 尾注与来源对话摘录。
+- [4-Archives/Inbox-Legacy](../4-Archives/Inbox-Legacy/) 下 3 篇 PAT 草稿统一改为归档态，删除 `session_id`、hook 尾注与来源对话摘录。
 - 保留可复用规则，避免归档层继续混入会话残留。
 
 ### resource-pass-finalization
@@ -112,12 +112,12 @@ date: 2026-06-05
 
 - 重新执行 `rebuild_index.py --check-bloat`，Layer-1 frontmatter 与索引体量均通过。
 - 重新执行 `rebuild_keyword_index.py --write --quiet`，当前 `_keyword-index.json` 为 `450` 条关键词。
-- 执行 `.agents/skills/nova-obs/tests` 共 `19` 项单测，全部通过。
+- 执行 [.agents/skills/nova-obs/tests](../../../../.agents/skills/nova-obs/tests/) 共 `19` 项单测，全部通过。
 
 ### zero-link-scan
 
 - 扫描 `Minds` 全部 Markdown 的双链关系后，零关联文件由 `15` 收口到 `4`。
-- 新增 `4-Archives/Audits/INDEX.md`，并给 `0-Index.md` / `0-Log.md` 补历史入口，减少纯结构性孤点。
+- 新增 [4-Archives/Audits/INDEX.md](../4-Archives/Audits/INDEX.md)，并给 [0-Index.md](0-Index.md) / [0-Log.md](0-Log.md) 补历史入口，减少纯结构性孤点。
 - 剩余 `4` 篇均为归档层孤岛：`PAT-100` 与 `Inbox-Legacy` 三篇历史草稿。
 
 ### zero-link-prune

@@ -71,7 +71,7 @@ namespace NovaFramework.Runtime
         private CustomConfig m_Custom;
 
         /// <summary>
-        /// ConfigManager 生命周期取消源；用于结束后台 Network-ready 等待。
+        /// ConfigManager 生命周期取消源；用于结束后台 Network-ready 等待和已经发起的远端请求。
         /// </summary>
         private System.Threading.CancellationTokenSource m_LifecycleCts;
 
@@ -81,9 +81,9 @@ namespace NovaFramework.Runtime
         private Cysharp.Threading.Tasks.UniTaskCompletionSource<bool> m_AppConfigRefreshTcs;
 
         /// <summary>
-        /// 启动自动刷新是否已经发起；单进程生命周期内只允许一次。
+        /// 本次启动自动拉取的共享结果；成功、失败或跳过均保留到 Shutdown，重复等待不重新请求。
         /// </summary>
-        private bool m_HasStartedAppConfigRefresh;
+        private Cysharp.Threading.Tasks.UniTaskCompletionSource<bool> m_StartupAppConfigTcs;
 
         /// <summary>
         /// 是否已完成加载。

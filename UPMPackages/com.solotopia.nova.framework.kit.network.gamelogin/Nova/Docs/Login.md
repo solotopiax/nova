@@ -4,7 +4,7 @@
 
 `Login` 是登录业务网络 Service。Header 只声明此前已确认身份，本次候选 UID/OpenID 位于 Body；仅合法成功响应的外层 UID/OpenID 会原子替换 `NetService` 身份。
 
-**所在文件：** `Nova/Scripts/Runtime/Login.cs`
+**所在文件：** [Nova/Scripts/Runtime/Login.cs](../Scripts/Runtime/Login.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameLogin.Runtime`
 **类签名：** `public sealed partial class Login`
 
@@ -32,7 +32,7 @@
 | `public void Clear()` | 清空 NetService 的 UID、OpenID；后续请求 Header 不再携带身份字段 |
 
 > 为当前账号绑定三方 OpenID 请使用 `GameBind` 模块的 `Nova.Network.Kit<Bind>()`，登录与绑定职责分离。
-> 完整的顶号、Header 身份、绑定冲突与存档编排手册位于 GameBind package 的 `Nova/Docs/AccountLoginAndThirdPartyBindFlow.md`。
+> 完整的顶号、Header 身份、绑定冲突与存档编排手册位于 GameBind package 的 [Nova/Docs/AccountLoginAndThirdPartyBindFlow.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.kit.network.gamebind` 包内 `Nova/Docs/AccountLoginAndThirdPartyBindFlow.md`）。
 
 ---
 
@@ -101,4 +101,4 @@ login.Clear();
 - 同包：[LoginKitConfig.md](./LoginKitConfig.md) — 登录 Kit 配置
 - 跨包：`com.solotopia.nova.framework.kit.network.gamebind` — 账号绑定业务 Kit（`Bind`）
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

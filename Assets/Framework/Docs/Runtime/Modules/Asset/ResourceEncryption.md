@@ -91,7 +91,7 @@ RawBundle 与 ArchiveBundle 都不是 Unity AssetBundle，也不是不同加密�
 
 源码须属于随 Player 编译的程序集；导出和构建按 CompilationPipeline 的实际目录归属检查，不能放在 Editor、测试或 HybridCLR 热更程序集，也不能依赖热更程序集。Manifest 和 ConfigRuntime 资源均可能在业务热更 DLL 加载前需要密钥，因此真实密钥不写入 ConfigRuntime。建议使用独立 `ResourceKeys` 子目录，避免与业务手写 `link.xml` 冲突。改变源码目录会清理本工具跟踪的旧产物，保留手写文件。
 
-同一 Unity 项目只允许一份实际生成的密钥提供器。多个 ConfigMaster 可以预存不同导出路径；未配置密钥且未生成过代码时，导出不生成空提供器。需要启用多个 Master 的密钥时，应共用一个正式生成位置，或先处理另一份提供器再导出；每次只导出当前 Master 的密钥集合，不自动合并其他 Master。各 Demo 约定目标为 `Assets/Samples/<Demo>/Scripts/Runtime/ResourceKeys/ResourceKeys.Generated.cs`，配置字段存其目录，不表示所有 Demo 都已生成文件。
+同一 Unity 项目只允许一份实际生成的密钥提供器。多个 ConfigMaster 可以预存不同导出路径；未配置密钥且未生成过代码时，导出不生成空提供器。需要启用多个 Master 的密钥时，应共用一个正式生成位置，或先处理另一份提供器再导出；每次只导出当前 Master 的密钥集合，不自动合并其他 Master。各 Demo 的根目录按 [Sample 导入定位规则](../../../Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核对；开发仓约定目标为 `Assets/Samples/<Demo>/Scripts/Runtime/ResourceKeys/ResourceKeys.Generated.cs`，配置字段存其目录，不表示所有 Demo 都已生成文件。
 
 团队和 CI 只读取激活且已保存的 ConfigMaster，不再读取独立 JSON 或环境变量。配置改变后先保存 Config，再使用顶部导出、Pipify Config 导出或 `ResourceKeyCodeGenerator.GenerateForCI` 生成源码并等待编译；Player 构建前验证配置、源码、裁剪声明和程序集归属。项目真实密钥保留在项目私有仓库，不放入框架公开仓库或发布包，不打印到日志。
 
@@ -117,8 +117,8 @@ RawBundle 与 ArchiveBundle 都不是 Unity AssetBundle，也不是不同加密�
 - `GetPackageName/GetMode/GetKeyId`：解析头部，结果在认证前不可信，必须继续解密认证。
 - `ResourceKeyStore.Load/Validate/GetActiveKey`：Editor 构建与 CI 从激活 ConfigMaster 同源读取；旧 Save 调用明确拒绝绕过全局保存。
 - `ResourceKeyCodeGenerator.Generate/GenerateForCI/ValidateGenerated`：生成与构建一致性门禁。
-- [ResourceEncryptionTests](../../../../../Tests/Editor/ResourceEncryptionTests.cs)：四模式、AES 错密钥/缺密钥/篡改、跨文件换块、Seek/EOF/Dispose、密钥模型校验，以及清单解密的密钥来源隔离、包名、明文/null 契约、构建错误配对和候选筛选。
-- [ConfigGenerateResourceKeysActionTests](../../../../../Tests/Editor/AgentActions/ConfigGenerateResourceKeysActionTests.cs)：强类型请求、只读预演、私有输出、精确旧产物迁移、手写/唯一 provider 冲突、完整文件漂移、脱敏载荷与未激活已保存 Master 的计划边界。
+- 开发仓测试 `ResourceEncryptionTests`（`Assets/Tests/Editor/ResourceEncryptionTests.cs`，不随 Framework 包分发；消费项目按 [当前验证规则](../../../Onboarding/VALIDATION.md#agent-验证顺序) 验收）：四模式、AES 错密钥/缺密钥/篡改、跨文件换块、Seek/EOF/Dispose、密钥模型校验，以及清单解密的密钥来源隔离、包名、明文/null 契约、构建错误配对和候选筛选。
+- 开发仓测试 `ConfigGenerateResourceKeysActionTests`（`Assets/Tests/Editor/AgentActions/ConfigGenerateResourceKeysActionTests.cs`，不随 Framework 包分发；消费项目按 [当前验证规则](../../../Onboarding/VALIDATION.md#agent-验证顺序) 验收）：强类型请求、只读预演、私有输出、精确旧产物迁移、手写/唯一 provider 冲突、完整文件漂移、脱敏载荷与未激活已保存 Master 的计划边界。
 
 编辑器测试不替代 Android/iOS IL2CPP 真机的密码学兼容、加载峰值、前后台恢复及性能验证。
 

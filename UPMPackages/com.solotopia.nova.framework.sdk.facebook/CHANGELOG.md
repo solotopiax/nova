@@ -4,6 +4,18 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-13
+
+### Fixed
+
+- FacebookDemo 的八步预加载检查模块结果；Facebook 未启用时阻断启动，Android、iOS、WebGL、Windows 桌面和 Editor 还须确认插件就绪，其他平台保留不可用反馈。加载失败时停留启动界面；重试从零进度开始，离开流程后忽略旧任务和旧弹窗回调。
+
+### Changed
+
+- 随包示例在网络配置加载后等待本次启动的同一轮 GM 应用配置，再继续后续步骤；拉取失败、超时或未配置时沿用当前配置，预加载重试不会重复发起拉取。示例需 Framework 0.7.9，安装本包时最低 Framework 依赖同步提升至 0.7.9。
+
+- 完善 Facebook 接入、示例导入和合规材料中的包内链接；消费项目按实际安装包和示例导入目录定位所需资料。
+
 ## [0.1.18] - 2026-10-29
 
 ### Fixed

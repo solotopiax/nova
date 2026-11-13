@@ -26,6 +26,11 @@
       "kind": "unity-editor-automation",
       "entry": "Unity script refresh, compilation and Play Mode event timing inspection",
       "when": "等待编译后验证所选 Fire 或 FireNow 路径、handler 效果、注销与回池边界；不改 Scene、Prefab 或 Event 配置"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "UIView.OpenScope.Subscribe<TEvent>(EventHandler<EventData>)",
+      "when": "仅已授权业务UIView源码选择按次订阅收尾时，scope以独立包装委托隔离原handler，结束只退包装，不影响旧同handler订阅；不重复手工注销包装或用Unsubscribe(originalHandler)代替。框架内部用原EventManager接口，业务不取得Manager；事件线程、分发、复制与回池不变。"
     }
   ],
   "inputs": [
@@ -64,6 +69,11 @@
     {
       "name": "allowedWriteSet",
       "required": true
+    },
+    {
+      "name": "optionalUIViewScopeSubscription",
+      "required": false,
+      "constraint": "仅主动选择UIView.OpenScope.Subscribe分支：本次打开生命周期、原handler与手工归属明确；scope拥有独立包装委托并只注销该包装，旧相同handler订阅不接管；同scope相同事件/原handler重复拒绝，外部Unsubscribe(originalHandler)不代scope收尾。隐藏/暂停不结束，Fire/FireNow/回池不变。"
     }
   ],
   "effects": [
@@ -115,9 +125,10 @@
   ],
   "evidence": [
     "业务 asmdef/编译单元、命名空间、完整事件类型名、载荷和 Clear 约定的冻结记录",
-    "发布者、订阅拥有者、同一 handler 的成对 Subscribe/Unsubscribe 与异步持有策略的源码证据",
+    "发布者、订阅拥有者、手工 handler 或所选scope独立包装的成对 Subscribe/Unsubscribe 与异步持有策略的源码证据",
     "Unity 编译无本次新增错误",
     "Play Mode 中 Fire 的下一次 Event 更新分发证据，或 FireNow 的同步主线程分发证据；两者都在范围时分别具备",
-    "Play Mode 中 handler 效果、注销后不再接收，以及事件对象未跨 handler 生命周期持有的证据"
+    "Play Mode 中 handler 效果、注销后不再接收，以及事件对象未跨 handler 生命周期持有的证据",
+    "主动scope订阅分支验证关闭/回池/重开无重复handler，隐藏/暂停保留订阅，旧页面未登记工作不被接管，清理异常不阻断其它登记项；实际结果随当次Play报告。"
   ]
 }

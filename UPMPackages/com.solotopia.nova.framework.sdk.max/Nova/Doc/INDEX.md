@@ -2,7 +2,7 @@
 
 > 本包为 Nova 框架 MAX 广告聚合插件，提供广告展示服务。
 > 基于 `sdk.ad` 父包的 `AdChannelPluginBase` 抽象，实现 MAX 渠道的 Rewarded / Interstitial / Banner / AppOpen 广告类型调度。
-> 第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads` 提供，mediation adapters 由本包 `package.json` 统一声明；本包只保留 Nova 适配层与构建处理器，不再内置 `Core/MaxSdk`。
+> 第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads` 提供，mediation adapters 由本包 [package.json](../../package.json) 统一声明；本包只保留 Nova 适配层与构建处理器，不再内置 `Core/MaxSdk`。
 
 ---
 
@@ -17,7 +17,7 @@
 
 业务从 `Nova.SDK.Get<IAdPlugin>()` 获取当前聚合接口；MAX 渠道由聚合层创建，不是该查询直接返回的实例。每个 MAX 渠道实例只初始化一次；旧聚合和渠道释放后不可复用，SDKManager 的新初始化周期会创建新聚合及渠道，业务需释放旧事件订阅并重新获取、订阅新实例。共享释放和初始化取消边界见[主文档](./MaxAdPlugin.md#共享释放与新生命周期)。实际原厂 Show 与 30 回调日志、实际渠道请求及展示后补量（`AutoRefill`）和自动重试（`Retry`）的新轮日志读法见[主文档](./MaxAdPlugin.md#本地调用与回调日志)；构建处理器当前不调用组校验器。
 
-MAX 在 `TrackMaxAdIlrd` 已派发分支调用父包 `StartRevenueReport`；配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，协议与 ILRD 使用相同金额，Banner 共用唯一累计及存档，打点目标全不可用时协议同步等待。协议仍使用 `PbIAAReportData`、`PbNetIAAReportReq`、`PbNetIAAReportResp`，统一 Service 为 `AdRevenueReportNetService`，详见 [Ad 基础包收益上报文档](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+MAX 在 `TrackMaxAdIlrd` 已派发分支调用父包 `StartRevenueReport`；配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，协议与 ILRD 使用相同金额，Banner 共用唯一累计及存档，打点目标全不可用时协议同步等待。协议仍使用 `PbIAAReportData`、`PbNetIAAReportReq`、`PbNetIAAReportResp`，统一 Service 为 `AdRevenueReportNetService`，详见 [Ad 基础包收益上报文档](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。
 
 iOS 两项 MAX adapter 的原生依赖归属处理与 SKAdNetwork 补齐接入既有 Player 构建流程；处理器不再要求固定 adapter 版本，原生依赖版本从当前安装包的官方 XML 读取，仍核对依赖身份及工程结构。SKAdNetwork 的网络清单在本地枚举，ID 清单仍依赖官方 HTTP 接口。构建前配置检查、失败恢复和平台验收边界见[构建处理器文档](./MaxAdPluginBuildProcessor.md#构建前广告配置边界)与[iOS 原生依赖归属](./MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
@@ -30,5 +30,5 @@ Banner 控制、Ready 和收益统一使用配置首 ID；首次聚合显示重�
 - [MaxAdPlugin.md](./MaxAdPlugin.md) — MAX 渠道插件
 - [MaxAdPluginBuildProcessor.md](./MaxAdPluginBuildProcessor.md) — 构建处理器
 - [README](../../README.md#安装) — 安装、固定依赖和 registry
-- [Ad 聚合接口](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/IAdPlugin.md) — 业务入口
+- [Ad 聚合接口](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/IAdPlugin.md`） — 业务入口
 - [MAX 官方 Unity 接入文档](https://support.axon.ai/en/max/unity/overview/integration/) — 官方 SDK 的当前 documentationUrl

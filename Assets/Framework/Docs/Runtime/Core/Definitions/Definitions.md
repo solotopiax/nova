@@ -4,12 +4,12 @@
 
 | 文件 | 枚举/类 | 说明 |
 |------|---------|------|
-| `ChannelType.cs` | `ChannelType` | 游戏运营渠道类型（None / Official / Google / Apple / WeChat / TikTok / Alipay）；None 仅作内部未指定哨兵，不可用于 Config 坐标 |
-| `DevelopMode.cs` | `DevelopMode` | 开发/发布模式枚举（Debug / Release），Config 第三维度 |
-| `Language.cs` | `Language`, `LanguageInfo`, `LanguageMetadata` | 游戏语言枚举及描述 / Flag 元数据 |
+| [ChannelType.cs](../../../../Scripts/Runtime/Core/Definitions/ChannelType.cs) | `ChannelType` | 游戏运营渠道类型（None / Official / Google / Apple / WeChat / TikTok / Alipay）；None 仅作内部未指定哨兵，不可用于 Config 坐标 |
+| [DevelopMode.cs](../../../../Scripts/Runtime/Core/Definitions/DevelopMode.cs) | `DevelopMode` | 开发/发布模式枚举（Debug / Release），Config 第三维度 |
+| [Language.cs](../../../../Scripts/Runtime/Core/Definitions/Language.cs) | `Language`, `LanguageInfo`, `LanguageMetadata` | 游戏语言枚举及描述 / Flag 元数据 |
 | [LanguageSelectionWay.md](LanguageSelectionWay.md) | `LanguageSelectionWay` | 已移除的类型说明；当前无对应源码 |
-| `PlatformType.cs` | `PlatformType` | 目标平台类型（Android / iOS / WebGL），Config 第一维度 |
+| [PlatformType.cs](../../../../Scripts/Runtime/Core/Definitions/PlatformType.cs) | `PlatformType` | 目标平台类型（Android / iOS / WebGL），Config 第一维度 |
 
-`Language`、`LanguageInfo` 与 `LanguageMetadata` 一起定义在 `Runtime/Core/Definitions/`，因为根组件 `Nova.Visitors.cs` 直接持有 `Language` 类型字段（避免根组件依赖子模块产生逆向依赖）。
+`Language`、`LanguageInfo` 与 `LanguageMetadata` 一起定义在 [Runtime/Core/Definitions/](../../../../Scripts/Runtime/Core/Definitions/)，因为根组件 [Nova.Visitors.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.Visitors.cs) 直接持有 `Language` 类型字段（避免根组件依赖子模块产生逆向依赖）。
 
 `ChannelType`、`PlatformType`、`DevelopMode` 三维共同构成 Config 模块的配置索引。`BusinessRegionType` 枚举已移除，各模块通过 `IConfigManager.Channel` / `IConfigManager.Platform` 读取运行时渠道/平台信息。

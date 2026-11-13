@@ -22,11 +22,12 @@ keywords:
 
 - 本文定位为 YooAsset 3.0 热更学习整理稿，重点覆盖 HostPlayMode、清单更新、CDN 部署与样例状态机拆解。
 - 正文保留必要的源码级推导与样例对照，便于回查落地细节。
+- 文内版本与行号保留原稿核验时的记录；源码相对链接用于当前开发仓导航，消费工程按该包实际安装位置定位。
 - 若只想快速建立心智模型，优先阅读第一部分、第三部分和第八部分。
 
 > 本文档整合一轮**经过源码核验**的 YooAsset 3.0 热更知识，不保留已被推翻的猜测结论。
 >
-> 源码版本：`UPMPackages/com.solotopia.yooasset` 1.1.1，Core 3.0.5
+> 源码版本：[UPMPackages/com.solotopia.yooasset](../../../../../UPMPackages/com.solotopia.yooasset/) 1.1.1，Core 3.0.5
 > 参考环境：Unity 6000.4.2f1 + Built-in + UniTask + IL2CPP + HybridCLR（Nova Framework）
 >
 > `PackageFilePrefix`、清单 CRC32 与运行模式部分已按上述当前本地包复核；当前事实以该源码为准。
@@ -61,7 +62,7 @@ keywords:
 | **B. Space Shooter 的 PatchManager**（状态机 + 事件重试那一整套） | 样例作者 | ❌ **不是必须**，是"参考架构" |
 | **C. 业务侧接入代码**（你自己的） | 你自己 | 自由发挥 |
 
-**Space Shooter 样例里的 `PatchManager.cs` 是 B 层**——样例作者秀的一种"工程化"写法（状态机 + 事件驱动重试），**不是 YooAsset 内部实现**，**也不是用户必须这么写**。
+**Space Shooter 样例里的 [PatchManager.cs](../../../../../UPMPackages/com.solotopia.yooasset/Core/Samples~/Space%20Shooter/GameScript/Runtime/PatchLogic/PatchManager.cs) 是 B 层**——样例作者秀的一种"工程化"写法（状态机 + 事件驱动重试），**不是 YooAsset 内部实现**，**也不是用户必须这么写**。
 
 0 基础阶段，**用户要掌握的是 A 层 API 的调用顺序**，B 层完全可以用最朴素的 `async/await` 平铺直叙。
 
@@ -375,28 +376,28 @@ PatchManager 状态机的详细拆解（8 节点、黑板机制、事件 → 回
 
 ## 第二部分 · CopyBuiltinPackageManifest 参数行为
 
-> 源码出处：`BFSInitializeOperation.cs:91-120` + `CopyBuiltinPackageManifestOperation.cs` + `CopyBuiltinFileOperation.cs`
+> 源码出处：[BFSInitializeOperation.cs:91-120](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/BFSInitializeOperation.cs) + [CopyBuiltinPackageManifestOperation.cs](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinPackageManifestOperation.cs) + [CopyBuiltinFileOperation.cs](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinFileOperation.cs)
 >
-> **声明：** 该参数官方仅注释 "拷贝内置清单 `<bool>`"（`EFileSystemParameter.cs:90`），更高层的用途（例如是否服务于"联网失败降级"）源码未说明，本节只陈述**经源码核验的文件级行为**。
+> **声明：** 该参数官方仅注释 "拷贝内置清单 `<bool>`"（[EFileSystemParameter.cs:90](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/EFileSystemParameter.cs)），更高层的用途（例如是否服务于"联网失败降级"）源码未说明，本节只陈述**经源码核验的文件级行为**。
 >
 > **截至本次核验能给出的用途结论：它的作用是"把内置清单预存到沙盒 `ManifestFiles/` 目录，让沙盒侧也能用统一路径读到'内置版本'这份清单"——本质是"路径归一化"，不是"热更失败时降级"。** 上层业务如何消费这份沙盒里的内置清单（比如首次联网前 / CDN 请求失败时的 fallback 流程），需追踪 `SFSLoadPackageManifestOperation` 和 `SandboxFileSystem.LoadPackageManifestAsync` 完整分支才能给出权威回答，本节未穿透到底。
 
 ### 2.1 拷贝的 3 步操作
 
-`CopyBuiltinPackageManifest = true` 时，BuiltinFileSystem 初始化期间执行 3 步（`CopyBuiltinPackageManifestOperation.cs`）：
+`CopyBuiltinPackageManifest = true` 时，BuiltinFileSystem 初始化期间执行 3 步（[CopyBuiltinPackageManifestOperation.cs](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinPackageManifestOperation.cs)）：
 
 1. **LoadBuiltinPackageVersion** — 读 StreamingAssets 里的 `.version` 文件，得到"**内置版本号**"（APK 打包那一刻的版本，不是 CDN 最新版本）
 2. **CopyBuiltinPackageHash** — 把内置的 `<pkg>_<内置版本>.hash` 拷到沙盒 `persistentDataPath/yoo/<pkg>/ManifestFiles/`
 3. **CopyBuiltinPackageManifest** — 把内置的 `<pkg>_<内置版本>.bytes`（清单二进制）拷到同一目录
 
-**拷贝目标路径**（`CopyBuiltinPackageManifestOperation.cs:121-126`）：
+**拷贝目标路径**（[CopyBuiltinPackageManifestOperation.cs:121-126](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinPackageManifestOperation.cs)）：
 `CopyBuiltinPackageManifestDestRoot` 若未指定，默认用 `YooAssetConfiguration.GetDefaultCacheRoot() / <pkg> / ManifestFiles`。
 
 ---
 
 ### 2.2 File.Exists 短路 → 只第一次启动真拷
 
-`CopyBuiltinFileOperation.cs:41-54` 有短路守卫：
+[CopyBuiltinFileOperation.cs:41-54](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinFileOperation.cs) 有短路守卫：
 
 ```csharp
 if (_steps == ESteps.CheckFileExist)
@@ -426,7 +427,7 @@ if (_steps == ESteps.CheckFileExist)
 ### 2.3 文件名带版本号 → 不会覆盖 CDN 清单
 
 - 拷贝目标路径：`<cacheRoot>/<pkg>/ManifestFiles/<pkg>_<内置版本>.bytes`（+`.hash`）
-- CDN 下载下来的清单（`DownloadPackageManifestOperation.cs:36` + `SandboxFileSystem.cs:414-417`）：存到 `<cacheRoot>/<pkg>/ManifestFiles/<pkg>_<CDN版本>.bytes`
+- CDN 下载下来的清单（[DownloadPackageManifestOperation.cs:36](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/SandboxFileSystem/Operations/Internal/DownloadPackageManifestOperation.cs) + [SandboxFileSystem.cs:414-417](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/SandboxFileSystem/SandboxFileSystem.cs)）：存到 `<cacheRoot>/<pkg>/ManifestFiles/<pkg>_<CDN版本>.bytes`
 
 **文件名里的 version 字符串不一样**，所以两份清单是**并存**在同一目录的两个不同文件，不会互相覆盖。
 
@@ -440,8 +441,8 @@ persistentDataPath/yoo/DefaultPackage/ManifestFiles/
 ```
 
 更严格地，即使**同一文件名**出现重名情况，两段代码的行为也是"安全覆盖"：
-- `CopyBuiltinFileOperation.cs:45` 先 `File.Exists` 判断，**已存在则直接跳过**，不拷
-- `DownloadPackageManifestOperation.cs:118-120` 则是先下到 `.tmp` 再 `File.Move` 原子替换，**且只在"同一 CDN 版本重新下载"时触发**
+- [CopyBuiltinFileOperation.cs:45](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinFileOperation.cs) 先 `File.Exists` 判断，**已存在则直接跳过**，不拷
+- [DownloadPackageManifestOperation.cs:118-120](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/SandboxFileSystem/Operations/Internal/DownloadPackageManifestOperation.cs) 则是先下到 `.tmp` 再 `File.Move` 原子替换，**且只在"同一 CDN 版本重新下载"时触发**
 
 ---
 
@@ -457,7 +458,7 @@ persistentDataPath/yoo/DefaultPackage/ManifestFiles/
 
 ### 2.5 内置清单什么时候会消失？
 
-**覆盖安装（App 水印变化）** 时，`BFSInitializeOperation.cs:50-86` 通过 `ApplicationFootprint` 检测。若水印变了（说明覆盖安装了新 APK），根据 `InstallCleanupMode` 参数：
+**覆盖安装（App 水印变化）** 时，[BFSInitializeOperation.cs:50-86](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/BFSInitializeOperation.cs) 通过 `ApplicationFootprint` 检测。若水印变了（说明覆盖安装了新 APK），根据 `InstallCleanupMode` 参数：
 
 | 枚举值 | 行为 |
 |---|---|
@@ -490,14 +491,14 @@ options.BuiltinFileSystemParameters.AddParameter(
 
 ### 3.2 YooAsset 要求平铺提供哪些文件
 
-`ResourcePackage` 启动时会让 YooAsset 按**固定文件名规则**向 CDN 要文件。整个包裹的 CDN 文件清单只有这么几类（源码出处：`YooAssetConfiguration.cs`）：
+`ResourcePackage` 启动时会让 YooAsset 按**固定文件名规则**向 CDN 要文件。整个包裹的 CDN 文件清单只有这么几类（源码出处：[YooAssetConfiguration.cs](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/Settings/YooAssetConfiguration.cs)）：
 
 | 文件 | 命名规则 | 例子 |
 |---|---|---|
 | 版本号 | `{packageName}.version` (L152) | `DefaultPackage.version` |
 | 清单哈希 | `{packageName}_{version}.hash` (L135) | `DefaultPackage_v1_9f8a....hash` |
 | 清单二进制 | `{packageName}_{version}.bytes` (L95) | `DefaultPackage_v1_9f8a....bytes` |
-| Bundle 资源（N 个） | 由构建时 `FileNameStyle` 决定（`PackageManifestHelper.cs:184-208`） | 见第四部分 |
+| Bundle 资源（N 个） | 由构建时 `FileNameStyle` 决定（[PackageManifestHelper.cs:184-208](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/PackageManifestHelper.cs)） | 见第四部分 |
 
 版本、清单、哈希、JSON 与报告文件都支持 `PackageFilePrefix` 设置前缀，默认为空；Bundle 文件名仍由 `FileNameStyle` 决定。
 
@@ -561,7 +562,7 @@ PackageName       = Default
 
 ### 3.4 样例官方目录模式（Space Shooter `GetHostServerURL()`）
 
-源码 `FsmInitializePackage.GetHostServerURL()`（`FsmInitializePackage.cs:112-136`），官方样例拼的 URL 模式：
+源码 `FsmInitializePackage.GetHostServerURL()`（[FsmInitializePackage.cs:112-136](../../../../../UPMPackages/com.solotopia.yooasset/Core/Samples~/Space%20Shooter/GameScript/Runtime/PatchLogic/FsmNode/FsmInitializePackage.cs)），官方样例拼的 URL 模式：
 
 ```
 {hostServerIP}/CDN/{Platform}/{AppVersion}/{fileName}
@@ -643,7 +644,7 @@ var svcRawFile = new MyRemoteService("http://cdn.mygame.com/CDN/Android/v1.0/Raw
 
 构建产物路径规则：
 
-- `BuildOutputRoot` = `<工程根>/Bundles`（`BundleBuilderHelper.cs:21`）
+- `BuildOutputRoot` = `<工程根>/Bundles`（[BundleBuilderHelper.cs:21](../../../../../UPMPackages/com.solotopia.yooasset/Core/Editor/BundleBuilder/BundleBuilderHelper.cs)）
 - `PipelineOutputDirectory` = `{BuildOutputRoot}/{BuildTarget}/{PackageName}/OutputCache`（构建过程中的中间产物）
 - 最终产物落地目录：`<工程根>/Bundles/<BuildTarget>/<pkg>/<pkg_version>/`
 
@@ -690,7 +691,7 @@ aws s3 sync $BUILD_OUTPUT $CDN_TARGET --exclude "*.report" --exclude "*.json"
 | `BundleName` | `{bundleName}` 原样 | `assets_hero_icon.bundle` |
 | `BundleName_HashName` | `{bundleName去后缀}_{fileHash}{扩展名}` | `assets_hero_icon_9f8a7b6c.bundle` |
 
-`BuildParameters.cs:85` 默认 `FileNameStyle = EFileNameStyle.HashName`。
+[BuildParameters.cs:85](../../../../../UPMPackages/com.solotopia.yooasset/Core/Editor/BundleBuilder/BuildParameters.cs) 默认 `FileNameStyle = EFileNameStyle.HashName`。
 
 ---
 
@@ -834,7 +835,7 @@ Bundles/Android/DefaultPackage/v1_a4b/
 
 **第 1 步：Bundle 唯一标识是 FileHash**
 
-`PackageBundle.cs:58`：
+[PackageBundle.cs:58](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/PackageBundle.cs)：
 ```csharp
 public string BundleGuid { get { return FileHash; } }
 ```
@@ -843,7 +844,7 @@ public string BundleGuid { get { return FileHash; } }
 
 **第 2 步：找"这 Bundle 归哪个文件系统管"的逻辑（核心）**
 
-`FileSystemHost.cs:126-139`：
+[FileSystemHost.cs:126-139](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/FileSystemHost.cs)：
 ```csharp
 private IFileSystem GetOwnerFileSystem(PackageBundle packageBundle)
 {
@@ -861,7 +862,7 @@ private IFileSystem GetOwnerFileSystem(PackageBundle packageBundle)
 
 **第 3 步：两个文件系统的"我能接"判断**
 
-BuiltinFileSystem（`BuiltinFileSystem.cs:361-364`）：
+BuiltinFileSystem（[BuiltinFileSystem.cs:361-364](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/BuiltinFileSystem.cs)）：
 ```csharp
 public bool CanAcceptBundle(PackageBundle bundle)
 {
@@ -871,7 +872,7 @@ public bool CanAcceptBundle(PackageBundle bundle)
 
 只有 **APK 内置目录里存在 BundleGuid（= FileHash）对应的物理文件** 时，才返回 true。
 
-SandboxFileSystem（`SandboxFileSystem.cs:362-367`）：
+SandboxFileSystem（[SandboxFileSystem.cs:362-367](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/SandboxFileSystem/SandboxFileSystem.cs)）：
 ```csharp
 public bool CanAcceptBundle(PackageBundle bundle)
 {
@@ -927,16 +928,16 @@ public bool CanAcceptBundle(PackageBundle bundle)
 
 ### 7.1 源码锁死的注册/查询顺序
 
-`InitializePackageOperation.cs:103-104`，Host 模式初始化把两个文件系统按 **(Builtin, Cache)** 顺序传入：
+[InitializePackageOperation.cs:103-104](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/Operations/InitializePackageOperation.cs)，Host 模式初始化把两个文件系统按 **(Builtin, Cache)** 顺序传入：
 ```csharp
 _initializeFileSystemOp = _fileSystemHost.InitializeAsync(
     initializeParameters.BuiltinFileSystemParameters,   // ← 先
     initializeParameters.CacheFileSystemParameters);    // ← 后
 ```
 
-`InitializeFileSystemOperation.cs:65-91`：把传入的参数列表复制一份 `_cloneList`，然后在每一帧的 `Update` 里 `_cloneList.RemoveAt(0)` 逐个弹出、逐个 `InitializeAsync`，完成后注册到 `_fileSystems` 列表。**注册顺序严格等于传入参数的顺序**，不存在并发 / 乱序。
+[InitializeFileSystemOperation.cs:65-91](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/Operations/Internal/InitializeFileSystemOperation.cs)：把传入的参数列表复制一份 `_cloneList`，然后在每一帧的 `Update` 里 `_cloneList.RemoveAt(0)` 逐个弹出、逐个 `InitializeAsync`，完成后注册到 `_fileSystems` 列表。**注册顺序严格等于传入参数的顺序**，不存在并发 / 乱序。
 
-`FileSystemHost.cs:126-139`：查询时 `for (int i = 0; i < _fileSystems.Count; i++)` **按注册顺序**遍历。
+[FileSystemHost.cs:126-139](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/FileSystemHost.cs)：查询时 `for (int i = 0; i < _fileSystems.Count; i++)` **按注册顺序**遍历。
 
 **所以遍历顺序永远是：Builtin 先问 → Sandbox 兜底。**
 
@@ -948,7 +949,7 @@ _initializeFileSystemOp = _fileSystemHost.InitializeAsync(
 
 **不是按文件名 / 资源路径 / Bundle 名字来找文件**，**而是按当前清单里那条 bundle 的 FileHash 来找**。
 
-`BuiltinFileSystem.CanAcceptBundle` 的判断（`BuiltinFileSystem.cs:363`）：
+`BuiltinFileSystem.CanAcceptBundle` 的判断（[BuiltinFileSystem.cs:363](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/BuiltinFileSystem.cs)）：
 ```csharp
 return BuiltinBundleCache.IsCached(bundle.BundleGuid);   // BundleGuid = FileHash
 ```
@@ -1045,7 +1046,7 @@ return BuiltinBundleCache.IsCached(bundle.BundleGuid);   // BundleGuid = FileHas
 |---|---|---|
 | 物理路径 | `Application.streamingAssetsPath/yoo/` | `Application.persistentDataPath/yoo/` |
 | 内容来源 | 打包时随 APK 一起塞进去，**只读** | 运行时从 CDN 下下来，可读写 |
-| 是否能下载 | `IsDownloadRequired` **永远返回 false**（`BuiltinFileSystem.cs:368`） | `IsCached == false` 时返回 true，触发下载 |
+| 是否能下载 | `IsDownloadRequired` **永远返回 false**（[BuiltinFileSystem.cs:368](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/BuiltinFileSystem.cs)） | `IsCached == false` 时返回 true，触发下载 |
 | 接受哪些 bundle | 只接"我手上有这个 hash 的"（精确匹配） | 无条件兜底 |
 | 生命周期 | 玩家卸载/覆盖安装才会变 | 热更流程随时写入 |
 
@@ -1093,7 +1094,7 @@ return BuiltinBundleCache.IsCached(bundle.BundleGuid);   // BundleGuid = FileHas
 
 ### 8.3 `YooHandleInvalidException: ... is invalid. It may have been released or the provider was destroyed`
 
-**源码出处：** `AssetHandle.cs:28` / `SceneHandle.cs:33` 等所有 Handle 类都有此异常。
+**源码出处：** [AssetHandle.cs:28](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourceManager/Handles/AssetHandle.cs) / [SceneHandle.cs:33](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourceManager/Handles/SceneHandle.cs) 等所有 Handle 类都有此异常。
 
 **这条异常只在一种情况下抛：访问已释放的 Handle。**
 
@@ -1243,7 +1244,7 @@ for (int i = 0; i < 5; i++) Object.Instantiate(handle.AssetObject);
 handle.Release();   // 5 个实例不受影响，继续在场景里；只是不能再通过 handle 访问 Asset 了
 ```
 
-**这时候 Prefab 资源会卸载吗？** 不会。默认 `AutoUnloadBundleWhenUnused = false`（`InitializePackageOptions.cs:18`），Bundle 引用计数归零后也不会自动卸载，**得调 `package.UnloadUnusedAssetsAsync()` 主动触发**。
+**这时候 Prefab 资源会卸载吗？** 不会。默认 `AutoUnloadBundleWhenUnused = false`（[InitializePackageOptions.cs:18](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/ResourcePackage/Operations/InitializePackageOptions.cs)），Bundle 引用计数归零后也不会自动卸载，**得调 `package.UnloadUnusedAssetsAsync()` 主动触发**。
 
 ---
 
@@ -1253,7 +1254,7 @@ handle.Release();   // 5 个实例不受影响，继续在场景里；只是不�
 
 **根因：** 沙盒 `persistentDataPath/yoo/` 可能没跟 APK 一起删（iOS 和 Android 行为不同，具体看平台），导致沙盒存着**旧 APK 时代的缓存**，和新 APK 的内置资源版本不匹配。
 
-**YooAsset 的防御：** `BFSInitializeOperation.cs:50-86` 通过 `ApplicationFootprint`（水印文件）检测覆盖安装。新 APK 首次启动发现水印变了，根据 `InstallCleanupMode` 参数：
+**YooAsset 的防御：** [BFSInitializeOperation.cs:50-86](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/BFSInitializeOperation.cs) 通过 `ApplicationFootprint`（水印文件）检测覆盖安装。新 APK 首次启动发现水印变了，根据 `InstallCleanupMode` 参数：
 
 | 枚举值 | 行为 |
 |---|---|
@@ -1289,11 +1290,11 @@ Debug.Log($"[YooAsset] Load Status: {handle.Status}, Error: {handle.LastError}")
 
 | 日志关键字 | 出处 | 含义 |
 |---|---|---|
-| `Failed to copy builtin file` | `CopyBuiltinFileOperation.cs:69` | StreamingAssets 拷到沙盒失败（Android WebRequest 兜底会接管） |
-| `Downloaded manifest file is too small` | `DownloadPackageManifestOperation.cs:110` | CDN 返回了损坏/空的清单文件 |
+| `Failed to copy builtin file` | [CopyBuiltinFileOperation.cs:69](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/internal/CopyBuiltinFileOperation.cs) | StreamingAssets 拷到沙盒失败（Android WebRequest 兜底会接管） |
+| `Downloaded manifest file is too small` | [DownloadPackageManifestOperation.cs:110](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/SandboxFileSystem/Operations/Internal/DownloadPackageManifestOperation.cs) | CDN 返回了损坏/空的清单文件 |
 | `is invalid. It may have been released` | 所有 Handle 类 | 访问已释放 Handle，见 8.3 |
-| `No action required on overwrite installation` | `BFSInitializeOperation.cs:61` | 覆盖安装了但 `InstallCleanupMode=None`，建议改值 |
-| `does not support the WebGL platform` | `BFSInitializeOperation.cs:44` | WebGL 不能用 BuiltinFileSystem，改用 WebServerFileSystem |
+| `No action required on overwrite installation` | [BFSInitializeOperation.cs:61](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/BFSInitializeOperation.cs) | 覆盖安装了但 `InstallCleanupMode=None`，建议改值 |
+| `does not support the WebGL platform` | [BFSInitializeOperation.cs:44](../../../../../UPMPackages/com.solotopia.yooasset/Core/Runtime/FileSystem/Services/BuiltinFileSystem/Operations/BFSInitializeOperation.cs) | WebGL 不能用 BuiltinFileSystem，改用 WebServerFileSystem |
 
 ---
 
@@ -1343,7 +1344,7 @@ Debug.Log($"[YooAsset] Load Status: {handle.Status}, Error: {handle.LastError}")
 
 ## 附录 C · PatchManager 状态机架构（B 层进阶参考）
 
-> 本节内容对应 Space Shooter 官方样例 `Samples~/Space Shooter/GameScript/Runtime/PatchLogic/` 下的 9 个源码文件（`PatchManager.cs` + 8 个 FSM 节点）。
+> 本节内容对应 Space Shooter 官方样例 `Samples~/Space Shooter/GameScript/Runtime/PatchLogic/` 下的 9 个源码文件（[PatchManager.cs](../../../../../UPMPackages/com.solotopia.yooasset/Core/Samples~/Space%20Shooter/GameScript/Runtime/PatchLogic/PatchManager.cs) + 8 个 FSM 节点）。
 >
 > **再次声明**：这是 B 层"参考架构"，不是 YooAsset 内部实现、也不是用户必须照抄的 API。0 基础阶段请走附录外的 A 层 7 步写法（第一部分 1.4）。本附录仅为项目做大、需要精细化 UX 管理时提供源码级路线图。
 

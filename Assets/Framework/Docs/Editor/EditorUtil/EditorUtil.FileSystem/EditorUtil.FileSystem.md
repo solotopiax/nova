@@ -11,8 +11,8 @@ Editor 层文件系统工具，封装 `AssetDatabase`、`System.IO`、操作系�
 
 | 文件 | 说明 |
 |------|------|
-| `EditorUtil.FileSystem.cs` | 路径、文件打开、扫描和刷新等公共方法 |
-| `EditorUtil.FileSystem.OutputApplier.cs` | Editor 内部批量文件应用、备份与失败回滚基础设施 |
+| [EditorUtil.FileSystem.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.cs) | 路径、文件打开、扫描和刷新等公共方法 |
+| [EditorUtil.FileSystem.OutputApplier.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.cs) | Editor 内部批量文件应用、备份与失败回滚基础设施 |
 
 ---
 
@@ -46,7 +46,7 @@ string[] EditorUtil.FileSystem.GetFiles(string directoryPath, string searchPatte
 // 判断 filePath 是否位于 parentDirPath 目录下（路径统一替换反斜杠后比较）
 bool EditorUtil.FileSystem.IsSubPathOf(string filePath, string parentDirPath)
 
-// 解析 Nova 模板文件路径：优先 Packages/com.solotopia.nova.framework/Templates/，回退 Assets/Framework/Templates/
+// 解析 Nova 模板文件路径：当前实现优先检查 Packages/com.solotopia.nova.framework/Templates/ 逻辑路径，回退开发态 Assets/Framework/Templates/
 string EditorUtil.FileSystem.ResolveTemplatePath(string templateFileName)
 
 // 删除指定路径内容：目录则清空目录内所有文件（保留目录结构），文件则删除该文件，路径不存在时静默跳过

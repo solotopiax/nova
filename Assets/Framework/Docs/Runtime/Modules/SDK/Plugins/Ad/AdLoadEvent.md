@@ -2,7 +2,7 @@
 
 **命名空间**：`NovaFramework.Runtime`
 
-广告加载结果载荷，定义在源码文件 `Plugins/Ad/AdLoadEvent.cs`。文件名沿用旧名以保持 Unity 资产路径稳定，公开类型已收口为 `AdLoadResult`。
+广告加载结果载荷，定义在源码文件 [Plugins/Ad/AdLoadEvent.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Ad/AdLoadEvent.cs)。文件名沿用旧名以保持 Unity 资产路径稳定，公开类型已收口为 `AdLoadResult`。
 
 ## 当前类型
 

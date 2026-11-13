@@ -4,7 +4,7 @@
 
 `NetBuilder` 是网络请求构建静态工具类，承接全部「构建 / 加密」职责：Header 构建（从 `Nova.Config.AppConfigs` / `Nova.SDK` 自动读取字段，渠道由 `InferChannel()` 自动填充）、Proto Body 序列化、AES-128-CBC 加密、HTTP Header JSON 拼装。
 
-**所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetBuilder.cs`
+**所在文件：** [Scripts/Runtime/Modules/Network/Kit/NetBuilder.cs](../../../../Scripts/Runtime/Modules/Network/Kit/NetBuilder.cs)
 **命名空间：** `NovaFramework.Runtime`
 
 > 整类标注 `[EditorBrowsable(EditorBrowsableState.Never)]`，**业务侧 IDE 补全中不可见**。仅供 `NetService` 与 Sibling Kit 包（如 `Login`）内部调用。
@@ -71,7 +71,7 @@ string headerJson = NetBuilder.BuildHeaderInfos(appId, Nova.Config.AppConfigs.Ap
 - BuildHeader 不等待 Config/SDK/Localization 初始化；缺少入口或配置、设备 ID getter 异常仍可传播，不能把静态工具理解为任意线程安全。它每次构造新 Header，但不会自动写入任意业务 Body 的 Head 字段。
 - SerializeBody、Encrypt 与 Header JSON 编码不在本层统一捕获异常；IV 的 Base64 是 UTF-8 字节编码，不含密钥，也不是凭据有效性验证。`EditorBrowsable(Never)` 只影响 IDE 补全，不是 C# 访问控制。
 
-`pb_net_header.proto` 的请求字段号依次为 appid=1、uid=2、version=3、language=4、devid=5、platform=6、channel=7、openid=8；响应 timestamp=1 表达毫秒时间戳，响应身份不自动覆盖 NetService。`pb_net_base_response.proto` 的 code=1/message=2/data=3 由 NetParser 先解外壳，再交业务 parser。空解密字节返回协议失败，畸形 Proto 的 Parser 异常交调用层处理，合法外壳不证明服务端已部署同一协议。
+[pb_net_header.proto](../../../../Protos/pb_net_header.proto) 的请求字段号依次为 appid=1、uid=2、version=3、language=4、devid=5、platform=6、channel=7、openid=8；响应 timestamp=1 表达毫秒时间戳，响应身份不自动覆盖 NetService。[pb_net_base_response.proto](../../../../Protos/pb_net_base_response.proto) 的 code=1/message=2/data=3 由 NetParser 先解外壳，再交业务 parser。空解密字节返回协议失败，畸形 Proto 的 Parser 异常交调用层处理，合法外壳不证明服务端已部署同一协议。
 
 ---
 

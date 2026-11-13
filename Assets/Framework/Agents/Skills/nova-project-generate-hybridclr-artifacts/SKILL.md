@@ -5,13 +5,13 @@ description: Use when 已配置 HybridCLR 的 Nova 消费项目需要按明确 a
 
 # Nova 生成 HybridCLR 预构建产物
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
 以下资料仅在当前决策分支按需读取。
 
-只读取当前决策分支需要的事实：先读 `references/contract.json` 冻结输入、写入集、锁和确认门；需要核对生成行为时再读 `Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md`，选择既有 Pipify Batch 时才读 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`。不要加载完整构建、Bundle、CDN 或运行时链路。
+只读取当前决策分支需要的事实：先读 [references/contract.json](references/contract.json) 冻结输入、写入集、锁和确认门；需要核对生成行为时再读 [Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)，选择既有 Pipify Batch 时才读 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)。不要加载完整构建、Bundle、CDN 或运行时链路。
 
 用户已要求完整三平台验收时，仅按需读取 [三平台验收参考](../nova-project-build-player/references/platform-validation.md) 的发现、生成顺序与快照段落；平台差异使用同一参考，不新增平台 Skill。
 
@@ -23,13 +23,15 @@ description: Use when 已配置 HybridCLR 的 Nova 消费项目需要按明确 a
 
 ## 冻结与预检
 
-先按 `Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md` 的安装与验收确认实际解析包、本地安装结果/版本及 Unity 匹配、启用策略。包存在、旧环境缓存或关闭 HybridCLR 后的普通 APK 不构成本 Operation 前置；缺必要安装证据保持 `blocked/partial`，不在 Generate 中安装、伪造版本标记或改设置绕过。
+HybridCLR 按 [NA-004：业务默认进入热更范围，AOT 例外须证明必要性](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-004业务默认进入热更范围aot-例外须证明必要性) 是所有 Nova 项目的必备基线；本 Operation 负责已配置目标的生成，不代替前置安装、启用、程序集和 DLL/link 资源映射。单项生成的 blocked/not_applicable 不构成整个项目获准省略 HybridCLR；完整准备组合按[三平台构建基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)补齐既有入口，不关闭开关或用 Editor 源码运行代替。
+
+先按 [Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md](../../../Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) 的安装与验收确认实际解析包、本地安装结果/版本及 Unity 匹配、启用策略。包存在、旧环境缓存或关闭 HybridCLR 后的普通 APK 不构成本 Operation 前置；缺必要安装证据保持 `blocked/partial`，不在 Generate 中安装、伪造版本标记或改设置绕过。
 
 执行前读取并冻结：消费项目根、当前 `EditorUserBuildSettings.activeBuildTarget`、期望 `DevelopmentBuild`、当前激活 ConfigMaster 的稳定身份及其 `Platform/Channel/DevelopMode`、Build Settings 中已启用场景闭包、HybridCLR 安装/启用状态、解析后的生成输出集合、最终 link.xml 路径和执行入口。
 
-必须确认目标平台模块与 IL2CPP/HybridCLR 生成前提可用，当前 active Target 与冻结值一致，启用场景非空。分别解析 HybridCLR `outputLinkFile` 与当前坐标 `LinkXmlTargetPath`（空值按 `Assets/link.xml`）；两者均须为合法项目内路径。HybridCLR 生成热更引用保留表，Framework 在 Master 路径补全 AOT metadata 条目，两条路径可不同；Plan 分别冻结并声明写入，Receipt 分别核验，相同路径只计一次，不修改配置来迎合本 Operation。`DevelopMode` 不能代替 `EditorUserBuildSettings.development`。
+必须确认目标平台模块与 IL2CPP/HybridCLR 生成前提可用，当前 active Target 与冻结值一致，启用场景非空。分别解析 HybridCLR `outputLinkFile` 与当前坐标 `LinkXmlTargetPath`（空值按 [Assets/link.xml（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)）；两者均须为合法项目内路径。HybridCLR 生成热更引用保留表，Framework 在 Master 路径补全 AOT metadata 条目，两条路径可不同；Plan 分别冻结并声明写入，Receipt 分别核验，相同路径只计一次，不修改配置来迎合本 Operation。`DevelopMode` 不能代替 `EditorUserBuildSettings.development`。
 
-Plan 同时冻结实际场景资产、PlayerSettings、临时 script-only/Android 导出/构建位置以及全部发现的 Player 回调编译身份。持久化脏资产、旧 YooAsset staging marker 或 SDK/业务/包回调没有确定写入契约时明确 `blocked` 并展示具体回调，不按“临时裁剪”假定安全，不扩大 `Assets/**`，不通过任意代码绕过。可执行计划中的共享构建缓存与 Android Manifest/Proguard 也属于确认范围；正常裁剪目录已有 YooAsset staging 跳过，不应产生新的 Resources 临时副本。
+Plan 同时冻结实际场景资产、PlayerSettings、临时 script-only/Android 导出/构建位置以及全部发现的 Player 回调编译身份。持久化脏资产、旧 YooAsset staging marker 或 SDK/业务/包回调没有确定写入契约时明确 `blocked` 并展示具体回调，不按“临时裁剪”假定安全，不扩大 [Assets/**（项目位置）](../../../Docs/Onboarding/PROJECT_STRUCTURE.md)，不通过任意代码绕过。可执行计划中的共享构建缓存与 Android Manifest/Proguard 也属于确认范围；正常裁剪目录已有 YooAsset staging 跳过，不应产生新的 Resources 临时副本。
 
 从已保存工作区、Batch、Config 与 HybridCLR 设置读取可确定的输入、输出和最终 Player `DevelopmentBuild`，不要求新手重新填写。所有参与本次编译的 Table、UI、Network HostKey/NetCmd/Proto、资源密钥等生成代码，必须在首次依赖它们的热更 DLL 编译或 `GenerateAll` 前完成正式导出、Unity 导入和必要编译；仅核对本次实际依赖，单次 Generate 不自动触发无关全量导出。`export.excel.all` 不包含 `export.config` 或 `export.network.proto`。导出不在本 Operation 写入集时由组合任务先复用对应已有 Operation 或已审 Batch。
 
@@ -80,9 +82,9 @@ Action Verify 的产物证据只覆盖 Receipt 明列的三个目录与五个文
 原 Player 回调的统计外发属于当前 Operation 的 `external-write` 效果，计划列明已核条件和字段并保留绑定确认；未审下游仍阻断，不临时关闭 Analytics/telemetry。生成物与编译证据不证明外部统计送达。
 
 
-当前真实 WebGL Generate 使用与 Player 相同的准确回调捕获、typed 执行后验与真实 BuildReport，输出只接受已审默认 `HybridCLRGenerate/AOTGenericReferences.cs` 和 `HybridCLRGenerate/link.xml`，Master AOT XML 仍按独立冻结路径处理。父目录与其 meta 必须既存；拥有目录内全部现存后代均拒绝链接，包括悬空链接。Android 未闭合的回调合同继续阻断，不能因 WebGL 分支通过而放行。
+当前真实 WebGL Generate 使用与 Player 相同的准确回调捕获、typed 执行后验与真实 BuildReport，输出只接受已审默认 [HybridCLRGenerate/AOTGenericReferences.cs（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) 和 [HybridCLRGenerate/link.xml（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)，Master AOT XML 仍按独立冻结路径处理。父目录与其 meta 必须既存；拥有目录内全部现存后代均拒绝链接，包括悬空链接。Android 未闭合的回调合同继续阻断，不能因 WebGL 分支通过而放行。
 
-完整写前/写后 typed 材料分别保存在 `Library/Nova/AgentActions/HybridCLRGenerate/<本次 N-GUID>/before.json` 和 `final.json`。Plan/WriteBefore 保持原完整 before 严格 UTF-8 JSON 原文 8MiB 硬限，即使 files 大量重复、可以压小也不得接纳。final 完整 DTO 原文不超过 8MiB 时继续使用原裸 typed 字节；只有更大的实际 final 才可使用下述固定双槽无损行表 v3，最终未压缩 wire 仍最多 8MiB，完整展开 DTO 另外严格限制 16MiB。Plan 只展示完整计划并保存有限未写指针，不创建证据目录；Execute 要求 GUID 目录不存在，先原子写完整 before，再恰一次生成，正式收尾及全部后验通过后保存完整 final。小 Receipt 继续绑定固定文件的准确 wire SHA-256 与长度，完整 Operation 预算限 192KiB，预留 Store 后续状态空间；不截断快照或扩大 Operation Store。两个文件均列入准确 WriteSet 与正式 Artifacts，须保留供 Live Verify 读取；`report-backup` 子目录与正式证据分离，Auditor Commit 不删除这两个文件。
+完整写前/写后 typed 材料分别保存在 [Library/Nova/AgentActions/HybridCLRGenerate/&lt;本次 N-GUID&gt;/before.json（项目本地位置）](../../../Docs/START_HERE.md#执行任务与清场的共同约束) 和 [final.json（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)。Plan/WriteBefore 保持原完整 before 严格 UTF-8 JSON 原文 8MiB 硬限，即使 files 大量重复、可以压小也不得接纳。final 完整 DTO 原文不超过 8MiB 时继续使用原裸 typed 字节；只有更大的实际 final 才可使用下述固定双槽无损行表 v3，最终未压缩 wire 仍最多 8MiB，完整展开 DTO 另外严格限制 16MiB。Plan 只展示完整计划并保存有限未写指针，不创建证据目录；Execute 要求 GUID 目录不存在，先原子写完整 before，再恰一次生成，正式收尾及全部后验通过后保存完整 final。小 Receipt 继续绑定固定文件的准确 wire SHA-256 与长度，完整 Operation 预算限 192KiB，预留 Store 后续状态空间；不截断快照或扩大 Operation Store。两个文件均列入准确 WriteSet 与正式 Artifacts，须保留供 Live Verify 读取；`report-backup` 子目录与正式证据分离，Auditor Commit 不删除这两个文件。
 
 final 的 `nova-hybridclr-generate-file-rows-v3` 只复用 `before.inputs.files` 和 `afterInputs.files` 两个准确 `FileState[]` 槽；根级字段恰新增 `fileRowCodec`、`expandedLength`、`expandedSha256`、`fileRows`，原有序数组暂以整数索引表示。行表保存完整 path/kind/sha256 或 null，最多 32768 个唯一行，两个槽合计最多 65536 个引用；重复、null、顺序及缺失/空数组完整还原，解码后不共享可变行对象。只接受规范 v3 JSON、准确已知版本/字段/类型、规范首次使用次序、无重复/未用表行及有界整数引用；先按完整行 UTF8 计算整体展开预算，再复制行，完整展开长度与 SHA、全部原 DTO/SVS 严格校验和规范字节必须一致。原证书和回调摘要继续针对原完整 DTO 计算，Reference 版本/独立 before/两个文件长度与 SHA 绑定不变；旧裸 typed 证据继续可读，8MiB 内写入字节不变。此 codec 不使用外层 gzip、不丢 before/after 快照、不引用另一个文件或较晚捕获；非共享巨大字段仍受原 wire 上限约束，缺失 final 的旧 partial 无法借此回填或升级。
 
@@ -102,7 +104,7 @@ TMP 资源登记只接受原 before 已实际加载且明确 marker 的准确字
 
 TMP 的同域后态由已保存 Scope after 与当前冻结观察核对，不再为了验证重载自然卸载的未清理字体。缺席必须原 clean、无原/后强资源或活 weak，并且 Scope after 与当前均已缺席；仍核完整磁盘/元数据/原输入绑定。新实例、正文/文件变化或缺少原 after 保持 partial。生成后新域规则没有因这项同域修复放宽，不能将旧 partial 升级或重放。
 
-WebGL Generate 的场景可见性使用独立合同：Plan 保存唯一既存 Native `SceneVisibilityState`/manager、完整三表原文、原 dirty、Main Stage、全部主场景、既存 Preview、准确 source-owner 与全部无有效场景对象，以及准确 `Library/SceneVisibilityState.asset` 文件。三表和完整观察分别使用有界无损 gzip，保留原文字节长度与原文/规范 SHA，不用摘要代替正文；Preview 与无场景对象保留全部组件的原文、ID、GlobalObjectId、hideFlags 和源码/DLL 身份。仅支持全部持久标记数组为空且全部对象四项隐藏/禁选标记为 false 的已证分支；未知对象、角色、组件、源或 DLL 指纹一律拒绝，不创建、关闭或删除它们，不替用户 ShowAll。既存 SceneView 通过准确 backing 字段绑定两相机与三光源、Preview 及 window GUID；既存 DeformationManager 通过已审 backing 绑定唯一 helper。MAX executor 与 InternalIdentityTransform 只作为原 Native 实例保护，不调用 SDK。
+WebGL Generate 的场景可见性使用独立合同：Plan 保存唯一既存 Native `SceneVisibilityState`/manager、完整三表原文、原 dirty、Main Stage、全部主场景、既存 Preview、准确 source-owner 与全部无有效场景对象，以及准确 [Library/SceneVisibilityState.asset（项目本地位置）](../../../Docs/START_HERE.md#执行任务与清场的共同约束) 文件。三表和完整观察分别使用有界无损 gzip，保留原文字节长度与原文/规范 SHA，不用摘要代替正文；Preview 与无场景对象保留全部组件的原文、ID、GlobalObjectId、hideFlags 和源码/DLL 身份。仅支持全部持久标记数组为空且全部对象四项隐藏/禁选标记为 false 的已证分支；未知对象、角色、组件、源或 DLL 指纹一律拒绝，不创建、关闭或删除它们，不替用户 ShowAll。既存 SceneView 通过准确 backing 字段绑定两相机与三光源、Preview 及 window GUID；既存 DeformationManager 通过已审 backing 绑定唯一 helper。MAX executor 与 InternalIdentityTransform 只作为原 Native 实例保护，不调用 SDK。
 
 公开四项 flag 查询并非 Native 零变化：本机完整前后材料证明查询可仅在 Visibility 表物化准确 owner 的当前 Preview 空行。因此每次 Capture 独立保存真正 query-before 的完整三表、dirty、Library 状态及查询后态；只允许该 Visibility 空行、dirty 与 Library 完全不变，原行/key/value/顺序全部保留。同域写前和较晚 Verify 必须先核 query-before 原文字节 SHA 等于上一份 post-query，再核完整后态相同，防止删行后查询重建掩盖变化。正式同步 Generate 的三表跨度继续要求原行保留，新增仅严格零 GUID、非零 Int64 handle、两个空数组；原有自然 dirty true→false 与准确单 Library 文件写合同不变。Scope 的真实原材料不可用后来 Capture 补造。输入行仅投影为明确历史 `GenerateSVSProtectedBaseline`，当前实际材料独立保留并绑定原证书。
 
@@ -118,7 +120,7 @@ Generate 的真实 before→scopeAfter→原同域 Observed 另有有限对象�
 
 真实 WebGL Verify 保留原 `DataJson` artifact 数组，在既有 `Evidence` 中返回 `nova-generate-svs-postcompile-v1:` 前缀与严格 `nova-generate-svs-postcompile-gzip-v1` 信封：完整首次/当前 Snapshot、实际编译记录和域、原 before/final 长度/SHA 指针、Scope 完整 SHA、本次 adapter 结果及新后验证书均无损绑定。ASCII gzip/Base64 信封防止 Gateway 路径脱敏改动原正文；单正文160KiB、gzip32KiB、外信封64KiB，仍不改原8MiB Store。解码只供只读核验，不能产生执行许可。调用方须保存实际工具完整返回并记录 SHA，Operation journal 只保存状态/消息，不能代替这份后验归档；Verify 不偷偷写新 sidecar、不改旧 final 或 Receipt。真实后验不足或返回越界仍 partial，不能把候选纯测试当实际 Generate/Player 通过。
 
-预计 Verify 捕获较慢时，先核当前 Tool Schema 已提供 `verify_mode/request_id`，再用同一 `operation=verify` 的 `start` 携带原 `receipt` 和 Agent 新建编号，随后只用同 `action_id/request_id` 的 `status` 取回同一次完整脱敏响应，字段与边界见 MCP 包内 `Docs/INDEX.md`“长核验的传输记录”。断线不重复核验；`completed` 仅表示收件完成，必须读取原领域状态并归档完整 Evidence 与 SHA，不能把 partial 升级。省略模式仍是原同步协议，旧同步丢失的 Evidence 不补造；过期、重载或失败不自动换号重跑，不扩大原预算或权限。
+预计 Verify 捕获较慢时，先核当前 Tool Schema 已提供 `verify_mode/request_id`，再用同一 `operation=verify` 的 `start` 携带原 `receipt` 和 Agent 新建编号，随后只用同 `action_id/request_id` 的 `status` 取回同一次完整脱敏响应，字段与边界见 MCP 包内 [Docs/INDEX.md](../../../Docs/INDEX.md)“长核验的传输记录”。断线不重复核验；`completed` 仅表示收件完成，必须读取原领域状态并归档完整 Evidence 与 SHA，不能把 partial 升级。省略模式仍是原同步协议，旧同步丢失的 Evidence 不补造；过期、重载或失败不自动换号重跑，不扩大原预算或权限。
 
 建立全新 Plan 的首个 SVS 输入许可使用零参数 `CaptureInitial()`：内部恰一次真实 Capture，并完整校验其真实 query-before→post 有限 Visibility 暖化、dirty/Library 不变、当前域及同一活 Native 弱见证；同一个完整 Snapshot 原样作为 baseline/observed 保存。不把首个观察误套“前一 post 必须等于本次 query-before”的两次观察比较，不二次 Capture 预热或丢弃真实前态，也不接受任意外部 DTO 初次审批。随后的准备、输入捕获末尾、Execute 与重复 Verify 继续使用原严格 `BeforeEquals`/已有 witness 门。
 

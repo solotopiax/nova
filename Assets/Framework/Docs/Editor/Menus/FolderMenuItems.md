@@ -5,7 +5,7 @@
 ```csharp
 public static class FolderMenuItems
 namespace NovaFramework.Editor
-// Assets/Framework/Scripts/Editor/Menus/FolderMenuItems.cs
+// 框架包内：Scripts/Editor/Menus/FolderMenuItems.cs
 ```
 
 打开 IDE 工程文件（.sln）与各 Unity 系统路径文件夹的菜单项集合。内部复用 `EditorUtil.FileSystem.OpenFolder` / `EditorUtil.FileSystem.OpenFile`。
@@ -16,7 +16,7 @@ namespace NovaFramework.Editor
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `FolderMenuItems.cs` | `FolderMenuItems` | 唯一文件 |
+| [FolderMenuItems.cs](../../../Scripts/Editor/Menus/FolderMenuItems.cs) | `FolderMenuItems` | 唯一文件 |
 
 ---
 
@@ -67,7 +67,7 @@ namespace NovaFramework.Editor
 | `OpenFolderPersistentDataPathYooAsset` | `{项目根}/{YooFolderName}/{PackageName}` | `YooFolderName` 为空 → 项目根；包目录不存在 → `YooFolderName` 目录；再不存在 → 项目根 |
 | `OpenFolderBundleGeneratedPath` | `{项目根}/Bundles/{Platform}/{PackageName}` | 包目录不存在 → `{Platform}`；平台目录不存在 → `Bundles`；再不存在 → 项目根 |
 
-默认包名 `GetDefaultPackageName()`：从 `Assets/Framework/Prefabs/Nova.prefab` 的 `AssetComponent.m_DefaultPackageName` 读取，为空时回退 `m_Packages[0]`，仍读不到返回空字符串（此时只打开到上一级已存在目录）。
+默认包名 `GetDefaultPackageName()`：当前实现固定从 Nova 开发仓的 [Prefabs/Nova.prefab](../../../Prefabs/Nova.prefab) 的 `AssetComponent.m_DefaultPackageName` 读取，为空时回退 `m_Packages[0]`，仍读不到返回空字符串（此时只打开到上一级已存在目录）。
 
 这里读取的是固定开发路径的 Prefab 序列化值，既不表示当前场景绑定，也不保证消费项目已把包资源放在相同路径。Bundle 目录平台来自 Unity Active BuildTarget；YooAsset 目录名来自当前 `YooAssetConfiguration`，都不是 ConfigWindow 尚未保存的编辑选择。打开了回退父目录不证明 Bundle、版本目录或热更缓存存在。
 

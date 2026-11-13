@@ -11,7 +11,7 @@ PrefabManager 当前跟踪的单条实例诊断记录，由 Inspector 诊断面�
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Definitions/PrefabRecordedInstance.cs` | `PrefabRecordedInstance` | 只读结构体定义 |
+| [Definitions/PrefabRecordedInstance.cs](../../../../../Scripts/Runtime/Modules/Prefab/Definitions/PrefabRecordedInstance.cs) | `PrefabRecordedInstance` | 只读结构体定义 |
 
 ---
 

@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Core/Table/IDataTableSettings.cs` | `IDataTableSettings` | 接口定义 |
+| [Core/Table/IDataTableSettings.cs](../../../../Scripts/Runtime/Core/Table/IDataTableSettings.cs) | `IDataTableSettings` | 接口定义 |
 
 ---
 

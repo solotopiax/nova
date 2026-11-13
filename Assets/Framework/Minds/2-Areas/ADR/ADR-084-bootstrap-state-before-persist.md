@@ -82,11 +82,11 @@ related:
 
 ## 当前事实来源（Sources）
 
-- `Assets/Framework/Scripts/Runtime/Modules/Nova/Nova.cs`
-- `Assets/Framework/Scripts/Runtime/Modules/Nova/Nova.Visitors.cs`
-- `Assets/Framework/Scripts/Runtime/Modules/Nova/Nova.Methods.cs`
+- [Scripts/Runtime/Modules/Nova/Nova.cs](../../../Scripts/Runtime/Modules/Nova/Nova.cs)
+- [Scripts/Runtime/Modules/Nova/Nova.Visitors.cs](../../../Scripts/Runtime/Modules/Nova/Nova.Visitors.cs)
+- [Scripts/Runtime/Modules/Nova/Nova.Methods.cs](../../../Scripts/Runtime/Modules/Nova/Nova.Methods.cs)
 - `Assets/Tests/Editor/NovaInstallTimeTests.cs`
-- `UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Scripts/Runtime/DataMasterPlugin.cs`
-- `UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Scripts/Runtime/DataMasterPlugin.Methods.cs`
-- `Assets/Framework/Docs/Runtime/Modules/Persist/PersistComponent.md`
-- `UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Doc/DataMasterPlugin.md`
+- [UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Scripts/Runtime/DataMasterPlugin.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Scripts/Runtime/DataMasterPlugin.cs)
+- [UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Scripts/Runtime/DataMasterPlugin.Methods.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Scripts/Runtime/DataMasterPlugin.Methods.cs)
+- [Docs/Runtime/Modules/Persist/PersistComponent.md](../../../Docs/Runtime/Modules/Persist/PersistComponent.md)
+- [UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Doc/DataMasterPlugin.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest/Nova/Doc/DataMasterPlugin.md)

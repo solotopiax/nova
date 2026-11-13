@@ -11,8 +11,8 @@ Luban 导出 Profile 是 Nova Editor 导出链中固定身份的单一真相源�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Luban.ExportProfile.cs` | `LubanExportProfile` | 保存 Id、target、manager 和模板键 |
-| `EditorUtil.Luban.ExportProfile.cs` | `LubanExportProfiles` | 集中提供九个 Nova 内置导出目标 |
+| [EditorUtil.Luban.ExportProfile.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportProfile.cs) | `LubanExportProfile` | 保存 Id、target、manager 和模板键 |
+| [EditorUtil.Luban.ExportProfile.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportProfile.cs) | `LubanExportProfiles` | 集中提供九个 Nova 内置导出目标 |
 
 ---
 

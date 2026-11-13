@@ -13,7 +13,7 @@ CDN 内容部署与缓存清理的编辑态配置 DTO。仅随 `ConfigMasterSO` 
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/CDNEditorConfigs.cs` | `CDNEditorConfigs` | CDN 内容部署与缓存清理的编辑态配置（Editor-only） |
+| [Editor/Config/Definitions/CDNEditorConfigs.cs](../../../../Scripts/Editor/Config/Definitions/CDNEditorConfigs.cs) | `CDNEditorConfigs` | CDN 内容部署与缓存清理的编辑态配置（Editor-only） |
 
 ---
 

@@ -9,8 +9,8 @@
   "actionAdapters": [
     {
       "kind": "workspace-inspection",
-      "entry": "catalog.json + selected references/contract.json",
-      "when": "需要从已发现的消费端 Skill 中选择最窄路径时"
+      "entry": "project package binding + package.json + Docs/START_HERE.md + catalog.json + selected references/contract.json",
+      "when": "一般 Unity 请求也先只读识别是否接入或明确要求 Nova，再从当前框架能力中选择最窄路径；不要求用户点名 Nova"
     },
     {
       "kind": "unity-editor-automation",
@@ -61,7 +61,10 @@
     "not_applicable"
   ],
   "evidence": [
+    "当前工程是否使用或明确要求 Nova 的依据；已接入时记录准确包身份、版本、实际包根与匹配入口，待解析不误报为未接入；相同工程未变的已核实上下文可复用。",
+    "先选择 Nova 能力及执行路径，再使用通用 Unity Skill/CLI/MCP；引擎操作不替换框架业务入口、配置、生命周期和导出链，缺少工具与缺少框架能力分别报告。",
     "当前项目文件、所选 Skill 契约与随包 Docs 的定位证据",
+    "仅项目自有普通业务源码的文案/常量等局部字面量且不触及框架调用、配置/表源、序列化资产或生成链时，定位后结束只读路由，再按项目规则进行已授权源码编辑与局部检查；不强套页面或复杂需求Skill，不把Router当写入Operation或绕过现有专用合同。",
     "所选 Project Action 的 live describe 可用性；未引用 Action 时记录真实 Adapter 类型",
     "范围、风险、推荐路径及是否命中 SDK/Kit、事件、持久化、Content 场景、构建前检/诊断、Android Resolve、真机诊断或既有专项 Operation 的消歧证据",
     "nova_capabilities inventory/describe 的功能与源码、文档、既有 Skill/Adapter 对应关系；源码默认值与当前有效值明确区分",
@@ -70,7 +73,10 @@
     "摘要查询保准确身份、导航与源/审查/执行/验收状态，过滤分页基于完整记录；只对选中精确id展开full，不把summary当执行或验收许可",
     "游戏开始/结算/重开/回大厅复用integrate-procedure的business-flow参考和项目真实Service/Procedure/FSM；暂停/恢复/倍速按全局Nova.Self或业务拥有者消歧，分别路由edit-settings或integrate-procedure；无Nova.Game门面，Router本身不plan、不创建业务实现、不提升验收状态",
     "Unity无响应/弹窗先按共同入口分清窗口、编译/导入进度与进程故障，Router只读不点击或重启；新项目/UI布局在实施前将适配方案及验收要求传给既有页面Operation，不新增重复适配实现。",
-    "新建项目优先路由check-readiness、setup-entry-scene固定资源分支、configure-runtime及所需导出/资源/Procedure/HybridCLR步骤；依据PROJECT_STRUCTURE前置清单完成最小启动后再开展依赖业务，Router仍只读，不把整个MainDemo强加给已有项目。",
-    "PSD2UGUI按设计源/编辑树/生成物与Nova业务页面分层路由；inspect先发现真实目标和来源，nodes[].id来自persistentId，AI意图和许可证/CLI状态准确传给所选Skill，Router不plan或执行。"
+    "新游戏优先路由check-readiness、setup-entry-scene固定资源、configure-runtime及正式导出/资源/Procedure步骤，按PROJECT_STRUCTURE完整落实MainDemo标准产品预加载基线；不因体量小/单机/离线裁减八节点。依赖缺项逐项报告并转对应Operation，Router保持只读，已有工程局改不自动迁移或强套Demo业务。",
+    "PSD2UGUI按设计源/编辑树/生成物与Nova业务页面分层路由；inspect先发现真实目标和来源，nodes[].id来自persistentId，AI意图和许可证/CLI状态准确传给所选Skill，Router不plan或执行。",
+    "从零建项/整套交付按PROJECT_STRUCTURE划分依赖阶段并匹配既有Skill/contract、真实Adapter、输入来源/缺项及最低证据；专有物料暂缺可按NA-014从Nova各Demo复用临时配套物料并记录替换点；创建和首次初始化不豁免，Router保持只读，不把未路由阶段交给通用Setup脚本；按需只读即将执行阶段文档。",
+    "所有Nova项目须配置并实际使用Config（ConfigMaster）、Pipify、PlugPals；按NA-002和PROJECT_STRUCTURE三工具基线，把配置/配对、导出/消费、适用Batch保存/授权运行及仓库查询/依赖证据传递给就绪检查和既有Operation，不能把Pipify/PlugPals标可选。首次Settings创建/绑定、仓库地址保存使用既有窗口，不伪称批次/安装Action已覆盖；已有有效事实可复用，局部任务不扩大为整项目整改，Router不写入、不运行Batch、不为满足必用强装无关包。",
+    "新项目/完整打包/HybridCLR修正按NA-004必备基线分层路由配置、正式设置、Generate、DLL部署、Bundle/Player及Pipify；不因离线或单机自行省略，不将单项Operation的not_applicable当整个项目豁免；Router保持只读。"
   ]
 }

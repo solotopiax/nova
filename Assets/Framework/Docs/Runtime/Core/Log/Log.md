@@ -25,11 +25,11 @@ Log.Fatal(LogTag.Network, exception);   // 默认实现文本化后创建新的 
 
 | 文件 | 说明 |
 |------|------|
-| `Log.cs` | 静态门面 |
-| `LogLevel.cs` | 枚举：`Debug / Info / Warning / Error / Fatal` |
-| `LogTag.cs` | 静态类（`const string` 成员）：`Component / Asset / UI / Table / Event / Object` 等分类标签 |
-| `Interfaces/ILogHelper.cs` | 日志助手接口 |
-| `Implements/LogHelper.cs` | 默认实现（`UnityEngine.Debug` 转发） |
+| [Log.cs](../../../../Scripts/Runtime/Core/Log/Log.cs) | 静态门面 |
+| [LogLevel.cs](../../../../Scripts/Runtime/Core/Log/LogLevel.cs) | 枚举：`Debug / Info / Warning / Error / Fatal` |
+| [LogTag.cs](../../../../Scripts/Runtime/Core/Log/LogTag.cs) | 静态类（`const string` 成员）：`Component / Asset / UI / Table / Event / Object` 等分类标签 |
+| [ILogHelper.cs](../../../../Scripts/Runtime/Core/Log/ILogHelper.cs) | 日志助手接口 |
+| [LogHelper.cs](../../../../Scripts/Runtime/Core/Log/LogHelper.cs) | 默认实现（`UnityEngine.Debug` 转发） |
 
 ## 行为与边界
 

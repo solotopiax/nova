@@ -1,7 +1,7 @@
 # Excel IO
 
 > 包名：`com.solotopia.excelio`
-> 当前版本：`1.0.4`
+> 当前版本：`1.0.7`
 
 编辑器专用表格读写工具
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.excelio": "1.0.1"
+  "com.solotopia.excelio": "1.0.7"
 }
 ```
 
@@ -28,4 +28,4 @@
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。

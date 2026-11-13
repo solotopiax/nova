@@ -11,7 +11,7 @@ HTTP 响应数据，实现 IReference 支持 ReferencePool 池化复用。除状
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `HttpResponse.cs` | `sealed class HttpResponse : IReference` | HTTP 响应数据定义，实现 IReference 池化，通过 Create 工厂方法从 ReferencePool 获取实例 |
+| [HttpResponse.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Definitions/HttpResponse.cs) | `sealed class HttpResponse : IReference` | HTTP 响应数据定义，实现 IReference 池化，通过 Create 工厂方法从 ReferencePool 获取实例 |
 
 ---
 

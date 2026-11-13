@@ -8,6 +8,7 @@
  * descrip:   框架内部应用配置读取与刷新契约
  ***************************************************************/
 
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace NovaFramework.Runtime
@@ -57,6 +58,13 @@ namespace NovaFramework.Runtime
         /// <param name="value">命中时的当前生效字符串。</param>
         /// <returns>云端或本地路径存在且不是显式 null 时返回 true。</returns>
         bool TryGetString(string key, out string value);
+
+        /// <summary>
+        /// 等待本次启动自动拉取的最终结果；完成后保留结果，不发起新的请求。
+        /// </summary>
+        /// <param name="cancellationToken">只取消当前等待者，不影响共享启动任务。</param>
+        /// <returns>启动远端配置已应用返回 true；未加载、跳过、失败或关闭返回 false。</returns>
+        UniTask<bool> WaitForStartupAppConfigAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 显式从 GM 后台拉取并应用一轮应用配置。

@@ -9,8 +9,8 @@
 
 | 文件 | 作用 |
 |---|---|
-| `DataReceiver.cs` | 基类实现：加载、解析、释放、并发防重入 |
-| `IDataReceiver.cs` | 对外契约：`ReadDataAsset` / `ReadDataAssetAsync` / `ReadDataAssetSync` |
+| [DataReceiver.cs](../../../../Scripts/Runtime/Core/Table/DataReceiver.cs) | 基类实现：加载、解析、释放、并发防重入 |
+| [IDataReceiver.cs](../../../../Scripts/Runtime/Core/Table/IDataReceiver.cs) | 对外契约：`ReadDataAsset` / `ReadDataAssetAsync` / `ReadDataAssetSync` |
 
 ## 委托与字段
 

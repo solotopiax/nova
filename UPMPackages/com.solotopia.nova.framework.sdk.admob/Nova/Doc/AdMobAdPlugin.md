@@ -8,7 +8,7 @@
 - 通过 `[AdChannel(typeof(AdMobAdChannelConfig))]` 绑定配置类型
 - 声明渠道身份；在匹配官方 SDK 已安装的 Android / iOS Player 中执行 UMP、SDK 初始化并注册四格式广告位
 
-当前代码已实现 Rewarded、Interstitial、Banner、AppOpen 的原厂加载、展示、收入回调与 Ready 查询，业务仍使用父广告聚合接口。本包 `package.json` 未直接安装 Google Mobile Ads SDK；Runtime / Editor asmdef 在官方 `com.google.ads.mobile` 的 `[11.5.0,12.0.0)` 范围启用适配。未安装匹配 SDK 或处于 Editor / 非移动平台时渠道报告初始化失败，不自动请求测试广告。源码具备实现不代表 Unity 编译、原生构建或设备广告效果已验收。
+当前代码已实现 Rewarded、Interstitial、Banner、AppOpen 的原厂加载、展示、收入回调与 Ready 查询，业务仍使用父广告聚合接口。本包 [package.json](../../package.json) 未直接安装 Google Mobile Ads SDK；Runtime / Editor asmdef 在官方 `com.google.ads.mobile` 的 `[11.5.0,12.0.0)` 范围启用适配。未安装匹配 SDK 或处于 Editor / 非移动平台时渠道报告初始化失败，不自动请求测试广告。源码具备实现不代表 Unity 编译、原生构建或设备广告效果已验收。
 
 ## 2. 当前成员与可见性
 
@@ -49,7 +49,7 @@ Settings 写入是持久项目改动，后续构建失败不自动恢复它；�
 
 ## 5. 使用示例
 
-AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式调用基类 `StartRevenueReport`，非 Banner 按次派发；Banner 使用共享的 `TrackBannerIlrdAggregated`，默认每 5 次发送累计金额及最后一次回调的广告位。只有一份渠道累计和存档，派发后清批，网络失败只警告。当前 AdMob 尚无独立分析 ad_ilrd，不依赖 MAX 的三种收益打点目标；不能把 MAX 的事件派发门当作本渠道已实现能力。协议派发后清批，不等待网络确认；网络失败不恢复该批次。字段、应用 AES 和日志见[基础包收益说明](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。`RaiseRevenue` 仅逐次通知原始收益，不触发第二次协议请求。
+AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式调用基类 `StartRevenueReport`，非 Banner 按次派发；Banner 使用共享的 `TrackBannerIlrdAggregated`，默认每 5 次发送累计金额及最后一次回调的广告位。只有一份渠道累计和存档，派发后清批，网络失败只警告。当前 AdMob 尚无独立分析 ad_ilrd，不依赖 MAX 的三种收益打点目标；不能把 MAX 的事件派发门当作本渠道已实现能力。协议派发后清批，不等待网络确认；网络失败不恢复该批次。字段、应用 AES 和日志见[基础包收益说明](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。`RaiseRevenue` 仅逐次通知原始收益，不触发第二次协议请求。
 
 构建预处理写入的官方 Settings 是项目中的正式持久资产，必要时会创建目录和资产，不在构建失败后自动还原。目标平台 App ID、原厂广告位 ID 和用户同意是不同输入；`TagForUnderAgeOfConsent` 只是年龄标志。Banner 的 Vector2 位置按逻辑像素取整，拒绝 NaN/Infinity，位置会保留供下一次创建；原厂 SetPosition 失败不回滚已保存的位置期望。全屏过期在读取 Ready 时清理，没有后台过期计时器。
 
@@ -69,12 +69,12 @@ async UniTask ShowInterstitialAsync(CancellationToken ct)
 }
 ```
 
-多渠道时此示例由聚合选择可用渠道，不保证最终使用 AdMob。展示通知和激励发奖通过当前 `AdPlugin.Events` 订阅；历史回放、业务幂等与页面取消后的奖励所有权见[奖励示例](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginEvents.md#11-使用示例)。
+多渠道时此示例由聚合选择可用渠道，不保证最终使用 AdMob。展示通知和激励发奖通过当前 `AdPlugin.Events` 订阅；历史回放、业务幂等与页面取消后的奖励所有权见[奖励示例](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginEvents.md#11-使用示例`）。
 
 业务广告调用仍通过父包 `AdPlugin` / `IAdPlugin`。当前独立 AdMob 配置不能替代 MAX 配置中的 AdMob App ID，也不能作为 MAX 原厂 Google 适配器的广告位配置入口。
 
 ## 6. 关联
 
 - 配置类型：[AdMobAdChannelConfig.md](./AdMobAdChannelConfig.md)
-- 渠道基类：[AdChannelPluginBase.md](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdChannelPluginBase.md)
-- MAX 构建处理器：[MaxAdPluginBuildProcessor.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPluginBuildProcessor.md)
+- 渠道基类：[AdChannelPluginBase.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdChannelPluginBase.md`）
+- MAX 构建处理器：[MaxAdPluginBuildProcessor.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPluginBuildProcessor.md`）

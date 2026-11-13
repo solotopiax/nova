@@ -19,18 +19,13 @@
 
 Agent 遇到厂商名、能力名、包名或类型名等关键字时，按以下顺序查找当前工程的包文档：
 
-1. 在 `UPMPackages`、`Packages` 与 `Library/PackageCache` 的 `package.json` 中搜索关键字，结合 `name`、`displayName`、`keywords` 确定候选 SDK / Kit 包。
-2. 开发仓查找 `UPMPackages/<package>/Nova/{Doc,Docs,DOCS}/INDEX.md`；消费工程依次查找 `Packages/<package>/...` 与 `Library/PackageCache/<package>@<version>/...`。这是允许定向读取 `Library/PackageCache` 的文档查询场景，不扩展扫描其他 Library 内容。
-3. `Nova/Doc/INDEX.md` 是约定入口；当前仓兼容历史目录名 `Nova/Docs/INDEX.md` 与 `Nova/DOCS/INDEX.md`。
-4. 先读包内 INDEX，再读取它链接的具体 API、配置、平台接入或排障文档；默认不展开包内 `Core/` 厂商源码。
-5. 当前工程未安装候选包或不存在包内 INDEX 时，明确报告缺失的包名或文档入口，不用主框架公共层文档代替具体 SDK 文档。
+1. 结合当前 manifest 依赖、Unity 已注册包和候选包 `package.json` 的 `name`、`displayName`、`keywords` 确定准确包名；不能仅凭开发仓文件夹名判断已安装。
+2. 按准确包名读取当前 `PackageInfo.resolvedPath`；尚未注册但存在有效本地 `file:` manifest 绑定时，按 manifest 所在目录解析并核对目标包名。开发仓本地包可能在 `UPMPackages/`，消费包可能在 `Packages/` 或 Unity 缓存，但都以当前有效绑定为准，不猜 `Library/PackageCache` 哈希或选取缓存中的旧版本。
+3. 在该实际包根下查找 `Nova/Doc/INDEX.md`，并兼容历史目录名 `Nova/Docs/INDEX.md`、`Nova/DOCS/INDEX.md`。框架文档给出的“包名＋包内路径”也从这个根定位，不从 Framework 文档跨目录拼接。
+4. 先读包内 INDEX，再读取它链接的具体 API、配置、平台接入或排障文档；默认不展开所选独立包的厂商源码目录（例如包内 `Core/`，仍从本节确认的实际包根定位）。只定向读取已确认包根下的文档，不扩展扫描其他 Library 内容。
+5. 当前工程未安装候选包、尚未解析出实际目录或不存在包内 INDEX 时，明确报告缺失的包名或文档入口，不用主框架公共层文档代替具体 SDK 文档。
 
-示例搜索：
-
-```bash
-rg -n -i "<关键字>" UPMPackages Packages Library/PackageCache -g package.json
-find UPMPackages Packages Library/PackageCache -ipath '*/Nova/doc*/INDEX.md' -print 2>/dev/null
-```
+框架自身的根目录和 Sample 导入位置同样按 [框架位置与文档入口](../../../START_HERE.md#先确定框架位置与文档入口) 核对。
 
 ## Definitions
 

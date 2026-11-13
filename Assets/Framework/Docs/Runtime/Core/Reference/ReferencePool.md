@@ -13,13 +13,13 @@
 
 | 文件 | 说明 |
 |------|------|
-| `IReference.cs` | 可归还接口，含 `Clear()` 方法 |
-| `ReferencePool.cs` | 静态引用池（`Get<T>` / `Put<T>`） |
-| `ReferencePoolInfo.cs` | 单类型池信息快照（struct，用于调试展示） |
-| `ReferenceStrictCheckType.cs` | 枚举：严格检查模式（参见 Nova 配置） |
-| `Interfaces/IReferenceHelper.cs` | 引用助手接口（可替换底层实现） |
-| `Implements/ReferenceHelper.cs` | 默认实现，持有 `Dictionary<Type, ReferenceCollection>` |
-| `Implements/ReferenceHelper.ReferenceCollection.cs` | 单类型集合（`Queue<IReference>` 存储空闲对象，始终用身份 `HashSet` 查重） |
+| [IReference.cs](../../../../Scripts/Runtime/Core/Reference/IReference.cs) | 可归还接口，含 `Clear()` 方法 |
+| [ReferencePool.cs](../../../../Scripts/Runtime/Core/Reference/ReferencePool.cs) | 静态引用池（`Get<T>` / `Put<T>`） |
+| [ReferencePoolInfo.cs](../../../../Scripts/Runtime/Core/Reference/ReferencePoolInfo.cs) | 单类型池信息快照（struct，用于调试展示） |
+| [ReferenceStrictCheckType.cs](../../../../Scripts/Runtime/Core/Reference/ReferenceStrictCheckType.cs) | 枚举：严格检查模式（参见 Nova 配置） |
+| [IReferenceHelper.cs](../../../../Scripts/Runtime/Core/Reference/IReferenceHelper.cs) | 引用助手接口（可替换底层实现） |
+| [ReferenceHelper.cs](../../../../Scripts/Runtime/Core/Reference/ReferenceHelper.cs) | 默认实现，持有 `Dictionary<Type, ReferenceCollection>` |
+| [ReferenceHelper.ReferenceCollection.cs](../../../../Scripts/Runtime/Core/Reference/ReferenceHelper.ReferenceCollection.cs) | 单类型集合（`Queue<IReference>` 存储空闲对象，始终用身份 `HashSet` 查重） |
 
 ---
 

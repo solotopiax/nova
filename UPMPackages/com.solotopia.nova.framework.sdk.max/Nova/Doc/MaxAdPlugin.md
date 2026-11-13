@@ -1,6 +1,6 @@
 # MaxAdPlugin
 
-> 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/**`
+> 当前代码事实：[Nova/Scripts/Runtime/](../Scripts/Runtime/)（本包内）
 
 **类签名**：`[AdChannel(typeof(MaxAdChannelConfig))] public sealed partial class MaxAdPlugin : AdChannelPluginBase`
 **命名空间**：`NovaFramework.SDK.MaxAdPlugin.Runtime`
@@ -8,7 +8,7 @@
 
 AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏/Banner/开屏的加载与展示，以及收入回调上报。
 
-收益网络协议由父包 `AdChannelPluginBase.StartRevenueReport` 统一发送。当 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 时，MAX 在 `TrackMaxAdIlrd` 已向至少一个打点目标尝试派发后调用，直接传入该次 ILRD 的金额和广告位；Banner 共用原累计及存档，未派发 ILRD 不触发协议。`RaiseRevenue` / `RaiseRevenueImmediately` 仅负责逐次业务通知。协议字段及 `RevenuePaid` 与网络成功的边界见 [Ad 基础包收益上报文档](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+收益网络协议由父包 `AdChannelPluginBase.StartRevenueReport` 统一发送。当 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 时，MAX 在 `TrackMaxAdIlrd` 已向至少一个打点目标尝试派发后调用，直接传入该次 ILRD 的金额和广告位；Banner 共用原累计及存档，未派发 ILRD 不触发协议。`RaiseRevenue` / `RaiseRevenueImmediately` 仅负责逐次业务通知。协议字段及 `RevenuePaid` 与网络成功的边界见 [Ad 基础包收益上报文档](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。
 
 ---
 
@@ -42,7 +42,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 
 ## UPM 依赖
 
-`MaxSdk`、`MaxSdkBase`、`MaxSdkCallbacks`、`MaxSdkUtils` 均来自官方 AppLovin UPM 包 `com.applovin.mediation.ads`。`com.solotopia.nova.framework.sdk.max` 的 `package.json` 必须声明该依赖，Runtime 程序集引用 `MaxSdk.Scripts`，Editor 程序集引用 `MaxSdk.Scripts.IntegrationManager.Editor`。
+`MaxSdk`、`MaxSdkBase`、`MaxSdkCallbacks`、`MaxSdkUtils` 均来自官方 AppLovin UPM 包 `com.applovin.mediation.ads`。`com.solotopia.nova.framework.sdk.max` 的 [package.json](../../package.json) 必须声明该依赖，Runtime 程序集引用 `MaxSdk.Scripts`，Editor 程序集引用 `MaxSdk.Scripts.IntegrationManager.Editor`。
 
 Mediation adapters 也由 [package.json](../../package.json) 固定版本声明为 AppLovin 官方 UPM 包，按平台拆为 `.android` / `.ios` 依赖。当前声明 BidMachine、ByteDance、Chartboost、Facebook、Fyber、Google、Google Ad Manager、InMobi、IronSource、Mintegral、Moloco、UnityAds、Vungle、Line 的双平台包，以及 Yandex Android 包；未声明 Yandex iOS。旧 `Core/MaxSdk/Mediation/**/Dependencies.xml` 不再作为依赖来源。Google / Google Ad Manager 当前固定 Android `25050000.0.0`、iOS `13110000.0.0`；Unity Ads 双平台为 `4210001.0.0`，不表示安装时自动追踪最新版。
 
@@ -52,7 +52,7 @@ iOS 依赖归属处理器不再要求固定 adapter 版本，按当前已安装�
 
 两个 asmdef 均通过官方包版本定义生成 `NOVA_APPLOVIN_MAX`（表达式 `8.5.0`）；Runtime 不限制平台，MAX 门面在 Android/iOS 使用 native SDK，在 Editor 和其他平台使用原厂 Editor 实现，不能据此视为桌面或 WebGL 真广告支持。Editor 门面不提供真实 ILRD 收益，MAX 返回的未知/负收益占位值在 Nova MAX 边界统一转换为 `0`；Player 收到的正常正收益不改写。Editor 程序集仅在 Editor 且非 `UNITY_WEBGL` 时参与编译。宏缺失时渠道初始化报告失败，广告能力不可用。
 
-本包不再提交 AppLovin MAX SDK 本体文件；`UPMPackages/com.solotopia.nova.framework.sdk.max/Core/MaxSdk` 应保持为空或不存在。
+本包不再提交 AppLovin MAX SDK 本体文件；包内 `Core/MaxSdk` 应保持为空或不存在，因此不提供该目录链接。
 
 ---
 
@@ -352,7 +352,7 @@ MAX 所继承的基类释放先关闭回调代际和主线程队列，取消渠�
 
 全部 30 个已注册原厂回调在方法入口先记录，包含加载、展示、点击、奖励、关闭、收益和过期重载；回调日志不保证该回调被采纳或发布业务事件。常规流程只记录这些关键节点，Warning / Error 异常诊断保留。
 
-这些日志复用现有 `Log.Debug(LogTag.Max, ...)`，展示后补量和自动重试的广告组新轮、实际渠道请求字段见 [AdChannelPluginBase](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdChannelPluginBase.md#本地流程日志)，业务准备请求与展示见 [AdPlugin](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPlugin.md#本地请求与展示日志)。Editor 中 Debug 调用始终编入；Player 需要 `ENABLE_LOG`、`ENABLE_DEBUG_LOG` 或 `ENABLE_DEBUG_AND_ABOVE_LOG` 之一，实际可见性还受 LogHelper 和 Console 过滤影响。`LogEnable` 只控制 MAX 原厂详细日志。
+这些日志复用现有 `Log.Debug(LogTag.Max, ...)`，展示后补量和自动重试的广告组新轮、实际渠道请求字段见 [AdChannelPluginBase](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdChannelPluginBase.md#本地流程日志`），业务准备请求与展示见 [AdPlugin](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPlugin.md#本地请求与展示日志`）。Editor 中 Debug 调用始终编入；Player 需要 `ENABLE_LOG`、`ENABLE_DEBUG_LOG` 或 `ENABLE_DEBUG_AND_ABOVE_LOG` 之一，实际可见性还受 LogHelper 和 Console 过滤影响。`LogEnable` 只控制 MAX 原厂详细日志。
 
 ### 隐私等待与缓存边界
 
@@ -370,7 +370,7 @@ MAX 所继承的基类释放先关闭回调代际和主线程队列，取消渠�
 - 单插件异常继续隔离。派发返回值仍表示至少已尝试调用一个插件，不表示分析后台确认接收。Banner ILRD 聚合入口仍在主线程累计和查询，全缺失时保留既有累计批次，至少向一个目标尝试派发后按既有规则清空，不单独为缺失目标保留批次。
 - 三种收益能力分别查询与派发；同一插件若同时实现多种能力，当前链路不按实例去重，可能收到多次调用。跨能力收口应按实际消费插件核对，不能据“每能力一次”宣称“每实例一次”。后台收益协议在三个目标派发之后统一触发一次，不会按目标数量重复发送；两个目的地都接收到同一收入也不等于向同一服务器重复发了协议。
 
-协议字段、Protobuf / AES 传输和实际日志级别统一见[广告收益上报](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。本节只说明 MAX 的原厂回调和派发边界。
+协议字段、Protobuf / AES 传输和实际日志级别统一见[广告收益上报](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。本节只说明 MAX 的原厂回调和派发边界。
 
 ### Banner 收益打点
 
@@ -626,9 +626,9 @@ finally
 ## §13 关联文档
 
 - [`MaxAdPluginBuildProcessor.md`](./MaxAdPluginBuildProcessor.md) — 构建预处理器
-- [Ad 聚合接口](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/IAdPlugin.md) — 业务请求、展示和隐私查询
-- [AdPluginEvents](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginEvents.md) — displayed、终态与回放事件
-- [AdChannelPluginBase](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdChannelPluginBase.md) — 组调度、真实 Ready、取消隔离与收益累计
+- [Ad 聚合接口](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/IAdPlugin.md`） — 业务请求、展示和隐私查询
+- [AdPluginEvents](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginEvents.md`） — displayed、终态与回放事件
+- [AdChannelPluginBase](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdChannelPluginBase.md`） — 组调度、真实 Ready、取消隔离与收益累计
 - [Runtime 主实现](../Scripts/Runtime/MaxAdPlugin.cs)、[配置](../Scripts/Runtime/MaxAdChannelConfig.cs)、[配置校验器](../Scripts/Runtime/MaxAdGroupConfigValidator.cs)、[展示终态方法](../Scripts/Runtime/MaxAdPlugin.Methods.cs)、[回调注册与释放](../Scripts/Runtime/MaxAdPlugin.Callbacks.cs)、[收益实现](../Scripts/Runtime/MaxAdPlugin.Track.cs) — 当前事实依据
 
 ## 广告组配置与原厂边界

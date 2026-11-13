@@ -13,7 +13,7 @@
 
 - 通知权限请求选项由 `RequestNotificationPermissionAsync(...)` 的调用参数提供，不写入该配置。
 - APNs / FCM Token 与对应服务配置不属于 Native 模块，不能作为此配置的替代入口。
-- 新增字段属于序列化与 Inspector 契约，必须同步检查旧 `Nova.prefab`、Inspector 绑定和文档。
+- 新增字段属于序列化与 Inspector 契约，必须同步检查旧 [Nova.prefab](../../../../../../Prefabs/Nova.prefab)、Inspector 绑定和文档。
 
 ## 关联文档
 

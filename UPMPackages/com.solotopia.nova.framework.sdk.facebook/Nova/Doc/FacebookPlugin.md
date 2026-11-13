@@ -113,4 +113,4 @@ Before release, recheck Facebook platform policy, App Review permission requirem
 - Profile, avatar, and friend APIs are asynchronous. Callers must handle cancellation, network failure, missing permissions, and empty data.
 - Facebook plugin initialization failure should affect Facebook plugin availability only and should not block unrelated SDK plugins.
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

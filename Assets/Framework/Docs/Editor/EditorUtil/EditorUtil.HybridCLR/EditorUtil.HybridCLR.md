@@ -20,9 +20,9 @@ Nova Framework 仅支持 Unity `6000.4.x`，最低版本为 `6000.4.2f1`；更�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil.HybridCLR.cs` | `partial EditorUtil.HybridCLR` | 公有接口：`ValidateLinkXml()` / `CopyAotDlls()` / `CopyGameDlls()` 三个主流程操作；仅编译热更 DLL 的独立入口 `CompileDllActiveBuildTarget()`；对齐 HybridCLR/Generate 子菜单的细粒度入口：`GenerateAll()` / `GenerateLinkXml()` / `GenerateMethodBridgeAndReversePInvokeWrapper()` / `GenerateAotGenericReference()` / `GenerateIl2CppDef()` / `GenerateAotDlls()` |
-| `EditorUtil.HybridCLR.Visitors.cs` | `partial EditorUtil.HybridCLR` | 当前为空的 partial 占位文件 |
-| `EditorUtil.HybridCLR.Methods.cs` | `partial EditorUtil.HybridCLR` | 私有方法：激活 Master/当前坐标解析、`ValidateAndPatchLinkXml`、`CopyDllEntries`、`StripDllSuffix` |
+| [EditorUtil.HybridCLR.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.cs) | `partial EditorUtil.HybridCLR` | 公有接口：`ValidateLinkXml()` / `CopyAotDlls()` / `CopyGameDlls()` 三个主流程操作；仅编译热更 DLL 的独立入口 `CompileDllActiveBuildTarget()`；对齐 HybridCLR/Generate 子菜单的细粒度入口：`GenerateAll()` / `GenerateLinkXml()` / `GenerateMethodBridgeAndReversePInvokeWrapper()` / `GenerateAotGenericReference()` / `GenerateIl2CppDef()` / `GenerateAotDlls()` |
+| [EditorUtil.HybridCLR.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.Visitors.cs) | `partial EditorUtil.HybridCLR` | 当前为空的 partial 占位文件 |
+| [EditorUtil.HybridCLR.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.Methods.cs) | `partial EditorUtil.HybridCLR` | 私有方法：激活 Master/当前坐标解析、`ValidateAndPatchLinkXml`、`CopyDllEntries`、`StripDllSuffix` |
 
 ---
 
@@ -111,7 +111,7 @@ public static void CompileDllActiveBuildTarget()
 
 ### Sample 的 Editor 自动同步
 
-域重载与 Single 场景切换后的 `TryAutoSyncActiveSampleDlls()` 只处理当前激活、位于 `Assets/Samples/` 下的 ConfigMaster。目录准备由各 Sample 的 `SamplePathRewriter` 按发布清单先行完成，与 DLL 复制分开。自动同步把 AOT 与业务 DLL 作为两个独立批次：源产物缺失时明确记录本组跳过及 DLL 尚未就绪，继续检查另一组；源齐全且目标缺失/过期时才复制。业务的 Startup/Running 并集仍须通过原跨列表冲突校验。空映射字段、路径异常、配置解析与真实复制错误报告 Warning，不中断普通 Editor 演示，也不把已准备的空目录报告为同步成功。
+实际 Sample 根目录先按 [导入定位规则](../../../Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核对。域重载与 Single 场景切换后的 `TryAutoSyncActiveSampleDlls()` 只处理当前激活、位于 `Assets/Samples/` 下的 ConfigMaster。目录准备由各 Sample 的 `SamplePathRewriter` 按发布清单先行完成，与 DLL 复制分开。自动同步把 AOT 与业务 DLL 作为两个独立批次：源产物缺失时明确记录本组跳过及 DLL 尚未就绪，继续检查另一组；源齐全且目标缺失/过期时才复制。业务的 Startup/Running 并集仍须通过原跨列表冲突校验。空映射字段、路径异常、配置解析与真实复制错误报告 Warning，不中断普通 Editor 演示，也不把已准备的空目录报告为同步成功。
 
 该容错仅用于 Sample 自动处理。显式 `CopyAotDlls()`、`CopyGameDlls()` 保留完整源集合的严格失败与整批复制语义；正式 Sample 标准 Bundle 还检查本包默认采集规则覆盖的 DLL 目标。Player 首次生成 AOT 与 Player 后的 AOT 复制顺序保持不变。普通 Editor 启动成功不代表 AOT、热更、Bundle 或 Player 已就绪。
 

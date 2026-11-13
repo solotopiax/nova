@@ -11,7 +11,7 @@ Banner 广告专属控制接口，聚合 Banner 超出三段式之外的额外�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Ad/IBannerControl.cs` | `IBannerControl` | 接口全部定义 |
+| [IBannerControl.cs](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Scripts/Runtime/Modules/SDK/Plugins/Ad/IBannerControl.cs`） | `IBannerControl` | 接口全部定义 |
 
 ---
 
@@ -89,4 +89,4 @@ float nativeHeight = ad.GetAdaptiveBannerHeight();
 
 - [IAdPlugin.md](./IAdPlugin.md) — 继承 IBannerControl 的聚合调度接口
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — Banner 方法 virtual 空实现，Banner 渠道按需重写
-- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — BannerPosition 枚举
+- [Data.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Definitions/Data.md`） — BannerPosition 枚举

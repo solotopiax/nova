@@ -12,7 +12,7 @@ MD5 哈希工具，提供从字节数组或文件路径计算小写 MD5 十六�
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Utils/Util.MD5/Util.MD5.cs` | `static class MD5`（嵌套于 `partial Util`） | MD5 哈希方法实现 |
+| [Util.MD5.cs](../../../Scripts/Runtime/Core/Util/Util.MD5/Util.MD5.cs) | `static class MD5`（嵌套于 `partial Util`） | MD5 哈希方法实现 |
 
 ---
 

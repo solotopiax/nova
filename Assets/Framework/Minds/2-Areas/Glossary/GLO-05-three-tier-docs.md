@@ -26,7 +26,7 @@ related:
 
 ## 一句话定义
 
-`Assets/Framework/Docs/` 采用 `L0 → L1 → L2 + INDEX` 的事实层结构。
+[Docs/](../../../Docs/INDEX.md) 采用 `L0 → L1 → L2 + INDEX` 的事实层结构。
 
 这里的 `L0 / L1 / L2` 表示文档层级，与工程工作流使用的同名风险等级分别判断。
 
@@ -35,7 +35,7 @@ related:
 | 层级 | 文件 | 职责 |
 |---|---|---|
 | `L0` | `ARCHITECTURE.md` | 框架总览与核心关系图 |
-| `L1` | `Runtime.md` / `Editor.md` | Runtime / Editor 层级导航 |
+| `L1` | [Runtime.md](../../../Docs/Runtime/Runtime.md) / [Editor.md](../../../Docs/Editor/Editor.md) | Runtime / Editor 层级导航 |
 | `L2` | 各类 `<ClassName>.md` | 类、接口、窗口、组件的事实说明 |
 | `INDEX` | `INDEX.md` | 全局检索入口与任务导航 |
 

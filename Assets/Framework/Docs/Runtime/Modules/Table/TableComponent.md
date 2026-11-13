@@ -6,7 +6,7 @@
 - 在 `Start()` 把 加载描述 下发给管理器
 - 对业务层暴露统一的加载与查询门面
 
-它本身不做表构造细节、资源加载细节、Luban 反射细节，这些都在 `TableManager` 和 `Core/Table` 层。
+它本身不做表构造细节、资源加载细节、Luban 反射细节，这些都在 `TableManager` 和 [Core/Table](../../../../Scripts/Runtime/Core/Table/) 层。
 
 ## 什么时候先看这页
 

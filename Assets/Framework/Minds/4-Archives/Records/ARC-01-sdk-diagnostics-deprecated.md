@@ -22,6 +22,8 @@ related:
 
 # ARC-01：废弃 SDK Diagnostics 中间层
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../Docs/INDEX.md) 或 [Minds 索引](../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 原决策（已废弃）
 
 SDK 模块 S 级重构早期版本曾设计独立诊断层 `ISDKDiagnostics` / `SDKPluginDiagnostic` / `SDKDiagnosticsImpl`，对外暴露每个 Plugin 的初始化状态、耗时与异常信息，供 Inspector Runtime 面板与外部监控消费。
@@ -71,7 +73,7 @@ SDK 模块 S 级重构早期版本曾设计独立诊断层 `ISDKDiagnostics` / `
 
 ## 来源
 
-- 文档：`Assets/Framework/Docs/Runtime/Modules/SDK/ARCHITECTURE.md` §18 ADR-007（L1151-1157）
+- 文档：[Assets/Framework/Docs/Runtime/Modules/SDK/ARCHITECTURE.md](../../../Docs/Runtime/Modules/SDK/ARCHITECTURE.md) §18 ADR-007（L1151-1157）
 - 用户决策：2026-04-28 主会话拍板废弃
 
 ---

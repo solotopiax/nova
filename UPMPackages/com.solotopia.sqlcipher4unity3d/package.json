@@ -1,7 +1,7 @@
 {
   "name": "com.solotopia.sqlcipher4unity3d",
   "displayName": "SqlCipher4Unity3D",
-  "version": "10.0.5",
+  "version": "10.0.6",
   "coreVersion": "1.3.1",
   "unity": "2018.4",
   "description": "SQLite Cipher 加密数据库访问库",
@@ -16,5 +16,8 @@
   "dependencies": {},
   "author": {
     "name": "Solotopia"
+  },
+  "nova": {
+    "releaseTime": "2026-11-13T07:06:06Z"
   }
 }

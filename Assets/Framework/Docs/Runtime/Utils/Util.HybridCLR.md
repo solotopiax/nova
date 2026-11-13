@@ -11,7 +11,7 @@ HybridCLR 生态唯一 Facade。封装 AOT 元数据补充加载（`LoadAotMetad
 
 | 文件 | 说明 |
 |---|---|
-| `Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs` | 全部实现：AOT / 业务 DLL 加载、完成态缓存与同一归一化地址的并发共享 |
+| [Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs](../../../Scripts/Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs) | 全部实现：AOT / 业务 DLL 加载、完成态缓存与同一归一化地址的并发共享 |
 
 ---
 

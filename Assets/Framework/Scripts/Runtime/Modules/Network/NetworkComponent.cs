@@ -71,7 +71,8 @@ namespace NovaFramework.Runtime
             {
                 DataFormat = m_Settings.DataFormat,
                 HostKeyUnitSettings = m_Settings.HostKeySettings.HostKeyUnits,
-                NetCmdUnitSettings = m_Settings.NetCmdSettings.NetCmdUnits
+                NetCmdUnitSettings = m_Settings.NetCmdSettings.NetCmdUnits,
+                StartupAppConfigRequestTimeout = m_HttpSettings.StartupAppConfigRequestTimeout
             });
 
             m_WebSocketManager.Initialize(new WebSocketManagerConfig

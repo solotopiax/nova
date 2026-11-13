@@ -12,8 +12,8 @@ Luban 导出辅助工具：根据模块 Profile 构建导出上下文、生成�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil.Luban.ExportHelper.cs` | `EditorUtil.Luban.ExportHelper` | 全部方法：构建导出上下文、生成关联文件名集合、查找单元设置、辅助路径方法 |
-| `EditorUtil.Luban.ExportProfile.cs` | `LubanExportProfile` / `LubanExportProfiles` | Nova 内置模块的 target、manager 与模板键单一真相源 |
+| [EditorUtil.Luban.ExportHelper.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.cs) | `EditorUtil.Luban.ExportHelper` | 全部方法：构建导出上下文、生成关联文件名集合、查找单元设置、辅助路径方法 |
+| [EditorUtil.Luban.ExportProfile.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportProfile.cs) | `LubanExportProfile` / `LubanExportProfiles` | Nova 内置模块的 target、manager 与模板键单一真相源 |
 
 ---
 
@@ -53,11 +53,11 @@ public static IDataTableUnitSetting FindUnitSetting(
 public static string GetPreFilterTempDirPath(string regionDirPath)
 
 // 获取 Luban 自定义模板目录列表
-// 优先检查 Packages/com.solotopia.nova.framework/Templates/Luban，回退到 Assets/Framework/Templates/Luban
+// 当前逻辑路径：优先 Packages/com.solotopia.nova.framework/Templates/Luban，回退开发态 Assets/Framework/Templates/Luban
 // 不存在时返回 null
 public static string[] GetLubanCustomTemplateDirs(string targetName)
 
-// Internal：把 Assets/Framework 或 Packages 下的框架模板逻辑路径
+// Internal：把开发态 Assets/Framework 或 Packages 下的框架模板逻辑路径
 // 解析为当前安装形态的真实物理目录；项目自定义路径保持原值
 internal static string ResolveCustomTemplateDirectory(string configuredDirectory)
 ```

@@ -4,7 +4,7 @@
 
 `SaveErrorCode` 是游戏存档（云存档）业务错误码占位类，约定段位 8000~8999，与 `NetErrorCode` 通用段、`LoginErrorCode`（7000~7999）互不冲突。当前为空类，实际错误码常量随业务推进补充。
 
-**所在文件：** `Nova/Scripts/Runtime/SaveErrorCode.cs`
+**所在文件：** [Nova/Scripts/Runtime/SaveErrorCode.cs](../Scripts/Runtime/SaveErrorCode.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameSave.Runtime`
 **类签名：** `public static class SaveErrorCode`
 

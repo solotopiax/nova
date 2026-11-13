@@ -13,7 +13,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs` | `PipifyVisibleWhenAttribute` | 唯一实现 |
+| [EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs) | `PipifyVisibleWhenAttribute` | 唯一实现 |
 
 ## §5 完整公开 API
 

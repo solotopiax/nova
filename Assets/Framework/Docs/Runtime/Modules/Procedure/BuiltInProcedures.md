@@ -43,11 +43,11 @@ ProcedureLoadDll -> 业务入口 Procedure
 
 | 文件 | 说明 |
 |---|---|
-| `Procedures/ProcedureSplash.cs` | 启动链入口，负责闪屏最短保底时长 |
-| `Procedures/ProcedureCheckVersion.cs` | 大版本检查 + 资源补丁判断 + WebGL 启动资源路由 |
-| `Procedures/ProcedureAppDownload.cs` | 强制/推荐更新弹窗、跳商店或下载 APK，并保存路径供可选独立安装重试 |
-| `Procedures/ProcedureHotfix.cs` | 资源补丁下载或 WebGL Warmup，与失败重试 |
-| `Procedures/ProcedureLoadDll.cs` | 加载 Config、AOT metadata、业务 DLL，并跳转业务入口 |
+| [Procedures/ProcedureSplash.cs](../../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureSplash.cs) | 启动链入口，负责闪屏最短保底时长 |
+| [Procedures/ProcedureCheckVersion.cs](../../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs) | 大版本检查 + 资源补丁判断 + WebGL 启动资源路由 |
+| [Procedures/ProcedureAppDownload.cs](../../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureAppDownload.cs) | 强制/推荐更新弹窗、跳商店或下载 APK，并保存路径供可选独立安装重试 |
+| [Procedures/ProcedureHotfix.cs](../../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureHotfix.cs) | 资源补丁下载或 WebGL Warmup，与失败重试 |
+| [Procedures/ProcedureLoadDll.cs](../../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.cs) | 加载 Config、AOT metadata、业务 DLL，并跳转业务入口 |
 
 ## 黑板数据
 

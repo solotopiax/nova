@@ -13,9 +13,9 @@
 
 | 文件 | 说明 |
 |------|------|
-| `AssetComponentInspector.cs` | 主 Inspector：OnEnable 绑定属性 + OnInspectorGUI 调用 DrawConfigs |
-| `AssetComponentInspector.Visitors.cs` | 属性与字段声明 |
-| `AssetComponentInspector.Methods.cs` | DrawConfigs 与 DrawRuntimePlayModePopup 私有方法 |
+| [AssetComponentInspector.cs](../../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.cs) | 主 Inspector：OnEnable 绑定属性 + OnInspectorGUI 调用 DrawConfigs |
+| [AssetComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Visitors.cs) | 属性与字段声明 |
+| [AssetComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs) | DrawConfigs 与 DrawRuntimePlayModePopup 私有方法 |
 
 ---
 
@@ -163,7 +163,7 @@ Inspector 编辑期双向联动，运行时不再二次覆盖：
 
 ## §10 DrawRuntimePlayModePopup 说明
 
-`DrawRuntimePlayModePopup()` 是 `AssetComponentInspector.Methods.cs` 中的私有方法，实现自定义 IntPopup，满足「终端模式禁 EditorSimulateMode」的约束：
+`DrawRuntimePlayModePopup()` 是 [AssetComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs) 中的私有方法，实现自定义 IntPopup，满足「终端模式禁 EditorSimulateMode」的约束：
 
 - 合法选项固定为 `{ OfflinePlayMode, HostPlayMode }`；
 - 显示校正：若当前值为 `EditorSimulateMode`（异常值），局部回落到 `OfflinePlayMode`；没有用户变更时不写回该异常值；

@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.cs` | `EditorUtil.Config.Validator` | 校验工具类（含 Severity 枚举、ValidationIssue 结构体） |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.cs) | `EditorUtil.Config.Validator` | 校验工具类（含 Severity 枚举、ValidationIssue 结构体） |
 
 ---
 

@@ -12,9 +12,9 @@ TextLocalizing 组件的 Inspector 面板定制。
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.cs` | `internal sealed class TextLocalizingInspector` | 主体：`OnEnable` 绑定属性并加载预览数据和字体标记选项，`OnInspectorGUI` 绘制配置字段和预览区 |
-| `Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.Visitors.cs` | 同上（partial） | 字段与 SerializedProperty 缓存 |
-| `Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.Methods.cs` | 同上（partial） | 具体绘制逻辑与数据加载方法 |
+| [Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.cs](../../../../Scripts/Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.cs) | `internal sealed class TextLocalizingInspector` | 主体：`OnEnable` 绑定属性并加载预览数据和字体标记选项，`OnInspectorGUI` 绘制配置字段和预览区 |
+| [Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.Visitors.cs) | 同上（partial） | 字段与 SerializedProperty 缓存 |
+| [Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/CustomInspectors/TextLocalizingInspector/TextLocalizingInspector.Methods.cs) | 同上（partial） | 具体绘制逻辑与数据加载方法 |
 
 ---
 

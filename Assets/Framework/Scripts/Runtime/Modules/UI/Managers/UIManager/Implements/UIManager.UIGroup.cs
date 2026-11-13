@@ -371,6 +371,20 @@ namespace NovaFramework.Runtime
                 ReferencePool.Put(uiViewInfo);
             }
 
+            /// <summary>仅供可选打开失败收尾使用，跳过可能再次抛错的业务回调，幂等移除精确视图。</summary>
+            /// <param name="uiView">本次打开仍持有的视图实例。</param>
+            /// <returns>是否找到并移除了本次分组记录。</returns>
+            public bool RemoveUIViewWithoutCallbacks(IUIView uiView)
+            {
+                if (!m_UIViewInfoMap.TryGetValue(uiView, out LinkedListNode<UIViewInfo> node)) return false;
+                UIViewInfo info = node.Value;
+                if (m_CachedNode == node) m_CachedNode = node.Next;
+                m_UIViewInfos.Remove(node);
+                m_UIViewInfoMap.Remove(uiView);
+                ReferencePool.Put(info);
+                return true;
+            }
+
             /// <summary>
             /// 激活视图。
             /// </summary>

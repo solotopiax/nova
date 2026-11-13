@@ -43,7 +43,7 @@
 
 Play只证明该平台与冻结服务器；Editor成功不证明WebGL浏览器桥或移动网络。真实账号、状态写入、权限、费用及自动认证/心跳请求需精确外部授权，缺设备/服务器/协议或安全初始化入口明确标partial/blocked，不用本地Mock验收真服务。执行后断开本轮拥有的测试连接、注销探针、清理runner/meta/日志/测试状态与必要Refresh，恢复本轮临时配置，保留正式业务源与用户原有工作。
 
-仅按命中问题读取匹配版本`Docs/Runtime/Modules/Network/NetworkComponent.md`、`WebSocketManager/WebSocketManager.md`、`WebSocketManager/IWebSocketManager.md`与必要消息/通道源码；本页依据源码查阅，不是当前消费项目live验收。
+仅按命中问题读取匹配版本[Docs/Runtime/Modules/Network/NetworkComponent.md](../../../../Docs/Runtime/Modules/Network/NetworkComponent.md)、[WebSocketManager/WebSocketManager.md](../../../../Docs/Runtime/Modules/Network/WebSocketManager/WebSocketManager.md)、[WebSocketManager/IWebSocketManager.md](../../../../Docs/Runtime/Modules/Network/WebSocketManager/IWebSocketManager.md)与必要消息/通道源码；本页依据源码查阅，不是当前消费项目live验收。
 
 ## 已有 MainDemo echo 分支
 

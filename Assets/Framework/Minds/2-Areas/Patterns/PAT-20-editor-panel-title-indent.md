@@ -79,11 +79,11 @@ related:
 
 ## 验证依据
 
-- 标准层级宽度：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs` 中的 `c_IndentPixelsPerLevel = 11f`。
+- 标准层级宽度：[Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs) 中的 `c_IndentPixelsPerLevel = 11f`。
 - 容器位移排障与真实 Rect 判据：[[PAT-149-imgui-foldout-margin-propagation-layout-shift|PAT-149]]。
 - 2026-08-13 Persist Inspector 的 PlayerPrefs、FileFragment、SQLite 三种存储实现在 Editor 与 Runtime 绘制路径中，按一级、分类、条目三级文字左缘统一间距。
-- Config 平铺范式：`Assets/Framework/Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.ResourceEncryption.cs`；当前尺寸与全局保存边界见 `Assets/Framework/Docs/Editor/Windows/ConfigWindow.md` 的资源加解密配置章节。
-- 2026-10-21 用户通过隐私页截图明确要求：独立功能区补标题和底部分隔线，插件重新检查按钮置于 HelpBox 上方、当前状态放在按钮右侧；对应布局位于 `ConfigWindow.RightPanel.Privacy.cs` 与 `ConfigWindow.RightPanel.cs`。
+- Config 平铺范式：[Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.ResourceEncryption.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.ResourceEncryption.cs)；当前尺寸与全局保存边界见 [Docs/Editor/Windows/ConfigWindow.md](../../../Docs/Editor/Windows/ConfigWindow.md) 的资源加解密配置章节。
+- 2026-10-21 用户通过隐私页截图明确要求：独立功能区补标题和底部分隔线，插件重新检查按钮置于 HelpBox 上方、当前状态放在按钮右侧；对应布局位于 [ConfigWindow.RightPanel.Privacy.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Privacy.cs) 与 [ConfigWindow.RightPanel.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs)。
 
 ## 关联
 

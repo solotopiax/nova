@@ -73,8 +73,8 @@ Arabic、Persian 和 Hebrew 使用从右到左书写方向；其中 Arabic、Per
 
 ## 当前事实来源（Sources）
 
-- `Assets/Framework/Scripts/Runtime/Core/Definitions/Language.cs`
-- `Assets/Framework/Scripts/Runtime/Modules/Localization/TextLocalizing/`
-- `Assets/Framework/Scripts/Runtime/Modules/Localization/TextShaping/`
+- [Scripts/Runtime/Core/Definitions/Language.cs](../../../Scripts/Runtime/Core/Definitions/Language.cs)
+- [Scripts/Runtime/Modules/Localization/TextLocalizing/](../../../Scripts/Runtime/Modules/Localization/TextLocalizing)
+- [Scripts/Runtime/Modules/Localization/TextShaping/](../../../Scripts/Runtime/Modules/Localization/TextShaping)
 - `Assets/Tests/Editor/ArabicLocalizationTextTests.cs`
-- `Assets/Framework/Docs/Runtime/Modules/Localization/TextLocalizing.md`
+- [Docs/Runtime/Modules/Localization/TextLocalizing.md](../../../Docs/Runtime/Modules/Localization/TextLocalizing.md)

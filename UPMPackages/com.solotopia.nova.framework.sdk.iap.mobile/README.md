@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP - Mobile
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.mobile`
-> 当前版本：`0.2.3`
+> 当前版本：`0.2.4`
 
 Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化、购买、Restore、服务端验单、补单、订阅到期与非消耗品持有状态。
 
@@ -11,13 +11,13 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap.mobile": "0.2.3"
+  "com.solotopia.nova.framework.sdk.iap.mobile": "0.2.4"
 }
 ```
 
 ## 依赖
 
-本包支持 Unity `6000.4.x`，最低 `6000.4.2f1`。以下为当前 `package.json` 声明的依赖版本，由 UPM 解析，不代表项目当前已解析的版本：
+本包支持 Unity `6000.4.x`，最低 `6000.4.2f1`。以下为当前 [package.json](package.json) 声明的依赖版本，由 UPM 解析，不代表项目当前已解析的版本：
 
 - `com.solotopia.nova.framework`: `0.7.3`
 - `com.solotopia.nova.framework.sdk.iap`: `0.2.6`
@@ -61,3 +61,11 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 ## 维护
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework.sdk.iap` | `Nova/Doc/INDEX.md` | `Nova/Doc/IAP-Architecture.md`<br>`Nova/Doc/IAPPlugin.md`<br>`Nova/Doc/IAPProductCatalogProtocol.md`<br>`Nova/Doc/INDEX.md` |

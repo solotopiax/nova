@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Structers/FileFolderTree.cs` | 树构建逻辑 + `TreeNode` 内嵌类 |
+| [FileFolderTree.cs](../../../Scripts/Editor/Definitions/FileFolderTree.cs) | 树构建逻辑 + `TreeNode` 内嵌类 |
 
 ---
 

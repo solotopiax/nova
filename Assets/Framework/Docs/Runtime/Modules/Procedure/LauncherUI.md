@@ -1,9 +1,11 @@
 # LauncherUI（启动阶段 UI）
 
 **命名空间**：`NovaFramework.Runtime`
-**资源目录**：`Resources/BuiltIn/Prefabs/`
+**资源定位**：按 [固定启动资源准备规则](../../../Onboarding/RESOURCE_WORKFLOW.md#新项目默认固定启动资源) 从当前 MainDemo Sample 导入，再核对项目内的 `Resources/BuiltIn/Prefabs/`；它不是 Framework 包内的现成目录。
 
 启动阶段固化 UI：Splash / Progress / Dialog 三类 Prefab 放在 Resources 中，不参与热更新，保证热更前即可展示。`ProcedureSplash` 通过 `LauncherUIController.Initialize(Nova.Procedure.LauncherSettings)` 注入配置；之后各内置 Procedure 只调用 `LauncherUIController` 的静态 API，不直接 `Resources.Load`。
+
+三类面板有独立 Canvas/CanvasScaler，导入后必须按产品的横屏或竖屏定位调整，并按[从启动到玩法的逐页适配](../UI/UIComponent.md#从启动到玩法的逐页适配)验证 Logo、Loading 文本/进度及弹窗；玩法根画布的配置不自动覆盖它们。默认只适配产品声明的方向，背景铺满与关键内容避让分别设计，不能照搬 Demo 尺寸或整页缩进。
 
 文本内容由各面板的 `LauncherLocalizedText` / `LauncherDialogLocalizedText` 数组在 Inspector 中配置 Key 驱动，底层通过 `LauncherLocalization` 的 Resources 通道解析。启动文案资源保持独立精简，语言决策与正式 Localization 共用策略；TMP 渲染则直接使用该启动语言完成 RTL/LTR、字形连接、英文数字混排与富文本处理，不等待正式 Localization 初始化。
 
@@ -13,15 +15,15 @@
 
 | 文件 | 类 | 访问修饰符 | 说明 |
 |---|---|---|---|
-| `LauncherUI/LauncherUIController.cs` | `LauncherUIController` | `public static` | 统一入口：初始化、Show/Update/Hide/Destroy |
-| `LauncherUI/LauncherStage.cs` | `LauncherStage` | `public enum` | 进度 UI 阶段：`CheckVersion` / `Hotfix` / `Preload` |
-| `LauncherUI/LauncherDialogType.cs` | `LauncherDialogType` | `public enum` | 弹窗类型：`ForcedDownload` / `RecommendedDownload` / `HotfixFailed` 等 |
-| `LauncherUI/LauncherSplashPanel.cs` | `LauncherSplashPanel` | `public sealed` | 闪屏面板（Background + Logo） |
-| `LauncherUI/LauncherProgressPanel.cs` | `LauncherProgressPanel` | `public sealed` | 进度面板（Slider + ProgressText + 多语言文本数组） |
-| `LauncherUI/LauncherDialogPanel.cs` | `LauncherDialogPanel` | `public sealed` | 通用弹窗（Confirm/Cancel 按钮 + 多语言文本数组） |
-| `LauncherUI/LauncherLocalization.cs` | `LauncherLocalization` | `public static` | 启动期本地化解析器（Resources 文案通道，共用正式语言决策） |
-| `LauncherUI/LauncherLocalizedText.cs` | `LauncherLocalizedText` | `public sealed` | 普通文本本地化绑定条目（TMP_Text + Key） |
-| `LauncherUI/LauncherDialogLocalizedText.cs` | `LauncherDialogLocalizedText` | `public sealed` | 弹窗文本本地化绑定条目（TMP_Text + Key + LauncherDialogType） |
+| [LauncherUI/LauncherUIController.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherUIController.cs) | `LauncherUIController` | `public static` | 统一入口：初始化、Show/Update/Hide/Destroy |
+| [LauncherUI/LauncherStage.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherStage.cs) | `LauncherStage` | `public enum` | 进度 UI 阶段：`CheckVersion` / `Hotfix` / `Preload` |
+| [LauncherUI/LauncherDialogType.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherDialogType.cs) | `LauncherDialogType` | `public enum` | 弹窗类型：`ForcedDownload` / `RecommendedDownload` / `HotfixFailed` 等 |
+| [LauncherUI/LauncherSplashPanel.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherSplashPanel.cs) | `LauncherSplashPanel` | `public sealed` | 闪屏面板（Background + Logo） |
+| [LauncherUI/LauncherProgressPanel.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherProgressPanel.cs) | `LauncherProgressPanel` | `public sealed` | 进度面板（Slider + ProgressText + 多语言文本数组） |
+| [LauncherUI/LauncherDialogPanel.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherDialogPanel.cs) | `LauncherDialogPanel` | `public sealed` | 通用弹窗（Confirm/Cancel 按钮 + 多语言文本数组） |
+| [LauncherUI/LauncherLocalization.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherLocalization.cs) | `LauncherLocalization` | `public static` | 启动期本地化解析器（Resources 文案通道，共用正式语言决策） |
+| [LauncherUI/LauncherLocalizedText.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherLocalizedText.cs) | `LauncherLocalizedText` | `public sealed` | 普通文本本地化绑定条目（TMP_Text + Key） |
+| [LauncherUI/LauncherDialogLocalizedText.cs](../../../../Scripts/Runtime/Modules/Procedure/LauncherUI/LauncherDialogLocalizedText.cs) | `LauncherDialogLocalizedText` | `public sealed` | 弹窗文本本地化绑定条目（TMP_Text + Key + LauncherDialogType） |
 
 ---
 

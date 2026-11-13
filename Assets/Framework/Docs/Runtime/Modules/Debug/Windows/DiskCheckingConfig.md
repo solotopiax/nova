@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public class DiskCheckingConfig`
 **命名空间**：`NovaFramework.Runtime`
 
-`DiskCheckingConfig` 是当前 `Debug` 模块仍然在用的配置 DTO。虽然这页文档历史上放在 `Windows/` 目录下，但当前真实源码位于 `Assets/Framework/Scripts/Runtime/Modules/Debug/Definitions/DiskCheckingConfig.cs`。
+`DiskCheckingConfig` 是当前 `Debug` 模块仍然在用的配置 DTO。虽然这页文档历史上放在 [Windows/ 文档目录](./) 目录下，但当前真实源码位于 [Scripts/Runtime/Modules/Debug/Definitions/DiskCheckingConfig.cs](../../../../../Scripts/Runtime/Modules/Debug/Definitions/DiskCheckingConfig.cs)。
 
 它由 `DebugComponent` 序列化持有，在 `Start()` 时通过 `DebugManagerConfig` 传给 `DebugManager`。`DebugManager` 会按平台选出当前配置，并按空间档位驱动磁盘检测循环。
 

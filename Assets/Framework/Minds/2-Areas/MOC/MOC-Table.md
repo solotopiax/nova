@@ -57,7 +57,7 @@ FrameworkManager
 - `TableSettings` — Inspector 序列化的表格设置（`[Serializable]`，Component 字段）
 - `TableUnitSetting` — 单个数据源的单元设置（Asset 地址 + 导出路径 + 类型名列表）
 - `TableManagerConfig` — 初始化配置 DTO（纯 DTO，无序列化）
-- `ITable` — 定义在 `Runtime/Core/Table/ITable.cs` 的框架接口，业务 `TbXxx` 容器类实现它
+- `ITable` — 定义在 [Runtime/Core/Table/ITable.cs](../../../Scripts/Runtime/Core/Table/ITable.cs) 的框架接口，业务 `TbXxx` 容器类实现它
 
 ## 文件入口结构
 

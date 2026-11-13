@@ -11,7 +11,7 @@ YooAsset.AllAssetsHandle 到 IAllAssetsHandle 的内部适配器，通过 Refere
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.cs` | `YooAssetAllAssetsHandleAdapter<T>` | 适配器实现 + IReference 实现 |
+| [Managers/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.cs) | `YooAssetAllAssetsHandleAdapter<T>` | 适配器实现 + IReference 实现 |
 
 ---
 

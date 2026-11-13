@@ -11,7 +11,7 @@ Python3 运行环境多路径探测检查器：依次执行 5 种策略定位 py
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.cs` | `EditorUtil.Environment.Python3Checker` | 检查器主体（含 `Python3CheckResult` readonly struct） |
+| [EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.cs) | `EditorUtil.Environment.Python3Checker` | 检查器主体（含 `Python3CheckResult` readonly struct） |
 
 ---
 

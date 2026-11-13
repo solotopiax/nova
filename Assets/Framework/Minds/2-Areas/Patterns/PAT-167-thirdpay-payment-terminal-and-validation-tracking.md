@@ -40,7 +40,7 @@ related:
 4. Deep Link 使用 Unity `Application.deepLinkActivated` 作为 Android 与 iOS 的统一入口。处理 `pay_callback` 前必须校验订单号；无效参数、错单回调和无活动会话只记录日志，不推进当前会话。
 5. 本地订单只有在持久层实际删除成功后才上报 `nova_iap_third_pay_order_removed`，并同时携带删除原因、验单场景、协议码、服务端状态、客户端状态和双订单号。
 6. 原因与状态使用独立属性。关闭原因、支付失败原因、建单失败原因、删单原因、客户端订单状态和验单场景不得混写到同一个枚举属性；`nova_reason_detail` 必须与当前事件的专属枚举一一对应。
-7. ThirdPay 订单生命周期事件只使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送阶段语义不稳定的 `nova_order_id`；尚未取得服务端订单号时对应字段为空。完整事件属性由 `ThirdPayStore.Track.cs` 构造，父包不持有渠道开关或 ThirdPay 专属事件。其他 Store 保留各自订单号契约。
+7. ThirdPay 订单生命周期事件只使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送阶段语义不稳定的 `nova_order_id`；尚未取得服务端订单号时对应字段为空。完整事件属性由 [ThirdPayStore.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.Track.cs) 构造，父包不持有渠道开关或 ThirdPay 专属事件。其他 Store 保留各自订单号契约。
 
 ## 为什么这样做
 
@@ -73,13 +73,13 @@ related:
 ## 来源与验证依据
 
 - 代码事实：
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.ExternalBrowser.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.Track.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Services/Order/ThirdPayOrderValidationService.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Data/ThirdPayTrackTypes.cs`
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.ExternalBrowser.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.ExternalBrowser.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.Track.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Services/Order/ThirdPayOrderValidationService.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Services/Order/ThirdPayOrderValidationService.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Data/ThirdPayTrackTypes.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Data/ThirdPayTrackTypes.cs)
 - 当前文档：
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Tracks/Tracks.xlsx`
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Tracks/Tracks.xlsx](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Tracks/Tracks.xlsx)
 - 回归依据：
   - `Assets/Tests/Editor/IAP/ThirdPayExternalBrowserFlowTests.cs`
   - `Assets/Tests/Editor/IAP/ThirdPayPolicyAndStatusTests.cs`

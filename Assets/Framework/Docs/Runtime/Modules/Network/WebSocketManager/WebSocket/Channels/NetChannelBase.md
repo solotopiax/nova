@@ -15,7 +15,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.NetChannelBase.cs` | 通信通道抽象基类定义（含 WebGL 和非 WebGL 两套实现） |
+| [WebSocketScope.NetChannelBase.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.NetChannelBase.cs) | 通信通道抽象基类定义（含 WebGL 和非 WebGL 两套实现） |
 
 ## 内嵌接口
 

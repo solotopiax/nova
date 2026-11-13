@@ -13,7 +13,7 @@ YooAsset 四字段的维度 Override 单项（仅 Editor 期消费）；对应�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/YooAssetEditorConfigsOverride.cs` | `YooAssetEditorConfigsOverride` | YooAsset 两路径维度 Override 单项（Editor-only） |
+| [Editor/Config/Definitions/YooAssetEditorConfigsOverride.cs](../../../../Scripts/Editor/Config/Definitions/YooAssetEditorConfigsOverride.cs) | `YooAssetEditorConfigsOverride` | YooAsset 两路径维度 Override 单项（Editor-only） |
 
 ---
 
@@ -36,7 +36,7 @@ YooAsset 四字段的维度 Override 单项（仅 Editor 期消费）；对应�
 - 整个类包裹在 `#if UNITY_EDITOR` 内，运行时程序集中不存在此类型
 - 两字段均为**项目根相对路径**（`PAT-36`），禁止写入绝对路径
 - 命中坐标条目后整份 Override 独立生效，空路径不回落顶层；只有没有匹配条目时才使用顶层路径
-- YooAsset mask 维度切换后 `ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset()` 会立即触发 `YooAssetInjector.Inject`，确保编辑期 YooAsset 工具链始终使用正确的 Settings 实例
+- YooAsset mask 维度切换后 [ConfigWindow.RightPanel.YooAsset.cs](../../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs) 的 `ReInjectYooAsset()` 会立即触发 `YooAssetInjector.Inject`，确保编辑期 YooAsset 工具链始终使用正确的 Settings 实例
 
 ---
 

@@ -60,8 +60,8 @@ related:
 
 ## 验证依据
 
-- `ConfigWindow.RightPanel.cs` 的隐私配置面板同时包含 AES 与 iOS 隐私清单两类字段；只检查字段可序列化、窗口可打开，无法证明 HelpBox 顺序与平台禁用态符合要求。
-- `EditorUtil.Draw.HelpBox.cs` 的背景和图标由自绘完成；外层禁用作用域可以使文字变灰，却不能据此推断背景、图标也已灰显。该情形必须实际查看禁用态，并按 [[PAT-35-editor-draw-only|PAT-35]] 收口绘制能力。
+- [ConfigWindow.RightPanel.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs) 的隐私配置面板同时包含 AES 与 iOS 隐私清单两类字段；只检查字段可序列化、窗口可打开，无法证明 HelpBox 顺序与平台禁用态符合要求。
+- [EditorUtil.Draw.HelpBox.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.HelpBox.cs) 的背景和图标由自绘完成；外层禁用作用域可以使文字变灰，却不能据此推断背景、图标也已灰显。该情形必须实际查看禁用态，并按 [[PAT-35-editor-draw-only|PAT-35]] 收口绘制能力。
 
 ## 处理原则
 

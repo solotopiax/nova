@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.NetMessageBase.cs` | 网络消息抽象基类定义 |
+| [WebSocketScope.NetMessageBase.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.NetMessageBase.cs) | 网络消息抽象基类定义 |
 
 ## 关键字段/属性
 

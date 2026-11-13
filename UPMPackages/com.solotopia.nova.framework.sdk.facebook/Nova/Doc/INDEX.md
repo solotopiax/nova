@@ -9,9 +9,9 @@
 
 ## Current State
 
-- Runtime integration lives under `Nova/Scripts/Runtime`.
-- Native or third-party integration lives under `Core/FacebookSDK`.
-- Demo scene lives under `Assets/Samples/FacebookDemo`.
+- Runtime integration lives under [Nova/Scripts/Runtime](../Scripts/Runtime/).
+- Native or third-party integration lives under [Core/FacebookSDK](../../Core/FacebookSDK/).
+- Import `FacebookDemo` from this package in Package Manager, then locate its scene from the actual import list. The development source is declared in [nova-samples.json](../../nova-samples.json); it is not a fixed consumer import directory.
 - Runtime config is injected automatically through `FacebookPlugin.ConfigType`; the build processor writes App ID and Client Token into `FacebookSettings` and registers Facebook Android ProGuard rules for R8/minify builds.
 - Successful login publishes `SDKDataKeys.OpenId` and `SDKDataKeys.ThirdLoginProvider` for cross-plugin identity synchronization.
 - App Events acquisition tracking uses `IAcquisitionTrackPlugin` and receives login user ids through `ISDKLoginReceiver` and syncs them to Facebook.

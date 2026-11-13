@@ -17,6 +17,8 @@ tags:
 
 # PAT-25：rules 与 obs Patterns 的协作分工范式
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 适用场景
 
 - 在 Nova 框架中沉淀一条新的执行性铁律（如 Inspector 对齐规则）时，需要决定：放进 `.claude/rules/` 还是 `Assets/Framework/Minds/2-Areas/Patterns/`，还是两者都放？

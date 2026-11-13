@@ -1,6 +1,6 @@
 # 内存数据防篡改
 
-功能由独立核心扩展包 `com.solotopia.nova.framework.memory.protection` 提供，实现在包内 `Nova/Runtime`。它单向依赖主 Framework，不使用 SDK Plugin、Component 或场景节点。长期敏感整数使用 `ProtectedInt` / `ProtectedLong`，临时计算和 UI 使用普通数值。
+功能由独立核心扩展包 `com.solotopia.nova.framework.memory.protection` 提供，实现在包内 [Nova/Runtime](../Runtime/)。它单向依赖主 Framework，不使用 SDK Plugin、Component 或场景节点。长期敏感整数使用 `ProtectedInt` / `ProtectedLong`，临时计算和 UI 使用普通数值。
 
 公开命名空间保持 `NovaFramework.Runtime`；类型所在程序集为 `NovaFramework.MemoryProtection.Runtime`。业务 asmdef 必须显式引用该程序集，仅引用 `NovaFramework.Runtime` 已不足以使用这些类型。主 Framework 不内置本功能，也不强制安装本包。
 
@@ -78,7 +78,7 @@ public bool TryCaptureGold(out long savedGold) => m_Gold.TryRead(out savedGold);
 
 ## 独立示例
 
-主仓示例位于 `Assets/Samples/MemoryProtectionDemo/MemoryProtectionDemo.unity`，发布后从本包 Package Manager 的 `MemoryProtectionDemo` Sample 导入。示例在 `ProcedurePreload` 完成后由 `ProcedurePlaying` 直接打开 `DemoMemoryProtectionView`，展示普通存档 DTO、金币/钻石保护字段、增减、校验后保存及关闭释放。MainDemo 已移除原 Core 1.10 入口。
+从本包 Package Manager 导入 `MemoryProtectionDemo` Sample，再打开实际导入目录中的同名场景；源码开发态来源见 [示例清单](../../nova-samples.json)。示例在 `ProcedurePreload` 完成后由 `ProcedurePlaying` 直接打开 `DemoMemoryProtectionView`，展示普通存档 DTO、金币/钻石保护字段、增减、校验后保存及关闭释放。MainDemo 已移除原 Core 1.10 入口。
 
 示例存档分类为 `MemoryProtectionDemo`、条目为 `wallet`，字段逻辑 ID 为 `memory_protection_demo.wallet.gold` 和 `memory_protection_demo.wallet.diamonds`；缺档初始值为 1000 金币、100 钻石。无插件时仍可普通读写。Editor 专属桥仅对示例字段模拟一次后端读取失败，验证隔离与结算/保存拦截；这不是 ACTk 算法密文破坏测试。另可轮换示例字段并复核数值，不改变自动调度或伪造批次埋点。桥实现不进入 Player，也不是业务公开诊断 API。
 
@@ -92,6 +92,6 @@ public bool TryCaptureGold(out long savedGold) => m_Gold.TryRead(out savedGold);
 
 ACTk 适配随 `NovaFramework.MemoryProtection.Runtime` 发布，缓存精确 ACTk 公开反射 API，兼容 Assets 与 UPM，不使用全局宏或商业强依赖。不创建原厂 detector，不走其 DEBUG 检测日志；本包在返回前自行判断原厂校验结果。包内 `Core/` 仅是空的第三方源码槽，不包含 ACTk 付费源码；安装、检查和运行本包不会替换或降级已安装的 ACTk。
 
-裁剪文件在本包 `Nova/Runtime/Actk/link.xml`，Editor 处理器在 `Nova/Editor/MemoryProtectionLinkerProcessor.cs`，提供可选 `ACTk.Runtime` 的裁剪保留规则，不创建 `Assets/NovaGenerated`。AOT/HybridCLR 沿既有 Pipify 主链准备；Editor 验证不能替代 IL2CPP Player 和真机验收。
+裁剪文件在本包 [Nova/Runtime/Actk/link.xml](../Runtime/Actk/link.xml)，Editor 处理器在 [Nova/Editor/MemoryProtectionLinkerProcessor.cs](../Editor/MemoryProtectionLinkerProcessor.cs)，提供可选 `ACTk.Runtime` 的裁剪保留规则，不创建 `Assets/NovaGenerated`。AOT/HybridCLR 沿既有 Pipify 主链准备；Editor 验证不能替代 IL2CPP Player 和真机验收。
 
 内存保护提高扫描修改成本，无法抵抗完全控制客户端的攻击者；RMB 余额和交易最终仍应由服务端裁定。

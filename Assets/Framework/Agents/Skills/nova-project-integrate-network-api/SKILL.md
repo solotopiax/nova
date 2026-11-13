@@ -5,13 +5,18 @@ description: Use when 项目组要正式导出已有 HostKey、NetCmd 或已确�
 
 # Nova 接入业务网络 API
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-业务统一使用 `Nova.Network` / `NetworkComponent` 当前已提供的入口；下文 Manager 接口文档仅用于核对底层契约与实现能力，不授权业务取得、持有、传递或转换 Manager。缺少合规门面时按共同约束 NA-001/002 报告具体缺口，保留不依赖它的已授权工作。
+仅要求从官方模板新建配表时，选择合同 `source-template-copy` 分支，按 [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 的“配表模板与样式”使用同一 [nova_excel_template.py](../../Tools/nova_excel_template.py) 的 `mode=copy`（来源 `network-hostkeys/network-cmds`）。整书原样复制并核对 SHA，不套用 UI/Sound 行模型、不改多 Sheet、合并或示例值；此步只准备表源物料，不要求 Unity 或完整接入输入。随后按本领域既有入口编辑业务内容并保留样式；入口不支持时停止对应写入，不从空白工作簿重建。
 
-再读取 `references/contract.json`。执行确定性导出时先通过 `nova_project_action` 对 `nova.project.network.export` 执行 `describe`；只有 Action 报告配置问题时才读取对应 Exporter 文档。仅在检查 HostKey、NetCmd 源和导出边界时读 `Docs/Editor/DataPipeline/Implements/Networks/NetworkExporter.md`；更新 Inspector 设置时读 `Docs/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md`；运行时加载、路由和 HTTP 验证时读 `Docs/Runtime/Modules/Network/NetworkComponent.md` 与 `Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md`。不要递归加载全部 Network、Proto 或 Pipify 文档。
+
+业务统一使用 `Nova.Network` / `NetworkComponent` 当前已提供的入口；下文 Manager 接口文档仅用于核对底层契约与实现能力，不授权业务取得、持有、传递或转换 Manager。缺少合规门面时按 [NA-001：正常业务通过 Component 使用框架](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-001正常业务通过-component-使用框架) 与 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 报告具体缺口，保留不依赖它的已授权工作。
+
+涉及启动 GM 配置等待时，按 [HttpSettings](../../../Docs/Runtime/Modules/Network/Definitions/HttpSettings.md) 区分两项超时：普通业务与启动专属配置均约束每次物理请求，启动专属配置默认 5 秒，主备请求与重试分别计时，整轮总耗时可能超过该值。新字段通过现有 Inspector 设置入口维护，不为缩短启动而修改全局业务超时或新增平行网络加载链。
+
+再读取 [references/contract.json](references/contract.json)。执行确定性导出时先通过 `nova_project_action` 对 `nova.project.network.export` 执行 `describe`；只有 Action 报告配置问题时才读取对应 Exporter 文档。仅在检查 HostKey、NetCmd 源和导出边界时读 [Docs/Editor/DataPipeline/Implements/Networks/NetworkExporter.md](../../../Docs/Editor/DataPipeline/Implements/Networks/NetworkExporter.md)；更新 Inspector 设置时读 [Docs/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md](../../../Docs/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md)；运行时加载、路由和 HTTP 验证时读 [Docs/Runtime/Modules/Network/NetworkComponent.md](../../../Docs/Runtime/Modules/Network/NetworkComponent.md) 与 [Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md](../../../Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md)。不要递归加载全部 Network、Proto 或 Pipify 文档。
 
 先从用户目标选择仅导出或业务接入。业务接入再从现有调用确认HTTP或WebSocket。仅在目标是长连接、推送消息、认证/心跳/重连时读取 [WebSocket业务接入](references/websocket-integration.md)，直接在授权项目业务源中复用`Nova.Network`公开长连接接口；下列HostKey/NetCmd、HTTP方法和主备规则仅适用于HTTP及确实使用这些表的业务。WebSocket按精确`ws/wss`地址、通道类型和消息协议冻结，不套用HTTP路由，不为每个transport新建Skill。
 
@@ -19,7 +24,7 @@ description: Use when 项目组要正式导出已有 HostKey、NetCmd 或已确�
 
 用户只要求导出已有网络配置的 `all` / `code` 产物时，选择合同中的 `taskProfiles[id=export-code-data]`，对应 `network.export`。冻结项目根、已保存活动场景、唯一 `Nova` / `NetworkComponent`、现有 `NetworkSettings` / `ProtoSettings`、非空明确的 `targets`（`hostkey`、`netcmd`、`proto`）、对应真实源与正式输出范围；选中 `hostkey` 时另核有效 `ConfigRuntime` 的 `DevelopMode`，未选中时不强制该前置。`proto` 必须已有明确 Schema 与生成工具。不要求业务 Owner、HTTP/WebSocket 运行入口、账号、测试端点或实际响应；`data` 单独导出不属于此 profile。
 
-追加冻结 `activeConfigMasterAndGeneratedNamespace`：选中 `hostkey` / `netcmd` 时，从 `ProjectSettings/Nova/Globals.json` 读取 `configMasterGuid` / `configMasterPathHint`，经当前 Action 的 `describe/plan` 与 Unity Editor / MCP 只读配置查阅核对实际可加载 `ConfigMasterSO` 的 GUID、资产路径和顶层 `Namespace`。Luban 的 `RuntimeProvider.GetNamespace()` 读取这个顶层值，不读取 `ConfigRuntimeSO.Namespace`，也不调用 `DimensionalResolver.ResolveNamespace`；可按需读取 `Docs/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md` 核对来源。缺少绑定或身份不一致时 `blocked`，不得依据场景、第一个候选 Master 或旧生成代码补猜。已绑定 Master 明确空值时允许 global namespace，并冻结该预期。 仅选 `proto` 时记录 Master 前置不适用，从已确认 Schema 和实际 protoc 生成配置冻结命名空间与类型全名；Proto 不经过此 Luban 来源。该输入不额外要求 `ConfigRuntime`、Collector、账号或端点，选中 `hostkey` 的原 `DevelopMode` 前置仍保留。
+追加冻结 `activeConfigMasterAndGeneratedNamespace`：选中 `hostkey` / `netcmd` 时，从 [ProjectSettings/Nova/Globals.json（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) 读取 `configMasterGuid` / `configMasterPathHint`，经当前 Action 的 `describe/plan` 与 Unity Editor / MCP 只读配置查阅核对实际可加载 `ConfigMasterSO` 的 GUID、资产路径和顶层 `Namespace`。Luban 的 `RuntimeProvider.GetNamespace()` 读取这个顶层值，不读取 `ConfigRuntimeSO.Namespace`，也不调用 `DimensionalResolver.ResolveNamespace`；可按需读取 [Docs/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md](../../../Docs/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md) 核对来源。缺少绑定或身份不一致时 `blocked`，不得依据场景、第一个候选 Master 或旧生成代码补猜。已绑定 Master 明确空值时允许 global namespace，并冻结该预期。 仅选 `proto` 时记录 Master 前置不适用，从已确认 Schema 和实际 protoc 生成配置冻结命名空间与类型全名；Proto 不经过此 Luban 来源。该输入不额外要求 `ConfigRuntime`、Collector、账号或端点，选中 `hostkey` 的原 `DevelopMode` 前置仍保留。
 
 Plan 必须记录上述身份与命名空间期望，Execute 在任何写入前复核；身份、值或适用目标漂移时重新计划，不能沿用旧 `PlanId`。以当前 live Action 返回的字段和已发布实现为准；当前宿主若未提供相应冻结或复核门，代码导出为 `blocked`，不得称该防护已实现或已验证。验收同时核对生成命名空间、完整类型名和既有消费者与冻结预期一致；SHA 与编译分别保留，不能替代类型身份兼容性检查。
 
@@ -36,7 +41,7 @@ HostKey 表的 `Value` 主域名列必须存在且有效行必须填写。`Fallb
 - 不猜测协议：Proto + AES、JSON、form、raw body 与既有业务 Kit 是不同路径。Proto Schema、生成范围或服务端字段不明确时不导出、不改写业务代码。
 - 业务代码复用已有适用 Service；缺少 Service 时可在已授权项目源中创建业务入口，使用已确认的 `Nova.Network` 公开 API。缺协议、认证、成功定义或重放语义仍阻断；没有现成 Service 不构成永久阻断。不得直接调用面向 Sibling Kit 的隐藏 `NetService` / `NetBuilder` 或身份写入接口。
 - 标准 Proto + AES 使用 `Nova.Network.SendProtoAsync`：传入正式 `HTTP_POST` NetCmd 行、仅一次且无副作用的 `Header → 正式请求` 工厂和正式响应 Parser。先完成 Start 绑定、Config 与 Network 加载；工厂显式绑定协议 Head。门面复用原主备、最近成功优先、轮数、重试、AES、解析和取消链，不自行选域名、续签、登录或重发业务错误；登录、绑定和存档优先使用已有 Kit。取消不能撤销服务端已执行状态；新增热更泛型调用还须核对 AOT 泛型、link 与业务 DLL。
-- 普通 JSON/form/raw 使用适用的 `GetAsync / PostAsync / PostRawDataAsync / PostFileAsync`，按服务端契约显式编码 Content-Type 与请求体。单 URL 不自动主备或框架重试；旧无令牌签名保留，新令牌末位重载在全部原参数必填时提供物理取消。需页面/Service生命周期取消时读取 `Docs/Runtime/Modules/Network/HttpManager/IHttpManager.md` 的取消与响应所有权契约，核对当前管理器支持 `ICancellableHttpManager`：不支持时新入口发送前抛 `NotSupportedException`，不能回退后声称已取消。预取消不发送、返回 `NotReachedServer` 失败响应；在飞取消于Update轮询Abort，返回失败 `HttpResponse` 而非取消异常。每次最终响应仍在 `finally` 中 `ReferencePool.Put` 且仅一次，先复制所需内容；退出主动取消令牌后继续等待响应，拒绝迟到业务结果，令牌源Dispose或Manager Shutdown不等于取消。不要用 `AttachExternalCancellation` 丢弃仍运行的底层请求及其池响应。项目 Service 可按已确认的幂等、错误分类、次数和退避实现有限业务重试及签名续期；不得把交付状态未知的副作用请求直接重发。旧入口取消只能停止后续尝试或拒绝迟到结果；确需跨 URL 通信策略且现接口不能满足时保持 blocked 并明确缺项。
+- 普通 JSON/form/raw 使用适用的 `GetAsync / PostAsync / PostRawDataAsync / PostFileAsync`，按服务端契约显式编码 Content-Type 与请求体。单 URL 不自动主备或框架重试；旧无令牌签名保留，新令牌末位重载在全部原参数必填时提供物理取消。需页面/Service生命周期取消时读取 [Docs/Runtime/Modules/Network/HttpManager/IHttpManager.md](../../../Docs/Runtime/Modules/Network/HttpManager/IHttpManager.md) 的取消与响应所有权契约，核对当前管理器支持 `ICancellableHttpManager`：不支持时新入口发送前抛 `NotSupportedException`，不能回退后声称已取消。预取消不发送、返回 `NotReachedServer` 失败响应；在飞取消于Update轮询Abort，返回失败 `HttpResponse` 而非取消异常。每次最终响应仍在 `finally` 中 `ReferencePool.Put` 且仅一次，先复制所需内容；退出主动取消令牌后继续等待响应，拒绝迟到业务结果，令牌源Dispose或Manager Shutdown不等于取消。不要用 `AttachExternalCancellation` 丢弃仍运行的底层请求及其池响应。项目 Service 可按已确认的幂等、错误分类、次数和退避实现有限业务重试及签名续期；不得把交付状态未知的副作用请求直接重发。旧入口取消只能停止后续尝试或拒绝迟到结果；确需跨 URL 通信策略且现接口不能满足时保持 blocked 并明确缺项。
 - 主备验证只以受控的通信失败为证据。正式 HTTP `4xx / 5xx` 是业务响应，不得被包装成“备域接管成功”。会产生服务端状态的登录、领奖或下单请求还必须确认重放语义和测试环境。
 
 ## Input → Action Adapter → Artifact → Evidence

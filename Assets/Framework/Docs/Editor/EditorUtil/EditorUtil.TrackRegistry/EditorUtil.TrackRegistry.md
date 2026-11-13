@@ -12,9 +12,9 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs` | `EditorUtil.TrackRegistry` | 汇总入口：扫描/读取/重名校验/规范化行/调度写盘 |
-| `Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.AgentSnapshot.cs` | `EditorUtil.TrackRegistry`（internal Agent helpers） | 复用真实扫描的全源/meta/包快照、页内容与单色样式只读验证 |
-| `Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.XlsxWriter.cs` | `EditorUtil.TrackRegistry.XlsxWriter`（private） | 最小 OpenXML xlsx 写入器：样式、列宽、行高、合并单元格 |
+| [Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs) | `EditorUtil.TrackRegistry` | 汇总入口：扫描/读取/重名校验/规范化行/调度写盘 |
+| [Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.AgentSnapshot.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.AgentSnapshot.cs) | `EditorUtil.TrackRegistry`（internal Agent helpers） | 复用真实扫描的全源/meta/包快照、页内容与单色样式只读验证 |
+| [Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.XlsxWriter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.XlsxWriter.cs) | `EditorUtil.TrackRegistry.XlsxWriter`（private） | 最小 OpenXML xlsx 写入器：样式、列宽、行高、合并单元格 |
 
 ---
 
@@ -38,8 +38,8 @@ public static string Generate(string projectRoot);
 
 ### 扫描来源（固定顺序）
 
-1. Framework 本地表：`Assets/Framework/Tracks/Tracks.xlsx`。
-2. Framework 包内表：`com.solotopia.nova.framework/Tracks/Tracks.xlsx`（由有效包根目录定位）。
+1. Nova 开发态本地表：[Tracks/Tracks.xlsx](../../../../Tracks/Tracks.xlsx)（固定扫描候选，并非消费态统一安装位置）。
+2. Framework 包内表：[Framework 包内 Tracks/Tracks.xlsx](../../../../Tracks/Tracks.xlsx)（由有效包根目录定位）。
 3. 本地模块表：`UPMPackages/*/Nova/Tracks/Tracks.xlsx`，按包目录名 ordinal 排序。
 4. Unity 模块包表：`Packages/*/Nova/Tracks/Tracks.xlsx`（包含 Unity 解析出的有效包根目录）。相同规范化路径只读取一次。
 
@@ -57,7 +57,7 @@ public static string Generate(string projectRoot);
 ### 生成 xlsx 的样式规则（XlsxWriter）
 
 - 单元格统一使用 `inlineStr` 内联字符串，不生成 sharedStrings
-- 所有事件页采用 `Assets/Framework/Tracks/Tracks.xlsx` 的 `打点表-Network` 样式：表头深蓝（`FF1F4E78`）、白字、Calibri 11pt 加粗居中；数据区统一浅绿（`FFEAF4EC`），不使用交替颜色。
+- 所有事件页采用 [Tracks/Tracks.xlsx](../../../../Tracks/Tracks.xlsx) 的 `打点表-Network` 样式：表头深蓝（`FF1F4E78`）、白字、Calibri 11pt 加粗居中；数据区统一浅绿（`FFEAF4EC`），不使用交替颜色。
 - 数据默认 Calibri 11pt；事件标识 A/B 左对齐、顶部对齐，事件说明 C 使用宋体-简 11pt、左对齐、顶部对齐并自动换行；D～I 沿用模板默认文字排版与细边框。
 - 事件列宽 A～I 固定为 28、18、36、40、14、58、32、16、48；首行高 17、默认行高 16.8。说明页保留原字段布局，普通列宽 32，末列 58。
 - 事件页只按事件边界合并 A～C；同列存在后续非空说明时分段合并，避免丢失内容。G～I 不合并。

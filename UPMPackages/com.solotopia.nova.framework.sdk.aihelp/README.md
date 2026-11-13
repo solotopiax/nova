@@ -1,16 +1,16 @@
 # Nova Framework - SDK - AIHelp
 
 > 包名：`com.solotopia.nova.framework.sdk.aihelp`
-> 当前版本：`0.1.2`
+> 当前版本：`0.1.3`
 
 Nova Framework 的 AIHelp 智能客服 / 帮助中心对接层，封装 `AIHelpPlugin`（继承 `SDKPluginBase`，由 `SDKManager` 统一编排），提供智能客服会话、帮助中心 FAQ、未读消息 / 工单数、用户信息同步等能力。
 
 ## 安装
 
-本包**随包 bundle AIHelp Unity SDK 6.0**（managed C# 与 iOS 原生库均已内置于 `Core/`），无需额外安装原厂包。
+本包**随包 bundle AIHelp Unity SDK 6.0**（managed C# 与 iOS 原生库均已内置于 [Core/](Core/)），无需额外安装原厂包。
 
 - Android 端 AAR 依赖由本包 `AIHelpBuildProcessor`（`IPostGenerateGradleAndroidProject`）在构建期自动注入到导出后的 Android gradle 工程（`unityLibrary/build.gradle`），声明 Maven 坐标 `net.aihelp:android-aihelp-aar:6.0.+`；无需 EDM4U，包内也没有 Dependencies.xml。
-- iOS 端原生库（`AIHelpSupportSDK.framework` 等）随包直接落地在 `Core/Plugins/iOS/AIHelpSDK/`，构建 iOS 时按 Unity 插件导入规则自动链接。
+- iOS 端原生库（`AIHelpSupportSDK.framework` 等）随包直接落地在 [Core/Plugins/iOS/AIHelpSDK/](Core/Plugins/iOS/AIHelpSDK/)，构建 iOS 时按 Unity 插件导入规则自动链接。
 
 ## 快速上手
 
@@ -28,8 +28,8 @@ if (Nova.SDK.TryGet(out AIHelpPlugin plugin))
 
 ## 目录结构
 
-- `Nova/`：Nova 自有适配代码与文档。
-- `Core/`：AIHelp Unity SDK 6.0 原样落地（managed C# `Core/AIHelp/` + iOS 原生 `Core/Plugins/iOS/AIHelpSDK/`），只读，不做业务改动。
+- [Nova/](Nova/)：Nova 自有适配代码与文档。
+- [Core/](Core/)：AIHelp Unity SDK 6.0 原样落地（managed C# [Core/AIHelp/](Core/AIHelp/) + iOS 原生 [Core/Plugins/iOS/AIHelpSDK/](Core/Plugins/iOS/AIHelpSDK/)），只读，不做业务改动。
 
 ## 维护
 

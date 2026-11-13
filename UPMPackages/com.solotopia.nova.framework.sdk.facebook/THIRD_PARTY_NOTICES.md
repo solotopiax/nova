@@ -9,15 +9,15 @@ This file describes third-party sources, dependency declarations, and public dis
 - `Facebook Unity SDK`
   - Upstream project: `https://github.com/facebook/facebook-sdk-for-unity`
   - Imported SDK version: `18.0.0`
-  - Package path: `Core/FacebookSDK/**`
-  - Bundled upstream license file: `Core/FacebookSDK/LICENSE.txt`
+  - Package path: [Core/FacebookSDK/**](Core/FacebookSDK/)
+  - Bundled upstream license file: [Core/FacebookSDK/LICENSE.txt](Core/FacebookSDK/LICENSE.txt)
   - This content is upstream Facebook SDK material. It is not Solotopia MIT content and must not be documented as MIT-only.
 
-`Core/Editor/DisableBitcode.cs` was imported with the Facebook SDK package and is treated as upstream SDK material unless replaced by a Solotopia-owned implementation.
+[Core/Editor/DisableBitcode.cs](Core/Editor/DisableBitcode.cs) was imported with the Facebook SDK package and is treated as upstream SDK material unless replaced by a Solotopia-owned implementation.
 
 ## Build-Time Native Dependencies Resolved By EDM4U
 
-The upstream SDK declares native dependencies in `Core/FacebookSDK/Plugins/Editor/Dependencies.xml`.
+The upstream SDK declares native dependencies in [Core/FacebookSDK/Plugins/Editor/Dependencies.xml](Core/FacebookSDK/Plugins/Editor/Dependencies.xml).
 
 Android dependencies:
 

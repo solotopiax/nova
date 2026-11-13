@@ -5,9 +5,9 @@
 
 Protobuf 编辑器设置，存储 .proto 文件根目录与各文件的 C# 导出路径。仅用于 Editor 工具链，运行时打包后相关字段不存在。
 
-框架公共协议源位于 `Assets/Framework/Protos`，生成的框架 C# 协议统一放在 `Assets/Framework/Scripts/Runtime/Modules/Network/Protos`。
+框架公共协议源位于 [Protos](../../../../../Protos/)，生成的框架 C# 协议统一放在 [Scripts/Runtime/Modules/Network/Protos](../../../../../Scripts/Runtime/Modules/Network/Protos/)。
 
-当前应用自定义配置协议为 `pb_net_app_custom_config.proto`，生成文件为 `PbNetAppCustomConfig.cs`，包含 `PbNetAppCustomConfigReq / PbNetAppCustomConfigResp`。
+当前应用自定义配置协议为 [pb_net_app_custom_config.proto](../../../../../Protos/pb_net_app_custom_config.proto)，生成文件为 [PbNetAppCustomConfig.cs](../../../../../Scripts/Runtime/Modules/Network/Protos/PbNetAppCustomConfig.cs)，包含 `PbNetAppCustomConfigReq / PbNetAppCustomConfigResp`。
 
 ---
 
@@ -15,8 +15,8 @@ Protobuf 编辑器设置，存储 .proto 文件根目录与各文件的 C# 导�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Definitions/ProtoSettings.cs` | `ProtoSettings` | Protobuf 编辑器设置主类 |
-| `Definitions/ProtoSettings.cs` | `ProtoUnitSetting` | 单个 .proto 文件的导出设置（同文件定义） |
+| [Definitions/ProtoSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/ProtoSettings.cs) | `ProtoSettings` | Protobuf 编辑器设置主类 |
+| [Definitions/ProtoSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/ProtoSettings.cs) | `ProtoUnitSetting` | 单个 .proto 文件的导出设置（同文件定义） |
 
 ---
 

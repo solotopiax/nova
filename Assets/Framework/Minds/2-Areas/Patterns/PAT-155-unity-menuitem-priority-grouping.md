@@ -81,7 +81,7 @@ Enable Logs            1042  <- 首个子项 Disable All Logs，与前项差 11
 ## 验证依据
 
 - Unity 官方文档：[菜单项构造函数](https://docs.unity3d.com/ScriptReference/MenuItem-ctor.html)
-- Nova 菜单实现：`Assets/Framework/Scripts/Editor/Menus/FolderMenuItems.cs`、`AssetCacheMenuItems.cs`、`EnableLogsMenuItems.cs`
+- Nova 菜单实现：[Scripts/Editor/Menus/FolderMenuItems.cs](../../../Scripts/Editor/Menus/FolderMenuItems.cs)、[AssetCacheMenuItems.cs](../../../Scripts/Editor/Menus/AssetCacheMenuItems.cs)、[EnableLogsMenuItems.cs](../../../Scripts/Editor/Menus/EnableLogsMenuItems.cs)
 - Unity `6000.4.2f1` 实际观察：差 10 时未出现分割线；调整为差 11 后形成预期组界。
 - 文档核对点：官方同页示例用 priority `101` 与 `112` 创建 divider。
 

@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 当前版本：`0.2.6`
+> 当前版本：`0.2.7`
 
 Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运行期查询、SKU Excel 导入/模板导出、支付事件桥接、Loading 防重入与通用持久化模板。具体渠道能力由子包提供，例如 `com.solotopia.nova.framework.sdk.iap.mobile`。
 
@@ -11,11 +11,11 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap": "0.2.6"
+  "com.solotopia.nova.framework.sdk.iap": "0.2.7"
 }
 ```
 
-本包支持 Unity `6000.4.x`，最低 `6000.4.2f1`；清单依赖为 `com.solotopia.nova.framework@0.7.3`、`com.solotopia.unitask@10.0.6` 和 `com.solotopia.nova.framework.kit.network.gamelogin@0.1.18`，由 UPM 解析。核心包本身不提供平台收银能力，还需按目标支付渠道安装对应 Store 子包。
+本包支持 Unity `6000.4.x`，最低 `6000.4.2f1`；清单依赖为 `com.solotopia.nova.framework@0.7.9`、`com.solotopia.unitask@10.0.6` 和 `com.solotopia.nova.framework.kit.network.gamelogin@0.1.18`，由 UPM 解析。随包示例使用新版启动配置等待能力，因此安装本包时也需要 Framework `0.7.9`。核心包本身不提供平台收银能力，还需按目标支付渠道安装对应 Store 子包。
 
 ## 当前公开入口
 
@@ -38,7 +38,7 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 
 `IsSuccess` 表示本次调用或订单校验成功，发货还须检查 `CanDeliver`，并由业务按真实订单号幂等处理。返回值与 `PaySuccess` 事件可能对应同一笔订单，事件也可能重放，不应分别直接发奖。
 
-Android 第三方支付默认在首次建单后的三十分钟内，重复点击时先查询成功未验订单；命中后只补单，查询失败停止新购。各笔可发货历史订单通过原成功事件反馈，`PayAsync` 的批次完成结果不再授予发货资格。开关、窗口和升级行为见 [ThirdPay 购买前补单规则](../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#android-重复点击补单查询)。
+Android 第三方支付默认在首次建单后的三十分钟内，重复点击时先查询成功未验订单；命中后只补单，查询失败停止新购。各笔可发货历史订单通过原成功事件反馈，`PayAsync` 的批次完成结果不再授予发货资格。开关、窗口和升级行为见 [ThirdPay 购买前补单规则](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/ThirdPayStore.md#android-重复点击补单查询`）。
 
 ## 文档
 
@@ -56,3 +56,13 @@ IAP Config 商品列表在“导入 SKU Excel”下方提供“上传支付表�
 ## 维护
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework.sdk.iap.mobile` | `Nova/DOCS/INDEX.md` | `Nova/DOCS/INDEX.md` |
+| `com.solotopia.nova.framework.sdk.iap.thirdpay` | `Nova/Doc/INDEX.md` | `Nova/Doc/INDEX.md`<br>`Nova/Doc/ThirdPayStore.md#android-重复点击补单查询` |
+| `com.solotopia.nova.framework.sdk.iap.voucher` | `Nova/Doc/INDEX.md` | `Nova/Doc/INDEX.md` |

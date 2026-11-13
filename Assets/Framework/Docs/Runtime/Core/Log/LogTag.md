@@ -9,7 +9,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `LogTag.cs` | `LogTag` | 日志标签常量定义 |
+| [LogTag.cs](../../../../Scripts/Runtime/Core/Log/LogTag.cs) | `LogTag` | 日志标签常量定义 |
 
 ## § 3 继承关系
 
@@ -42,7 +42,7 @@
 | `Reference` | `[Reference]` | 引用池模块 |
 | `UI` | `[UI]` | UI 模块 |
 
-> 完整列表以 `LogTag.cs` 为准。
+> 完整列表以 [LogTag.cs](../../../../Scripts/Runtime/Core/Log/LogTag.cs) 为准。
 
 ## § 5 完整公开 API
 

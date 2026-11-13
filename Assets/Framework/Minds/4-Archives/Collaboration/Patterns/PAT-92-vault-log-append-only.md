@@ -27,6 +27,8 @@ related:
 
 # PAT-92：Vault 时序日志 0-Log.md append-only 铁律
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 模式（What）
 
 `Assets/Framework/Minds/0-Index/0-Log.md` 是 Vault 的 **append-only 时序日志**，所有结构性动作（ingest / migrate / archive / supersede / lint / index-rebuild / bulk-update）完成时**必须**追加一行。
@@ -82,6 +84,6 @@ related:
 
 ## 关联
 
-- 索引文件：`Assets/Framework/Minds/0-Index/0-Log.md`
+- 索引文件：[Assets/Framework/Minds/0-Index/0-Log.md](../../../0-Index/0-Log.md)
 - Hook 联动：`.claude/hooks/nova-obs-keyword-guard.sh` 已加 0-Log.md 追加提示节
 - 思想源：Karpathy LLM Wiki（持久化复利知识库模式）

@@ -12,9 +12,9 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `SoundComponentInspector.cs` | `sealed partial SoundComponentInspector` | 主体：`OnEnable` 绑定属性、注册 FileWatcher；`OnDisable` 注销 FileWatcher；`OnInspectorGUI` 绘制入口 |
-| `SoundComponentInspector.Visitors.cs` | `partial SoundComponentInspector` | 字段：`SerializedProperty` 引用、常量、样式、折叠状态、FileWatcher 缓存 |
-| `SoundComponentInspector.Methods.cs` | `partial SoundComponentInspector` | 私有方法：`DrawSoundSettings`、`DrawSourceDataOperations`、`DrawSoundSourceFileRow`、运行时声音组展示、导出/刷新逻辑 |
+| [SoundComponentInspector.cs](../../../../Scripts/Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.cs) | `sealed partial SoundComponentInspector` | 主体：`OnEnable` 绑定属性、注册 FileWatcher；`OnDisable` 注销 FileWatcher；`OnInspectorGUI` 绘制入口 |
+| [SoundComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.Visitors.cs) | `partial SoundComponentInspector` | 字段：`SerializedProperty` 引用、常量、样式、折叠状态、FileWatcher 缓存 |
+| [SoundComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.Methods.cs) | `partial SoundComponentInspector` | 私有方法：`DrawSoundSettings`、`DrawSourceDataOperations`、`DrawSoundSourceFileRow`、运行时声音组展示、导出/刷新逻辑 |
 
 ---
 

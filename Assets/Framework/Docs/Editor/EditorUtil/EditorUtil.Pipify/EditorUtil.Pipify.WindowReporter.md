@@ -13,7 +13,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | 完整实现 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs) | `EditorUtil.Pipify.WindowReporter` | 完整实现 |
 
 ## §5 公开 API（实现 IPipifyProgressReporter）
 

@@ -21,6 +21,8 @@ related:
 
 # ADR-038：UI 深度系数容量再平衡
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../Docs/INDEX.md) 或 [Minds 索引](../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 背景（Context）
 
 `UIDepthConfig` 原配置：
@@ -79,9 +81,9 @@ public const int c_ViewDepthFactor  = 100;
 
 ## 验证依据（Verification）
 
-- 文件：`Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UIDepthConfig.cs`
+- 历史文件（原路径已失效）：`Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UIDepthConfig.cs`；当前配置见 [UIComponent 说明](../../../Docs/Runtime/Modules/UI/UIComponent.md)。
 - 调用点：`UIGroupHelperBase.SetDepth`（line 71-89）、`UIView.OnDepthChanged`（line 175-192）
-- 配置点：`Assets/Framework/Prefabs/Nova.prefab` UIGroups
+- 配置点：[Assets/Framework/Prefabs/Nova.prefab](../../../Prefabs/Nova.prefab) UIGroups
 - grep：`grep -rn "c_GroupDepthFactor\|c_ViewDepthFactor" Assets/Framework/Scripts/`（仅 2 处使用）
 - 编译验证：UnityMCP `read_console` 0 error / 0 warning
 

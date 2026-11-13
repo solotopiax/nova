@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Runtime/Modules/Debug/Managers/Implements/DebugManagerBase.cs` | 抽象基类定义 |
+| [Runtime/Modules/Debug/Managers/Implements/DebugManagerBase.cs](../../../../../Scripts/Runtime/Modules/Debug/Managers/Implements/DebugManagerBase.cs) | 抽象基类定义 |
 
 ## 关键字段/属性
 

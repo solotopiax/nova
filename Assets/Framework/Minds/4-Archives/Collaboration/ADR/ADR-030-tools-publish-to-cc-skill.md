@@ -20,6 +20,8 @@ related:
 
 # ADR-030：UPM 发布工具迁移为 nova-publish skill，废弃 Tools/Publish 目录
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 背景（Context）
 
 Nova Framework UPM 发布历史上落在 `Tools/Publish/`：

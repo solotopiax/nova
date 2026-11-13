@@ -9,9 +9,9 @@
 
 | 文件 | 说明 |
 |---|---|
-| `SDKManager.cs` | 公开 override：`Initialize`、`InitializeAsync`、`DisposeAsync`、`Get`、`TryGet`、`GetAll`、`Broadcast*`、`Login`、`Update`、`Shutdown` |
-| `SDKManager.Visitors.cs` | 内部字段与属性 |
-| `SDKManager.Methods.cs` | 插件实例化、依赖解析、单插件初始化和登录补交 |
+| [SDKManager.cs](../../../../../../Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.cs) | 公开 override：`Initialize`、`InitializeAsync`、`DisposeAsync`、`Get`、`TryGet`、`GetAll`、`Broadcast*`、`Login`、`Update`、`Shutdown` |
+| [SDKManager.Visitors.cs](../../../../../../Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.Visitors.cs) | 内部字段与属性 |
+| [SDKManager.Methods.cs](../../../../../../Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.Methods.cs) | 插件实例化、依赖解析、单插件初始化和登录补交 |
 
 ## 当前关键字段
 

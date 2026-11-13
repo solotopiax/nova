@@ -220,7 +220,7 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 - [MobileStore.md](./MobileStore.md)
 - [MobileInitService.md](./MobileInitService.md)
 - [MobileUtils.md](./MobileUtils.md)
-- 父包架构：[IAP-Architecture.md](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md)
+- 父包架构：[IAP-Architecture.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/IAP-Architecture.md`）
 
 ## 13. 队列、验单与恢复的失败语义
 
@@ -228,7 +228,7 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 
 Mobile 验单把普通商品组和订阅组串行发送；存在重复非零 tableId 时拆成单笔，响应按 tableId 首个匹配项选择，单项响应兜底可接受唯一项而不再次核对其 tableId。当前协议不使用 transaction id 做响应关联。主动订单按 `attempt=0..RetryValidateMaxNum` 尝试，纯补单组只尝试一次；此循环没有重试 Delay，负重试配置没有在该层夹紧。取消只在每轮前检查，`MobileIapNetService` 的查单和验单接口没有 ct，不能据上层取消断定已发 HTTP 已中止。
 
-协议源 `Nova/Protos/pb_net_mobile_pay.proto` 的 protobuf `package` 是 `NovaFramework.IAP.Mobile.Runtime`，`csharp_namespace` 才是 `NovaFramework.SDK.IAP.Mobile.Runtime`，两者都不能用来推定实际加载的程序集。Google 验单项发送 `product_id/token/float price`，Apple 发送 `order_id/float price`，均不发送完整 receipt；订阅各有独立请求类型与命令，复用对应平台订单项。响应 `expire_time` / `purchase_type` 是 optional 字段，缺失与显式 0 的 presence 不能仅按数值混同。当前网络包装器读取调用时的标准 Header 与命令路由；Protobuf 字符串不接受 null，批次空列表返回失败而空元素可抛错，包装器不提供统一 SKU/token 格式、去重或服务端真实性校验。
+协议源 [Nova/Protos/pb_net_mobile_pay.proto](../Protos/pb_net_mobile_pay.proto) 的 protobuf `package` 是 `NovaFramework.IAP.Mobile.Runtime`，`csharp_namespace` 才是 `NovaFramework.SDK.IAP.Mobile.Runtime`，两者都不能用来推定实际加载的程序集。Google 验单项发送 `product_id/token/float price`，Apple 发送 `order_id/float price`，均不发送完整 receipt；订阅各有独立请求类型与命令，复用对应平台订单项。响应 `expire_time` / `purchase_type` 是 optional 字段，缺失与显式 0 的 presence 不能仅按数值混同。当前网络包装器读取调用时的标准 Header 与命令路由；Protobuf 字符串不接受 null，批次空列表返回失败而空元素可抛错，包装器不提供统一 SKU/token 格式、去重或服务端真实性校验。
 
 凭据策略分平台：Android 缺 token 保留，iOS 缺空白检查后的 order id 可删除并保存；恢复时只回填缺失凭据。服务端查单先捕获当前存档并可能合并结果，队列与后续保存又会读取当前 Store，当前实现没有账号 generation 校验。已存在的 AwaitingConfirm 记录通常由 ack 路径处理，但服务端 pending 合并可重新设为 PendingValidate，不能把本地状态字段当作不可逆锁。业务成功派发按运行期业务键去重，字段标记先于事件，不提供跨进程发货幂等。
 

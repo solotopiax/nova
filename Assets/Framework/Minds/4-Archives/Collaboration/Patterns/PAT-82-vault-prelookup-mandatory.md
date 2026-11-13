@@ -31,6 +31,8 @@ related:
 
 # PAT-82：全 agent Vault 前置查询铁律
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 适用场景
 
 任何 Nova agent（runtime-coder / editor-coder / code-reviewer / qa-reviewer / doc-writer）在**接到任务后、动手前**，必须先在 Obsidian Vault 中检索历史决策与强制术语，对齐已有约束再开工。原 architect.md 已具备此节，但落到 5 个执行类 agent 时一直靠 keyword-guard hook 被动触发，存在"AI 接活直接动手 → keyword 没命中 → 违规无察觉"的漏洞。本 PAT 把"前置查询"升级为**全 agent 入口硬约束**。

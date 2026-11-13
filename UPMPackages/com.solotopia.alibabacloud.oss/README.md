@@ -2,7 +2,7 @@
 
 `com.solotopia.alibabacloud.oss` 是 Nova CDN 内容部署使用的 Alibaba Cloud OSS C# SDK v2 Editor 工具包。
 
-它不是 Nova Framework 的 Runtime 依赖，也不提供 Player 上传／下载能力。SDK DLL 与桥接程序集均位于 `Nova/Editor/`，不会进入 Player 构建。
+它不是 Nova Framework 的 Runtime 依赖，也不提供 Player 上传／下载能力。SDK DLL 与桥接程序集均位于 [Nova/Editor/](Nova/Editor/)，不会进入 Player 构建。
 
 ## 使用方式
 
@@ -17,7 +17,7 @@
 - 提交：`892c0209b9808b352f9e0814e7da32c49496ea16`
 - 上游协议：Apache-2.0
 
-GitHub 提交是本包的版本真相源。完整、未修改的 tracked 源码位于 `Core/alibabacloud-oss-csharp-sdk-v2~`，Unity 使用的 DLL 由该快照构建。`Core/alibabacloud-oss-csharp-sdk-v2-892c0209-source.tar.gz` 是同一提交的可校验 Git archive，确保会过滤 `.gitignore` 的打包器仍能携带完整快照。
+GitHub 提交是本包的版本真相源。完整、未修改的 tracked 源码位于 [Core/alibabacloud-oss-csharp-sdk-v2~](Core/alibabacloud-oss-csharp-sdk-v2~/)，Unity 使用的 DLL 由该快照构建。[Core/alibabacloud-oss-csharp-sdk-v2-892c0209-source.tar.gz](Core/alibabacloud-oss-csharp-sdk-v2-892c0209-source.tar.gz) 是同一提交的可校验 Git archive，确保会过滤 `.gitignore` 的打包器仍能携带完整快照。
 
 ## 运行环境
 

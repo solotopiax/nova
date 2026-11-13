@@ -5,11 +5,17 @@ description: 在 Nova 项目组要用自然语言创建、克隆、调整已保�
 
 # Nova 配置日常流水线
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-读取 `references/contract.json`。仅在配置参数或完整目标列表时读 [配置参考](references/configuration.md)；具体字段含义不清时才读 `Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md` 与目标 Step 的 Docs。不要展开全部 Step 或其它 SDK 文档。平台构建、CDN 部署或缓存清理组合才读取 [平台交付](references/platform-deployment.md)。
+读取 [references/contract.json](references/contract.json)。仅在配置参数或完整目标列表时读 [配置参考](references/configuration.md)；具体字段含义不清时才读 [Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md) 与目标 Step 的 Docs。不要展开全部 Step 或其它 SDK 文档。平台构建、CDN 部署或缓存清理组合才读取 [平台交付](references/platform-deployment.md)。
+
+新项目创建 Batch 前读取 [新项目的 Batch 参考](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md#新项目的-batch-参考)，只读查看当前 MainDemo 中与目标相关的 Batch，核对示例前置和项目差异；只作参考，不直接复制整套流程或假定同名任务适用。
+
+涉及图集生产选型、批量规则、在 Bundle 前更新图集或恢复其事务时读取 [可选图集参考](references/sprite-atlas.md)，先比较 Unity 原生文件夹图集。确需增强才复用 `spriteatlas.generate` / `spriteatlas.recover` 的真实 Step，前者默认只预演；旧配置、图集和 Batch 不迁移，也不因准备构建而自动启用。
+
+Android / iOS / WebGL 完整打包 Batch 必须落实[三平台构建与 HybridCLR 基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)，不能按小游戏或离线产品省掉 Network 导出、HybridCLR 配置/生成、DLL 部署和资源构建；已有前置及特殊平台限制按该基线核实。保存 Batch 不代表已启用 HybridCLR、配置齐全或生成成功，纯配置任务仍不自动运行三平台。
 
 本 Skill 维护具名 Batch，默认只配置和保存。用户要求实际运行时复用已有 `nova.project.pipify.run-batch`；构建、通知、外部部署等副作用按实际 Batch 逐项判断，配置授权不能代替运行授权。
 
@@ -20,6 +26,8 @@ description: 在 Nova 项目组要用自然语言创建、克隆、调整已保�
 先用 `nova_project_action(operation="describe", action_id="nova.project.pipify.inspect-settings")` 读取 live Schema，再检查目标配置。可选 `stepId` 查询真实字段声明；凭据只看 `hasValue`。未知默认值、Missing Step 或未支持字段应明确说明，不从相邻配置猜值。
 
 把用户结果转换为 `create / clone / edit` 及目标 Batch。复用已有 Step 和参数；调整顺序或删除时生成完整目标 `steps` 列表，使用编辑前 `sourceIndex` 精确保留/复制条目。同一 StepId 可重复，不能仅按 ID 合并。保留未请求字段，空字符串需明确清空。
+
+参考 MainDemo 后，按当前项目需求说明步骤/参数的保留、调整和不采用依据，以及前置在 Batch 内或外的实际完成状态；创建与保存继续走本 Skill。参考缺项、Missing Step 或未支持字段按实际边界报告，不改 Demo、不为查看参考切换工作区，也不通过自写 Runner 或手写资产完成复制。
 
 ## 固定执行入口
 

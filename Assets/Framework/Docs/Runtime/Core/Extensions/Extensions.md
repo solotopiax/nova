@@ -8,8 +8,8 @@ C# 和 Unity 类型的扩展方法，全部为静态类，可在任意层级直�
 
 | 文件 | 扩展类型 | 典型方法 |
 |------|---------|---------|
-| `NovaExtensionForFoundation.Float.cs` | `float` | `FloatToTimeString` 秒数显示 |
-| `NovaExtensionForFoundation.String.cs` | `string` | 首字符大写、富文本长度、空白折叠、时间解析与基本汉字计数 |
+| [NovaExtensionForFoundation.Float.cs](../../../../Scripts/Runtime/Core/Extensions/Foundation/NovaExtensionForFoundation.Float.cs) | `float` | `FloatToTimeString` 秒数显示 |
+| [NovaExtensionForFoundation.String.cs](../../../../Scripts/Runtime/Core/Extensions/Foundation/NovaExtensionForFoundation.String.cs) | `string` | 首字符大写、富文本长度、空白折叠、时间解析与基本汉字计数 |
 
 `FloatToTimeString` 默认只显示分钟和秒，仅支持源码列出的六种含秒组合，其余返回空串；小时隐藏后仍按 60 取分钟余数，不把小时累加进分钟。毫秒以小数点输出，`TimeStringToFloat` 却要求长度 12 的 `hh:mm:ss:SSS` 四段冒号输入，二者不是互逆。解析只逐段 TryParse，失败段计零，不验证范围；长度正确但分隔段不足仍可能越界，负数和非有限输入没有统一保护。
 
@@ -21,15 +21,15 @@ C# 和 Unity 类型的扩展方法，全部为静态类，可在任意层级直�
 
 | 文件 | 扩展类型 |
 |------|---------|
-| `NovaExtensionForUnity.Transform.cs` | `Transform` |
-| `NovaExtensionForUnity.GameObject.cs` | `GameObject` |
-| `NovaExtensionForUnity.Component.cs` | `Component` |
-| `NovaExtensionForUnity.Animator.cs` | `Animator` |
-| `NovaExtensionForUnity.RectTransform.cs` | `RectTransform` |
-| `NovaExtensionForUnity.UI.cs` | `UnityEngine.UI.*` |
-| `NovaExtensionForUnity.Vector2.cs` | `Vector2` |
-| `NovaExtensionForUnity.Vector3.cs` | `Vector3` |
-| `NovaExtensionForUnity.Quaternion.cs` | `Quaternion` |
+| [NovaExtensionForUnity.Transform.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.Transform.cs) | `Transform` |
+| [NovaExtensionForUnity.GameObject.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.GameObject.cs) | `GameObject` |
+| [NovaExtensionForUnity.Component.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.Component.cs) | `Component` |
+| [NovaExtensionForUnity.Animator.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.Animator.cs) | `Animator` |
+| [NovaExtensionForUnity.RectTransform.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.RectTransform.cs) | `RectTransform` |
+| [NovaExtensionForUnity.UI.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.UI.cs) | `UnityEngine.UI.*` |
+| [NovaExtensionForUnity.Vector2.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.Vector2.cs) | `Vector2` |
+| [NovaExtensionForUnity.Vector3.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.Vector3.cs) | `Vector3` |
+| [NovaExtensionForUnity.Quaternion.cs](../../../../Scripts/Runtime/Core/Extensions/Unity/NovaExtensionForUnity.Quaternion.cs) | `Quaternion` |
 
 ### Animator 参数
 

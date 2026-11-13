@@ -11,7 +11,7 @@ Debugger 激活策略枚举，用来决定 `DebugComponent` 是否初始化 Runt
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Runtime/Modules/Debug/Definitions/DebuggerActiveType.cs` | `DebuggerActiveType` | Debugger 激活条件枚举 |
+| [Runtime/Modules/Debug/Definitions/DebuggerActiveType.cs](../../../../../Scripts/Runtime/Modules/Debug/Definitions/DebuggerActiveType.cs) | `DebuggerActiveType` | Debugger 激活条件枚举 |
 
 ---
 

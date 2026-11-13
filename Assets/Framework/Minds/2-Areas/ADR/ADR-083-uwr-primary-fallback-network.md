@@ -104,7 +104,7 @@ App、Asset 与 Network Inspector 必须就这些配置直接说明：一轮会�
 
 - 事件固定为 `uwr_request_start`、`uwr_request_error`、`uwr_request_end`，schema 固定为 `1`。
 - 一条可完整观测的逻辑链遵守 `1 start → 0～N error → 1 end`；主备、轮次和重试都在同一个 `uwr_chain_id` 下。
-- 字段只保留 UWR 能稳定提供或框架能确定计算的值，完整 29 项定义以 `Assets/Framework/Tracks/Tracks.xlsx` 为准。
+- 字段只保留 UWR 能稳定提供或框架能确定计算的值，完整 29 项定义以 [Tracks/Tracks.xlsx](../../../Tracks/Tracks.xlsx) 为准。
 - Asset 额外使用 `uwr_download_operation_id`、`uwr_package`、`uwr_file_type` 聚合下载；WebGL HostPlayMode 的 WebNetwork 内容校验重试可能在同一 download operation 下产生新的 UWR chain。
 - SDK 尚未就绪时采用有界内存队列，SDK 就绪后按顺序派发；单个 `ITrackPlugin` 异常不得阻断其他插件和网络请求。
 
@@ -154,16 +154,16 @@ Framework 去除 DoH 只约束 Nova 自己的 App、Asset、Network 与业务协
 - `LegacyNetworkPackageMigrationTests` 与 `UnityWebRequestTransportTests` 定向 EditMode 回归 `29/29` 通过；App、Asset、Network 三个 Inspector 实际加载时 Console 无 Error。
 - App、Asset、共享 Planner 与真实 UWR loopback 等 7 个定向 EditMode 测试类最终通过 `121/121`。
 - 用例覆盖候选公式、完整 URL 去重、最近成功优先、取消止链、断连重放、HTTP 503 业务止链及 Asset 独立文件计划。
-- `Assets/Framework/Tracks/Tracks.xlsx` 中 29 个 `uwr_*` 属性与代码键集合一致。
+- [Tracks/Tracks.xlsx](../../../Tracks/Tracks.xlsx) 中 29 个 `uwr_*` 属性与代码键集合一致。
 - 活跃源码、`Packages` 与 `UPMPackages` 不再包含 Nova BestHTTP/DoH 实现；历史 CHANGELOG、负向依赖测试以及 TGA 上游实现不作为残留删除。
 - `git diff --check HEAD` 通过；未修改 `Library` 与 YooAsset 源码。
 
 ## 当前事实来源（Sources）
 
-- `Assets/Framework/Scripts/Runtime/Core/HttpFallback/`
-- `Assets/Framework/Scripts/Runtime/Modules/Network/Managers/HttpManager/`
-- `Assets/Framework/Scripts/Runtime/Modules/App/Managers/AppManager/`
-- `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/`
-- `Assets/Framework/Tracks/Tracks.xlsx`
-- `Assets/Framework/Docs/Runtime/Modules/Network/HttpManager/HttpManager.md`
-- `Assets/Framework/Docs/Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md`
+- [Scripts/Runtime/Core/HttpFallback/](../../../Scripts/Runtime/Core/HttpFallback)
+- [Scripts/Runtime/Modules/Network/Managers/HttpManager/](../../../Scripts/Runtime/Modules/Network/Managers/HttpManager)
+- [Scripts/Runtime/Modules/App/Managers/AppManager/](../../../Scripts/Runtime/Modules/App/Managers/AppManager)
+- [Scripts/Runtime/Modules/Asset/Managers/AssetManager/](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager)
+- [Tracks/Tracks.xlsx](../../../Tracks/Tracks.xlsx)
+- [Docs/Runtime/Modules/Network/HttpManager/HttpManager.md](../../../Docs/Runtime/Modules/Network/HttpManager/HttpManager.md)
+- [Docs/Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md](../../../Docs/Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md)

@@ -34,6 +34,7 @@ Excel 源数据过去放在 repo-root 的 Docs 目录，发版链路里还要再
 - Nova.prefab 默认值直接指向 MainDemo 副本，其他 Demo 用 scene override。
 - 发版时只保留一条路径生命周期：默认值 -> override -> import 重写。
 - 独立副本不仅隔离路径，也必须隔离业务表内容。单主题 Demo 的 UI Excel、导出数据、生成表属性、场景分组与入口 Prefab 保持一致；不能仅修正 JSON 而保留 MainDemo 的 Excel 条目。
+- 独立业务内容不意味着重新设计工作簿。新表应复制当前官方模板或项目既有同类表，在保留样式与备注结构的基础上扩展；通用表格工具的默认美化不能替换 Nova 风格。当前保真入口和验收边界见 [配表模板与样式](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md#配表模板与样式)，数据导出成功不能替代工作簿保真验收。
 
 ## 影响
 
@@ -43,6 +44,6 @@ Excel 源数据过去放在 repo-root 的 Docs 目录，发版链路里还要再
 
 ## 来源与验证依据
 
-- `Assets/Framework/Docs/Onboarding/RESOURCE_WORKFLOW.md` 的 Sample UI 表源与导出约定。
+- [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 的 Sample UI 表源与导出约定。
 - AppsflyerDemo 的历史错配说明了边界：源表长期保留 MainDemo 条目，即使初始 JSON 正确，后续正式导出仍会覆盖它。修复须从 `Assets/Samples/AppsflyerDemo/Excels/UIs/UIs.xlsx` 向下同步正式数据和生成代码。
-- UI 专用正式导出入口：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.cs`。
+- UI 专用正式导出入口：[Scripts/Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.cs)。

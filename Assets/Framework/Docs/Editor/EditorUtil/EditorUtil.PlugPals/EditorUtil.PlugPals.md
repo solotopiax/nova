@@ -18,12 +18,12 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil.PlugPals.cs` | `partial EditorUtil.PlugPals` | 公有接口：所有 public static 方法 |
-| `EditorUtil.PlugPals.Visitors.cs` | `partial EditorUtil.PlugPals` | 常量声明：`s_HttpClient`、`c_ManifestRelativePath`、`c_ChangelogCacheRelDir`、`c_TarballCacheRelDir`、`c_ChangelogTarEntry` |
-| `EditorUtil.PlugPals.Methods.cs` | `partial EditorUtil.PlugPals` | 私有方法：`ResolveEntryVersion`、`GetCachedPackageVersion`、`IsNonRegistryReference`、`RunTarExtract`、`ExtractScope`、`EnsureScopedRegistry`、`CleanupScopedRegistry` |
-| `EditorUtil.PlugPals.Definitions.cs` | `partial EditorUtil.PlugPals` | 包、registry、manifest 与 packages-lock 数据模型 |
-| `EditorUtil.PlugPals.AgentOperations.cs` | `partial EditorUtil.PlugPals` | 消费项目 Agent 的单包 `Plan -> Confirm -> Execute -> Verify` Adapter |
-| `EditorUtil.PlugPals.RequiredLibraries.cs` | `partial EditorUtil.PlugPals` | 安装前依赖预检查（`CheckDependencies`）：遍历目标包 `dependencies`，判定 registry 命中与缺失库，缺失时打开 `PlugPalsMissingRequiredLibrariesWindow` 引导并中止安装 |
+| [EditorUtil.PlugPals.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.cs) | `partial EditorUtil.PlugPals` | 公有接口：所有 public static 方法 |
+| [EditorUtil.PlugPals.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Visitors.cs) | `partial EditorUtil.PlugPals` | 常量声明：`s_HttpClient`、`c_ManifestRelativePath`、`c_ChangelogCacheRelDir`、`c_TarballCacheRelDir`、`c_ChangelogTarEntry` |
+| [EditorUtil.PlugPals.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Methods.cs) | `partial EditorUtil.PlugPals` | 私有方法：`ResolveEntryVersion`、`GetCachedPackageVersion`、`IsNonRegistryReference`、`RunTarExtract`、`ExtractScope`、`EnsureScopedRegistry`、`CleanupScopedRegistry` |
+| [EditorUtil.PlugPals.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Definitions.cs) | `partial EditorUtil.PlugPals` | 包、registry、manifest 与 packages-lock 数据模型 |
+| [EditorUtil.PlugPals.AgentOperations.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.AgentOperations.cs) | `partial EditorUtil.PlugPals` | 消费项目 Agent 的单包 `Plan -> Confirm -> Execute -> Verify` Adapter |
+| [EditorUtil.PlugPals.RequiredLibraries.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs) | `partial EditorUtil.PlugPals` | 安装前依赖预检查（`CheckDependencies`）：遍历目标包 `dependencies`，判定 registry 命中与缺失库，缺失时打开 `PlugPalsMissingRequiredLibrariesWindow` 引导并中止安装 |
 
 ---
 
@@ -128,7 +128,9 @@ public static void ResolvePackages()
 
 安装提交前，`InstallPackage` 会把显式包名、原版本和目标版本写入本地重要声明批次；已提交仍不等于实际成功。UPM 稳定后由 [ImportantUpdates](../EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 从实际包内 CHANGELOG 提取并强制展示。单包只显示当前包，批量 GUI 使用一个工具层批次合并；这不会替代原有依赖预检、Resolve 或 Agent Verify，也不会把普通更新的“跳过版本”当作重要声明已读。
 
-消费端 Skill 的稳定入口是 C# Project Action `nova.project.upm.manage-latest`，由 `EditorUtil.AgentActions` 提供统一 Registry、一次性计划、确认令牌、资源锁与结果协议；该 Handler 复用以下 PlugPals 领域实现，不复制 UPM 业务逻辑。
+消费端 Skill 的稳定入口为安装/升级 Action `nova.project.upm.manage-latest` 与独立卸载 Action `nova.project.upm.uninstall-direct`，由 `EditorUtil.AgentActions` 提供统一 Registry、一次性计划、确认令牌、资源锁与结果协议；这些 Handler 复用以下 PlugPals 领域实现，不复制 UPM 业务逻辑。
+
+任务所需 package 的自主选择与安装遵循 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行)。已有长期安装授权覆盖精确计划时，不重复要求用户逐包批准；每次执行仍绑定实时 Plan/token，漂移后重新计划，Resolve 后独立 Verify。授权成立、机器计划确认和安装成功是三个不同判断，重要声明的人工阅读确认仍按原规则处理。
 
 ```csharp
 public static Task<ProjectPackageOperationPlan> PlanProjectPackageOperationAsync(
@@ -144,7 +146,7 @@ public static ProjectPackageOperationResult VerifyProjectPackageOperation(
     ProjectPackageOperationReceipt receipt)
 ```
 
-该入口只支持 `install-latest`、`upgrade-latest` 与 `uninstall`，不接受指定版本、降级、任意 registry、来源切换或 Framework 自身。Plan 必须完整读取全部已配置 registry，任一来源失败都会阻断，避免在来源或依赖信息不完整时写项目；Execute 仅消费一次已确认且未漂移的计划，写入 manifest 并排队 Resolve 后返回 `partial`；只有 Verify 在 Unity 包更新与 domain reload 稳定后核对 manifest、packages-lock 的精确版本与 registry URL，才返回 `success`。卸载前会遍历 packages-lock 的依赖图阻止仍有消费者的目标，并使用当前已安装包元数据判断共享 registry。
+领域适配支持 `install-latest`、`upgrade-latest` 与 `uninstall`，MCP 卸载仍使用上述独立 Action；不接受指定版本、降级、任意 registry、来源切换或 Framework 自身。Plan 必须完整读取全部已配置 registry，任一来源失败都会阻断，避免在来源或依赖信息不完整时写项目；Execute 仅消费一次授权已覆盖、token 匹配且未漂移的计划，写入 manifest 并排队 Resolve 后返回 `partial`；只有 Verify 在 Unity 包更新与 domain reload 稳定后核对 manifest、packages-lock 的精确版本与 registry URL，才返回 `success`。卸载前会遍历 packages-lock 的依赖图阻止仍有消费者的目标，并使用当前已安装包元数据判断共享 registry。
 
 ### 版本比较
 

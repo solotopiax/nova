@@ -76,8 +76,8 @@ ProcedureSplash
 - `ProcedureLaunch` 已合并进 `ProcedureSplash`，不要再写旧文件名
 - “业务 DLL = `Game.Runtime`” 不是硬编码事实；当前是 `GameDlls + Namespace` 配置驱动
 - `ProcedureLoadDll` 不只做 DLL 加载，还负责 `Yield` 脱栈、Config 幂等加载、程序集刷新、扫描注册业务 Procedure、跳转入口
-- `Util.HybridCLR` 当前路径在 `Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs`
-- 编辑器侧 HybridCLR 配置与导出入口在 `Editor/Windows/ConfigWindow`、`Editor/EditorUtil/EditorUtil.HybridCLR`
+- `Util.HybridCLR` 当前路径在 [Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs](../../../Scripts/Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs)
+- 编辑器侧 HybridCLR 配置与导出入口在 [Editor/Windows/ConfigWindow](../../../Scripts/Editor/Windows/ConfigWindow/)、`Editor/EditorUtil/EditorUtil.HybridCLR`
 
 ## 反模式
 
@@ -92,20 +92,9 @@ ProcedureSplash
 
 ## 模块文件入口
 
-```text
-Assets/Framework/Scripts/Runtime/Modules/Procedure/Procedures/
-├── ProcedureSplash.cs
-├── ProcedureCheckVersion.cs
-├── ProcedureHotfix.cs
-├── ProcedureAppDownload.cs
-└── ProcedureLoadDll.cs
-
-Assets/Framework/Scripts/Runtime/Core/Util/Util.HybridCLR/
-└── Util.HybridCLR.cs
-
-Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/
-└── EditorUtil.HybridCLR.cs / .Methods.cs / .Visitors.cs
-```
+- [框架启动流程](../../../Scripts/Runtime/Modules/Procedure/Procedures/)：[ProcedureSplash.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureSplash.cs)、[ProcedureCheckVersion.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs)、[ProcedureHotfix.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureHotfix.cs)、[ProcedureAppDownload.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureAppDownload.cs)、[ProcedureLoadDll.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.cs)。
+- [运行时 HybridCLR 工具](../../../Scripts/Runtime/Core/Util/Util.HybridCLR/)：[Util.HybridCLR.cs](../../../Scripts/Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs)。
+- [编辑器 HybridCLR 工具](../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/)：[EditorUtil.HybridCLR.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.cs)、[EditorUtil.HybridCLR.Methods.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.Methods.cs)、[EditorUtil.HybridCLR.Visitors.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.Visitors.cs)。
 
 ## 必走流程
 
@@ -113,7 +102,7 @@ Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.HybridCLR/
 2. 涉及 Procedure 分档 → [[ADR-007-procedure-tier-split|ADR-007]]
 3. 涉及程序集 / namespace → [[ADR-005-hybridclr-namespace-single-write-path|ADR-005]] + [[ADR-020-assembly-dependency-direction|ADR-020]]
 4. 涉及热更开关 → [[ADR-013-hotfix-master-switch|ADR-013]]
-5. 涉及 DLL 加载链路 → `ProcedureLoadDll.cs`
+5. 涉及 DLL 加载链路 → [ProcedureLoadDll.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.cs)
 
 ## 关联
 

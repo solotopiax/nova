@@ -8,7 +8,7 @@
 
 进入 Sample 时会把 Sample 的配置对写成当前值，保证编辑器构建、Build Action 和 CI 看到同一套配置；返回非 Sample Scene 时，再从 `project*` 备份恢复业务配置。切换不是“取工程第一份资产”，无法唯一判断时保持空值并让后续入口明确失败。
 
-> **Sample 路径推断使用"逐级向上递归"**：从活跃 Scene 所在目录起每层尝试 `Editor/ConfigMaster.asset`，第一个命中即返回，到 `Assets/Samples/` 边界停。一套逻辑同时覆盖：
+> **Sample 路径推断使用"逐级向上递归"**：从活跃 Scene 所在目录起每层尝试 `Editor/ConfigMaster.asset`，第一个命中即返回，到 `Assets/Samples/` 边界停。这描述自动探测器当前边界，实际根目录按 [Sample 导入定位规则](../../../Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核对。一套逻辑同时覆盖：
 > - **开发态扁平结构** `Assets/Samples/{Demo}/{Scene}.unity`
 > - **UPM 导入态嵌套结构** `Assets/Samples/{PackageDisplayName}/{Version}/{SampleDisplayName}/{Scene}.unity`
 
@@ -18,7 +18,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs` | `EditorUtil.Config.WorkspaceActive` / `EditorUtil.Config.Events` | active ConfigMaster 锚点逻辑；同文件还承载 Config 编辑侧保存事件 |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs) | `EditorUtil.Config.WorkspaceActive` / `EditorUtil.Config.Events` | active ConfigMaster 锚点逻辑；同文件还承载 Config 编辑侧保存事件 |
 
 ---
 

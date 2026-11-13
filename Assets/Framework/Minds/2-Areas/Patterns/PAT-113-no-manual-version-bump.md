@@ -21,7 +21,7 @@ related:
 
 ## 适用场景（When）
 
-- 修改 `Assets/Framework/` 或 `UPMPackages/<pkg>/` 下任何源码 / 文档 / 配置时
+- 修改框架开发仓中的主框架源码 / 文档 / 配置，或 `UPMPackages/<pkg>/` 内对应内容时
 - 提交 refactor / feat / fix / chore / docs 任意类型 commit
 - "顺手把版本号也抬了，下次发版省事"的诱惑出现时
 

@@ -4,7 +4,7 @@
 
 `NetErrorCode` 是网络层错误码常量集合，覆盖客户端本地错误（负数段）与服务端通用协议错误（正数段）。业务专属错误码（如登录 7000~7999）由各业务子包独立定义，不在本类扩展。
 
-**所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetErrorCode.cs`
+**所在文件：** [Scripts/Runtime/Modules/Network/Kit/NetErrorCode.cs](../../../../Scripts/Runtime/Modules/Network/Kit/NetErrorCode.cs)
 **命名空间：** `NovaFramework.Runtime`
 **类签名：** `public static class NetErrorCode`
 

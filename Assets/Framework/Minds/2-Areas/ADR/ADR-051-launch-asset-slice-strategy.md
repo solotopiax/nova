@@ -93,7 +93,7 @@ YooAsset 缓存是 **bundle 文件级 + manifest hash 寻址**，tag 只是"本�
 | 让业务维护本地已下 tag 列表做增量 | YooAsset 缓存 bundle 文件级寻址，版本检查比对物理现状，列表是冗余且易漏的复杂度 |
 
 ## 验证依据（Verification）
-- 源码：`IAssetManager.cs`（新增 ByTags/ByLocations）、`AssetManager.cs`（实现）、`AssetComponent.Visitors.cs`（m_LaunchHotfixTags List）、`ProcedureHotfix.cs`（整包/切片二分）
+- 源码：[IAssetManager.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetManager.cs)（新增 ByTags/ByLocations）、[AssetManager.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.cs)（实现）、[AssetComponent.Visitors.cs](../../../Scripts/Runtime/Modules/Asset/AssetComponent.Visitors.cs)（m_LaunchHotfixTags List）、[ProcedureHotfix.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureHotfix.cs)（整包/切片二分）
 - grep 关键词：`CreateDownloaderByTags` / `LaunchHotfixTags` / `CreateResourceDownloader`
 - 审查要点：非 WebGL Downloader 的空 tags 必须等价整包；WebGL `TagsOnLaunch` 空有效 Tag 必须降级 `OnDemand`；List 透传走五段链不直接序列化 Config
 

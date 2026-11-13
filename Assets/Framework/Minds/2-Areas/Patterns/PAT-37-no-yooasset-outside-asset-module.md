@@ -37,7 +37,7 @@ related:
 
 ## 当前代码事实
 
-- Runtime 目录下的 YooAsset 直接引用集中在 `Assets/Framework/Scripts/Runtime/Modules/Asset/**`。
+- Runtime 目录下的 YooAsset 直接引用集中在 [Scripts/Runtime/Modules/Asset/](../../../Scripts/Runtime/Modules/Asset/) 及子目录。
 - 其他模块如 `Config`、`UI`、`Table`、`Localization`、`Sound`、`Network` 都主要消费 `AssetLocation` 与 Asset 模块抽象，不直接持有 YooAsset API。
 - Editor 侧存在少量 YooAsset 集成代码，例如配置注入、Bundle 构建与相关窗口；这些不在本条禁止范围内。
 

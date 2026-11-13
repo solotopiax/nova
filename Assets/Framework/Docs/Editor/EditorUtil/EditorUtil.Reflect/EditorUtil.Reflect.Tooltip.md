@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Reflect/EditorUtil.Reflect.Tooltip.cs` | `EditorUtil.Reflect` | 全部逻辑：`GetFieldTooltip(object, string)` / `GetFieldTooltip(Type, string)` + 静态 Tooltip 缓存 |
+| [Editor/EditorUtil/EditorUtil.Reflect/EditorUtil.Reflect.Tooltip.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Reflect/EditorUtil.Reflect.Tooltip.cs) | `EditorUtil.Reflect` | 全部逻辑：`GetFieldTooltip(object, string)` / `GetFieldTooltip(Type, string)` + 静态 Tooltip 缓存 |
 
 ---
 

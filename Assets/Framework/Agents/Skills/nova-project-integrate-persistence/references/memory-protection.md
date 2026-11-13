@@ -4,7 +4,7 @@
 
 ## 先取得可推断的项目事实
 
-- 从当前工程实际解析的独立包读取 `Nova/Docs/INDEX.md` 并核对公开类型和方法；开发仓查 `UPMPackages/<包名>/`，消费工程按注册包的真实路径查阅。未安装时复用 `nova-project-manage-upm-package` 的安装分支，并沿用已有授权；不以安装 Framework 推断此可选核心包已存在，也不反向修改包或复制实现。
+- 从当前工程实际解析的独立包读取 [Nova/Docs/INDEX.md（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 并核对公开类型和方法；开发仓查 [UPMPackages/&lt;包名&gt;/（按归属定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)，消费工程按注册包的真实路径查阅。未安装时复用 `nova-project-manage-upm-package` 的安装分支，并沿用已有授权；不以安装 Framework 推断此可选核心包已存在，也不反向修改包或复制实现。
 - 核对业务 asmdef 是否已引用 `NovaFramework.MemoryProtection.Runtime`；已授权源码接入允许向冻结的业务 asmdef 添加这一必要引用，不改程序集名称、命名空间或其他依赖。包不存在时先处理安装，不能只补一个断链引用。ACTk 是另一个可选商业插件，不是此包的强制安装依赖。
 - 查找现有余额、计数、体力等长期整数的业务 owner、声明类型、初始化/加载、读取、修改、结算、保存及释放点；路径、命名空间和当前入口由 Agent 取得。保持既有业务结构，不因缺某个调用方法就要求用户提供代码模板。
 - 冻结稳定逻辑字段名、可信初值来源、算术及范围规则、检测失败后哪些提交必须停止、已授权业务写集和隔离探针。字段名不得包含玩家 ID、内存地址、业务数值或凭据。业务规则、可信恢复来源无法推断时，只询问这些缺项。
@@ -94,7 +94,7 @@ internal sealed class WalletState : IDisposable
 
 ## 可复用的独立 Demo 参考
 
-本包随附 `MemoryProtectionDemo`，开发态位于 `Assets/Samples/MemoryProtectionDemo`，消费态先从本包的 Samples 导入。示例命名空间是 `NovaFramework.Memory.Protection.Samples.Runtime`，入口为 `DemoMemoryProtectionView`；MainDemo 不再承载旧 `Core → 1.10` 页面。`DemoMemoryProtectionWallet` 当前通过 `IFileFragmentManager` 读取普通整数 DTO，这是存量 Manager 依赖，不是允许新业务复制的存储接线；遵守本 Skill 的消费入口门。可查阅普通 DTO、受保护字段、失败后停止结算/保存与关闭释放的策略，单独验证本次内存接入；真实业务仍使用自己的存档格式、范围规则与可信恢复来源，固定演示初值不构成真实余额恢复策略。
+本包随附 `MemoryProtectionDemo`，开发态位于 [Assets/Samples/MemoryProtectionDemo（定位）](../../../../Docs/START_HERE.md#先确定框架位置与文档入口)，消费态先从本包的 Samples 导入。示例命名空间是 `NovaFramework.Memory.Protection.Samples.Runtime`，入口为 `DemoMemoryProtectionView`；MainDemo 不再承载旧 `Core → 1.10` 页面。`DemoMemoryProtectionWallet` 当前通过 `IFileFragmentManager` 读取普通整数 DTO，这是存量 Manager 依赖，不是允许新业务复制的存储接线；遵守本 Skill 的消费入口门。可查阅普通 DTO、受保护字段、失败后停止结算/保存与关闭释放的策略，单独验证本次内存接入；真实业务仍使用自己的存档格式、范围规则与可信恢复来源，固定演示初值不构成真实余额恢复策略。
 
 该 Demo 的 Editor 桥会反射 Nova 自有状态，仅为本页字段模拟校验失败或执行单字段轮换；它不是消费端公开能力，不复制到业务，也不能作为 ACTk 算法篡改、自动批次轮换或 Player 验收证据。
 

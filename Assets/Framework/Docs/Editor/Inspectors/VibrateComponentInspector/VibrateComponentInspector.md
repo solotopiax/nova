@@ -4,7 +4,7 @@
 
 ## 两条独立导出链
 
-Emphasis 使用 `VibrateEmphasisTemplate.xlsx`、EmphasisSourceDirPath 与 EmphasisUnitsSettings；Custom 使用 `VibrateCustomTemplate.xlsx`、CustomSourceDirPath 与 CustomUnitsSettings。两区共享 DataFormat，格式切换同步两区标准数据后缀，但不立即导出、不改变资源地址；仍须分别执行对应区域导出。
+Emphasis 使用 [VibrateEmphasisTemplate.xlsx](../../../../Templates/VibrateEmphasisTemplate.xlsx)、EmphasisSourceDirPath 与 EmphasisUnitsSettings；Custom 使用 [VibrateCustomTemplate.xlsx](../../../../Templates/VibrateCustomTemplate.xlsx)、CustomSourceDirPath 与 CustomUnitsSettings。两区共享 DataFormat，格式切换同步两区标准数据后缀，但不立即导出、不改变资源地址；仍须分别执行对应区域导出。
 
 `DrawVibrateSourceDataOperations` 以准确的 Emphasis Foldout key 选择 isEmphasis，其余 key 走 Custom，不能把它当成任意扩展区域接口。目录选择是延迟刷新，部分 GUI 变量在本帧编辑之前采样；目录文本、Unit 数量或配置目录存在都不是 schema/权限/资源就绪证明。
 

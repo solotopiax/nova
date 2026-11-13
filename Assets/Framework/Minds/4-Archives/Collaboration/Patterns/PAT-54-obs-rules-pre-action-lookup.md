@@ -32,6 +32,8 @@ related:
 
 # PAT-54：改代码前必先扫 obs PAT 索引 + rules（禁凭记忆 / 禁沿袭老代码）
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 适用场景（When）
 
 - AI 在 Nova 项目内对任一**已有规范覆盖区域**（Inspector / EditorUtil / Manager / Procedure / SDK Plugin / 配置序列化 / UPM 等）做新增或修改

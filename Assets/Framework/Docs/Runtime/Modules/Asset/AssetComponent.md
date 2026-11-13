@@ -85,6 +85,14 @@
 
 使用内置 Manager 时，`ClearUnusedCacheAsync()` 会在清理前检查目标包实际 Manifest；未就绪或底层操作报告失败会抛异常，组件门面原样透传。已经取消的令牌不会启动清理；清理开始后的取消只停止等待，不代表磁盘删除已停止。正常返回仍需结合实际文件前后结果确认清理范围和释放空间。
 
+## 按需选择资源包
+
+原 `Load*Sync/Async` 继续使用默认包。需要同地址不同内容包或 DLC 时，使用 `LoadFromPackage*`、`LoadSubsFromPackage*`、`LoadAllFromPackage*`、`LoadRawFromPackage*`、`LoadSceneFromPackage*`，前两参为精确 `package, location`；不会切换默认包，也不会自动准备清单。完整方法族、兼容性、取消与释放示例见 [IAssetPackageLoader](AssetManager/Interfaces/IAssetPackageLoader.md)。
+
+该能力通过独立可选接口探测；旧自定义 `IAssetManager` 无需新增成员，不支持新入口时明确抛 `NotSupportedException`。普通业务仍通过 `Nova.Asset` 调用。UI/Prefab 的既有打开与实例化入口不会因此自动选包。
+
+给 `Image` / `SpriteRenderer` 反复异步换图时，可使用 [SpriteBinding](SpriteBinding.md) 管理过期请求和当前 Handle。它通过 `Nova.Asset` 加载默认包，页面关闭/回池时清理；原有直接 Handle 用法保持不变。
+
 ## 高价值配置面
 
 ### 1. 运行模式

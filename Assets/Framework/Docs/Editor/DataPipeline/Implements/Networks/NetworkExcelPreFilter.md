@@ -31,7 +31,7 @@ NetworkHostKeys-Release --DevelopMode.Release--> _temp/NetworkHostKeys/NetworkHo
 - 非空地址必须是有效的 HTTP 或 HTTPS 绝对地址，首尾不能有空格，末尾不能有斜杠。
 - 主、备用域名同时填写时，必须使用相同协议。
 
-`Templates/NetworkHostKeysTemplate.xlsx` 的 Debug/Release 两个 Sheet 均提供可选 `FallbackValue` 列，默认为空。`XXXXX` 是模板占位符，使用前必须将主域名替换为实际 HTTP(S) 地址。模板本身没有项目导出配置；复制为项目正式表源并接入 `HostKeySettings` 后，才执行正式导出与运行时验证。
+[Templates/NetworkHostKeysTemplate.xlsx](../../../../../Templates/NetworkHostKeysTemplate.xlsx) 的 Debug/Release 两个 Sheet 均提供可选 `FallbackValue` 列，默认为空。`XXXXX` 是模板占位符，使用前必须将主域名替换为实际 HTTP(S) 地址。模板本身没有项目导出配置；复制为项目正式表源并接入 `HostKeySettings` 后，才执行正式导出与运行时验证。
 
 ## NetCmds 规则
 

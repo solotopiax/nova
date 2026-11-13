@@ -33,7 +33,7 @@ related:
 | 层级 | 文件 | 作用 |
 |---|---|---|
 | `L0` | `ARCHITECTURE.md` | 框架总览 |
-| `L1` | `Runtime.md` / `Editor.md` | Runtime / Editor 导航 |
+| `L1` | [Runtime.md](../../../Docs/Runtime/Runtime.md) / [Editor.md](../../../Docs/Editor/Editor.md) | Runtime / Editor 导航 |
 | `L2` | 各类 `<ClassName>.md` | 类、接口、窗口、组件事实说明 |
 | 入口 | `INDEX.md` | 全局入口与任务导航 |
 

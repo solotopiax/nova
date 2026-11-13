@@ -19,6 +19,11 @@ namespace NovaFramework.Runtime
     internal interface INetworkReadySignal
     {
         /// <summary>
+        /// Inspector 配置的启动 GM 单次请求超时（秒）；主备请求与重试分别计时。
+        /// </summary>
+        float StartupAppConfigRequestTimeout { get; }
+
+        /// <summary>
         /// 等待 HostKey 与 NetCmd 路由成功构建；失败加载可重试，只有首次成功才完成信号。
         /// </summary>
         /// <param name="ct">等待生命周期取消令牌。</param>

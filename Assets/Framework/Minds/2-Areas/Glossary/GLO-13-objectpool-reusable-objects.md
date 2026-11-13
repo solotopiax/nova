@@ -50,6 +50,6 @@ finally { pool.Put(obj); }
 
 ## 来源与验证
 
-- `Assets/Framework/Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/IObjectPool.cs`：`Register / CanGet / Get / Put / Release` 接口与池参数。
-- `Assets/Framework/Scripts/Runtime/Modules/ObjectPool/Managers/Interfaces/`：`CreateSingleGettingObjectPool / CreateMultiGettingObjectPool` 两个创建入口。
+- [Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/IObjectPool.cs](../../../Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/IObjectPool.cs)：`Register / CanGet / Get / Put / Release` 接口与池参数。
+- [Scripts/Runtime/Modules/ObjectPool/Managers/Interfaces/](../../../Scripts/Runtime/Modules/ObjectPool/Managers/Interfaces)：`CreateSingleGettingObjectPool / CreateMultiGettingObjectPool` 两个创建入口。
 - MOC-ObjectPool：两层池化职责图谱。

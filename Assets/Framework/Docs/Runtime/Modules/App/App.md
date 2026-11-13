@@ -3,7 +3,7 @@
 **命名空间**：`NovaFramework.Runtime`  
 **全局访问**：`Nova.App`
 
-App 模块负责大版本检查、更新提示路由、跳商店与 APK 下载。当前事实以 `Assets/Framework/Scripts/Runtime/Modules/App/` 为准，旧的 `Launch` 命名不再代表独立模块。
+App 模块负责大版本检查、更新提示路由、跳商店与 APK 下载。当前事实以 [Scripts/Runtime/Modules/App/](../../../../Scripts/Runtime/Modules/App/) 为准，旧的 `Launch` 命名不再代表独立模块。
 
 ## 当前目录结构
 

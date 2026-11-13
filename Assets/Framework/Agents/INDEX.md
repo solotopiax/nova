@@ -4,6 +4,8 @@
 
 首次了解这些概念时，先读 [用人话理解 Skill、Action 与 MCP](../Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md)：Skill 安排任务，Action 执行具体操作，MCP 传递工具请求；Router、Workflow、Operation 是三种 Skill。
 
+本页的 `<FrameworkRoot>` 指当前项目实际解析的 `com.solotopia.nova.framework` 根目录；定位及规则编号引用统一见 [开发与 Agent 执行约束](../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md)。框架内文件使用同包相对链接，不把开发仓目录当作消费项目安装位置。
+
 ## 执行模型
 
 ```text
@@ -28,7 +30,7 @@
 
 `requires` 只表示某个 Workflow 内部的 Operation DAG，既不控制安装，也不控制全量同步。每次安装或升级 Nova 后，Catalog 的全部 Skill 仍会自动发现；自然语言任务只触发其中匹配的一项或少数组合。
 
-无依赖 Operation 可在同一 `references/contract.json` 的 `taskProfiles` 中定义独立任务分支；Workflow 分支还必须显式声明 `requires`，选择原依赖图中的 Operation 子集。任务只引用已授权的分支 ID，直接入口必须与分支白名单一致；选中子节点的输入、副作用和最低证据继续生效，未选子节点的任何执行入口不能借入。分支继承父及子节点原写入范围、禁止项、锁、幂等与确认规则，证据仍冻结完整父工作流和全部原依赖的 `SKILL.md/contract.json`。省略分支继续原完整合同。 Unity 自动同步器与 Python 校验器都在建立投影前校验分支及完整原依赖：未选子节点入口即使也列在父契约中，仍必须显式选中该子节点；父与已选子节点的外部、凭据和构建门不能省略。
+无依赖 Operation 可在同一 `references/contract.json` 的 `taskProfiles` 中定义独立任务分支；Workflow 分支还必须显式声明 `requires`，选择原依赖图中的 Operation 子集。任务只引用已授权的分支 ID，直接入口必须与分支白名单一致；选中子节点的输入、副作用和最低证据继续生效，未选子节点的任何执行入口不能借入。分支继承父及子节点原写入范围、禁止项、锁、幂等与确认规则，证据仍冻结完整父工作流和全部原依赖的 [SKILL.md / references/contract.json（按 Skill 定位）](Skills/)。省略分支继续原完整合同。 Unity 自动同步器与 Python 校验器都在建立投影前校验分支及完整原依赖：未选子节点入口即使也列在父契约中，仍必须显式选中该子节点；父与已选子节点的外部、凭据和构建门不能省略。
 
 Tracks 的 `tracks-source-text` 分支显式选择空子依赖，仅通过共享表源 CLI 维护项目自有既有事件页文字，以真实源表、收据、Verify 和清场验收；结构、正式汇总、SDK 初始化与厂商结果另验。
 
@@ -48,18 +50,17 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 
 | 位置 | 责任 |
 |---|---|
-| `Assets/Framework/Agents/Skills/<skill-id>/` | 开发态和消费态共享的唯一 Git 真源；仅存项目组 `nova-project-*` Skill，并保持一层平铺 |
-| `PackageInfo.resolvedPath/Agents/Skills/<skill-id>/` | 已安装 Framework 包内的只读真源快照，来自同一份 Git 真源 |
-| `<Nova 开发仓>/.agents/skills/nova-project-*/` | 开发仓打开 Unity 时从 `Assets/Framework/Agents/` 生成的受管同步副本（简称“投影”），用于快速验证消费态发现效果；可与根目录既有开发态 `nova-*` Skill 并列 |
-| `<consumer project>/.agents/skills/<skill-id>/` | 首次打开 Unity 后自动生成的全量受管同步副本（简称“投影”），仅供宿主和 Agent 发现，不是第二真源 |
-| `catalog.json` | 全量 Skill 清单、能力分组、用户旅程、副作用、最低证据与机器可选项 |
-| `coverage.json` | 功能族、Docs、既有工具与用户任务的导航；任务引用真实 Skill/入口，不维护第二份安全契约或 Action Catalog |
-| `api-index.jsonl` | 发布器自动生成的便携符号/输入定位索引；开发快照与 SQLite 缓存只放 `Library/Nova/AgentIndex/` |
-| `Schemas/` | Catalog、Skill 与任务覆盖的可校验结构 |
+| [Agents/Skills/](Skills/) 下的 `<skill-id>/` | 开发态由 Git 维护真源，消费态为当前已解析包中的只读快照；仅存项目组 `nova-project-*` Skill，并保持一层平铺 |
+| [&lt;Nova 开发仓&gt;/.agents/skills/nova-project-*/（项目发现入口）](../Docs/START_HERE.md#先确定框架位置与文档入口) | 开发仓打开 Unity 时从框架根的 [Agents/](./) 生成的受管同步副本（简称“投影”），用于快速验证消费态发现效果；可与根目录既有开发态 `nova-*` Skill 并列 |
+| [&lt;consumer project&gt;/.agents/skills/&lt;skill-id&gt;/（项目发现入口）](../Docs/START_HERE.md#先确定框架位置与文档入口) | 首次打开 Unity 后自动生成的全量受管同步副本（简称“投影”），仅供宿主和 Agent 发现，不是第二真源 |
+| [catalog.json](catalog.json) | 全量 Skill 清单、能力分组、用户旅程、副作用、最低证据与机器可选项 |
+| [coverage.json](coverage.json) | 功能族、Docs、既有工具与用户任务的导航；任务引用真实 Skill/入口，不维护第二份安全契约或 Action Catalog |
+| [api-index.jsonl（定位）](../Docs/Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) | 发布器自动生成的便携符号/输入定位索引；开发快照与 SQLite 缓存只放 [Library/Nova/AgentIndex/（定位）](../Docs/Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) |
+| [Schemas/](Schemas/) | Catalog、Skill 与任务覆盖的可校验结构 |
 
-`Assets/Framework/Agents/` 只管理项目组消费态的 `nova-project-*` 命名空间；框架开发态 Skill 继续留在仓库根 `.agents/skills/` 的既有 `nova-*` 命名空间，不进入 Catalog 或 UPM 包。开发仓与消费项目使用同一 Catalog 和同一份 Skill 内容：前者用于快速验证，后者是正式项目组使用路径。
+框架根的 [Agents/](./) 只管理项目组消费态的 `nova-project-*` 命名空间；框架开发态 Skill 继续留在 Nova 开发仓根 [.agents/skills/（项目发现入口）](../Docs/START_HERE.md#先确定框架位置与文档入口) 的既有 `nova-*` 命名空间，不进入 Catalog 或 UPM 包。开发仓与消费项目使用同一 Catalog 和同一份 Skill 内容：前者用于快速验证，后者是正式项目组使用路径。
 
-用户安装或升级 Nova 后，首次打开 Unity 时 Editor 会在编译和包更新结束后检查，并按需把包内全部 Catalog Skill 同步为项目根 `.agents/skills/` 下的受管同步副本；不需要执行 `sync` 或手工复制。该目录不是第二真源，不能反向编辑真源。
+用户安装或升级 Nova 后，首次打开 Unity 时 Editor 会在编译和包更新结束后检查，并按需把包内全部 Catalog Skill 同步为项目根 [.agents/skills/（项目发现入口）](../Docs/START_HERE.md#先确定框架位置与文档入口) 下的受管同步副本；不需要执行 `sync` 或手工复制。该目录不是第二真源，不能反向编辑真源。
 
 同一流程还会自动安装、绑定并复核五项 AI 工具链依赖，未完成项自动重试，无需项目组补装。当前聊天的工具可见性仍需现场核验。NovaSpark 首装、配置矫正及手动升级后的触发与重试规则见 [AI 工具链安装](../Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
 
@@ -69,13 +70,14 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 
 | Skill | 类型 | 面向的自然语言任务 | 最低证据 |
 |---|---|---|---|
+| `nova-project-development` | Router | 比较玩法方案、梳理复杂变化与阶段依赖；日常原则由共同入口读取，明确任务直接交已有操作 | 静态梳理；实际交付继承所选任务证据 |
 | `nova-project-router` | Router | 不确定应调用哪个消费端能力时路由任务 | 静态定位 |
 | `nova-project-check-readiness` | Operation | 接手、接入或修改前评估项目就绪条件 | 静态定位 |
 | `nova-project-diagnose-startup` | Operation | 编译失败、Play 门禁、黑屏或启动链故障的只读诊断 | 静态定位 |
 | `nova-project-setup-entry-scene` | Operation | 配置入口场景、Build Settings、Nova 根和 Content 职责 | Play |
 | `nova-project-configure-runtime` | Operation | 检查、规范化或修改一个 Master 的三维配置及已开放面板，再正式导出 `ConfigRuntimeSO` | 编译；仅保存不代替 Runtime 导出 |
 | `nova-project-edit-settings` | Operation | 解释或修改已有 Scene、Prefab、普通 SO 的字段与 UnityEvent，并核对保存 | 精确字段与文件保存；游戏行为另验收 |
-| `nova-project-configure-pipeline` | Operation | 创建、克隆或配置已保存 Pipify Batch；按明确意图运行本地或远端步骤 | 配置保存；运行须有实际步骤/产物或外部证据 |
+| `nova-project-configure-pipeline` | Operation | 创建、克隆或配置已保存 Pipify Batch；按明确意图运行步骤，含可选图集预演/生成/恢复 | 配置保存；运行须有实际步骤/产物或外部证据 |
 | `nova-project-manage-upm-package` | Operation | 计划、确认并验证单个最新版本安装/升级或 direct dependency 卸载 | UPM 精确解析状态 |
 | `nova-project-upgrade-framework` | Operation | 由包外 UPM 宿主升级 direct Nova Framework，并在重载后验证 Skills 与 MCP 恢复 | 编译 + UPM/Skill/MCP 恢复状态 |
 | `nova-project-export-tables` | Operation | 直接导出当前 TableSettings 的全部或指定代码、数据 | 编译 |
@@ -83,9 +85,9 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 | `nova-project-update-localization` | Operation | 更新或追加本地化 Key、语言、字体与绑定，复用同一源表 CLI 并切换语言验证 | Play |
 | `nova-project-psd2ugui` | Operation | 从 PSD/PSB 制作 uGUI，查询或修改配置/编辑树、同步来源、导图及 AI 识别应用；业务页面另接既有 UI Skill | 精确资产/产物与本次视觉证据；业务接入另验 |
 | `nova-project-ui-create-view` | Operation | 创建并注册业务 UIView、Prefab 与 UI 导出项 | 编译 |
-| `nova-project-update-ui-view` | Operation | 定向更新已注册 UIView、Prefab 或注册内容 | 编译 |
+| `nova-project-update-ui-view` | Operation | 定向更新 UIView/Prefab，批量控件绑定、可选字段生成及页面生命周期接入 | 编译；生成、绑定与必要 Play 分别验收 |
 | `nova-project-data-driven-ui` | Workflow | 编排表接入和页面创建，完成数据驱动 UI 闭环 | Play |
-| `nova-project-integrate-resource` | Operation | 接入业务资源、Collector、加载释放链，或处理资源密钥与 Editor 缓存 | 按模式：静态配置/文件证据；资源加载须 Play，Bundle/Player 链分别验收 |
+| `nova-project-integrate-resource` | Operation | 接入资源/Collector/释放链、可选图片绑定或内容包加载，处理资源密钥与缓存 | 按模式：静态配置/文件证据；资源加载须 Play，Bundle/Player 链分别验收 |
 | `nova-project-integrate-network-api` | Operation | 接入已确认协议的业务 HTTP API，并验证路由、请求与响应 | Play |
 | `nova-project-integrate-sound` | Operation | 接入已确认 BGM、音效、声音表、声音组和业务触发，并验证实际播放 | Play |
 | `nova-project-integrate-vibration` | Operation | 接入 Emphasis / Custom 振动数据、业务触发与停止，并验证真机体感 | 真机反馈 |
@@ -104,31 +106,33 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 | `nova-project-preflight-build` | Operation | 构建前只读检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置 | 静态规则 |
 | `nova-project-resolve-android-dependencies` | Operation | 冻结 EDM4U 图并受控重建、核验 Android 依赖输出 | 解析状态与产物摘要 |
 
-当前 Catalog 共 34 项。Table 标量源修改复用随包 `nova_table_source.py`，单次导出由 `nova-project-export-tables` 调用受控 Action；完整表接入由 `nova-project-integrate-table` 负责。普通对象配置、三维 Master 配置与 Pipify Batch 使用各自既有入口，参数、渠道和平台差异进入同一 Skill 的 reference，不逐项新增 Skill。Framework 自升级由包外 UPM 宿主跨 reload 执行，其余包复用通用包管理。HybridCLR 两项分别处理业务 DLL compile/copy/import 与 Generate All/link.xml，最终 Player 后的 `CopyAotDlls` 仍独立。CDN 部署复用 Pipify 与平台部署参考；更大的 Workflow 只在实际操作稳定后按依赖组合。
+当前 Catalog 共 35 项。Table 标量源修改复用随包 [nova_table_source.py](Tools/nova_table_source.py)，单次导出由 `nova-project-export-tables` 调用受控 Action；完整表接入由 `nova-project-integrate-table` 负责。普通对象配置、三维 Master 配置与 Pipify Batch 使用各自既有入口，参数、渠道和平台差异进入同一 Skill 的 reference，不逐项新增 Skill。Framework 自升级由包外 UPM 宿主跨 reload 执行，其余包复用通用包管理。HybridCLR 两项分别处理业务 DLL compile/copy/import 与 Generate All/link.xml，最终 Player 后的 `CopyAotDlls` 仍独立。CDN 部署复用 Pipify 与平台部署参考；更大的 Workflow 只在实际操作稳定后按依赖组合。
 
 ## 当前限制
 
 - Skill 定义与 Framework UPM 同版本发布，不维护独立 Skill 版本。
 - 自动同步遇到冲突或来源问题时只做安全项，并以 `partial` 提示项目组处理；不要把受管同步副本当作可反向编辑的来源。
-- 当前包含 34 个实验性 Skill；新增 Skill 前先复用领域 API、已有 Action/CLI/Pipify、Operation 参数/reference 和 Workflow，只有独立目标与风险确实无法容纳时才新增。
+- 当前包含 35 个实验性 Skill；新增 Skill 前先复用领域 API、已有 Action/CLI/Pipify、Operation 参数/reference 和 Workflow，只有独立目标与风险确实无法容纳时才新增。
 - 静态检查、Unity 编译、Play 验证和真机/服务端证据彼此独立；报告必须标明实际达到的层级。
 
 ## 功能、参数与复用入口
 
-函数与参数说明直接来自源码/XML和所属 Docs；`coverage.json` 与自动生成的便携符号索引提供导航；任务按 [执行与清场约束](../Docs/START_HERE.md#执行任务与清场的共同约束)在本次验收并于对话报告。知识查询和结构检查不代表运行通过。
+函数与参数说明直接来自源码/XML和所属 Docs；[coverage.json](coverage.json) 与自动生成的便携符号索引提供导航；任务按 [执行与清场约束](../Docs/START_HERE.md#执行任务与清场的共同约束)在本次验收并于对话报告。知识查询和结构检查不代表运行通过。
 
-`coverage.json` 维护功能族到源码、Docs、现有 Skill/Adapter、用户任务及限制的映射，`Tools/nova_capabilities.py` 负责确定性清单和查询。新增字段、Inspector/Window 操作、Excel 或 SDK/Kit 能力优先进入已有功能族与操作契约；参数和固定导出使用现有工具，不为每个参数新增顶层 Skill。Agent 先取得当前任务说明和契约；固定操作直接复用真实 Action/CLI/Pipify，开放业务实现才进入已授权项目源码。
+[coverage.json](coverage.json) 维护功能族到源码、Docs、现有 Skill/Adapter、用户任务及限制的映射，[Tools/nova_capabilities.py](Tools/nova_capabilities.py) 负责确定性清单和查询。新增字段、Inspector/Window 操作、Excel 或 SDK/Kit 能力优先进入已有功能族与操作契约；参数和固定导出使用现有工具，不为每个参数新增顶层 Skill。Agent 先取得当前任务说明和契约；固定操作直接复用真实 Action/CLI/Pipify，开放业务实现才进入已授权项目源码。
+
+先按 [框架位置与文档入口](../Docs/START_HERE.md#先确定框架位置与文档入口) 定位当前物理根，并把真实路径赋给当前终端变量 `FRAMEWORK_ROOT`；以下命令引用该变量，其余参数按本次实际输入填写。
 
 ```text
-python3 -B "<resolved Framework package>/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --kind features --detail summary --json
-python3 -B "<resolved Framework package>/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --feature <id> --kind fields --detail summary --json
-python3 -B "<resolved Framework package>/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --kind tasks --query "存档" --limit 25 --detail summary --json
-python3 -B "<resolved Framework package>/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --kind tasks --feature runtime.Persist --detail summary --json
-python3 -B "<resolved Framework package>/Agents/Tools/nova_capabilities.py" --root <projectRoot> describe <feature-id> --detail full --json
-python3 -B "<resolved Framework package>/Agents/Tools/nova_capabilities.py" --root <projectRoot> describe <task-id> --detail full --json
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --kind features --detail summary --json
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --feature <id> --kind fields --detail summary --json
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --kind tasks --query "存档" --limit 25 --detail summary --json
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_capabilities.py" --root <projectRoot> inventory --kind tasks --feature runtime.Persist --detail summary --json
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_capabilities.py" --root <projectRoot> describe <feature-id> --detail full --json
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_capabilities.py" --root <projectRoot> describe <task-id> --detail full --json
 ```
 
-先用 `summary` 筛选，再以精确 ID 的 `full` 读取当前任务；默认 `summary`，精确展开正文时使用 `--detail full`。Windows 使用 `py -3`；消费项目由实际解析 Framework 定位随包工具，必要时传 `--agents-root "<resolved Framework package>/Agents"`。源码声明、默认值和文档说明与当前生效配置是不同证据；查询不证明当前值、业务运行或自动执行已完成。维护者使用 `check --json` 检查映射完整性，消费项目不依赖主仓 `.nova/`、`Minds/` 或未安装 SDK。
+先用 `summary` 筛选，再以精确 ID 的 `full` 读取当前任务；默认 `summary`，精确展开正文时使用 `--detail full`。Windows 使用 `py -3`；消费项目由实际解析 Framework 定位随包工具，必要时传 `--agents-root "$FRAMEWORK_ROOT/Agents"`。源码声明、默认值和文档说明与当前生效配置是不同证据；查询不证明当前值、业务运行或自动执行已完成。维护者使用 `check --json` 检查映射完整性，消费项目不依赖主仓 `.nova/`、开发态工具或未安装 SDK；设计依据可按[共同知识入口](../Docs/START_HERE.md#设计依据与历史知识)只读查询当前包 Minds，不用历史笔记替代任务合同。
 
 消费查询严格使用实际安装包源；开发仓工具、未安装扩展和未导入 Sample 为 `not_applicable`，不计消费者待补。已解析包缺源码/Docs，或导入 Sample 的版本、manifest 与精确脚本 GUID 绑定不符仍阻断，残留开发目录和同名文件不能覆盖真实包。已导入 Sample 的静态模板审查不证明当前游戏运行。
 

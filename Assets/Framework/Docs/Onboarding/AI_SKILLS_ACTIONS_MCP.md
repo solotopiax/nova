@@ -8,7 +8,9 @@
 
 **「Nova 协作体系」是 Nova 中规范约束、工作安排、任务执行指导、当前事实说明与长期知识联动的统一称谓。** 它覆盖从理解需求、准备环境与物料、选择入口，到实施、验证、知识沉淀和交付的协作闭环。
 
-对这套整体能力的说明、维护、复盘和交付统一使用「Nova 协作体系」，不再并列罗列组成载体。需要定位具体文件、说明某一执行入口或区分职责时，仍使用准确名称和路径，例如“已更新 Nova 协作体系，具体规则见 `Docs/Onboarding/VALIDATION.md`”。
+[NA 共用开发约束](DEVELOPMENT_CONSTRAINTS.md) 属于 Nova 协作体系，承载框架开发与消费端共用的执行底线；仓库专属授权、具体工具步骤和历史决策仍在各自职责位置维护。新发现的共用要求按 [主动沉淀规则](DEVELOPMENT_CONSTRAINTS.md#5-共用约束的主动沉淀) 归入 NA。
+
+对这套整体能力的说明、维护、复盘和交付统一使用「Nova 协作体系」，不再并列罗列组成载体。需要定位具体文件、说明某一执行入口或区分职责时，仍使用准确名称和路径，例如“已更新 Nova 协作体系，具体规则见 [Docs/Onboarding/VALIDATION.md](VALIDATION.md)”。
 
 这是统一称谓，不新增系统、目录、工具或规则优先级；各项内容仍由原有职责位置唯一维护。整体名称也不表示全部工具自动执行或所有验收已经通过；具体执行和证据范围仍须按任务核对。
 
@@ -45,7 +47,7 @@ flowchart TD
 
 一个 Workflow 可以组织多个 Operation，一个 Operation 可以调用多个 Action，同一个 Action 也可以被多个 Skill 复用。只读分析或工作区文件任务可能只使用读取、编辑或 CLI 工具，不经过 Unity MCP。
 
-“这个参数是什么意思”“哪里有对应功能”可以先用随包 `Agents/Tools/nova_capabilities.py` 的 `inventory` / `describe` 查询功能、源码参数声明、文档和现有工具入口，Router 再按结果选择任务。它展示的源码默认值不等于当前项目有效值，查询也不执行配置修改。
+“这个参数是什么意思”“哪里有对应功能”可以先用随包 [Agents/Tools/nova_capabilities.py](../../Agents/Tools/nova_capabilities.py) 的 `inventory` / `describe` 查询功能、源码参数声明、文档和现有工具入口，Router 再按结果选择任务。它展示的源码默认值不等于当前项目有效值，查询也不执行配置修改。
 
 Nova 按功能族维护这份映射，让一个 Skill、Action 或固定代码入口服务多个参数和任务。日常开发把参数与局部行为说明放在源码/XML，把跨方法流程放在已有 Docs，再同步能力导航、执行契约与验收要求；已有接口能完成的固定操作直接复用，新增顶层 Skill 需要新的独立用户任务和验收边界。
 
@@ -134,4 +136,4 @@ AI 读取 `nova-project-onboard-sdk-kit` 这个 Workflow，组织包安装、配
 - [Agent 快速入口](../START_HERE.md)：自动发现、项目边界和日常任务入口。
 - [EditorUtil.AgentActions](../Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)：Action 的计划、执行、验证与恢复协议。
 - [Framework 到中立契约的适配实现](../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActionContractProvider.cs)：把请求转交 `EditorUtil.AgentActions`。
-- Nova MCP 包内 `Nova/Docs/INDEX.md` 和 `Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs`：当前工具注册、连接与分发实现。消费项目从已安装的 `com.solotopia.nova.framework.mcp` 包查看；开发仓对应 `UPMPackages/com.solotopia.nova.framework.mcp/`。
+- Nova MCP 包内 [按包定位：Nova/Docs/INDEX.md](../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 和 [按包定位：Nova/UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs](../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)：当前工具注册、连接与分发实现。消费项目从已安装的 `com.solotopia.nova.framework.mcp` 包查看；开发仓对应 [按包定位：UPMPackages/com.solotopia.nova.framework.mcp/](../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)。

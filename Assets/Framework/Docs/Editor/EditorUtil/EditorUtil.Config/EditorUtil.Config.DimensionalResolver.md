@@ -13,7 +13,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.cs` | `EditorUtil.Config.DimensionalResolver` | 顶层类维度取数器（含嵌套结果类 `HybridCLRResult` / `YooAssetResult`） |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.cs) | `EditorUtil.Config.DimensionalResolver` | 顶层类维度取数器（含嵌套结果类 `HybridCLRResult` / `YooAssetResult`） |
 
 ---
 

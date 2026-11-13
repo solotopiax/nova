@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `IFsm.cs` | 接口定义 |
+| [IFsm.cs](../../../../Scripts/Runtime/Core/Fsm/IFsm.cs) | 接口定义 |
 
 ## 关键属性
 

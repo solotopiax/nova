@@ -2,11 +2,11 @@
 
 ## 定位
 
-本包是供 Nova Editor CDN 内容部署使用的阿里云 OSS C# SDK v2 工具包，不属于 Nova `SDKManager` 插件，也不是 Runtime SDK。SDK DLL 与桥接程序集位于 `Nova/Editor/`，不会参与 Player 构建。
+本包是供 Nova Editor CDN 内容部署使用的阿里云 OSS C# SDK v2 工具包，不属于 Nova `SDKManager` 插件，也不是 Runtime SDK。SDK DLL 与桥接程序集位于 [Nova/Editor/](../Editor/)，不会参与 Player 构建。
 
 ## 使用与降级
 
-- Nova Framework 不在 `package.json` 中强制依赖本包；只有需要“资源部署”或“白名单部署”时才安装。
+- Nova Framework 不在 [package.json](../../package.json) 中强制依赖本包；只有需要“资源部署”或“白名单部署”时才安装。
 - `NovaFramework.Editor` 通过 `versionDefines` 在包存在时编译 OSS 强类型调用；包缺失时 Framework 和 ConfigWindow 仍可正常编译、打开。
 - ConfigWindow 会显示 Warning HelpBox 和“打开 UPM 安装 OSS”按钮，并仅禁用两项 OSS 部署操作；Cloudflare 缓存清理保持可用。
 - Pipify 的 `cdn.deploy` 与 `cdn.whitelist.deploy` 在缺包时抛出明确的安装错误，避免无声跳过部署。

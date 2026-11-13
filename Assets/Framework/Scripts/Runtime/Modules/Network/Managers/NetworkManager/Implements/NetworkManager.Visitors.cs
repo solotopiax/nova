@@ -90,6 +90,16 @@ namespace NovaFramework.Runtime
         private bool m_IsReady;
 
         /// <summary>
+        /// 启动 GM 应用配置每次物理请求的超时时间（秒），由 HttpSettings 经初始化配置注入。
+        /// </summary>
+        private float m_StartupAppConfigRequestTimeout = 5f;
+
+        /// <summary>
+        /// 向框架内部启动等待者提供单次请求超时，不改变 Network.LoadAsync 的加载职责。
+        /// </summary>
+        public float StartupAppConfigRequestTimeout => m_StartupAppConfigRequestTimeout;
+
+        /// <summary>
         /// 服务器时间戳（UTC0，毫秒），由 FetchServerTimeAsync 写入。
         /// </summary>
         private long m_ServerTime;

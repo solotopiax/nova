@@ -11,7 +11,7 @@
 
 | 文件 | 子类 | 说明 |
 |------|------|------|
-| `EditorUtil.cs` | `EditorUtil.Initializer` | `[InitializeOnLoad]`：注入 TxtHelper + LogHelper |
+| [EditorUtil.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.cs) | `EditorUtil.Initializer` | `[InitializeOnLoad]`：注入 TxtHelper + LogHelper |
 | [`EditorUtil.Draw/`](EditorUtil.Draw/EditorUtil.Draw.md) | `EditorUtil.Draw.*` | Inspector GUI 绘制工具集（Label/Field/Button/Toggle/Slider/Foldout/HelpBox/Toolbar/Layout） |
 | [`EditorUtil.FileSystem/`](EditorUtil.FileSystem/EditorUtil.FileSystem.md) | `EditorUtil.FileSystem` | 文件系统封装（路径转换、目录创建、AssetDatabase 刷新） |
 | [`EditorUtil.Serializer/`](EditorUtil.Serializer/EditorUtil.Serializer.md) | `EditorUtil.Serializer` | Unity 序列化属性读写与场景定位辅助 |
@@ -83,13 +83,13 @@ public static class Initializer
 
 `EditorUtil.Placeholder` 连接纯占位符解析器与编辑器配置。显式 platform/channel 的 FromConfigMaster 重载仍要求非空 master，但使用传入坐标；便捷重载才读取 master 当前坐标。它们不验证 None 坐标或包是否存在。Resolve 按显式上下文解析，已知 token 区分大小写，未知 token 原样保留。
 
-ResolveDefaultPackageName 从 canonical Nova.prefab 的序列化默认包名读取，缺失时取第一个包，再没有则空串，不查询场景实例或 Collector。ResolveFromActiveConfig 使用 WorkspaceActive、Application.version 和本次 DateTime.Now，不写资产；同一上下文内多个时间 token 一致，不同调用可能变化。最终路径仍需消费者核验范围与存在性。
+ResolveDefaultPackageName 从 canonical [Nova.prefab](../../../Prefabs/Nova.prefab) 的序列化默认包名读取，缺失时取第一个包，再没有则空串，不查询场景实例或 Collector。ResolveFromActiveConfig 使用 WorkspaceActive、Application.version 和本次 DateTime.Now，不写资产；同一上下文内多个时间 token 一致，不同调用可能变化。最终路径仍需消费者核验范围与存在性。
 
 ## 场景路由与帮助器初始化
 
 SceneRoute 只处理非构建中的 Single 场景打开事件，先 ReconcileScene，失败停止；成功后依次同步开发 Sample 的 BuildSettings、记录 Master、注入 YooAsset、记录 Pipify。后续异常直接传播，无跨步骤回滚，所以场景打开可能已改 BuildSettings 再注入失败。Additive 不切路由。
 
-唯一入口同步仅在已核 Framework 实际解析自本工程 Assets/Framework、场景和 Master 属于同个 Assets/Samples/<sample>、Master 位于该 Sample 的 Editor 目录且约定 `<sample>.unity` 存在时，覆盖为唯一 enabled 场景，不保留原多场景列表。已注册包若解析在别处立即 false；只有未注册才用框架包名、仓库标记和 manifest 精确本地引用共同回退。路径比较不解析符号链接。Master 的日志只核有效 AssetPath/GUID，不要求 Sample 位置，也不证明保存或注入成功。
+这项自动同步仅服务 Nova 开发仓：只有已核 Framework 实际解析自本工程 `Assets/Framework`、场景和 Master 属于同个 `Assets/Samples/<sample>`、Master 位于该 Sample 的 Editor 目录且约定 `<sample>.unity` 存在时，覆盖为唯一 enabled 场景，不保留原多场景列表。已注册包若解析在别处立即 false；只有未注册才用框架包名、仓库标记和 manifest 精确本地引用共同回退。路径比较不解析符号链接。Master 的日志只核有效 AssetPath/GUID，不要求 Sample 位置，也不证明保存或注入成功。
 
 EditorUtil 静态初始化按准确类型名创建并 Initialize TxtHelper、LogHelper，逐项设置全局帮助器；异常不统一捕获，可能前项已设置、后项失败，不能当作 Runtime 初始化完整完成。
 

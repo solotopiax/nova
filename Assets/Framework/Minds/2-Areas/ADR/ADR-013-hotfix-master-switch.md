@@ -67,7 +67,7 @@ ProcedureLaunch → ProcedureSplash → ProcedureCheckVersion
 
 在 `AssetManagerConfig` 新增 `public bool EnableHotfix = true;`，与 `QuitOnFailedOrCancel` / `MaxDownloadConcurrency` 等热更字段聚合。
 
-- **位置**：`Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs`
+- **位置**：[Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs)
 - **默认值**：`true`（既有项目零改动）
 - **读取入口**：`AssetComponent.EnableHotfix` 公开属性 + `Nova.Asset.EnableHotfix` 业务层只读暴露
 - **配置层归属**：Inspector 序列化字段（Foldout「热更配置」首位），抗远端下发
@@ -135,11 +135,11 @@ effectiveMode = EnableHotfix
 
 ### 静态验证（grep / 文件路径）
 
-- `AssetManagerConfig.EnableHotfix` 字段定义：`Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs`
-- `AssetComponent.EnableHotfix` 属性暴露：`Assets/Framework/Scripts/Runtime/Modules/Asset/AssetComponent.cs`
+- `AssetManagerConfig.EnableHotfix` 字段定义：[Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs)
+- `AssetComponent.EnableHotfix` 属性暴露：[Scripts/Runtime/Modules/Asset/AssetComponent.cs](../../../Scripts/Runtime/Modules/Asset/AssetComponent.cs)
 - `Nova.Asset.EnableHotfix` 业务层暴露：`Nova` 聚合器（具体路径由实施时确认）
-- `ProcedureSplash` 二分跳转：`Assets/Framework/Scripts/Runtime/Modules/Procedure/Procedures/ProcedureSplash.cs`
-- `AssetManager.BuildPlayModeOptions` PlayMode 覆盖：`Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs`
+- `ProcedureSplash` 二分跳转：[Scripts/Runtime/Modules/Procedure/Procedures/ProcedureSplash.cs](../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureSplash.cs)
+- `AssetManager.BuildPlayModeOptions` PlayMode 覆盖：[Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs)
 
 ### 运行时验证（Play Mode 双路径）
 

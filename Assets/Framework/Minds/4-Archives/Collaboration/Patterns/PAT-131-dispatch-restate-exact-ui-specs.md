@@ -59,4 +59,4 @@ related:
 
 - 规则源：候选补充至 `.claude/agents/team-leader.md`「派活 prompt 复述精确规范」条
 - 相关 Pattern：[[PAT-105-api-hint-near-element-split|PAT-105]]（深蓝色值权威源）、[[PAT-80-demo-view-pure-color-style|PAT-80]]（纯色块样式）、[[PAT-79-demo-view-portrait-layout|PAT-79]]（竖屏参数）、[[PAT-102-button-overlay-sub-hint-layout|PAT-102]]（按钮副提示布局）
-- 相关 memory：[[feedback_dispatch_restate_exact_ui_specs]]
+- 历史 memory 指针：`feedback_dispatch_restate_exact_ui_specs`（外部旧记忆，本仓无对应文件）；现行要求从 [Nova 协作入口](../../../../../../AGENTS.md) 查阅。

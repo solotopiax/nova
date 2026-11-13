@@ -50,7 +50,7 @@ Nova 的多个模块都使用 Excel 作为编辑期输入，但表格承载的�
 
 ## 验证依据
 
-- `Assets/Framework/Scripts/Editor/DataPipeline/AGENTS.md` 已明确 DataPipeline 不是大一统导出框架，并区分 Localization、Network 与 Config 的当前职责。
-- `Assets/Framework/Docs/Editor/DataPipeline/DataPipeline.md` 记录各模块当前不同的数据流和产物边界。
+- [Scripts/Editor/DataPipeline/AGENTS.md](../../../Scripts/Editor/DataPipeline/AGENTS.md) 已明确 DataPipeline 不是大一统导出框架，并区分 Localization、Network 与 Config 的当前职责。
+- [Docs/Editor/DataPipeline/DataPipeline.md](../../../Docs/Editor/DataPipeline/DataPipeline.md) 记录各模块当前不同的数据流和产物边界。
 - `ADR-054` 已证明 Network 的维度语义应回归 Config 模型，而不是长期固化在共享式 PreFilter 中。
 - 本决策由 Nova 项目维护者于 2026-07-17 明确确认。

@@ -11,7 +11,7 @@ TCP 明文协议网络消息，消息体为多条 UTF-8 字符串的二进制打
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.TcpMessage.cs` | TCP 明文消息定义 |
+| [WebSocketScope.TcpMessage.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.TcpMessage.cs) | TCP 明文消息定义 |
 
 ## 消息帧格式
 

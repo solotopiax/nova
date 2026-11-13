@@ -1,13 +1,13 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.2.3`
+> 当前版本：`0.2.4`
 
 MAX 广告聚合插件，提供广告展示服务。
 
-本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads@8.6.6` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 `package.json` 统一声明为 AppLovin 官方 UPM 依赖。
+本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads@8.6.6` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 [package.json](package.json) 统一声明为 AppLovin 官方 UPM 依赖。
 
-当前 `package.json` 将 Unity Ads Android / iOS adapter 均固定为 `4210001.0.0`，LINE iOS adapter 固定为 `3010102.0.0`。这些是 UPM adapter 包版本，不能直接当作其原生 SDK 版本。
+当前 [package.json](package.json) 将 Unity Ads Android / iOS adapter 均固定为 `4210001.0.0`，LINE iOS adapter 固定为 `3010102.0.0`。这些是 UPM adapter 包版本，不能直接当作其原生 SDK 版本。
 
 iOS 构建的 Nova 顺序 `44` 后处理会将 LINE、Unity Ads 原生 adapter 统一交给 CocoaPods，避免两项 SPM adapter 与其他 MAX Pods 同时生产 `AppLovinSDK.framework`，并保留 Firebase 等其他 SDK 的 SPM 配置。处理器不再限制固定 adapter 版本，Pod/SPM 版本从当前已安装包的官方依赖 XML 读取；依赖身份、结构和工程引用仍会检查。具体行为与恢复边界见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
@@ -20,14 +20,14 @@ Android 构建不再由 Nova 额外改写 SafeDK launcher manifest；Quality Ser
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.max": "0.2.3"
+    "com.solotopia.nova.framework.sdk.max": "0.2.4"
   }
 }
 ```
 
 本包固定依赖 Ad `1.2.1`、Framework `0.7.3` 和 MAX `8.6.6`，支持 Unity `6000.4.x`（最低 `6000.4.2f1`）；adapter 版本以 [package.json](./package.json) 为准。当前含 14 组 Android/iOS adapter 和 Yandex Android adapter，未声明 Yandex iOS。MAX 原厂包传递依赖 EDM4U，消费工程需提供对应 registry。
 
-项目组在 Nova PlugPals 使用内部云仓库安装本 Nova 包，需有对应内部 registry 的访问权限；窗口入口见 [PlugPals](../../Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md)。下方 AppLovin 与 OpenUPM 是原厂依赖的外网 registry，与 Nova 内部仓库分别配置，安装和原生依赖解析都需要相应网络可达。
+项目组在 Nova PlugPals 使用内部云仓库安装本 Nova 包，需有对应内部 registry 的访问权限；窗口入口见 [PlugPals](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Editor/Windows/PlugPalsWindow.md`）。下方 AppLovin 与 OpenUPM 是原厂依赖的外网 registry，与 Nova 内部仓库分别配置，安装和原生依赖解析都需要相应网络可达。
 
 Nova PlugPals 会把本包 `nova.scopedRegistries` 写到工程顶层 manifest；通过 Unity 原生 Package Manager 或直接改 manifest 安装时，需要合并以下 registry，保留项目已有条目：
 
@@ -54,7 +54,7 @@ Nova PlugPals 会把本包 `nova.scopedRegistries` 写到工程顶层 manifest�
 
 实际原生广告支持 Android/iOS；Editor 和其他平台使用 MAX 的 Editor 门面，不能视为真机广告验证。由于 Editor 门面不提供真实 ILRD 收益，Nova 会把 MAX 返回的未知/负收益占位值统一暴露为 `0`；Android/iOS Player 的正常正收益保持原值。配置 `AdPluginConfig.ChannelConfigs.Items` 中的 MAX 项并导出 `ConfigRuntimeSO` 后，由当前 `AdPlugin` 聚合层为新建的每个 MAX 渠道实例初始化一次，初始化完成不自动预载。AppKey 与 AdMob 平台 App ID 在构建期写入官方 `AppLovinSettings.asset`；当前构建处理器不校验广告组语法，运行时会跳过无效格式。完整构建链见 [构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md)。
 
-MAX 的收益协议通过父包 `AdChannelPluginBase.StartRevenueReport` 发送。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，在 `TrackMaxAdIlrd` 已派发分支调用；Banner 直接共享原 ILRD 累计金额和存档，无可用打点目标时协议同步等待。原始收益业务通知仍逐次触发，不重复发送协议。非 Banner 无可用 ILRD 目标时不发后台协议，也不保留补发队列。协议由 `AdRevenueReportNetService` 构造 `PbNetIAAReportReq`；`RevenuePaid` 不表示网络成功，详见 [Ad 基础包收益上报文档](../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+MAX 的收益协议通过父包 `AdChannelPluginBase.StartRevenueReport` 发送。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，在 `TrackMaxAdIlrd` 已派发分支调用；Banner 直接共享原 ILRD 累计金额和存档，无可用打点目标时协议同步等待。原始收益业务通知仍逐次触发，不重复发送协议。非 Banner 无可用 ILRD 目标时不发后台协议，也不保留补发队列。协议由 `AdRevenueReportNetService` 构造 `PbNetIAAReportReq`；`RevenuePaid` 不表示网络成功，详见 [Ad 基础包收益上报文档](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。
 
 ## 当前行为
 
@@ -106,3 +106,12 @@ Banner 控制通过当前有效聚合调用，先请求并成功创建视图；M
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
 - AppLovin SDK 本体、adapter、资源与上游声明由官方 UPM 包提供。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Editor/Windows/PlugPalsWindow.md` |
+| `com.solotopia.nova.framework.sdk.ad` | `Nova/Doc/INDEX.md` | `Nova/Doc/AdChannelPluginBase.md`<br>`Nova/Doc/AdChannelPluginBase.md#本地流程日志`<br>`Nova/Doc/AdPlugin.md#本地请求与展示日志`<br>`Nova/Doc/AdPluginEvents.md`<br>`Nova/Doc/IAdPlugin.md`<br>`Nova/Doc/INDEX.md#广告收益上报-proto-协议层` |

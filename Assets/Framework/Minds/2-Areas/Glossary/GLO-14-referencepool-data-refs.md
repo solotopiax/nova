@@ -23,7 +23,7 @@ related:
 
 ## 定义
 
-ReferencePool 是 Nova 的静态引用池（`Assets/Framework/Scripts/Runtime/Core/Reference/ReferencePool.cs`），用于复用**纯 C# 临时数据对象**以降低重复分配与 GC：实现 `IReference` 的类经 `ReferencePool.Get<T>()` 获取、`Put(IReference)` 归还；池为空时仍会创建新实例。
+ReferencePool 是 Nova 的静态引用池（[Scripts/Runtime/Core/Reference/ReferencePool.cs](../../../Scripts/Runtime/Core/Reference/ReferencePool.cs)），用于复用**纯 C# 临时数据对象**以降低重复分配与 GC：实现 `IReference` 的类经 `ReferencePool.Get<T>()` 获取、`Put(IReference)` 归还；池为空时仍会创建新实例。
 
 ## 边界
 
@@ -47,6 +47,6 @@ ReferencePool.Put(adapter);
 
 ## 来源与验证
 
-- `Assets/Framework/Scripts/Runtime/Core/Reference/ReferencePool.cs`：`Get / Put / Add / Remove / SetHelper` 静态 API。
+- [Scripts/Runtime/Core/Reference/ReferencePool.cs](../../../Scripts/Runtime/Core/Reference/ReferencePool.cs)：`Get / Put / Add / Remove / SetHelper` 静态 API。
 - `IReference` 接口的 `Clear()` 契约（同目录定义）。
-- `Assets/Framework/Docs/INDEX.md`：`YooAssetHandleAdapter` 为 ReferencePool 适配器的说明。
+- [Docs/INDEX.md](../../../Docs/INDEX.md)：`YooAssetHandleAdapter` 为 ReferencePool 适配器的说明。

@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/HttpManager/Interfaces/IDownloadService.cs` | `interface IDownloadService` | 下载服务接口定义 |
+| [Managers/HttpManager/Interfaces/IDownloadService.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Interfaces/IDownloadService.cs) | `interface IDownloadService` | 下载服务接口定义 |
 
 ---
 

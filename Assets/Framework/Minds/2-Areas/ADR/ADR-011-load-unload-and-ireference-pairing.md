@@ -78,15 +78,17 @@ related:
 
 **grep 关键词清单（code-reviewer 必扫）：**
 
+执行前将 `NOVA_FRAMEWORK_ROOT` 设为当前已解析的 `<FrameworkRoot>`。
+
 ```bash
 # IReference 配对扫查
-grep -rn "ReferencePool\.Get<" Assets/Framework/Scripts/Runtime --include="*.cs"
-grep -rn "ReferencePool\.Put"   Assets/Framework/Scripts/Runtime --include="*.cs"
+grep -rn "ReferencePool\.Get<" "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
+grep -rn "ReferencePool\.Put"   "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
 # 每个 Get<T> 出现的文件必须能在同模块找到对应 Put
 
 # 资源加载配对扫查
-grep -rn "LoadAsync\|LoadSync\|Resources\.Load\|AssetBundle\.Load" Assets/Framework/Scripts/Runtime --include="*.cs"
-grep -rn "Unload\|Release" Assets/Framework/Scripts/Runtime --include="*.cs"
+grep -rn "LoadAsync\|LoadSync\|Resources\.Load\|AssetBundle\.Load" "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
+grep -rn "Unload\|Release" "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
 ```
 
 **已存在使用点（基于 2026-05-15 扫查）：**

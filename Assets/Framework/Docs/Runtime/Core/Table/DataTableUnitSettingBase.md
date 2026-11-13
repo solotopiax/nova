@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Runtime/Core/Table/DataTableUnitSettingBase.cs` | `DataTableUnitSettingBase` | 抽象基类定义 |
+| [Runtime/Core/Table/DataTableUnitSettingBase.cs](../../../../Scripts/Runtime/Core/Table/DataTableUnitSettingBase.cs) | `DataTableUnitSettingBase` | 抽象基类定义 |
 
 ---
 
@@ -83,7 +83,7 @@ protected virtual string GetLubanInputPath() => SourcePath;
 
 字段和显式 getter 原样透传，不检查路径存在、地址可加载或模式/索引与数据一致；Mode、IndexField 由派生类给出，没有接口级默认。IDataTableSettings 的 IReadOnlyList 也不承诺非空或深不可变，Player 不包含 SourceDirPath。检查配置应读取实际模块 Settings、表源和正式导出物，不能由字段名或声明默认推断项目当前值。
 
-框架 `Templates/TableListTemplate.xlsx`、`TableMapTemplate.xlsx`、`TableOneTemplate.xlsx` 是表源示例：第 2 行 `##var` 定义字段，第 3 行 `##type` 定义类型，第 4 行说明；List/One 示例是 ID、Desc、IntValue、FloatValue、BoolValue、StringValue，Map 是 Name、Desc、Value 三个 string 字段。因此 Map 示例 Value 的 `true` 是字符串，不是 BoolValue。第 5 行的 32768、3.1415926、true、A 等仅为样例，不是项目默认；具体模式、索引、文件映射和生成契约由当前正式 Luban Project 与有效模块导出配置决定。
+框架 [Templates/TableListTemplate.xlsx](../../../../Templates/TableListTemplate.xlsx)、[TableMapTemplate.xlsx](../../../../Templates/TableMapTemplate.xlsx)、[TableOneTemplate.xlsx](../../../../Templates/TableOneTemplate.xlsx) 是表源示例：第 2 行 `##var` 定义字段，第 3 行 `##type` 定义类型，第 4 行说明；List/One 示例是 ID、Desc、IntValue、FloatValue、BoolValue、StringValue，Map 是 Name、Desc、Value 三个 string 字段。因此 Map 示例 Value 的 `true` 是字符串，不是 BoolValue。第 5 行的 32768、3.1415926、true、A 等仅为样例，不是项目默认；具体模式、索引、文件映射和生成契约由当前正式 Luban Project 与有效模块导出配置决定。
 
 ---
 

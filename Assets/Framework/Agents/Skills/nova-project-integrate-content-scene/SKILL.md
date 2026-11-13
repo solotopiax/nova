@@ -5,19 +5,19 @@ description: Use when 项目组要把已资源化的业务 Content 场景接入�
 
 # Nova 接入 Content 场景
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在当前决策分支按需读取下列随 Framework 发布的文档，不递归加载全部 Asset、Scene 或 Prefab 文档。
+再读取 [references/contract.json](references/contract.json)。仅在当前决策分支按需读取下列随 Framework 发布的文档，不递归加载全部 Asset、Scene 或 Prefab 文档。
 
 | 当前要确认的事实 | 读取 |
 |---|---|
-| Content 的角色、Nova 拓扑与场景所有者 | `Docs/Onboarding/PROJECT_STRUCTURE.md` |
-| 该场景是否已是 Nova 托管业务资源、其 Package 与地址 | `Docs/Onboarding/RESOURCE_WORKFLOW.md` |
-| Asset 启动前提、默认 Package 与 Handle 责任 | `Docs/Runtime/Modules/Asset/AssetComponent.md` |
-| 场景 Handle 的唯一卸载语义 | `Docs/Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md` |
-| 请求实际是普通资源或 Prefab，而非场景 | `Docs/Runtime/Modules/Prefab/PrefabComponent.md` |
+| Content 的角色、Nova 拓扑与场景所有者 | [Docs/Onboarding/PROJECT_STRUCTURE.md](../../../Docs/Onboarding/PROJECT_STRUCTURE.md) |
+| 该场景是否已是 Nova 托管业务资源、其 Package 与地址 | [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) |
+| Asset 启动前提、默认 Package 与 Handle 责任 | [Docs/Runtime/Modules/Asset/AssetComponent.md](../../../Docs/Runtime/Modules/Asset/AssetComponent.md) |
+| 场景 Handle 的唯一卸载语义 | [Docs/Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md) |
+| 请求实际是普通资源或 Prefab，而非场景 | [Docs/Runtime/Modules/Prefab/PrefabComponent.md](../../../Docs/Runtime/Modules/Prefab/PrefabComponent.md) |
 
 本 Skill 只接入已经纳入当前 Nova 资源配置的 Content 场景及其业务调用链。普通资源走 `nova-project-integrate-resource`；Prefab 走既有 `Nova.Prefab.Instantiate* / Nova.Prefab.Destroy` 链；入口拓扑或 Build Settings 变更走 `nova-project-setup-entry-scene`。若项目明确采用 Unity 原生 `SceneManager` 流程而非 Nova 资源化场景，返回 `not_applicable`，不静默迁移。
 
@@ -50,4 +50,4 @@ description: Use when 项目组要把已资源化的业务 Content 场景接入�
 
 只有上述 Package / location 前提、唯一 owner、一次卸载、编译和 Play 证据都成立才返回 `success`；已写入但未取得 Play 证据为 `partial`；关键事实不唯一为 `blocked`；非 Nova 资源化场景、普通资源或 Prefab 为 `not_applicable`。
 
-不默认修改 Collector、ConfigMaster、ConfigRuntime、入口 Scene、Build Settings、`Nova.prefab`、Bundle、Player、设备或外部发布。删除、迁移场景、改变 Package 默认映射、任何生成物构建、外部写入、凭据使用、Git commit / push 都需要独立且针对精确目标的确认。
+不默认修改 Collector、ConfigMaster、ConfigRuntime、入口 Scene、Build Settings、[Nova.prefab（定位）](../../../Docs/Onboarding/PROJECT_STRUCTURE.md)、Bundle、Player、设备或外部发布。删除、迁移场景、改变 Package 默认映射、任何生成物构建、外部写入、凭据使用、Git commit / push 都需要独立且针对精确目标的确认。

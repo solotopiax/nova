@@ -7,7 +7,7 @@
 
 ## 文件
 
-`Util.TypeCreator/Util.TypeCreator.cs`
+[Util.TypeCreator.cs](../../../Scripts/Runtime/Core/Util/Util.TypeCreator/Util.TypeCreator.cs)
 
 ## API
 

@@ -10,9 +10,9 @@ Native Inspector 只管理 Manager 实现选择与模块边界说明；它不查
 
 | 文件 | 说明 |
 |---|---|
-| `NativeComponentInspector.cs` | `OnEnable` 绑定属性、收集 `INativeManager` 实现、`OnInspectorGUI` 调度 |
-| `NativeComponentInspector.Visitors.cs` | `SerializedProperty` 与类型列表字段 |
-| `NativeComponentInspector.Methods.cs` | `DrawConfigs()` 绘制实现 |
+| [NativeComponentInspector.cs](../../../../Scripts/Editor/Inspectors/NativeComponentInspector/NativeComponentInspector.cs) | `OnEnable` 绑定属性、收集 `INativeManager` 实现、`OnInspectorGUI` 调度 |
+| [NativeComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/NativeComponentInspector/NativeComponentInspector.Visitors.cs) | `SerializedProperty` 与类型列表字段 |
+| [NativeComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/NativeComponentInspector/NativeComponentInspector.Methods.cs) | `DrawConfigs()` 绘制实现 |
 
 ## 序列化绑定与绘制顺序
 

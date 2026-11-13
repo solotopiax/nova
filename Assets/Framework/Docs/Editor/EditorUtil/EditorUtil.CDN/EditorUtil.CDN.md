@@ -6,7 +6,7 @@
 
 CDN 内容部署与缓存清理工具；把 ConfigMasterSO 中的 `CDNEditorConfigs` 作为输入，将本地目录经阿里云 OSS SDK 顺序上传到配置的 Bucket / 前缀，并可调用 Cloudflare purge API 按批清理缓存 URL。编排层（路径解析、上传计划、批次拆分、失败即停、脱敏）与传输适配器（OSS、HTTP）分离，便于测试注入。主要调用方是 ConfigWindow 的「CDN 内容分发网络部署」面板与 Pipify 的 `cdn.deploy` / `cdn.purge` Step。
 
-阿里云 OSS 传输是可选的 Editor 能力：Framework 不再强依赖 `com.solotopia.alibabacloud.oss`，由 `NovaFramework.Editor.asmdef` 的 `NOVA_ALIBABACLOUD_OSS` version define 控制强类型调用。未安装该包时，`DeployAsync` / `DeployAssetCheckWhitelistAsync` 返回明确的安装错误；ConfigWindow 显示安装引导并只禁用两项 OSS 部署操作，`PurgeAsync` 与 Cloudflare 区仍可用。
+阿里云 OSS 传输是可选的 Editor 能力：Framework 不再强依赖 `com.solotopia.alibabacloud.oss`，由 [NovaFramework.Editor.asmdef](../../../../Scripts/Editor/NovaFramework.Editor.asmdef) 的 `NOVA_ALIBABACLOUD_OSS` version define 控制强类型调用。未安装该包时，`DeployAsync` / `DeployAssetCheckWhitelistAsync` 返回明确的安装错误；ConfigWindow 显示安装引导并只禁用两项 OSS 部署操作，`PurgeAsync` 与 Cloudflare 区仍可用。
 
 ---
 
@@ -14,11 +14,11 @@ CDN 内容部署与缓存清理工具；把 ConfigMasterSO 中的 `CDNEditorConf
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.cs` | `EditorUtil.CDN` | 编排层：OSS 位置 / Region 解析、路径占位符替换、Object Key 组装、上传计划构建、缓存 URL 解析与分批、`DeployAsync` / `PurgeAsync` 核心循环、配置校验、Secret 脱敏 |
-| `Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.LatestVersion.cs` | `EditorUtil.CDN` | YooAsset 有效版本目录识别与最新本地版本解析 |
-| `Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.AlibabaCloud.cs` | `EditorUtil.CDN` | 可选阿里云 OSS 适配器：包存在时构造 OSS Client 并逐文件 `PutObject`；缺包时保留同一入口并返回安装错误 |
-| `Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.Cloudflare.cs` | `EditorUtil.CDN` | Cloudflare 适配器：公开 `PurgeAsync` 重载，复用静态 `HttpClient`（30s 超时）逐批 POST |
-| `Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.Models.cs` | `EditorUtil.CDN` | 不可变路径 / 结果模型：`OssLocation`、`OssUploadItem`、`CloudflareHttpResult`（均 internal） |
+| [Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.cs) | `EditorUtil.CDN` | 编排层：OSS 位置 / Region 解析、路径占位符替换、Object Key 组装、上传计划构建、缓存 URL 解析与分批、`DeployAsync` / `PurgeAsync` 核心循环、配置校验、Secret 脱敏 |
+| [Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.LatestVersion.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.LatestVersion.cs) | `EditorUtil.CDN` | YooAsset 有效版本目录识别与最新本地版本解析 |
+| [Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.AlibabaCloud.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.AlibabaCloud.cs) | `EditorUtil.CDN` | 可选阿里云 OSS 适配器：包存在时构造 OSS Client 并逐文件 `PutObject`；缺包时保留同一入口并返回安装错误 |
+| [Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.Cloudflare.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.Cloudflare.cs) | `EditorUtil.CDN` | Cloudflare 适配器：公开 `PurgeAsync` 重载，复用静态 `HttpClient`（30s 超时）逐批 POST |
+| [Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.Models.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.Models.cs) | `EditorUtil.CDN` | 不可变路径 / 结果模型：`OssLocation`、`OssUploadItem`、`CloudflareHttpResult`（均 internal） |
 
 ---
 
@@ -54,7 +54,7 @@ internal static UniTask<int> PurgeAsync(
 
 ## 关键行为与坑
 
-- **路径占位符**：`VersionCheckLocalFilePath`、`VersionCheckRemoteFilePath`、`LocalDirectory` 与 `RemotePathSuffix` 支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。此 Editor 部署链分别取 Unity 当前 Active BuildTarget 映射的 `PlatformType`、`ConfigMasterSO.CurrentChannel`、Nova.prefab 上 AssetComponent 的默认资源包名（空时回退包列表首项）、`Application.version`；配置保存模板原文，构建上传计划时统一解析，未知占位符保持原样。它不改变 Runtime `AssetRemoteService` 启动期由编译宏解析 `{Platform}` 的契约。
+- **路径占位符**：`VersionCheckLocalFilePath`、`VersionCheckRemoteFilePath`、`LocalDirectory` 与 `RemotePathSuffix` 支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。此 Editor 部署链分别取 Unity 当前 Active BuildTarget 映射的 `PlatformType`、`ConfigMasterSO.CurrentChannel`、[Nova.prefab](../../../../Prefabs/Nova.prefab) 上 AssetComponent 的默认资源包名（空时回退包列表首项）、`Application.version`；配置保存模板原文，构建上传计划时统一解析，未知占位符保持原样。它不改变 Runtime `AssetRemoteService` 启动期由编译宏解析 `{Platform}` 的契约。
 - **OSS Object Key 组装规则**：`PresetOSSPath`（`oss://bucket-name/fixed/prefix`）解析出 Bucket 与固定前缀。热更资源拼接已解析的 `RemotePathSuffix` 与本地相对路径；版本检查文件在本地与云端位置均非空时，以 `VersionCheckRemoteFilePath` 作为完整远端文件位置并合并进同一上传计划。各段经 `NormalizeObjectKeyPart` 规整（反斜杠转正斜杠、去首尾分隔符、合并重复分隔符），空段被剔除。
 - **自动关联最新版本**：`AutoLinkLatestVersion` 默认开启。`LocalDirectory` 可以指向包根或任一版本目录；候选目录必须具备内容匹配目录名的 `.version` 文件及对应 `.bytes`、`.hash`、`.report`，report 引用的全部 bundle 文件也必须存在，以排除复制阶段失败的半成品。YooAsset 不规定 `PackageVersion` 的比较语义，因此按 `.version` 的 `LastWriteTimeUtc` 选择；多个候选时间完全相同时明确报歧义，不使用版本字符串决胜。窗口展示和部署前分别解析，确保新构建完成后无需修改配置。
 - **白名单三文件自动关联**：`AutoLinkLatestAssetCheckVersionFiles` 默认开启且独立于热更资源开关。以已配置 `.bytes` 文件的父目录为锚点复用完整版本选择规则，再按当前 `PackageFilePrefix`、包名和资源版本生成匹配的三个路径；窗口只读展示，部署前重新解析。普通前缀按当前 ConfigMaster 维度解析；包含 `{Time}` 时复用构建导出后 `YooAssetSettings.asset` 中已固化的实际值，避免部署时间变化后找不到产物。

@@ -11,7 +11,7 @@ WebSocket 管理器配置，在 Inspector 中集中管理 WebSocket 连接、认
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `WebSocketSettings.cs` | `WebSocketSettings` | 定义：8 个序列化字段（含默认值） |
+| [WebSocketSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/WebSocketSettings.cs) | `WebSocketSettings` | 定义：8 个序列化字段（含默认值） |
 
 ---
 

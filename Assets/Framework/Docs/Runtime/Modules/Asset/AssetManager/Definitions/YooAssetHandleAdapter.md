@@ -11,7 +11,7 @@ YooAsset.AssetHandle 到 IAssetHandle 的内部适配器，通过 ReferencePool 
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Definitions/YooAssetHandleAdapter.cs` | `YooAssetHandleAdapter<T>` | 适配器实现，IReference 实现 |
+| [Managers/AssetManager/Definitions/YooAssetHandleAdapter.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/YooAssetHandleAdapter.cs) | `YooAssetHandleAdapter<T>` | 适配器实现，IReference 实现 |
 
 ---
 

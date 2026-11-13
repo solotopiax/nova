@@ -12,9 +12,9 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Nova.cs` | 主体：`Awake`（单例保护 + 异常隔离注入助手）、`Start`（聚合组件）、`Update`（驱动 ManagersGroup）、`OnDestroy`（清理 + 静态引用置空）、游戏控制方法 |
-| `Nova.Visitors.cs` | 所有静态 Component 属性 + `InstallTimeMs` + `ResetStatics`（Domain Reload 安全）+ `ClearStaticReferences` + 运行时配置 `[SerializeField]` 字段 |
-| `Nova.Methods.cs` | `SetCultureInfo` / `IsStrictCheck` / `OnLowMemory` / `ValidateComponent` 等私有辅助方法 |
+| [Nova.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.cs) | 主体：`Awake`（单例保护 + 异常隔离注入助手）、`Start`（聚合组件）、`Update`（驱动 ManagersGroup）、`OnDestroy`（清理 + 静态引用置空）、游戏控制方法 |
+| [Nova.Visitors.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.Visitors.cs) | 所有静态 Component 属性 + `InstallTimeMs` + `ResetStatics`（Domain Reload 安全）+ `ClearStaticReferences` + 运行时配置 `[SerializeField]` 字段 |
+| [Nova.Methods.cs](../../../../Scripts/Runtime/Modules/Nova/Nova.Methods.cs) | `SetCultureInfo` / `IsStrictCheck` / `OnLowMemory` / `ValidateComponent` 等私有辅助方法 |
 
 ---
 

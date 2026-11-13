@@ -5,11 +5,11 @@ description: Use when 项目组要查阅或修改已有对象的 Inspector 字�
 
 # 检查与修改对象配置
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-读取 [契约](references/contract.json)。仅在选择普通资产 Action 或确认其字段与保存边界时，读 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/SerializedTargetEditing.md`；涉及场景、内置组件、Prefab 变体/嵌套或 UnityEvent 时按需读 [共享 Unity MCP 编辑参考](references/unity-mcp-editing.md)；App 大版本更新、可选 Android 自身 APK 安装、游戏暂停/恢复/速度/退出业务、RuntimeDebugger、日志级别只读 [App、游戏运行与调试维护](references/app-and-debug-maintenance.md)；增删、替换或清空脚本宏读 [平台宏编辑](references/build-defines.md)。解释字段用途、生效时机或默认值时，只读实际目标类型对应 Docs 和当前版本声明。默认未知时继续核实声明，不能把当前值当默认值；不要为一个字段展开所有工具或文档。
+读取 [契约](references/contract.json)。仅在选择普通资产 Action 或确认其字段与保存边界时，读 [Docs/Editor/EditorUtil/EditorUtil.AgentActions/SerializedTargetEditing.md](../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/SerializedTargetEditing.md)；涉及场景、内置组件、Prefab 变体/嵌套或 UnityEvent 时按需读 [共享 Unity MCP 编辑参考](references/unity-mcp-editing.md)；App 大版本更新、可选 Android 自身 APK 安装、游戏暂停/恢复/速度/退出业务、RuntimeDebugger、日志级别只读 [App、游戏运行与调试维护](references/app-and-debug-maintenance.md)；增删、替换或清空脚本宏读 [平台宏编辑](references/build-defines.md)。解释字段用途、生效时机或默认值时，只读实际目标类型对应 Docs 和当前版本声明。默认未知时继续核实声明，不能把当前值当默认值；不要为一个字段展开所有工具或文档。
 
 ## 先选择可复用入口
 
@@ -31,7 +31,7 @@ description: Use when 项目组要查阅或修改已有对象的 Inspector 字�
 
 ## 输入与检查
 
-进入普通资产 Action 分支后，从当前项目发现用户所指的已存在资产，冻结一个 `targetGuid`。普通 Prefab 组件必须同时绑定精确 `globalObjectId`，同名对象或同类多个组件不能猜。普通 SO 可以仅提供资产 GUID；检查返回规范对象标识后，后续使用该标识。资产本身必须在项目 `Assets` 自有目录；类型源码可来自项目自有脚本或实际解析的 Framework/Nova SDK/Kit 包自有 `Scripts`。包内容、vendor、Plugins、生成物和测试资产不能作为写入目标。场景与其它共享 MCP 分支按参考冻结真实 scenePath/prefabPath、完整对象路径、当前组件标识和所属保存文件，不能把 instanceID 当持久 GUID。
+进入普通资产 Action 分支后，从当前项目发现用户所指的已存在资产，冻结一个 `targetGuid`。普通 Prefab 组件必须同时绑定精确 `globalObjectId`，同名对象或同类多个组件不能猜。普通 SO 可以仅提供资产 GUID；检查返回规范对象标识后，后续使用该标识。资产本身必须在项目 `Assets` 自有目录；类型源码可来自项目自有脚本或实际解析的 Framework/Nova SDK/Kit 包自有 [Scripts](../../../Scripts/)。包内容、vendor、Plugins、生成物和测试资产不能作为写入目标。场景与其它共享 MCP 分支按参考冻结真实 scenePath/prefabPath、完整对象路径、当前组件标识和所属保存文件，不能把 instanceID 当持久 GUID。
 
 先调用 `nova_project_action(operation="describe", action_id="nova.project.settings.inspect-target")` 获取当前 Request Schema，再按 `plan → execute` 只读检查。结果提供真实字段全路径、Unity 类型、tooltip、当前值 JSON、是否可编辑及阻断原因。敏感字段和包含敏感子项的聚合对象不返回原值，只报告存在性；不要从其他坐标、Sample 或日志猜凭据。
 

@@ -11,7 +11,7 @@ YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Definitions/AssetRemoteService.cs` | `AssetRemoteService` | YooAsset IRemoteService 实现 |
+| [Managers/AssetManager/Definitions/AssetRemoteService.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetRemoteService.cs) | `AssetRemoteService` | YooAsset IRemoteService 实现 |
 
 ---
 

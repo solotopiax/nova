@@ -10,8 +10,8 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Luban.ConfigSyncer.cs` | `EditorUtil.Luban.ConfigSyncer` | `_configs/` 目录管理 + `luban.conf` 读写 + 从 manifest 生成 `__tables__.xml` |
-| `EditorUtil.Luban.SchemaManifest.cs` | manifest 模型、校验、存储和构建器 | 扫描 Excel，生成并原子保存本次导出的结构快照 |
+| [EditorUtil.Luban.ConfigSyncer.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ConfigSyncer.cs) | `EditorUtil.Luban.ConfigSyncer` | `_configs/` 目录管理 + `luban.conf` 读写 + 从 manifest 生成 `__tables__.xml` |
+| [EditorUtil.Luban.SchemaManifest.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.SchemaManifest.cs) | manifest 模型、校验、存储和构建器 | 扫描 Excel，生成并原子保存本次导出的结构快照 |
 
 ---
 

@@ -43,9 +43,9 @@ Andrej Karpathy 2026 年发布的 gist，提出 **LLM Wiki** 模式：把传统�
 
 | 层 | 作用 | Nova 对应 |
 |---|---|
-| **Raw sources** | 保留外部原始材料与出处 | `3-Resources/` |
-| **The wiki** | 把事实整理成结构化知识页 | `2-Areas/` |
-| **The schema** | 约束索引、命名与治理规则 | `0-Index/` 与 vault 维护脚本 |
+| **Raw sources** | 保留外部原始材料与出处 | [3-Resources/](./) |
+| **The wiki** | 把事实整理成结构化知识页 | [2-Areas/](../2-Areas/) |
+| **The schema** | 约束索引、命名与治理规则 | [0-Index/](../0-Index/) 与 vault 维护脚本 |
 
 可借用的核心比喻是：**wiki 像代码库，LLM 像维护它的程序员**。一旦交叉引用失效、术语冲突或来源缺失，就应该被当作知识层编译错误处理。
 

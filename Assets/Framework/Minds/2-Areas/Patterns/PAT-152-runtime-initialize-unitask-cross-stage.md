@@ -78,7 +78,7 @@ Unity 不保证同一 `RuntimeInitializeLoadType` 内不同 `[RuntimeInitializeO
 
 ## 来源与验证依据
 
-- UniTask 初始化：`UPMPackages/com.solotopia.unitask/Core/Runtime/PlayerLoopHelper.cs`，`Init` 使用 `AfterAssembliesLoaded`，`Initialize` 创建 `runners`，`AddAction` 直接索引该数组。
+- UniTask 初始化：[UPMPackages/com.solotopia.unitask/Core/Runtime/PlayerLoopHelper.cs](../../../../../UPMPackages/com.solotopia.unitask/Core/Runtime/PlayerLoopHelper.cs)，`Init` 使用 `AfterAssembliesLoaded`，`Initialize` 创建 `runners`，`AddAction` 直接索引该数组。
 - 问题类型：iOS IL2CPP 启动期在 `UniTask.Yield -> PlayerLoopHelper.AddAction` 进入尚未建立的 runner，可表现为空引用；Editor 提前初始化不能作为 Player 安全证据。
 - 实施验证：反射确认同步注册与 watcher 分属严格递增的初始化阶段，并在受影响的 IL2CPP 真机启动路径复测；仅有 Editor 编译或测试结果不足以关闭设备侧风险。
 

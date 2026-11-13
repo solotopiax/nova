@@ -6,7 +6,9 @@
 
 把“加谷歌登录”“启用客服”“接入云存档”转成一个用户目标。先读项目已安装包、现有业务调用、当前 ConfigMaster/Runtime 和活动平台，再确认精确 package id；后缀仅帮助发现，不能证明 registry 可安装、该平台可运行或字段已配置。账号、渠道、是否采用真实设备/服务端验收等无法从项目确定的决策才由用户补充。
 
-安装/升级前走 `nova-project-manage-upm-package` 的 Plan；Resolve 稳定后读取实际 `PackageInfo.resolvedPath/package.json` 的身份、版本、依赖与 INDEX。已解析且满足目标的包跳过 UPM 写入。`package.json`、Runtime/Editor asmdef、平台资源、构建处理器、裁剪和 HybridCLR 条件按文档核对；Sample 的依赖和默认物料不自动提升为业务运行依赖。
+安装/升级前走 `nova-project-manage-upm-package` 的 Plan；Resolve 稳定后读取实际 [PackageInfo.resolvedPath/package.json（解析包内声明）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 的身份、版本、依赖与 INDEX。已解析且满足目标的包跳过 UPM 写入。[package.json（包内定位）](../../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、Runtime/Editor asmdef、平台资源、构建处理器、裁剪和 HybridCLR 条件按文档核对；Sample 的依赖和默认物料不自动提升为业务运行依赖。
+
+当前任务需要安装哪些包可由 Agent 按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 自行判断；长期安装授权已覆盖时不再次逐包请求批准，仍逐包绑定当前 Plan，等待 Resolve/Verify 后再进入下一依赖节点。升级或其它操作不由该安装授权自动放行。
 
 ## 直接复用公共 Config 操作
 

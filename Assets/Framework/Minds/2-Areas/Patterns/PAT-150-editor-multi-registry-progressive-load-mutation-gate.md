@@ -94,11 +94,11 @@ PlugPals 的公网与内部云列表请求同时开始，单仓库列表完成�
 
 ## 验证依据
 
-- 并发与渐进更新：`Assets/Framework/Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs`
-- 加载态展示与变更入口门禁：`Assets/Framework/Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.cs`、`PlugPalsWindow.Methods.cs`
-- URL 存档语义：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Registries.cs`
-- 10 秒超时：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Visitors.cs`
-- 空地址消费：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs`
+- 并发与渐进更新：[Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs)
+- 加载态展示与变更入口门禁：[Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.cs)、[PlugPalsWindow.Methods.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs)
+- URL 存档语义：[Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Registries.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Registries.cs)
+- 10 秒超时：[Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Visitors.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Visitors.cs)
+- 空地址消费：[Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs)
 - 回归测试：`Assets/Tests/Editor/PlugPalsRegistriesTests.cs`
 - 静态验证：`NovaFramework.Editor.csproj` 与 `NovaFramework.Runtime.Tests.Editor.csproj` 编译均为 0 error；`git diff --check HEAD` 通过。Nova2 未连接 Unity MCP，本次未实际执行 EditMode Test Runner。
 

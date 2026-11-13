@@ -1,6 +1,6 @@
 # EditorUtil.ImportantUpdates
 
-`NovaFramework.Editor.EditorUtil.ImportantUpdates` 是重要升级声明的内部工具。唯一内容来源是每个实际安装包根目录的 `CHANGELOG.md`，不建立额外声明文件，也不联网下载旧包。
+`NovaFramework.Editor.EditorUtil.ImportantUpdates` 是重要升级声明的内部工具。唯一内容来源是按 [包发现规则](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 确认的每个实际安装包根目录下 `CHANGELOG.md`，不建立额外声明文件，也不联网下载旧包。
 
 ## 声明格式与发布
 

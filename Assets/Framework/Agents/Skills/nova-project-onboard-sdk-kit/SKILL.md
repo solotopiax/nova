@@ -5,11 +5,13 @@ description: Use when 项目组要接入已发布的 Nova SDK/Kit 或已有 Fram
 
 # Nova 接入 SDK、Kit 与已有系统能力
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-先读取 `references/contract.json` 和 [共用执行路径](references/shared-execution.md)，把 `nova-project-manage-upm-package` 和 `nova-project-configure-runtime` 作为必要时独立验收的前置节点。业务目标明确时按共用引用的分支复用已有 UI、Event、Procedure、Persistence、Network Operation，只读取命中的契约，不把它们都变成强制安装依赖。仅在需要定位实际 Framework 时，使用已解析包内 `Agents/Tools/nova_skills.py resolve --project-root <projectRoot>`。目标 SDK/Kit 的路径由实际 `PackageInfo.resolvedPath`、manifest 与 lock 确认；从该包 `Nova/Doc/INDEX.md`、`Nova/Docs/INDEX.md`、`Nova/DOCS/INDEX.md` 中选择首个存在的入口，再只读当前任务需要的页面和匹配版本的 Nova 公开声明。不要以主框架公共文档替代目标包文档，不读取主仓 `.nova/`、`Minds/`、绝对路径或未命中的厂商源码。
+SDK/Kit 随带 Excel 模板或项目自有配表同样遵守 [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 的样式约束：先定位实际安装包的模板或已确认同类源，沿用原格式，再走其专用导入/源编辑入口。Framework 模板复制工具的白名单不代替子包模板，不为未支持来源编造 ID；缺少保真入口时停止相关写入。Tracks 继续其 Network 样式及专门源维护链，不套用 UI/Sound 或其他配表风格。
+
+先读取 [references/contract.json](references/contract.json) 和 [共用执行路径](references/shared-execution.md)，把 `nova-project-manage-upm-package` 和 `nova-project-configure-runtime` 作为必要时独立验收的前置节点。业务目标明确时按共用引用的分支复用已有 UI、Event、Procedure、Persistence、Network Operation，只读取命中的契约，不把它们都变成强制安装依赖。仅在需要定位实际 Framework 时，使用已解析包内 [nova_skills.py](../../Tools/nova_skills.py) 的 `resolve --project-root <projectRoot>`。目标 SDK/Kit 的路径由实际 `PackageInfo.resolvedPath`、manifest 与 lock 确认；从该包 [Nova/Doc/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[Nova/Docs/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[Nova/DOCS/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 中选择首个存在的入口，再只读当前任务需要的页面和匹配版本的 Nova 公开声明。不要以主框架公共文档替代目标包文档，不读取主仓 `.nova/`、`Minds/`、绝对路径或未命中的厂商源码。
 
 按用户目标选择一份引用，不全量加载：
 
@@ -24,11 +26,13 @@ description: Use when 项目组要接入已发布的 Nova SDK/Kit 或已有 Fram
 
 已安装并配置好的能力只需解释参数或补业务调用时，先复用对应引用和已有领域 Operation，不重复安装、不重复初始化、不为每个包、渠道、字段或 API 新建 Skill。
 
-目标仅为项目自有 Tracks 既有文字维护时，选择本契约 `tracks-source-text` 任务画像，按 [Tracks 维护](references/tracks-maintenance.md) 直接执行共享表源事务。该画像显式 `requires=[]`，仅需项目根和冻结文字写集，以当前静态审查、真实源表/收据产物及清场验收，不执行 SDK 初始化、UPM、Config 或 Play。画像仍继承原确认、锁、写入边界；完整父工作流及其原依赖的 `SKILL.md/contract.json` 源码指纹必须冻结，不能借任务画像放宽其他接入任务或继承旧分支证据。
+目标仅为项目自有 Tracks 既有文字维护时，选择本契约 `tracks-source-text` 任务画像，按 [Tracks 维护](references/tracks-maintenance.md) 直接执行共享表源事务。该画像显式 `requires=[]`，仅需项目根和冻结文字写集，以当前静态审查、真实源表/收据产物及清场验收，不执行 SDK 初始化、UPM、Config 或 Play。画像仍继承原确认、锁、写入边界；完整父工作流及其原依赖的 [SKILL.md / references/contract.json（按 Skill 定位）](../) 源码指纹必须冻结，不能借任务画像放宽其他接入任务或继承旧分支证据。
 
 ## 范围、文档门与冻结输入
 
 SDK/Kit 分支处理已发布、已配置 registry 且包名为 `com.solotopia.nova.framework.sdk.*` 或 `com.solotopia.nova.framework.kit.*` 的单个包；已有 Framework Native 分支按服务引用直接接入其公开门面，跳过 SDK/Kit 包管理和 ConfigMaster/ConfigRuntime 步骤。安装或升级必须先进入 `nova-project-manage-upm-package` 的 `install-latest` 或 `upgrade-latest` 只读 Plan；指定历史版本、降级、来源切换、未发布包、批量升级、Framework 自身升级、任意第三方包或厂商后台操作一律 `not_applicable`。
+
+任务所需包可由 Agent 根据当前能力及 PlugPals 现有来源主动选定，安装按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 的长期授权继续，不要求用户逐包点名；包管理 Operation 的 Plan/Resolve/Verify 不省略。当前 SDK/Kit Workflow 仍只接上述包范围，其他 PlugPals package 转其匹配入口，不扩成本 Workflow 的任意包接入器。
 
 先从消费项目、当前坐标、已安装包、业务入口和已有配置中读取可确定的事实，再冻结唯一项目根、精确包名、包管理意图、目标 Platform × Channel × DevelopMode、ConfigMaster、目标 ConfigRuntimeSO、目标 SDK/Kit Config 类型、明确字段变更集、目标平台、包内文档入口、平台前置清单及包文档定义的最小本地运行探针。用户要求业务可用时，同时冻结项目自有业务source/程序集、已有按钮或流程、成功/失败/取消、订阅拥有者、账号和持久化边界、目标交互与成功探针；已有授权覆盖必要业务实现时直接继续。让用户只补确需业务决策的渠道/模式、平台物料、进度保留/发货策略和验收目标，不要求新手抄写可读取的类型、路径或参数。目标不唯一且项目事实不能消歧时返回 `blocked`，不得从相邻坐标、Sample 或其他 SDK 猜值。
 
@@ -39,7 +43,7 @@ SDK/Kit 分支处理已发布、已配置 registry 且包名为 `com.solotopia.n
 ```text
 冻结包、坐标与平台目标
           │
-          ├─ UPM Operation：Plan → 用户确认 → Resolve/Verify
+          ├─ UPM Operation：Plan → 核对有效授权 → Resolve/Verify
           │                         │
           │                         ▼
           └──── 解析目标包 → 包内 INDEX → 平台前置核验

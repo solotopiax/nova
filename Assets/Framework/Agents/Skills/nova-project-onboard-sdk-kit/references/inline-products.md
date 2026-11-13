@@ -6,8 +6,10 @@
 
 执行复用 `nova-project-configure-runtime` 的 `nova.project.config.inspect-panel / patch-panels / export-runtime`。以下转换 CLI 只读取工作簿，不写源、不导入 Master、不生成 Runtime，也不是新 MCP Action：
 
+先按 [框架位置与文档入口](../../../../Docs/START_HERE.md#先确定框架位置与文档入口) 定位物理根，并将真实路径赋给当前终端变量 `FRAMEWORK_ROOT`。
+
 ```text
-python3 -B <resolvedFramework>/Agents/Tools/nova_inline_products.py --project-root <projectRoot> --source <projectRelative.xlsx> --source-hash <currentWholeFileSha256> --sheet <confirmedSheet> --family iap
+python3 -B "$FRAMEWORK_ROOT/Agents/Tools/nova_inline_products.py" --project-root <projectRoot> --source <projectRelative.xlsx> --source-hash <currentWholeFileSha256> --sheet <confirmedSheet> --family iap
 ```
 
 微信使用 `--family wechat`；购买表含 `GameCurrency` 时还需 `--coins-per-yuan <currentOrAuthorizedFinalValue>`，该值取目标坐标的 `m_GameCurrencyCoinsPerYuan`，不从别的项目或 Sample 猜测。

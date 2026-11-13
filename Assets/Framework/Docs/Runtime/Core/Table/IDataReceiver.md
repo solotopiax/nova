@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `IDataReceiver.cs` | 接口定义 |
+| [IDataReceiver.cs](../../../../Scripts/Runtime/Core/Table/IDataReceiver.cs) | 接口定义 |
 
 ## 公开 API
 

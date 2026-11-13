@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Ad/IAdPlugin.cs` | `IAdPlugin` | 接口全部定义 |
+| [IAdPlugin.cs](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Scripts/Runtime/Modules/SDK/Plugins/Ad/IAdPlugin.cs`） | `IAdPlugin` | 接口全部定义 |
 
 ---
 
@@ -32,7 +32,7 @@ ISDKPlugin
 
 ## §4 关键字段表
 
-`IAdPlugin` 为纯接口，无字段；唯一实现 `AdPlugin` 的字段见 `AdPlugin.md`。
+`IAdPlugin` 为纯接口，无字段；唯一实现 `AdPlugin` 的字段见 [AdPlugin.md](AdPlugin.md)。
 
 ---
 
@@ -251,9 +251,9 @@ void OnDestroyed()
 - [IBannerControl.md](./IBannerControl.md) — Banner 专属控制接口
 - [AdPluginEvents.md](./AdPluginEvents.md) — 事件容器（7 个 ObservableEvent 字段）
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道插件抽象基类
-- [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与订阅模式
-- [ISDKPlugin.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/ISDKPlugin.md) — 根接口
-- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — Framework 的 AdFormat / BannerPosition / AdLoadResult
+- [ObservableEvent.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Events/ObservableEvent.md`） — StickyEvent / ReplayEvent 基类与订阅模式
+- [ISDKPlugin.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Definitions/ISDKPlugin.md`） — 根接口
+- [Data.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Definitions/Data.md`） — Framework 的 AdFormat / BannerPosition / AdLoadResult
 - [AdFormatNotSupportedException.cs](../Scripts/Runtime/Types/AdFormatNotSupportedException.cs) — 渠道未实现已注册格式时的异常定义
 - [AdResult.cs](../Scripts/Runtime/Types/AdResult.cs) / [AdEvent.cs](../Scripts/Runtime/Types/AdEvent.cs) — 广告包的展示结果与收益通知载荷
 - [AdPluginEvents.md](./AdPluginEvents.md) — 收益业务通知与渠道实际上传的边界

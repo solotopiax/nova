@@ -8,7 +8,7 @@
 
 以下名称是业务侧的只读属性；实际编辑通过 ConfigWindow 保存对应的私有序列化字段。
 
-渠道项展开后的标签宽度由通用列表绘制器根据同层最长名称统一分配；窄窗口仍可能截断，可拉宽窗口查看。该排版不修改字段或导出值，说明见[共享配置面板](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginConfig.md#4-关键字段表)。
+渠道项展开后的标签宽度由通用列表绘制器根据同层最长名称统一分配；窄窗口仍可能截断，可拉宽窗口查看。该排版不修改字段或导出值，说明见[共享配置面板](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginConfig.md#4-关键字段表`）。
 
 | 属性 | 类型 / 默认值 | 说明 |
 |---|---|---|
@@ -43,7 +43,7 @@ App ID 与广告位 ID 用途不同；全屏组项填写后台真实广告位 ID
 
 ## 4. 当前限制
 
-`AdMobAdPlugin` 已实现 UMP、原厂 SDK 初始化、四格式加载/展示/真实 Ready 查询；其运行前提是 Android / iOS Player、有效目标 App ID、已安装匹配官方 SDK 和 UMP 当前允许请求广告。`TagForUnderAgeOfConsent` 只是 UMP 请求参数，不代替项目年龄判断，也不直接设置或证明用户授权。本包 `package.json` 未声明官方 SDK 直接依赖，Runtime / Editor asmdef 仅在官方 `com.google.ads.mobile` 的 `[11.5.0,12.0.0)` 范围启用适配。配置可序列化、扫描和解析，不代表这些平台条件或设备广告链已通过验证。
+`AdMobAdPlugin` 已实现 UMP、原厂 SDK 初始化、四格式加载/展示/真实 Ready 查询；其运行前提是 Android / iOS Player、有效目标 App ID、已安装匹配官方 SDK 和 UMP 当前允许请求广告。`TagForUnderAgeOfConsent` 只是 UMP 请求参数，不代替项目年龄判断，也不直接设置或证明用户授权。本包 [package.json](../../package.json) 未声明官方 SDK 直接依赖，Runtime / Editor asmdef 仅在官方 `com.google.ads.mobile` 的 `[11.5.0,12.0.0)` 范围启用适配。配置可序列化、扫描和解析，不代表这些平台条件或设备广告链已通过验证。
 
 本包 `AdMobAdPluginBuildProcessor` 从激活的 ConfigRuntime 读取本类目标平台的 `AppIdAndroid/IOS`，在 Nova Android / iOS 预处理链写入项目 `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset`，保留官方 Manifest / plist 和依赖处理链。未启用独立 AdMob 时不执行注入；启用时，重复配置、无效 App ID、缺少匹配 SDK 或官方 Settings 类型/字段不匹配会阻断构建。MAX 包的 `MaxAdPluginBuildProcessor` 仍读取 `MaxAdChannelConfig.AdMobAppIdAndroid/IOS` 并写入 `AppLovinSettings`，不读取本类 App ID。
 
@@ -52,6 +52,6 @@ App ID 与广告位 ID 用途不同；全屏组项填写后台真实广告位 ID
 ## 5. 关联
 
 - 渠道插件：[AdMobAdPlugin.md](./AdMobAdPlugin.md)
-- 共享广告聚合配置：[AdPluginConfig.md](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginConfig.md)
-- 公共组解析与运行契约：[AdChannelPluginBase.md](../../../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdChannelPluginBase.md)
-- MAX 构建注入：[MaxAdPluginBuildProcessor.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPluginBuildProcessor.md)
+- 共享广告聚合配置：[AdPluginConfig.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginConfig.md`）
+- 公共组解析与运行契约：[AdChannelPluginBase.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdChannelPluginBase.md`）
+- MAX 构建注入：[MaxAdPluginBuildProcessor.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPluginBuildProcessor.md`）

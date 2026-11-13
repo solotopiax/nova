@@ -54,8 +54,8 @@ related:
 
 ## 来源、影响与验证
 
-- 详细当前规则：`Assets/Framework/Docs/TRACKS.md`；工程门禁：根 `AGENTS.md` 与 `.nova/RULES.md`。
-- 当前模板：`Assets/Framework/Tracks/Tracks.xlsx` 的 `打点表-Network`。
-- 生成行为：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs` 与 `EditorUtil.TrackRegistry.XlsxWriter.cs`。
+- 详细当前规则：[Docs/TRACKS.md](../../../Docs/TRACKS.md)；工程门禁：[根 AGENTS.md](../../../../../AGENTS.md) 与 [.nova/RULES.md](../../../../../.nova/RULES.md)。
+- 当前模板：[Tracks/Tracks.xlsx](../../../Tracks/Tracks.xlsx) 的 `打点表-Network`。
+- 生成行为：[Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.cs) 与 [EditorUtil.TrackRegistry.XlsxWriter.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.XlsxWriter.cs)。
 - 已确认源表文本与目标不因统一样式改变；实际 C# 写入器独立编译及输出的字体、颜色、排版、合并和冻结检查通过。该证据不证明 Unity 界面效果或后台收到事件。
 - 影响所有 Tracks 维护与汇总任务；事件阶段边界仍以 [[PAT-148-ad-revenue-track-callback-boundary|广告收益回调]]、[[PAT-165-mobile-iap-pay-failure-track-boundary|Mobile失败边界]]、[[PAT-167-thirdpay-payment-terminal-and-validation-tracking|ThirdPay阶段分层]] 和当前源码为准，本规则不改变其运行时契约。

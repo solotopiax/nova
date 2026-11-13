@@ -10,12 +10,12 @@
 
 | 文件 | 说明 |
 |---|---|
-| NetworkComponent.cs | 创建和初始化三个管理器，加载 HostKey / NetCmd 数据 |
-| NetworkComponent.Visitors.cs | 序列化配置、管理器实例与状态属性 |
-| NetworkComponent.Network.cs | NetCmd 路由、网络状态与服务器时间代理 |
-| NetworkComponent.Http.cs | HTTP 短连接代理 |
-| NetworkComponent.WebSocket.cs | WebSocket 连接、消息与事件代理 |
-| NetworkComponent.Kit.cs | Kit Service 惰性单例容器与项目标准 Proto 请求门面 |
+| [NetworkComponent.cs](../../../../Scripts/Runtime/Modules/Network/NetworkComponent.cs) | 创建和初始化三个管理器，加载 HostKey / NetCmd 数据 |
+| [NetworkComponent.Visitors.cs](../../../../Scripts/Runtime/Modules/Network/NetworkComponent.Visitors.cs) | 序列化配置、管理器实例与状态属性 |
+| [NetworkComponent.Network.cs](../../../../Scripts/Runtime/Modules/Network/NetworkComponent.Network.cs) | NetCmd 路由、网络状态与服务器时间代理 |
+| [NetworkComponent.Http.cs](../../../../Scripts/Runtime/Modules/Network/NetworkComponent.Http.cs) | HTTP 短连接代理 |
+| [NetworkComponent.WebSocket.cs](../../../../Scripts/Runtime/Modules/Network/NetworkComponent.WebSocket.cs) | WebSocket 连接、消息与事件代理 |
+| [NetworkComponent.Kit.cs](../../../../Scripts/Runtime/Modules/Network/NetworkComponent.Kit.cs) | Kit Service 惰性单例容器与项目标准 Proto 请求门面 |
 
 ## 管理器关系
 
@@ -38,7 +38,7 @@ Awake 按 HTTP、Network、WebSocket 的顺序创建管理器；Start 使用 Ins
 | m_CurHttpManagerTypeName | string | IHttpManager 实现类名 |
 | m_CurWebSocketManagerTypeName | string | IWebSocketManager 实现类名 |
 | m_Settings | NetworkSettings | HostKey 与 NetCmd 数据单元 |
-| m_HttpSettings | HttpSettings | UWR 埋点、HostKey + NetCmd 最近成功优先、完整轮数、重试次数与单次请求超时 |
+| m_HttpSettings | HttpSettings | UWR 埋点、HostKey + NetCmd 最近成功优先、完整轮数、重试次数、业务与启动 GM 各自的单次请求超时 |
 | m_WebSocketSettings | WebSocketSettings | WebSocket 连接、认证、心跳和重连设置 |
 | m_ProtoSettings | ProtoSettings | 仅 Editor 的协议导出设置 |
 

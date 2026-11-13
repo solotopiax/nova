@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `NovaLinkedListRange.cs` | 链表范围类主体及内部 `Enumerator` 结构体 |
+| [NovaLinkedListRange.cs](../../../../Scripts/Runtime/Core/Collections/NovaLinkedListRange.cs) | 链表范围类主体及内部 `Enumerator` 结构体 |
 
 ## 关键属性
 

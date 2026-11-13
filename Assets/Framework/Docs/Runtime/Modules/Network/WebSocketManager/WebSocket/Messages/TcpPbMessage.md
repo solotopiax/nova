@@ -11,7 +11,7 @@ TCP Protobuf 协议网络消息，消息体为 Protobuf 编码后的字节流。
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.TcpPbMessage.cs` | TCP Protobuf 消息定义 |
+| [WebSocketScope.TcpPbMessage.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.TcpPbMessage.cs) | TCP Protobuf 消息定义 |
 
 ## 消息帧格式
 

@@ -6,7 +6,7 @@
 
 1. 先安装 `com.solotopia.nova.framework.kit.network.gamelogin`、`com.solotopia.nova.framework.kit.network.gamebind` 和 `com.solotopia.nova.framework.sdk.tga`；它们是本 Sample 的演示依赖，不是微信 SDK Runtime 的强制依赖。
 2. 在 Unity 中切换到 WebGL。
-3. 打开实际导入目录中的 `WechatMiniGameDemo.unity`。
+3. 打开实际导入目录中的 [WechatMiniGameDemo.unity](WechatMiniGameDemo.unity)。
 4. 在 Editor 中可以预览页面；微信 SDK 的平台初始化会跳过，平台操作按具体 API 提示不支持或不可用。仍须核对其它已启用插件、配置、资源与启动状态，不能保证任意工程均无初始化错误。
 5. 使用微信小游戏转换工具导出，并在微信开发者工具或真机中体验真实功能。
 
@@ -29,7 +29,9 @@ TGA 初始化（DeviceID） -> 微信 SDK 初始化
    -> 其他失败：按错误原因处理，不自动注册新账号
 ```
 
-示例的 `ProcedurePreload` 会等待 `Nova.SDK.InitializeTask` 完成全部已启用插件的初始化；TGA 就绪后，网络登录请求可由 `NetBuilder` 从其 `IDeviceIdProvider` 自动写入 DeviceID。`Priority` 只控制稳定遍历和释放顺序，不保证初始化先后。两次 GameLogin 都保持 `forceNewAccount=false`：第一次用 OpenID 查询绑定账号；只有明确返回 `10404` 时，第二次才按 DeviceID 优先登录已有游客，不存在才创建。其他失败不会自动注册新账号。GameLogin 不产生绑定副作用，GameBind 只建立或裁决绑定关系。本轮按固定微信校验 → 游戏服务器登录/绑定流程演示，不新增账号选择或冲突解决页面；服务端错误按既有反馈处理。
+示例的 `ProcedurePreload` 会等待 `Nova.SDK.InitializeTask` 得到全部已启用插件的最终结果；等待结束不等于每个插件都成功。微信插件未启用时阻断预加载；定义 `WEIXINMINIGAME`、`UNITY_WECHATMINIGAME` 或 `UNITY_WEIXINMINIGAME` 的 Player 还须通过 `Ready` 与 `TryGet` 检查。当前公开接口不能区分普通浏览器 WebGL 与真实微信容器，未定义这些符号时保留警告和页面预览分支；此分支也可能包含真实初始化失败，不能据此宣称微信能力已就绪，发布前须在微信开发者工具或真机确认插件为 `Ready`。只有全部预加载通过且可取得就绪微信插件，正常离开流程时才调用 `ReportGameStart()`。
+
+TGA 就绪后，网络登录请求可由 `NetBuilder` 从其 `IDeviceIdProvider` 自动写入 DeviceID。`Priority` 只控制稳定遍历和释放顺序，不保证初始化先后。两次 GameLogin 都保持 `forceNewAccount=false`：第一次用 OpenID 查询绑定账号；只有明确返回 `10404` 时，第二次才按 DeviceID 优先登录已有游客，不存在才创建。其他失败不会自动注册新账号。GameLogin 不产生绑定副作用，GameBind 只建立或裁决绑定关系。本轮按固定微信校验 → 游戏服务器登录/绑定流程演示，不新增账号选择或冲突解决页面；服务端错误按既有反馈处理。
 
 `GameAccountLogin`、`GameAccountBind`、`GameAccountBindConflict`、`GameAccountBindResolve` 和 `TGAReport` 都同时维护在 Sample 的 `NetworkCmds.xlsx` 表源、导出的 `NetworkCmds.json` 和生成类型中。
 
@@ -37,7 +39,7 @@ TGA 初始化（DeviceID） -> 微信 SDK 初始化
 
 登录校验、支付验单、消息订阅和文本内容安全涉及账号、资金或平台凭据，必须明确客户端与服务端边界。接入时：
 
-1. 游戏服务器按包内 `Nova/Protos/pb_net_wechat_minigame.proto` 实现微信登录校验、道具签名、最多 20 笔批量验单、当前用户全部订单查询、个人通知任务创建和文本内容安全检查。
+1. 游戏服务器按包内 [Nova/Protos/pb_net_wechat_minigame.proto](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.wechat.minigame` 包内 `Nova/Protos/pb_net_wechat_minigame.proto`） 实现微信登录校验、道具签名、最多 20 笔批量验单、当前用户全部订单查询、个人通知任务创建和文本内容安全检查。
 2. 在项目的 HostKey/NetCmd 表中将六个固定协议名指向对应服务端接口，并正式导出表数据。
 3. 在 Config 的微信小游戏配置填写真实 `MidasOfferId`，并通过微信配置页的购买表配置商品（`TableId`、名称、类型、微信商品 ID、金额分、数量）。Demo View Inspector 的 Demo Materials 选择游戏币和道具对应购买表 ID。订阅通知按钮上方可填写模板 ID、服务端通知配置 ID、触发 Unix 秒（`0` 表示立即）及稳定任务幂等键；失败重试时应复用同一键。文本安全按钮上方可填写待检查文本。
 
@@ -49,7 +51,7 @@ TGA 初始化（DeviceID） -> 微信 SDK 初始化
 
 支付按钮复用同一业务入口：Android/iOS 共用游戏币 game 与道具 goods 路线，iOS 仍需真实商户和设备验收。iOS 不包含客服会话充值；仅在 `wx.checkIsSupportMidasPayment` 返回允许且 `env=0` 时拉起支付。游戏币还必须在 ConfigWindow 配置与微信平台、服务端一致的“每元游戏币数量”；本 Sample 的 WebGL/WeChat 开发与正式配置已按 Solar 表填写为 10，正式项目仍须核对自身商户汇率。订单会在调用微信前按游戏 UID 写入 Nova Persist；无论微信前端回调成功、失败或超时，最终发货资格均以服务端验单为准。
 
-Android/iOS 游戏币共用 `wx.requestMidasPayment`，固定 `mode=game`；道具共用 `wx.requestMidasPaymentGameItem`，签名原文固定 `mode=goods`。iOS 两类支付均要求 `allow_pay` 允许且 `env=0`，不向微信传入未公开的 `platform=ios`；Android 保留 `platform=android`。这是客户端实现口径，iOS 游戏币的商户和真机可用性尚未验收，详见实际安装微信包内 `Nova/Docs/PAYMENT_PLATFORM_REVIEW.md`。
+Android/iOS 游戏币共用 `wx.requestMidasPayment`，固定 `mode=game`；道具共用 `wx.requestMidasPaymentGameItem`，签名原文固定 `mode=goods`。iOS 两类支付均要求 `allow_pay` 允许且 `env=0`，不向微信传入未公开的 `platform=ios`；Android 保留 `platform=android`。这是客户端实现口径，iOS 游戏币的商户和真机可用性尚未验收，详见实际安装微信包内 [Nova/Docs/PAYMENT_PLATFORM_REVIEW.md](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.wechat.minigame` 包内 `Nova/Docs/PAYMENT_PLATFORM_REVIEW.md`）。
 
 ## 购买、补单和模拟资产
 
@@ -69,7 +71,7 @@ Demo 用 `CreateConfiguredPaymentIntent(tableId, payload)` 读取微信配置中
 
 通知模板、服务端通知配置和稳定任务幂等键在 DemoWechatMiniGameView Prefab Inspector 的 Demo Materials 中维护，运行时填入输入框，仍可手动修改。此组仅用于 Sample，不影响 SDK 正式业务。微信订阅从原生 `SubscribeTouchEnd` 回调内命中按钮并立即拉起授权；普通 Unity `Button.onClick` 会抑制重复请求。`WeChatMiniGameTmpInputBridge` 接管小游戏软键盘，普通 Editor 和浏览器保留默认 TMP 输入。微信触点坐标、复杂 Canvas 遮挡和实际通知送达仍需开发者工具及真机验收。
 
-本 Sample 保留来自历史 Solar 演示的配置：引力沉默唤起周期为 7 天，开发/正式模式分别配置，现有 `ConfigRuntime.asset` 为开发模式示例。公开副本中的物料可能已脱敏，保存值和旧导出物均不代表当前工程有效凭据；正式项目必须填写自己的应用物料并按目标坐标保存、导出。引力物料在微信配置字段之后展示。SDK 只在微信 OpenID 经业务服务端校验后启动，并仅在原厂 Initialize 成功回调后视为可用。客户端集成版本见实际安装微信包根目录的 `LOCAL_VERSION.md`。项目还须将 `https://backend.gravity-engine.com` 和 `https://api.gravity-engine.com` 加入微信小游戏合法域名，并按业务隐私策略决定何时启用埋点。
+本 Sample 保留来自历史 Solar 演示的配置：引力沉默唤起周期为 7 天，开发/正式模式分别配置，现有 `ConfigRuntime.asset` 为开发模式示例。公开副本中的物料可能已脱敏，保存值和旧导出物均不代表当前工程有效凭据；正式项目必须填写自己的应用物料并按目标坐标保存、导出。引力物料在微信配置字段之后展示。SDK 只在微信 OpenID 经业务服务端校验后启动，并仅在原厂 Initialize 成功回调后视为可用。客户端集成版本见实际安装微信包根目录的 [LOCAL_VERSION.md](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.wechat.minigame` 包内 `LOCAL_VERSION.md`）。项目还须将 `https://backend.gravity-engine.com` 和 `https://api.gravity-engine.com` 加入微信小游戏合法域名，并按业务隐私策略决定何时启用埋点。
 
 微信配置中的 DataNexus 数据源 ID 默认为 `0`、SDK Key 默认为空，开关默认关闭；这两项表示未配置。项目取得正式 DataNexus 物料后，在开发、正式坐标分别填写并启用，再导出微信小游戏。开关关闭或物料无效时导出会跳过注入；有效时 game.js 会携带该客户端 SDK Key，切勿误填服务端密钥，并须配置 https://api.datanexus.qq.com 为合法请求域名。独立微信热力引擎 WXSEAppKey 不属于此 DataNexus 接线。
 
@@ -79,7 +81,7 @@ Demo 用 `CreateConfiguredPaymentIntent(tableId, payload)` 读取微信配置中
 
 Demo 购买入口设置独立来源 `demo.currency_button` / `demo.item_button`，不改变原始支付 Payload。长期 `DemoWechatFulfillmentService` 订阅 `PaymentProgress`，持久保存阶段事件；正常购买、登录/前台恢复、发货器就绪及手动补单均携带尝试标识和恢复原因。引力异步初始化完成、登录、手动补单和后续阶段触发统计重试，页面关闭不停止服务。阶段事件复用 event_id，SDK 没有后台接收确认，不能承诺网络端恰好一次；实际收入仍需服务端提供可信资金结果。
 
-事件登记表为微信包 `Nova/Tracks/Tracks.xlsx`。完整需求交接与待确认方案见实际安装微信包内 `Nova/Docs/REVIEW_HANDOFF.md`；历史评审文档不能替代当前平台和业务验收。
+事件登记表为微信包 [Nova/Tracks/Tracks.xlsx](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.wechat.minigame` 包内 `Nova/Tracks/Tracks.xlsx`）。完整需求交接与待确认方案见实际安装微信包内 [Nova/Docs/REVIEW_HANDOFF.md](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.wechat.minigame` 包内 `Nova/Docs/REVIEW_HANDOFF.md`）；历史评审文档不能替代当前平台和业务验收。
 
 ## 通过 Codex 使用与复用
 
@@ -87,8 +89,21 @@ Demo 购买入口设置独立来源 `demo.currency_button` / `demo.item_button`�
 
 通知表单会 Trim 模板、配置和任务键；触发时间使用 Unix 秒，`0` 表示立即，任务键仍应由业务稳定保存。软键盘桥按当前 TMP 文本与行类型传初值，多行和数字模式来自控件声明；关闭键盘不代表提交业务表单。购买使用正式购买表 ID，修改历史静态 ProductId 字段不会替代正式表配置。模拟资产的 schema/订单检查与保存失败后恢复内存，都不能证明存储已物理回滚或服务端资产可信；真实业务须独立验证持久化与签名。
 
-可以直接描述“配置微信登录”“批量维护购买表”“检查补单为什么没有发货”“把演示界面接入自己的项目”。Codex 从实际安装 Framework 的 `Docs/START_HERE.md`、`Agents/INDEX.md` 进入现有 SDK/Kit、配置、网络、UI、持久化和平台流水线能力，并按需读取微信 reference 和实际包内 Docs；不依赖主仓的 `UPMPackages` 路径或 Minds，也不按平台、按钮、商品分别新增 Skill。
+可以直接描述“配置微信登录”“批量维护购买表”“检查补单为什么没有发货”“把演示界面接入自己的项目”。Codex 从实际安装 Framework 的 [Docs/START_HERE.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/START_HERE.md`）、[Agents/INDEX.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Agents/INDEX.md`） 进入现有 SDK/Kit、配置、网络、UI、持久化和平台流水线能力，并按需读取微信 reference 和实际包内 Docs；不依赖主仓的 `UPMPackages` 路径或 Minds，也不按平台、按钮、商品分别新增 Skill。
 
 读取实际平台、配置、表源、场景和可用工具后，用既有确定性入口执行固定步骤。服务端协议、支付资格、有效商户、用户手势与真机条件无法由本地配置代替；查阅示例不自动授权登录绑定、拉起支付、请求权限、修改存档、上报或发送通知。配置保存、正式导出、初始化回调、服务端响应、发货持久化与平台实际效果逐层验收。
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+
+## 启动配置等待
+
+`ProcedurePreload` 在网络表加载成功后，等待本次启动的同一轮 GM 应用配置拉取，再继续 SDK 等后续步骤；拉取失败、超时或未配置时继续使用当前配置。仍保留原有八步顺序，预加载重试和重复等待不会重新发起启动拉取。Network Inspector 的“启动时GM配置请求超时时间（秒）”默认每次请求 5 秒，主备请求和重试分别计时，整轮总耗时可能超过 5 秒。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Agents/INDEX.md`<br>`Docs/Onboarding/PROJECT_STRUCTURE.md`<br>`Docs/START_HERE.md` |
+| `com.solotopia.nova.framework.sdk.wechat.minigame` | `Nova/Docs/INDEX.md` | `LOCAL_VERSION.md`<br>`Nova/Docs/PAYMENT_PLATFORM_REVIEW.md`<br>`Nova/Docs/REVIEW_HANDOFF.md`<br>`Nova/Protos/pb_net_wechat_minigame.proto`<br>`Nova/Tracks/Tracks.xlsx` |

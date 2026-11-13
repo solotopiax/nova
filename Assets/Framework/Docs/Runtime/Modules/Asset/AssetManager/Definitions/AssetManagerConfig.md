@@ -13,13 +13,13 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Definitions/AssetManagerConfig.cs` | `AssetManagerConfig` | 配置数据容器 |
+| [Managers/AssetManager/Definitions/AssetManagerConfig.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs) | `AssetManagerConfig` | 配置数据容器 |
 
 ---
 
 ## 完整公开 API
 
-字段按源码定义顺序排列（与 AssetComponent.Visitors.cs 六段语义一致）。
+字段按源码定义顺序排列（与 [AssetComponent.Visitors.cs](../../../../../../Scripts/Runtime/Modules/Asset/AssetComponent.Visitors.cs) 六段语义一致）。
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|

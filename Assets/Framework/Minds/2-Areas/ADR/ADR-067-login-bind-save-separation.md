@@ -89,8 +89,8 @@ DeviceID 由已初始化的 TGA `IDeviceIdProvider` 经网络 Header 提供，�
 
 ## 验证依据（Verification）
 
-- 设计文档：`Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md`（含完整 proto + 服务端接口契约 + 编排流程）
-- 落地包：`UPMPackages/com.solotopia.nova.framework.kit.network.gamebind/`（Bind 三段式 + BindKitConfig + BindErrorCode + pb_net_bind.proto）
+- 设计文档：[Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md](../../../../../Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md)（含完整 proto + 服务端接口契约 + 编排流程）
+- 落地包：[UPMPackages/com.solotopia.nova.framework.kit.network.gamebind/](../../../../../UPMPackages/com.solotopia.nova.framework.kit.network.gamebind/)（Bind 三段式 + BindKitConfig + BindErrorCode + pb_net_bind.proto）
 - 演示：`Assets/Samples/GameBindDemo/`（DemoGameBindView 四步绑定流程，Play Mode 验证通过）
 - grep 校验：全项目无 `Login.BindResolveAsync` / `LoginErrorCode.ErrBindConflict` / `LoginResp.GuestSummary` 残留引用
 
@@ -101,6 +101,6 @@ DeviceID 由已初始化的 TGA `IDeviceIdProvider` 经网络 Header 提供，�
   > AI：三者应各管一摊——login 只鉴权拿 uid、bind 只裁决归属、save 只决定数据覆盖方向，编排上移业务层。
 
 ## 关联
-- 设计规格：`Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md`
+- 设计规格：[Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md](../../../../../Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md)
 - 相关 ADR：[[ADR-043-gamesave-full-explicit-flag|ADR-043]]
 - 服务端契约：[[RES-004-login-third-party-bind-server-contract|RES-004]]

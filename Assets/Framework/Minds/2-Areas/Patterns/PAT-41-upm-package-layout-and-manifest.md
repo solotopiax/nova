@@ -24,7 +24,7 @@ related:
 
 ## 适用场景
 
-- 新建或整理 `UPMPackages/` 下的 Nova 自维护包
+- 新建或整理 [UPMPackages/](../../../../../UPMPackages/) 下的 Nova 自维护包
 - 评估某个包是否满足发版所需的最小结构
 - 设计 package 元数据与 sample 元数据的职责边界
 
@@ -50,7 +50,7 @@ related:
 
 ## 当前项目事实
 
-- `UPMPackages/` 下 Nova 自维护包普遍以 `package.json` 为根。
+- [UPMPackages/](../../../../../UPMPackages/) 下 Nova 自维护包普遍以 `package.json` 为根。
 - 存在 `coreVersion`、`displayName`、`nova-samples.json` 等元数据协同关系。
 - 新建包应按 `Nova/` + `Core/` 顶层结构组织内容，不能把 Runtime/Editor/第三方源码直接平铺在包根。
 - 样例相关字段在发布链路中会被整理为对外可识别的 `samples` 结构，而不是长期直接手维护所有中间态目录。

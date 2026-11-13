@@ -77,9 +77,9 @@ Pipify 通知、CDN 路径和 Runtime URL 都需要替换 Platform、Channel、P
 
 ## 验证依据
 
-- 实现：`Assets/Framework/Scripts/Runtime/Core/Util/Util.Placeholder/Util.Placeholder.cs`
-- Editor 适配器：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Placeholder/EditorUtil.Placeholder.cs`
-- Pipify 消费方：`EditorUtil.Pipify.Methods.cs`，在 CLI 覆盖和平台同步后、Step 调用前统一解析参数快照。
+- 实现：[Scripts/Runtime/Core/Util/Util.Placeholder/Util.Placeholder.cs](../../../Scripts/Runtime/Core/Util/Util.Placeholder/Util.Placeholder.cs)
+- Editor 适配器：[Scripts/Editor/EditorUtil/EditorUtil.Placeholder/EditorUtil.Placeholder.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Placeholder/EditorUtil.Placeholder.cs)
+- Pipify 消费方：[EditorUtil.Pipify.Methods.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs)，在 CLI 覆盖和平台同步后、Step 调用前统一解析参数快照。
 - EditMode 测试覆盖标准 token、未知 token、24 小时时间格式、ConfigRuntime 来源、ConfigMaster 当前坐标、
   显式导出坐标以及 Pipify HelpBox 元数据。
 

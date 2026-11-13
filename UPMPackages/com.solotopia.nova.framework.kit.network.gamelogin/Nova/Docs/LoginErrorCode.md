@@ -5,7 +5,7 @@
 `LoginErrorCode` 收录客户端登录策略错误码（7000~7999）和服务端登录业务段（10000~10499）。
 这些码由服务端 `PbNetBaseResponse.Code` 原样返回，经 `NetService` 透传到 `NetResponse.ErrorCode`，业务侧用本类常量与 `resp.ErrorCode` 比对。
 
-**所在文件：** `Nova/Scripts/Runtime/LoginErrorCode.cs`
+**所在文件：** [Nova/Scripts/Runtime/LoginErrorCode.cs](../Scripts/Runtime/LoginErrorCode.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameLogin.Runtime`
 **类签名：** `public static class LoginErrorCode`
 

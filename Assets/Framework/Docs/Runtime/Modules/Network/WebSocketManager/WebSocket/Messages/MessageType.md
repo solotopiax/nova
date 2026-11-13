@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.MessageType.cs` | 消息类型（协议 ID）枚举定义 |
+| [WebSocketScope.MessageType.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.MessageType.cs) | 消息类型（协议 ID）枚举定义 |
 
 ## 枚举值
 

@@ -1,6 +1,6 @@
 # 资源加密、密钥源码与轮换
 
-用户要求已确认 Nova 业务资源加密、资源密钥配置或轮换时读取本页及随包 `Docs/Runtime/Modules/Asset/ResourceEncryption.md`。不迁移插件/非 Nova 资源，不生成框架通用秘密，不把 Base64 当防逆向。
+用户要求已确认 Nova 业务资源加密、资源密钥配置或轮换时读取本页及随包 [Docs/Runtime/Modules/Asset/ResourceEncryption.md](../../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md)。不迁移插件/非 Nova 资源，不生成框架通用秘密，不把 Base64 当防逆向。
 
 ## 冻结与选择
 
@@ -38,11 +38,11 @@
 
 密钥只通过已授权私有配置输入传入面板 Action；任务说明、终端日志和公开证据不输出 valueJson、KeyBase64、生成源码或逐密钥摘要。Inspect、Plan 与 Receipt 仅保留脱敏状态、完整目标指纹和物理变化路径；完整 Master 摘要不是单个密钥摘要。保存完成还要 Verify 并重新 Inspect active keyId，再调用 `generate-resource-keys` 的 describe → plan → execute → verify。该生成请求不携带密钥正文，不读窗口草稿；平台须与 Unity 当前 Active BuildTarget 一致，None 渠道、未保存状态、草稿、Framework/Packages 输出、手写冲突、另一个生成 provider 或漂移均阻断。通用 `settings.patch-target` 仍不能编辑 ConfigMaster，固定 `config.patch-coordinate` 仍只有其字符串字段；不能手写 YAML 或绕过当前领域计划。仅保存配置或生成源码不能宣布全套加密接入成功。
 
-生成计划明确列出 Master、源码/link、必要 meta、新目录及旧工具标记文件删除。若精确旧 `Assets/NovaGenerated/ResourceKeys/NovaProject.ResourceKeys.asmdef` 将被生成器删除并改变程序集归属，独立 Action 无法在只读计划中确认删除后的真实归属，因此阻断该旧格式分支；先经现有 ConfigWindow 顶部导出完成一次迁移，再重计划。Execute 开始后的失败为 partial，禁止重放；Plan 失效或脚本重载后只能用已绑定 Receipt Verify。Verify 成功要求本次真实编译、无错误、重载以及完整保存状态、文件摘要、删除结果、唯一 provider 和 Player assembly；它不证明 Bundle、Player 安装或真机读取。
+生成计划明确列出 Master、源码/link、必要 meta、新目录及旧工具标记文件删除。若精确旧 [Assets/NovaGenerated/ResourceKeys/NovaProject.ResourceKeys.asmdef（定位）](../../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md) 将被生成器删除并改变程序集归属，独立 Action 无法在只读计划中确认删除后的真实归属，因此阻断该旧格式分支；先经现有 ConfigWindow 顶部导出完成一次迁移，再重计划。Execute 开始后的失败为 partial，禁止重放；Plan 失效或脚本重载后只能用已绑定 Receipt Verify。Verify 成功要求本次真实编译、无错误、重载以及完整保存状态、文件摘要、删除结果、唯一 provider 和 Player assembly；它不证明 Bundle、Player 安装或真机读取。
 
 ## 权威链与成功标准
 
-1. 保存项目私有 `ConfigMasterSO.ResourceEncryption`；`ClientCodeOutputDirectory` 是 Assets 内客户端目录，不能含 Editor。正式生成名为 `ResourceKeys.Generated.cs`，旁边是工具专属 `link.xml`；不覆盖手写同名源码/linker。
+1. 保存项目私有 `ConfigMasterSO.ResourceEncryption`；`ClientCodeOutputDirectory` 是 Assets 内客户端目录，不能含 Editor。正式生成名为 [ResourceKeys.Generated.cs（定位）](../../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md)，旁边是工具专属 [link.xml（定位）](../../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)；不覆盖手写同名源码/linker。
 2. 经 `nova.project.config.generate-resource-keys` 或已有生成链导出并等待实际导入/编译。用 `CompilationPipeline` 确认源码的实际 Player assembly 直接引用 `NovaFramework.Runtime`，且自身及依赖闭包不属于 HybridCLR 热更程序集；不从目录/namespace猜 DLL。提供器在 SubsystemRegistration 注册，Preserve/linker 确保启动前可用。
 3. 核对唯一生成提供器、源码与配置/Namespace、当前坐标 active keyId、link.xml 的真实 assembly/type 一致。项目无 key 且从未生成源码时是空配置合法状态，不冒称加密已启用。
 4. 用已选定配套 Encryptor/Decryptor 构建本次 Bundle。正式版本目录的 Bundle 名可仍为 `.bundle`，内容已加密；`.encrypt` 只是 OutputCache 中间文件。上传/首包只取正式版本。`ClearBuildCacheFiles` 默认 false；开启会在下次构建清整个平台/包输出根及历史版本，必须先保留已交付版本。

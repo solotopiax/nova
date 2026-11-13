@@ -11,7 +11,7 @@ PrefabManager 启动配置。当前为空扩展位，采用"每实例一 handle 
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/PrefabManager/Definitions/PrefabManagerConfig.cs` | `PrefabManagerConfig` | 配置容器（扩展位） |
+| [Managers/PrefabManager/Definitions/PrefabManagerConfig.cs](../../../../../Scripts/Runtime/Modules/Prefab/Managers/PrefabManager/Definitions/PrefabManagerConfig.cs) | `PrefabManagerConfig` | 配置容器（扩展位） |
 
 ---
 

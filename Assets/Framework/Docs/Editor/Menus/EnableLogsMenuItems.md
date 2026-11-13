@@ -5,7 +5,7 @@
 ```csharp
 public static class EnableLogsMenuItems
 namespace NovaFramework.Editor
-// Assets/Framework/Scripts/Editor/Menus/EnableLogsMenuItems.cs
+// 包内源码见下方文件表：Scripts/Editor/Menus/EnableLogsMenuItems.cs
 ```
 
 日志脚本宏定义（Scripting Define Symbols）的管理菜单项集合，支持一键切换日志等级。
@@ -16,7 +16,7 @@ namespace NovaFramework.Editor
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `EnableLogsMenuItems.cs` | `EnableLogsMenuItems` | 唯一文件 |
+| [EnableLogsMenuItems.cs](../../../Scripts/Editor/Menus/EnableLogsMenuItems.cs) | `EnableLogsMenuItems` | 唯一文件 |
 
 ---
 

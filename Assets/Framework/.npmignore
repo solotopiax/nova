@@ -2,9 +2,11 @@
 Samples~.dev/
 Samples~.dev.meta
 
-# Obs 知识库不入 UPM 包
-Minds/
-Minds.meta
+# Minds 整库分发；仅排除本机程序、工作区、凭据配置与系统缓存。
+Minds/.obsidian/
+Minds/.obsidian.meta
+Minds/**/.DS_Store
+Minds/**/.DS_Store.meta
 
 # 历史审计和验收报告永久不入包。
 Docs/Onboarding/Reviews/

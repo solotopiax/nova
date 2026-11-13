@@ -2,7 +2,7 @@
 
 **命名空间**：`NovaFramework.Runtime`
 
-`ISDKFocusListener`、`ISDKPauseListener`、`ISDKQuitListener` 当前都定义在 `Definitions/ISDKPlugin.cs` 同一文件中，不存在单独的 `Definitions/Lifecycle/*.cs` 目录。
+`ISDKFocusListener`、`ISDKPauseListener`、`ISDKQuitListener` 当前都定义在 [Definitions/ISDKPlugin.cs](../../../../../Scripts/Runtime/Modules/SDK/Definitions/ISDKPlugin.cs) 同一文件中，不存在单独的 `Definitions/Lifecycle/*.cs` 目录。
 
 ## 当前接口
 

@@ -5,13 +5,15 @@ description: Use when Nova 项目组需要为已配置的 YooAsset Package 按�
 
 # Nova 构建本地 Bundle
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`、`Docs/Onboarding/RESOURCE_WORKFLOW.md` 与 `Docs/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md`。仅在发现适合本次任务的已有 Pipify Batch 时读取 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`；不要为直接构建加载全部 Pipify Step 说明。用户要求完整三平台或 WebGL 离线 Player 验收时，仅按需读取 [三平台验收参考](../nova-project-build-player/references/platform-validation.md) 的准备与 WebGL 段落。
+再读取 [references/contract.json](references/contract.json)、[Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 与 [Docs/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md](../../../Docs/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)。仅在发现适合本次任务的已有 Pipify Batch 时读取 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)；不要为直接构建加载全部 Pipify Step 说明。用户要求完整三平台或 WebGL 离线 Player 验收时，仅按需读取 [三平台验收参考](../nova-project-build-player/references/platform-validation.md) 的准备与 WebGL 段落。
 
 该 Operation 只生成本地 YooAsset Bundle 及其构建报告，不部署 CDN、不清理远端、不上传商店，不执行 Git 或 UPM 发布。
+
+只有项目明确选用 [可选图集生产](../../../Docs/Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md) 时，才由 `nova-project-configure-pipeline` 的 [图集分支](../nova-project-configure-pipeline/references/sprite-atlas.md) 先预演并生成，再进入本 Operation。直接 Bundle Action 不自动生成图集，旧项目/旧 Batch 不增加步骤；已有自有图集生产流程继续原归属。生成图集与 Bundle 成功分别核验，真实子图加载另需运行证据。
 
 ## Input
 
@@ -23,7 +25,7 @@ description: Use when Nova 项目组需要为已配置的 YooAsset Package 按�
 
 Package、版本策略、构建选项与首包模式先从当前配置、已保存 Batch 和工具实际状态读取，展示来源与有效值后冻结，不把可读参数转嫁给新手。完整构建授权下由组合任务复用既有配置/导出/HybridCLR Operation，先完成适用的生成代码与 DLL 目标导入，再构建 Bundle；保持本 Operation 的独立写入边界。不同平台共用 StreamingAssets 或输出目录时串行执行，分别记录本次产物，不把上一平台的首包带入下一平台。
 
-WebGL `OfflinePlayMode` 必须配套 `ClearAndCopyAll`；`HostPlayMode` 可用 `None / ClearAndCopyByTags / ClearAndCopyAll`，`None` 依赖已部署的完整 CDN 资源。`LaunchHotfixTags` 和 `WebGLAssetStrategy` 不决定首包拷贝集合。核对实际 Package、Manifest/Catalog/Bundle 与后续 Player 中的 `nova-webgl-layout.txt`，不能用 Bundle 成功推断浏览器可运行。
+WebGL `OfflinePlayMode` 必须配套 `ClearAndCopyAll`；`HostPlayMode` 可用 `None / ClearAndCopyByTags / ClearAndCopyAll`，`None` 依赖已部署的完整 CDN 资源。`LaunchHotfixTags` 和 `WebGLAssetStrategy` 不决定首包拷贝集合。核对实际 Package、Manifest/Catalog/Bundle 与后续 Player 中的 [nova-webgl-layout.txt（本次构建定位）](../../../Docs/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)，不能用 Bundle 成功推断浏览器可运行。
 
 ## 已有 Action Adapter
 

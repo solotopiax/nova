@@ -11,7 +11,7 @@
 
 独立包通过通用 `PrivacyPanelExtensions` 注册隐私面板，在 `ExtensionConfigsJson` 内维护自己的配置。主框架只保留通用存储和兼容迁移边界；未安装扩展包时不显示其面板，已保存的扩展 JSON 仍保留。运行时扩展可通过 `IPrivacyConfigProvider.PrivacyConfigs` 读取已加载的快照，无需修改 `IConfigManager` 的既有实现契约。
 
-内存防护属于可选包 `com.solotopia.nova.framework.memory.protection`。它在同名扩展键下保存 `EnableMemoryTamperDetection`、`EnableMemoryKeyRotation`，默认均为 `true`；旧资产已有的两个开关（包括 `false`）会迁入扩展配置。字段含义、商业插件安装、业务接入与生命周期见 [MemoryProtection 包文档](../../../../../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/MemoryProtection.md)。
+内存防护属于可选包 `com.solotopia.nova.framework.memory.protection`。它在同名扩展键下保存 `EnableMemoryTamperDetection`、`EnableMemoryKeyRotation`，默认均为 `true`；旧资产已有的两个开关（包括 `false`）会迁入扩展配置。字段含义、商业插件安装、业务接入与生命周期见 MemoryProtection 包文档（包 `com.solotopia.nova.framework.memory.protection`，包内 [按包定位：Nova/Docs/MemoryProtection.md](../SDK/INDEX.md#sdk--kit-包文档发现)）。
 
 自然语言配置使用 `config.patch-panels` 时，初始 Key/IV 可以逐步填写，原有有效 Key/IV 同值请求和其它隐私字段编辑保持可用；已有有效 Key/IV 更换、清空或被维度广播覆盖时阻断。需要保留旧档的轮换由同一 `nova-project-integrate-persistence` 的独立 Privacy 分支处理：当前 macOS Editor 标准三存储、激活 Master 当前 Privacy 逻辑组、配对 Runtime、独立封存恢复与明确消费者范围，详见[受控存档轮换](../../../Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md)。ConfigWindow 手动保存保持原行为；只改配置并重新导出不能证明旧存档及恢复材料仍可读取，不能用普通字段编辑替代迁移。配置面板边界见 [Config 面板编辑](../../../Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.md)。
 

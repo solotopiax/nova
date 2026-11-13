@@ -1,6 +1,6 @@
 # Nova Framework - SDK - Google Sign-In
 
-> 当前版本：`0.1.2`
+> 当前版本：`0.1.3`
 
 Nova Google Sign-In SDK package for Unity. It provides a Nova adapter around
 Google Sign-In on Android, returns Nova `AuthResult` values, and keeps
@@ -10,11 +10,11 @@ Android-specific native code inside this UPM package.
 
 ## What This Package Contains
 
-- `Nova/**`: Nova-owned C# adapter layer, runtime plugin, configuration, data
+- [Nova/**](Nova/): Nova-owned C# adapter layer, runtime plugin, configuration, data
   types, editor build processor, tests, and package documentation.
-- `Core/Plugins/Android/**`: Nova native Android bridge code that calls Android
+- [Core/Plugins/Android/**](Core/Plugins/Android/): Nova native Android bridge code that calls Android
   Credential Manager and Google Identity APIs.
-- `Nova/Scripts/Editor/Dependencies/GoogleSignInDependencies.xml`: EDM4U
+- [Nova/Scripts/Editor/Dependencies/GoogleSignInDependencies.xml](Nova/Scripts/Editor/Dependencies/GoogleSignInDependencies.xml): EDM4U
   dependency declarations for Android Gradle artifacts.
 
 The package does not vendor Google or AndroidX dependency source code.
@@ -65,18 +65,18 @@ still confirm that sample values are intentional for public distribution.
 
 ## Open Source And Redistribution Status
 
-The Google Sign-In package layer, `Nova/**`, and Nova bridge code under
-`Core/Plugins/Android/**` are Solotopia/Nova content distributed under the
+The Google Sign-In package layer, [Nova/**](Nova/), and Nova bridge code under
+[Core/Plugins/Android/**](Core/Plugins/Android/) are Solotopia/Nova content distributed under the
 package license. Build-time dependencies resolved by EDM4U keep their own
 upstream licenses and terms; they are not relicensed as MIT by this package.
 
-Public distribution of this package should retain `LICENSE.md` and
-`THIRD_PARTY_NOTICES.md`. See `Nova/Docs/OpenSourceCompliance.md` for the
+Public distribution of this package should retain [LICENSE.md](LICENSE.md) and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). See [Nova/Docs/OpenSourceCompliance.md](Nova/Docs/OpenSourceCompliance.md) for the
 current package-level compliance notes and release checks.
 
 ## Release Checklist
 
-- Keep `LICENSE.md` and `THIRD_PARTY_NOTICES.md` in the distributed package.
+- Keep [LICENSE.md](LICENSE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) in the distributed package.
 - Re-run dependency resolution and record the actual Android artifacts used by
   the release build.
 - Recheck Google, AndroidX, Google Play, and Android policy requirements that
@@ -87,3 +87,11 @@ current package-level compliance notes and release checks.
   environment-specific material.
 - Confirm privacy disclosures and account sign-out or deletion UX still match
   the current app release requirements.
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Onboarding/PROJECT_STRUCTURE.md` |

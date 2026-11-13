@@ -86,6 +86,8 @@ WebGL 的启动 Group 例外：`TagsOnLaunch` 由框架在成功后 Release，�
 
 ## 最小 API 面
 
+显式选包加载由独立可选的 [IAssetPackageLoader](IAssetPackageLoader.md) 提供；本接口不增加强制成员，旧加载签名及默认包语义保持不变。业务使用 `Nova.Asset` 的同名新门面，不持有或强转 Manager。
+
 - 启动：`BootstrapAsync()` / `LoadManifestAsync()`
 - 版本：`GetCurrentPackageVersion()` / `RequestLatestPackageVersionAsync()`
 - 启动白名单缓存：`SaveAssetCheckDeviceId()`

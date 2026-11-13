@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [10.0.6] - 2026-11-13
+
+### Changed
+
+- 完善 SQLCipher 原厂目录、Android/桌面二进制、SQLite 适配源码和许可文件的链接，方便查阅各项随包内容的许可说明。
+
 ## [10.0.5] - 2026-06-18
 
 ### Changed

@@ -4,7 +4,7 @@
 
 `Save` 是游戏存档（云存档）业务网络 Service，封装存档节点在客户端与服务端之间的获取与上传链路。
 
-**所在文件：** `Nova/Scripts/Runtime/Save.cs`
+**所在文件：** [Nova/Scripts/Runtime/Save.cs](../Scripts/Runtime/Save.cs)
 **命名空间：** `NovaFramework.Kit.Network.GameSave.Runtime`
 **类签名：** `public sealed class Save`
 
@@ -153,4 +153,4 @@ var setFullResp = await gameSave.SetFullAsync(fullPayload);
 
 - 同包：[SaveKitConfig.md](./SaveKitConfig.md) — 云存档 Kit 配置
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

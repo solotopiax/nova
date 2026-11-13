@@ -11,7 +11,7 @@ TCP Protobuf 通道，消息体为 Protobuf 编码的字节流。负责 `TcpPbMe
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.TcpPbChannel.cs` | TCP Protobuf 通道实现（含 WebGL 和非 WebGL 两套接收逻辑） |
+| [WebSocketScope.TcpPbChannel.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.TcpPbChannel.cs) | TCP Protobuf 通道实现（含 WebGL 和非 WebGL 两套接收逻辑） |
 
 ## 关键字段/属性
 

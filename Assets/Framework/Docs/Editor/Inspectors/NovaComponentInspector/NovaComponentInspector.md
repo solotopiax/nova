@@ -10,9 +10,9 @@
 
 | 文件 | 说明 |
 |------|------|
-| `NovaComponentInspector.cs` | 主体：`OnEnable`（绑定 Property）、`OnInspectorGUI`（绘制所有配置） |
-| `NovaComponentInspector.Visitors.cs` | 所有 `SerializedProperty` 字段 + 静态游戏速度数组 |
-| `NovaComponentInspector.Methods.cs` | `GetGameSpeed(index)`、`GetSelectedGameSpeed(value)` 辅助方法 |
+| [NovaComponentInspector.cs](../../../../Scripts/Editor/Inspectors/NovaComponentInspector/NovaComponentInspector.cs) | 主体：`OnEnable`（绑定 Property）、`OnInspectorGUI`（绘制所有配置） |
+| [NovaComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/NovaComponentInspector/NovaComponentInspector.Visitors.cs) | 所有 `SerializedProperty` 字段 + 静态游戏速度数组 |
+| [NovaComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/NovaComponentInspector/NovaComponentInspector.Methods.cs) | `GetGameSpeed(index)`、`GetSelectedGameSpeed(value)` 辅助方法 |
 
 ---
 

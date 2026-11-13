@@ -150,7 +150,7 @@ descrip
 
 ## 关联
 
-当前实现与具体参数以 [广告模块索引](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md) 和 [MAX 收益派发说明](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md#banner-收益打点) 为准；源码依据为渠道基类的 `AdChannelPluginBase.Track.cs`、`AdChannelPluginBase.RevenueReport.cs` 及 MAX 的 `MaxAdPlugin.Track.cs`。本条记录共用批次的原因与确认边界，不保存当次测试结果或本地测试身份。
+当前实现与具体参数以 [广告模块索引](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md) 和 [MAX 收益派发说明](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md#banner-收益打点) 为准；源码依据为渠道基类的 [AdChannelPluginBase.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Scripts/Runtime/AdChannelPluginBase/AdChannelPluginBase.Track.cs)、[AdChannelPluginBase.RevenueReport.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Scripts/Runtime/AdChannelPluginBase/AdChannelPluginBase.RevenueReport.cs) 及 MAX 的 [MaxAdPlugin.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/MaxAdPlugin.Track.cs)。本条记录共用批次的原因与确认边界，不保存当次测试结果或本地测试身份。
 
 - SDK 插件架构：[[ADR-022-sdk-plugin-architecture|ADR-022]]
 - SDK Plugin SOP：[[PAT-33-sdk-plugin-sop|PAT-33]]

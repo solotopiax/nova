@@ -10,7 +10,7 @@ StreamingAssets 只读路径容器，根路径取自 `Application.streamingAsset
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Core/Path/Path.Streaming.cs` | `Path.Streaming` | StreamingAssets 只读路径 |
+| [Core/Path/Path.Streaming.cs](../../../../Scripts/Runtime/Core/Path/Path.Streaming.cs) | `Path.Streaming` | StreamingAssets 只读路径 |
 
 ## § 5 公开 API
 

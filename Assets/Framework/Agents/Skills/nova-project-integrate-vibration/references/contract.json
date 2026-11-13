@@ -31,6 +31,11 @@
       "kind": "unity-editor-automation",
       "entry": "Play Mode state inspection and target-device feedback capture",
       "when": "核验加载、平台支持、业务触发和停止；成功仍须取得真实设备的测试者体感反馈"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+      "when": "仅source-template-copy分支，mode=copy与vibration-emphasis/vibration-custom官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
     }
   ],
   "inputs": [
@@ -68,6 +73,11 @@
       "name": "activeConfigMasterAndGeneratedNamespace",
       "required": false,
       "description": "仅 export-code-data 按目标必需：Sound、Vibration 及 Network 含 hostkey/netcmd 的 all/code 导出，从 ProjectSettings/Nova/Globals.json 核 configMasterGuid、configMasterPathHint 与实际可加载 ConfigMasterSO 的一致身份，冻结其顶层 Namespace（RuntimeProvider.GetNamespace 的当前来源）及预期生成类型全名和既有消费者；未绑定、身份或值漂移时 blocked，不以 ConfigRuntime.Namespace、维度解析值或第一个 Master 代替。已绑定 Master 明确空 Namespace 时允许 global namespace 并按冻结预期验收。Network 仅 proto 时记录 Master 前置不适用，改核已确认 Schema/protoc 的命名空间与类型全名；不要求 ConfigRuntime、Collector、账号或端点，hostkey 原 DevelopMode 前置仍保留。"
+    },
+    {
+      "name": "officialTemplateCopySourceAndTarget",
+      "required": false,
+      "description": "仅source-template-copy必需：mode=copy、vibration-emphasis/vibration-custom中实际来源、目标Assets内xlsx及原SHA/新建null、真实sourceRoots/generatedRoots；模板SHA由Plan冻结，禁止rows/sheetName/title。"
     }
   ],
   "effects": [
@@ -80,7 +90,8 @@
       "confirmed Emphasis or Custom source data and selected generated output",
       "confirmed VibrateComponent, VibrateSettings, VibrateUnitSetting, asset address or Collector membership through Unity Editor or MCP",
       "confirmed project-owned business trigger and its single stop/release owner; reuse existing implementation or create minimal authorized source glue using declared public APIs",
-      "confirmed existing target Prefab or Scene binding directly related to the vibration trigger"
+      "confirmed existing target Prefab or Scene binding directly related to the vibration trigger",
+      "source-template-copy: exact confirmed project-owned Assets/**/*.xlsx target plus TableSource plan/receipt; source template is read-only"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -103,7 +114,8 @@
     "vibrate-custom-source-and-export-output",
     "vibrate-resource-address-and-collector",
     "business-vibration-entry-and-stop-owner",
-    "target-device-feedback-session"
+    "target-device-feedback-session",
+    "table-source-shared-write-lock"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -113,7 +125,7 @@
       "replace a non-generated asset, remove a source row or clean generated output",
       "build or install a Player, delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认唯一 Nova/场景/VibrateComponent、目标 Emphasis 或 Custom 区域及其数据和 Unit、DataFormat、输出和运行时地址、既有业务触发与唯一停止责任、目标真机和反馈探针，以及最小写入集；任一输入或范围改变后旧确认失效。 当前精确业务授权持续有效，可在冻结项目源码补必要胶水；缺现成调用点不单独构成永久阻断，缺真实资源/规则/协议和设备证据按依赖保留blocked或partial。测试后遵循START_HERE共同清场规则。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。"
+    "rule": "确认唯一 Nova/场景/VibrateComponent、目标 Emphasis 或 Custom 区域及其数据和 Unit、DataFormat、输出和运行时地址、既有业务触发与唯一停止责任、目标真机和反馈探针，以及最小写入集；任一输入或范围改变后旧确认失效。 当前精确业务授权持续有效，可在冻结项目源码补必要胶水；缺现成调用点不单独构成永久阻断，缺真实资源/规则/协议和设备证据按依赖保留blocked或partial。测试后遵循START_HERE共同清场规则。 完整业务接入的确认规则和全链输入适用于集成分支；export-code-data 只冻结 profile.requiredInputs、当前导出 Action 的 PlanId 与完整 writeSet。删除、外部写入、凭据、构建、替换非生成资产和 Git 等危险副作用的原确认门仍全部继承，不因 profile 覆盖或降低。 source-template-copy只确认冻结的官方来源与模板SHA、目标原SHA和精确写集，不要求完整业务输入；已有替换授权持续有效，原危险副作用门不变。"
   },
   "taskProfiles": [
     {
@@ -144,6 +156,30 @@
         "unity-write",
         "generated-output"
       ]
+    },
+    {
+      "id": "source-template-copy",
+      "description": "只原样复制所属领域官方模板作为建表物料，保留全部样式/Sheet/合并；不修改示例值、不宣称业务数据、导出或运行已完成。",
+      "taskIds": [
+        "vibration.source.create"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "officialTemplateCopySourceAndTarget"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write"
+      ]
     }
   ],
   "minimumEvidence": "play",
@@ -158,6 +194,7 @@
     "定向 Exporter 或已确认 Pipify 区域 Step 的结果，以及相关 Unity 编译证据",
     "Play Mode 中 Nova.Vibrate.LoadAsync、平台支持、业务触发和 StopAll 生命周期证据",
     "目标真机上的实际测试者体感反馈；没有该反馈时结果最高为 partial",
-    "本轮测试态、临时runner/脚本/meta/marker/日志/产物清场、必要Refresh与目标工作树核对；正式交付和原有工作保留"
+    "本轮测试态、临时runner/脚本/meta/marker/日志/产物清场、必要Refresh与目标工作树核对；正式交付和原有工作保留",
+    "source-template-copy: inspect/plan/execute/verify绑定实际模板与目标SHA，目标整文件与冻结模板字节一致；该分支仅物料准备，业务修改/导出/运行各自验收。"
   ]
 }

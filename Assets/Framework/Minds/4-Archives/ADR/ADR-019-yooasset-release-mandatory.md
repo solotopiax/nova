@@ -19,6 +19,8 @@ related:
 
 # ADR-019：YooAsset Load 后必须显式 Release(location)，releaseFunc 不得空实现
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../Docs/INDEX.md) 或 [Minds 索引](../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 背景（Context）
 
 Nova 的 `AssetManager.LoadAsync<T>(location)` / `LoadSync<T>(location)` 内部走 YooAsset，拿到 handle 后调用 `handle.GetAssetObject<T>()` 把强类型资产返回给业务层；handle 本身**只在 AssetManager 内部以 `Dictionary<string, IAssetHandle>` 形式被记账**，调用方拿到的是**裸资产**（`UnityEngine.Object` 或子类）。
@@ -63,6 +65,8 @@ Nova 的 `AssetManager.LoadAsync<T>(location)` / `LoadSync<T>(location)` 内部�
 | 在 `loadFunc` 内部 `using` 句柄 | YooAsset handle 不是 IDisposable；且 Load 完成时机和 Release 时机经常分离（例如 UI 注册表加载完即 Release，但实际 Prefab/Sprite 资源要后续才释放） |
 
 ## 验证依据（Verification）
+
+下列旧 `AssetManager.Load.cs`、`AssetManager.Cleanup.cs` 路径已失效；当前资源接口见 [AssetComponent](../../../Docs/Runtime/Modules/Asset/AssetComponent.md) 与 [IAssetManager](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md)。
 
 - 源码：
   - `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/Implements/AssetManager.Load.cs`：`GetAssetObject<T>()` 后 handle 不再返回给调用方

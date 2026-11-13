@@ -1,7 +1,7 @@
 # Framework 架构总览
 
 本文只描述 **当前代码事实**。  
-历史决策、演进原因、术语边界请转到 `Assets/Framework/Minds/`。
+历史决策、演进原因和术语依据从当前包的 [Minds 索引](../Minds/0-Index/0-Index.md)按需查询；Minds 整库公开，消费端只读随包快照。当前实现仍以核实后的包源码和 Docs 为准；证据边界见 [NA-016：当前事实、设计建议、条件风险和实测故障分别报告](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-016当前事实设计建议条件风险和实测故障分别报告)。
 
 ## 总体结构
 
@@ -13,7 +13,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 
 ## 全局入口
 
-当前 `Nova` 暴露的静态入口见 `Assets/Framework/Scripts/Runtime/Modules/Nova/Nova.Visitors.cs`：
+当前 `Nova` 暴露的静态入口见 [Nova.Visitors.cs](../Scripts/Runtime/Modules/Nova/Nova.Visitors.cs)：
 
 | 静态入口 | 对应组件 | 说明 |
 |---|---|---|

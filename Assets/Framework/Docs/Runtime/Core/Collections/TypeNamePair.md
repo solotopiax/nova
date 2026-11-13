@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `TypeNamePair.cs` | 结构体定义 |
+| [TypeNamePair.cs](../../../../Scripts/Runtime/Core/Collections/TypeNamePair.cs) | 结构体定义 |
 
 ## 关键字段/属性
 

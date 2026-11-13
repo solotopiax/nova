@@ -12,9 +12,9 @@ UI 组件的 Inspector 面板，提供管理器类型选择、Luban 表格导出
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `UIComponentInspector.cs` | `sealed partial UIComponentInspector` | 主体：`TemplateFileName`/`TemplateLabelWidth` override、`OnEnable`/`OnDisable` 生命周期、`OnInspectorGUI` 绘制入口 |
-| `UIComponentInspector.Visitors.cs` | `partial UIComponentInspector` | 字段：颜色/布局常量、`SerializedProperty` 属性引用、GUIStyle、FileWatcher 相关字段 |
-| `UIComponentInspector.Methods.cs` | `partial UIComponentInspector` | 私有方法：`DrawConfigs`、`DrawUIExport`、`DrawUISourceFileRow`、运行时视图分组与 DataTypeName 刷新适配 |
+| [UIComponentInspector.cs](../../../../Scripts/Editor/Inspectors/UIComponentInspector/UIComponentInspector.cs) | `sealed partial UIComponentInspector` | 主体：`TemplateFileName`/`TemplateLabelWidth` override、`OnEnable`/`OnDisable` 生命周期、`OnInspectorGUI` 绘制入口 |
+| [UIComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/UIComponentInspector/UIComponentInspector.Visitors.cs) | `partial UIComponentInspector` | 字段：颜色/布局常量、`SerializedProperty` 属性引用、GUIStyle、FileWatcher 相关字段 |
+| [UIComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/UIComponentInspector/UIComponentInspector.Methods.cs) | `partial UIComponentInspector` | 私有方法：`DrawConfigs`、`DrawUIExport`、`DrawUISourceFileRow`、运行时视图分组与 DataTypeName 刷新适配 |
 
 ---
 

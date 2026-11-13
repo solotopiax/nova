@@ -12,6 +12,6 @@
 | Unity 实例已建立，Nova 未进入 | 当前构建中可定位的 Unity / Nova 启动日志和最早异常 | 先确定实例与构建身份，不用 Editor.log 代替本浏览器执行 |
 | Nova 流程已进入 | 首个失败的 Procedure / Config / Asset / 网络记录及实际请求 | 资源 URL、初始化或业务问题沿原 Operation 最窄范围查阅；静态配置不证明远端接受 |
 
-HTTP、压缩、线程隔离和本地服务的技术边界复用 [Build Player 平台 CLI](../../nova-project-build-player/references/platform-cli.md#webgl-http-与浏览器)。本诊断只读取现有证据，不运行该页的 `serve_webgl.py`、构建、部署、刷新缓存或删除浏览器数据。只有另一个已授权运行/修复任务才使用对应执行入口。
+HTTP、压缩、线程隔离和本地服务的技术边界复用 [Build Player 平台 CLI](../../nova-project-build-player/references/platform-cli.md#webgl-http-与浏览器)。本诊断只读取现有证据，不运行该页的 [serve_webgl.py](../../nova-project-build-player/scripts/serve_webgl.py)、构建、部署、刷新缓存或删除浏览器数据。只有另一个已授权运行/修复任务才使用对应执行入口。
 
 报告当前页面/构建身份、最早阶段、完整可定位的异常或失败请求、事实与推断、缺失证据和下一最小动作。可完整定位最早直接失败点时诊断为 `success`；能力或证据不足则 `partial`，不把诊断完成写成游戏已启动或故障已修复。

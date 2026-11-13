@@ -58,10 +58,10 @@ related:
 
 ## 来源与验证依据
 
-- 内容契约与使用边界：`Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md`、`Assets/Framework/Docs/Editor/Windows/ImportantUpdatesWindow.md`。
-- 提取、状态、调度与确认：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.ImportantUpdates/` 下的 `EditorUtil.ImportantUpdates.Changelog.cs`、`EditorUtil.ImportantUpdates.cs`、`EditorUtil.ImportantUpdates.Initializer.cs`；呈现层为 `Assets/Framework/Scripts/Editor/Windows/ImportantUpdatesWindow/ImportantUpdatesWindow.cs`。
-- 显式操作范围：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.cs` 的 `InstallPackage` 与 `Assets/Framework/Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs` 的 `UpgradeAll`。
-- 发布维护复用 `.agents/skills/nova-publish/` 下的 `SKILL.md`、`scripts/changelog_tool.py`、`scripts/publish_packages.py`；本地回归验证多行读写、归档、历史保护和真实 tgz 中的完整日志一致性。
+- 内容契约与使用边界：[Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)、[Docs/Editor/Windows/ImportantUpdatesWindow.md](../../../Docs/Editor/Windows/ImportantUpdatesWindow.md)。
+- 提取、状态、调度与确认：[Scripts/Editor/EditorUtil/EditorUtil.ImportantUpdates/](../../../Scripts/Editor/EditorUtil/EditorUtil.ImportantUpdates) 下的 [EditorUtil.ImportantUpdates.Changelog.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.Changelog.cs)、[EditorUtil.ImportantUpdates.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.cs)、[EditorUtil.ImportantUpdates.Initializer.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.Initializer.cs)；呈现层为 [Scripts/Editor/Windows/ImportantUpdatesWindow/ImportantUpdatesWindow.cs](../../../Scripts/Editor/Windows/ImportantUpdatesWindow/ImportantUpdatesWindow.cs)。
+- 显式操作范围：[Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.cs) 的 `InstallPackage` 与 [Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs) 的 `UpgradeAll`。
+- 发布维护复用 [.agents/skills/nova-publish/](../../../../../.agents/skills/nova-publish/) 下的 `SKILL.md`、`scripts/changelog_tool.py`、`scripts/publish_packages.py`；本地回归验证多行读写、归档、历史保护和真实 tgz 中的完整日志一致性。
 - `Assets/Tests/Editor/ImportantUpdatesChangelogTests.cs`、`ImportantUpdatesStateTests.cs` 覆盖解析、跨版本与批次范围、重载恢复、按用户及展示版本确认、正文漂移和损坏存档。已执行定向 Editor 回归及真实模态窗口原生关闭检查；关闭未改变确认记录。上述依据不代表已验证真实 registry 升级或项目迁移完成。
 
 ## 关联

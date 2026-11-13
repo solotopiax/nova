@@ -34,7 +34,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 初始化。
+        /// 初始化路由配置和启动 GM 单次请求超时；无效的超时值回退为 5 秒。
         /// </summary>
         /// <param name="config">配置信息。</param>
         public override void Initialize(NetworkManagerConfig config)
@@ -42,6 +42,9 @@ namespace NovaFramework.Runtime
             m_DataFormat = config.DataFormat;
             m_HostKeyUnitSettings = config.HostKeyUnitSettings ?? new List<HostKeyUnitSetting>();
             m_NetCmdUnitSettings = config.NetCmdUnitSettings ?? new List<NetCmdUnitSetting>();
+            float startupTimeout = config.StartupAppConfigRequestTimeout;
+            m_StartupAppConfigRequestTimeout = startupTimeout > 0f &&
+                !float.IsNaN(startupTimeout) && !float.IsInfinity(startupTimeout) ? startupTimeout : 5f;
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
             m_HttpManager = FrameworkManagersGroup.GetManager<IHttpManager>();
         }

@@ -12,9 +12,9 @@ AdPlugin 事件容器，持有 7 个 ObservableEvent 字段，汇聚当前聚合
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Nova/Scripts/Runtime/AdPluginEvents.cs` | `AdPluginEvents` | 七个事件字段 |
-| `Nova/Scripts/Runtime/Types/AdResult.cs` | `AdResult` | 展示、失败和关闭载荷 |
-| `Nova/Scripts/Runtime/Types/AdEvent.cs` / `AdEventType.cs` | `AdEvent` / `AdEventType` | 收益载荷及事件类别 |
+| [Nova/Scripts/Runtime/AdPluginEvents.cs](../Scripts/Runtime/AdPluginEvents.cs) | `AdPluginEvents` | 七个事件字段 |
+| [Nova/Scripts/Runtime/Types/AdResult.cs](../Scripts/Runtime/Types/AdResult.cs) | `AdResult` | 展示、失败和关闭载荷 |
+| [Nova/Scripts/Runtime/Types/AdEvent.cs](../Scripts/Runtime/Types/AdEvent.cs) / `AdEventType.cs` | `AdEvent` / `AdEventType` | 收益载荷及事件类别 |
 
 ---
 
@@ -214,7 +214,7 @@ void OnDestroyed()
 
 ## §13 关联文档
 
-- [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与 API
+- [ObservableEvent.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Events/ObservableEvent.md`） — StickyEvent / ReplayEvent 基类与 API
 - [IAdPlugin.md](./IAdPlugin.md) — 通过具体类型 `AdPlugin` 的 `Events` 属性暴露此容器
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道侧触发各 event，AdPlugin 桥接到此容器
 - [AdResult.cs](../Scripts/Runtime/Types/AdResult.cs) — 展示、失败和关闭结果字段的当前定义

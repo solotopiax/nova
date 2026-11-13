@@ -12,12 +12,12 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `WebSocketManager.cs` | `sealed partial WebSocketManager` | 主体：Initialize / Connect/Disconnect/Reconnect / SendMessage / CreateMessage/RecycleMessage / Update / Shutdown |
-| `WebSocketManager.Visitors.cs` | `partial WebSocketManager` | 字段：通道列表、协程句柄字典、消息对象池、配置参数、9 个事件 |
-| `WebSocketManager.Methods.cs` | `partial WebSocketManager` | 私有方法：4 条连接/认证/心跳/重连协程、通道查找/停止协程工具 |
-| `WebSocketManager.MutexData.cs` | `partial WebSocketManager` | 跨线程队列：LazyToQueueOnMainThread / QueueOnSubThread / MutexDataUpdate |
-| `WebSocketManagerBase.cs` | `abstract WebSocketManagerBase` | 基类：继承 FrameworkManager，声明全部抽象方法与事件，Priority = 9 |
-| `WebSocketManagerConfig.cs` | `class WebSocketManagerConfig` | 配置数据类：超时参数、ICoroutineRunner、SpecialMessageCreator 委托 |
+| [WebSocketManager.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Implements/WebSocketManager.cs) | `sealed partial WebSocketManager` | 主体：Initialize / Connect/Disconnect/Reconnect / SendMessage / CreateMessage/RecycleMessage / Update / Shutdown |
+| [WebSocketManager.Visitors.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Implements/WebSocketManager.Visitors.cs) | `partial WebSocketManager` | 字段：通道列表、协程句柄字典、消息对象池、配置参数、9 个事件 |
+| [WebSocketManager.Methods.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Implements/WebSocketManager.Methods.cs) | `partial WebSocketManager` | 私有方法：4 条连接/认证/心跳/重连协程、通道查找/停止协程工具 |
+| [WebSocketManager.MutexData.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Implements/WebSocketManager.MutexData.cs) | `partial WebSocketManager` | 跨线程队列：LazyToQueueOnMainThread / QueueOnSubThread / MutexDataUpdate |
+| [WebSocketManagerBase.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Implements/WebSocketManagerBase.cs) | `abstract WebSocketManagerBase` | 基类：继承 FrameworkManager，声明全部抽象方法与事件，Priority = 9 |
+| [WebSocketManagerConfig.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Definitions/WebSocketManagerConfig.cs) | `class WebSocketManagerConfig` | 配置数据类：超时参数、ICoroutineRunner、SpecialMessageCreator 委托 |
 
 ---
 

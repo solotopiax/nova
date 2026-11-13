@@ -1,7 +1,7 @@
 # Nova Framework - Kit - Network - GameBind
 
 > 包名：`com.solotopia.nova.framework.kit.network.gamebind`
-> 当前版本：`0.1.10`
+> 当前版本：`0.2.0`
 
 账号绑定业务网络模块，封装绑定状态查询、绑定、冲突查询与裁决协议及类型。
 
@@ -17,13 +17,13 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.kit.network.gamebind": "0.1.10"
+  "com.solotopia.nova.framework.kit.network.gamebind": "0.2.0"
 }
 ```
 
 ## 示例工程
 
-导入 Samples 时选择 `GameBindDemo`，示例路径：`Assets/Samples/GameBindDemo/`，命名空间 `NovaFramework.Kit.Network.GameBind.Samples`。
+在 Package Manager 中导入 `GameBindDemo`，再从实际导入目录打开同名场景；命名空间为 `NovaFramework.Kit.Network.GameBind.Samples`。源码开发态的来源由本包 [示例清单](nova-samples.json) 的 `sourceDir` 标明，不作为消费项目的固定导入位置。
 
 > **示例前置依赖**：`GameBindDemo` 演示「先登录取得当前账号 → 再绑定三方号」的完整流程，登录步骤使用 `com.solotopia.nova.framework.kit.network.gamelogin` 的 `Login` 服务。导入本示例前请确保工程已安装 `gamelogin` 包，否则示例脚本会因引用 `Login` 类型而编译失败。
 >
@@ -34,3 +34,12 @@
 公开 API、配置与跨包流程入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Onboarding/PROJECT_STRUCTURE.md` |
+| `com.solotopia.nova.framework.kit.network.gamelogin` | `Nova/Docs/INDEX.md` | `Nova/Docs/Login.md` |

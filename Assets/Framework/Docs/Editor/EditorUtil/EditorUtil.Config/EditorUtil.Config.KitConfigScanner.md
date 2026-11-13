@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.cs` | `EditorUtil.Config.KitConfigScanner` | 扫描器工具类 |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.cs) | `EditorUtil.Config.KitConfigScanner` | 扫描器工具类 |
 
 ---
 

@@ -1,7 +1,7 @@
 # Luban
 
 > 包名：`com.solotopia.luban`
-> 当前版本：`10.1.0`
+> 当前版本：`10.1.1`
 
 鲁班是一个功能强大，易于使用，优雅稳定的游戏配置解决方案。
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.luban": "10.1.0"
+  "com.solotopia.luban": "10.1.1"
 }
 ```
 
@@ -21,10 +21,10 @@
 
 ## 当前开源状态
 
-- 当前结论：包根第三方声明已补齐，可按“保留 `Core/` 内上游许可链 + 包根说明文件”的方式进入公开仓。
+- 当前结论：包根第三方声明已补齐，可按“保留 [Core/](Core/) 内上游许可链 + 包根说明文件”的方式进入公开仓。
 
 ## 许可与第三方声明
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。

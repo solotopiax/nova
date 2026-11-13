@@ -31,6 +31,31 @@
       "kind": "unity-editor-automation",
       "entry": "nova-project-edit-settings confirmed UIComponent Inspector editing",
       "when": "仅适配计划确需更改项目自有 UIComponent 时，按所选 Operation 冻结精确配置资产、原值/目标值、override、保存与读回；不修改包内 canonical Prefab，不把此路由当作新 MCP Action；方向修改须另核对当前宿主实际Player Settings编辑能力，不冒称patch-target支持任意ProjectSettings。"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+      "when": "仅从当前包白名单官方 UI/Sound 表克隆；按 RESOURCE_WORKFLOW.md 冻结模板/目标摘要与完整业务行，原样保留样式/备注；不导出、不启动Unity，不用于普通叶子编辑"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "UIView.OpenScope / UIViewScope.Token / IsDisposed / Own / AddCleanup / Subscribe<TEvent> / Dispose",
+      "when": "只在已授权业务源码主动接入本次打开工作，scope惰性创建且只清明确登记对象；框架受控关闭/回收/销毁收尾，隐藏/暂停不结束。原手工订阅取消清理不扫描接管，不双重清理；不是MCP Action。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.UI.OpenUIViewAwaitAsync<T> / OpenUIViewAwaitAsync(string,object,CancellationToken) / OpenUIViewByAssetAwaitAsync",
+      "when": "只在已授权业务源码明确需要等待时接入可选IUIOpenAwaiter门面；注册/分组/暂停/池化来源不变，完成需OnInit/OnOpen/组刷新，取消仅本请求，结果当时快照不能长期持池化View；旧入口不迁移，不是MCP Action。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.ui.inspect-bindings",
+      "when": "只读发现精确项目普通Prefab内View、对象和直接字段及受阻原因；所有ID/类型来自当前Inspect，不依赖节点名或整数位置。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.ui.configure-bindings",
+      "when": "明确选mode=bind或generate，live Schema经Plan/单次Execute/只读Verify；bind只填空或同引用no-op不改事件/层级，generate只工具归属字段partial与首次meta，本次编译重载后重新Inspect并新Plan绑定。不接管旧页，恢复不完整保留回执和目录，不重放或任意代码恢复。"
     }
   ],
   "inputs": [
@@ -62,6 +87,26 @@
       "name": "screenAdaptationPlan",
       "required": true,
       "constraint": "按 Docs/Runtime/Modules/UI/UIComponent.md 的屏幕适配与安全区章节由Agent读取并冻结；创建页面必需，更新/Workflow仅布局、画布、方向或安全区分支必需。包含平台方向、设计尺寸/比例和支持范围、缩放/安全区唯一拥有者、有效配置/原目标值、变化刷新与验收；纯数据/事件且布局不变记录沿用及影响范围，不要求用户重复填写可读事实。"
+    },
+    {
+      "name": "officialTemplateAndSourceRows",
+      "required": false,
+      "description": "仅source-from-template必需：实际官方template、target及原SHA/新建null、真实sourceRoots/generatedRoots、Sheet名、全部字段/类型/业务行与可选标题；来源选择与保真验收按RESOURCE_WORKFLOW.md。"
+    },
+    {
+      "name": "optionalOpenLifetimeScope",
+      "required": false,
+      "constraint": "仅本次明确选择作用域时必需：当前打开拥有者、主动登记的IDisposable/cleanup/handler与Token用途、原有手工工作保持归属及关闭/回池/销毁证据；未访问OpenScope不启用，不要求旧项目迁移。 仅显式取得且尚未Awake的本作用域有短期Update兜底，觉醒/结束/重开停止；关闭同步，未Awake销毁检测依赖后续PlayerLoop，需本次真Play验收。"
+    },
+    {
+      "name": "optionalAwaitOpenRequest",
+      "required": false,
+      "constraint": "仅本次新等待分支必需：原表Name/类型/唯一地址、调用点、userData、请求取消拥有者、Opened/Failed/Cancelled/Closed/Shutdown处理；旧int签名/流程保留，不支持可选接口时明确NotSupportedException，不轮询伪装完成。"
+    },
+    {
+      "name": "optionalControlBindings",
+      "required": false,
+      "constraint": "仅明确选择批量绑定/字段生成时必需：同一已有项目普通Prefab、Inspect真实View/Object GlobalObjectId、字段名/完整AssemblyQualifiedName、原值/目标映射及bind或generate模式；复杂/嵌套/变体/脏态不迁移；生成仅预先partial业务类，编译重载Verify后另计划bind。 预检覆盖本Prefab全部MonoBehaviour：业务/未知来源序列化、OnValidate、ExecuteAlways/ExecuteInEditMode回调阻断，正常uGUI/TMP仅真实程序集/注册包/MonoScript物理来源一致才放行；不承诺隔离装载期或全局Import/AssetPostprocessor。"
     }
   ],
   "effects": [
@@ -76,7 +121,9 @@
       "confirmed UI registration source",
       "generated UI output for this registration",
       "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
-      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope"
+      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope",
+      "source-from-template: confirmed project-owned Assets/**/*.xlsx target and exact TableSource plan/receipt; official template remains read-only",
+      "optional configure-bindings: exact planned existing business Prefab for bind, or sole owned <Type.Name>.UIBindings.g.cs plus only its initially missing meta for generate; original business sources remain protected"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -84,7 +131,8 @@
       "handwritten Prefab or Scene YAML",
       "unrelated generated output",
       "manual edits to generated UI output",
-      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes"
+      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes",
+      "implicit migration of existing fields/listeners/lifetimes, overwritten different or missing references, unsupported variant/nested Prefab conversion, arbitrary generated content/output path or replay after reload"
     ]
   },
   "locks": [
@@ -92,7 +140,10 @@
     "asset-database",
     "active-scene",
     "ui-registration",
-    "ui-export"
+    "ui-export",
+    "table-source-shared-write-lock",
+    "ui-bindings",
+    "ui-binding-code-output"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -101,7 +152,7 @@
       "replace non-generated asset",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定 viewName、写入集和副作用；输入或范围改变后旧确认失效。 UI导出确认绑定Action PlanId及展示的共享配置、UITables和删除范围。"
+    "rule": "确认绑定 viewName、写入集和副作用；输入或范围改变后旧确认失效。 UI导出确认绑定Action PlanId及展示的共享配置、UITables和删除范围。 source-from-template仅确认该分支冻结的模板、目标原SHA和完整行/写集，不要求完整业务输入；替换已有表沿用精确授权，不降低危险副作用门。 可选控件工具确认绑定当前configure-bindings PlanId、精确对象/类型/字段、模式及完整文件写集；原精确任务授权持续有效，生成/编译/新绑定分别计划，不扩大旧页迁移。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -115,6 +166,36 @@
     "Unity 创建的 Prefab 与序列化绑定",
     "选定 UI 导出结果",
     "Unity 编译或 Play 证据",
-    "布局分支实施前已有 screenAdaptationPlan，实际 UIComponent/CanvasScaler 配置与唯一安全区拥有者符合计划；实际入口的参考/边界比例、安全区、支持方向及重开 Play 布局证据，移动端交付按目标补 Player/设备证据，缺失保持 partial。纯数据/事件且布局不变不扩大验收。"
+    "布局分支实施前已有 screenAdaptationPlan，实际 UIComponent/CanvasScaler 配置与唯一安全区拥有者符合计划；实际入口的参考/边界比例、安全区、支持方向及重开 Play 布局证据，移动端交付按目标补 Player/设备证据，缺失保持 partial。纯数据/事件且布局不变不扩大验收。",
+    "source-from-template: inspect/Plan/Execute/Verify、来源与输出样式/非目标ZIP保真、实际改动区域渲染与业务行/字段一致；该分支不代表导出或Play成功。",
+    "产品方向与逐页适配按UIComponent屏幕适配文档：横屏只验横屏、竖屏只验竖屏；完整产品覆盖独立Canvas的闪屏/Loading/启动弹窗至玩法/触控/暂停/结算，分区避让、背景铺满与坐标正确，不能用整页统一缩进、仅玩法截图或compile代替；真实Player/设备证据与临时状态清场分开报告。",
+    "可选增强分别取得编译及本次Play：未修改旧页/旧serialID调用仍按原流程，scope只处理主动登记工作、关闭/池重开/晚到/异常清理；await结果覆盖准备完成、失败、关闭、取消、Shutdown与迟到实例释放。设计兼容不冒充全部旧项目已运行验收。",
+    "控件工具分支有当前Inspect/Plan/Receipt/Verify：bind核全部准确引用与范围外文件，generate核唯一归属输出/原始程序集来源及本次Compile+Reload，再新Inspect/Plan绑定；Action成功不代页面Play，恢复失败保留材料且明确当前没有独立恢复Action。"
+  ],
+  "taskProfiles": [
+    {
+      "id": "source-from-template",
+      "description": "只从官方原表克隆项目自有UI Excel并核验数据/样式；显式整表替换须完整原SHA与已有精确授权，不用于普通已有格编辑；不导出或声称完整业务接入。",
+      "taskIds": [
+        "ui.source.create"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "officialTemplateAndSourceRows"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write"
+      ]
+    }
   ]
 }

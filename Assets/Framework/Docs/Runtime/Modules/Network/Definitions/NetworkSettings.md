@@ -11,11 +11,11 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetworkSettings` | 顶层容器（持有 HostKeySettings + NetCmdSettings） |
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `HostKeySettings` | 域名表设置，实现 `IDataTableSettings` |
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `HostKeyUnitSetting` | 单个域名表单元设置，继承 `DataTableUnitSettingBase` |
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetCmdSettings` | 指令表设置，实现 `IDataTableSettings` |
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetCmdUnitSetting` | 单个指令表单元设置，继承 `DataTableUnitSettingBase` |
+| [Runtime/Modules/Network/Definitions/NetworkSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/NetworkSettings.cs) | `NetworkSettings` | 顶层容器（持有 HostKeySettings + NetCmdSettings） |
+| [Runtime/Modules/Network/Definitions/NetworkSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/NetworkSettings.cs) | `HostKeySettings` | 域名表设置，实现 `IDataTableSettings` |
+| [Runtime/Modules/Network/Definitions/NetworkSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/NetworkSettings.cs) | `HostKeyUnitSetting` | 单个域名表单元设置，继承 `DataTableUnitSettingBase` |
+| [Runtime/Modules/Network/Definitions/NetworkSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/NetworkSettings.cs) | `NetCmdSettings` | 指令表设置，实现 `IDataTableSettings` |
+| [Runtime/Modules/Network/Definitions/NetworkSettings.cs](../../../../../Scripts/Runtime/Modules/Network/Definitions/NetworkSettings.cs) | `NetCmdUnitSetting` | 单个指令表单元设置，继承 `DataTableUnitSettingBase` |
 
 ---
 

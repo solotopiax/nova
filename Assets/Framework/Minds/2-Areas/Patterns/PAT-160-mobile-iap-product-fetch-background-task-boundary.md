@@ -99,14 +99,14 @@ Unity IAP 的连接成功、商品拉取成功、商品拉取失败和已有购�
 ## 来源与验证依据
 
 - 代码事实：
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Init/MobileProductFetchCoordinator.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/MobileServiceHub.cs`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Restore/MobileRestoreService.cs`
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Init/MobileProductFetchCoordinator.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Init/MobileProductFetchCoordinator.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/MobileServiceHub.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/MobileServiceHub.cs)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Restore/MobileRestoreService.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Services/Restore/MobileRestoreService.cs)
 - 文档事实：
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileIAP-Architecture.md`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileInitService.md`
-  - `UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md`
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileIAP-Architecture.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileIAP-Architecture.md)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileInitService.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileInitService.md)
+  - [UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md)
 - 回归依据：
   - `Assets/Tests/Editor/IAP/MobileProductFetchCoordinatorTests.cs`
   - `Assets/Tests/Editor/IAP/MobileProductFetchRetryConfigTests.cs`

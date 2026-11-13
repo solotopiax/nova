@@ -12,10 +12,10 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Nova/Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs` | `MaxAdPluginBuildProcessor` | 全部定义 |
-| `Nova/Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs` | `MaxSkAdNetworkPlistCompleter` | 离线枚举网络，联网获取并增量补齐 SKAdNetwork ID |
-| `Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs` | `MaxIOSPodOwnershipPostprocessor` | 顺序 44 统一 MAX iOS 原生依赖归属 |
-| `Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnership.rb` | 固定 Ruby 脚本，无自定义函数 | 使用 CocoaPods 的 `xcodeproj` 公开对象 API 定向回写生成工程 |
+| [Nova/Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs](../Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs) | `MaxAdPluginBuildProcessor` | 全部定义 |
+| [Nova/Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs](../Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs) | `MaxSkAdNetworkPlistCompleter` | 离线枚举网络，联网获取并增量补齐 SKAdNetwork ID |
+| [Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs](../Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs) | `MaxIOSPodOwnershipPostprocessor` | 顺序 44 统一 MAX iOS 原生依赖归属 |
+| [Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnership.rb](../Scripts/Editor/BuildProcessor/MaxIOSPodOwnership.rb) | 固定 Ruby 脚本，无自定义函数 | 使用 CocoaPods 的 `xcodeproj` 公开对象 API 定向回写生成工程 |
 
 ---
 
@@ -94,7 +94,7 @@ iOS 后处理会在 Pods 中寻找名单里的 5 项候选 xcframework，将实�
 
 ### SKAdNetwork 网络与请求边界
 
-本处理在 AppLovin 的 plist 写入之后执行。`PackageInfo.GetAllRegisteredPackages()` 本地枚举 adapter / DSP 包的 `dir:` 关键字，必要时从其磁盘 `package.json` 读取 keywords，避开原厂 `Client.List()` 的等待超时；这一部分不请求 registry。完整 ID 清单仍通过 `https://unity.applovin.com/max/1.0/skadnetwork_ids?ad_networks=...` 同步请求，当前 HTTP 超时为 60 秒，不能称为全流程离线补全。
+本处理在 AppLovin 的 plist 写入之后执行。`PackageInfo.GetAllRegisteredPackages()` 本地枚举 adapter / DSP 包的 `dir:` 关键字，必要时从其磁盘 [package.json](../../package.json) 读取 keywords，避开原厂 `Client.List()` 的等待超时；这一部分不请求 registry。完整 ID 清单仍通过 `https://unity.applovin.com/max/1.0/skadnetwork_ids?ad_networks=...` 同步请求，当前 HTTP 超时为 60 秒，不能称为全流程离线补全。
 
 已有 `SKAdNetworkItems` 只增不删且按 ID 去重。缺少 plist、未发现网络、请求失败、响应为空或解析异常会 Warning 并保留原厂已有内容；这些分支不主动令构建失败，也不能证明 plist 完整。成功日志包含合并前后数量、新增数、网络数与接口返回数，不能把某个历史固定条数作为所有项目的验收值。构建验证需按本次实际安装网络核对输出 plist 和客户端请求结果。
 

@@ -5,12 +5,14 @@ It is a package-maintenance aid, not a legal guarantee. Release owners should
 recheck current upstream licenses, platform terms, and resolved dependency
 versions for each public release.
 
+Sample paths below identify development source relative to the Nova repository root. In consumer projects, locate `GoogleSigninDemo` through Package Manager's actual import list and resolve sample files from that imported directory; these development paths are not installation locations.
+
 ## License Boundary
 
 | Area | Ownership / License Boundary | Notes |
 |---|---|---|
-| `Nova/**` | Solotopia/Nova MIT content | C# adapter layer, runtime plugin, config, data types, editor dependency declarations, tests, and docs. |
-| `Core/Plugins/Android/**` | Solotopia/Nova MIT content | Nova Android bridge code that calls Android Credential Manager and Google Identity APIs. |
+| [Nova/**](../) | Solotopia/Nova MIT content | C# adapter layer, runtime plugin, config, data types, editor dependency declarations, tests, and docs. |
+| [Core/Plugins/Android/**](../../Core/Plugins/Android/) | Solotopia/Nova MIT content | Nova Android bridge code that calls Android Credential Manager and Google Identity APIs. |
 | EDM4U Gradle dependencies | Upstream licenses and terms | Resolved at build time; not vendored or relicensed as MIT by this package. |
 
 ## Third-Party Dependencies
@@ -24,7 +26,7 @@ versions for each public release.
 
 ## Public Release Requirements
 
-- Retain package `LICENSE.md` and `THIRD_PARTY_NOTICES.md`.
+- Retain package [LICENSE.md](../../LICENSE.md) and [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).
 - Re-run EDM4U dependency resolution and record the exact Android artifacts used
   by the release.
 - Recheck the resolved dependency license files, required notices, and current

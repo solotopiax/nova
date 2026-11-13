@@ -12,8 +12,8 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Core/FrameworkComponent.cs` | `abstract FrameworkComponent` | 基类：Awake 注册 + ICoroutineRunner 实现 |
-| `Core/FrameworkComponentsGroup.cs` | `static FrameworkComponentsGroup` | 全局注册表，按类型查找实例 |
+| [Core/FrameworkComponent.cs](../../../Scripts/Runtime/Core/FrameworkComponent.cs) | `abstract FrameworkComponent` | 基类：Awake 注册 + ICoroutineRunner 实现 |
+| [Core/FrameworkComponentsGroup.cs](../../../Scripts/Runtime/Core/FrameworkComponentsGroup.cs) | `static FrameworkComponentsGroup` | 全局注册表，按类型查找实例 |
 
 ---
 

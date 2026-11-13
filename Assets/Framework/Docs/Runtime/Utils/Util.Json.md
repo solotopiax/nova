@@ -6,7 +6,7 @@ JSON 序列化 / 反序列化封装。
 
 ## 文件
 
-`Util.Json/Util.Json.cs`
+[Util.Json.cs](../../../Scripts/Runtime/Core/Util/Util.Json/Util.Json.cs)
 
 ## API
 

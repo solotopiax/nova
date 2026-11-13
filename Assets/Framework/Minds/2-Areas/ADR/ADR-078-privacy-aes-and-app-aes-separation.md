@@ -80,7 +80,7 @@ Nova 同时存在两组 AES Key/IV，但它们的职责不同：
 - Runtime：`ConfigManager` 在加载 `ConfigRuntimeSO` 后初始化 `Util.Encrypt.AES`；`Util.Encrypt.AES` 对默认与显式 Key/IV 分别校验。
 - Network：`NetService` 从 `AppConfigs.AppAesKey/AppAesIV` 取值，并将其传入 `NetBuilder.Encrypt` 和 `NetParser.Decrypt`；ThirdPay 已删除其传输调试覆盖并通过 `NetService.SendAsync` 发请求。
 - Editor：`PersistComponentInspector` 从 `WorkspaceActive` 解析当前隐私配置，并显式传入 AES Key/IV。
-- Docs：`PrivacyConfigs.md`、`Util.Encrypt.md`、`NetService.md`。
+- Docs：[PrivacyConfigs.md](../../../Docs/Runtime/Modules/Config/PrivacyConfigs.md)、[Util.Encrypt.md](../../../Docs/Runtime/Utils/Util.Encrypt.md)、[NetService.md](../../../Docs/Runtime/Modules/Network/NetService.md)。
 - 测试：`PrivacyConfigAesContractTests` 覆盖字段分域、Editor 坐标约束和 Inspector 显式传参；`ThirdIapNetServiceContractTests` 覆盖 ThirdPay 调试传输入口已移除。
 
 ## 关联

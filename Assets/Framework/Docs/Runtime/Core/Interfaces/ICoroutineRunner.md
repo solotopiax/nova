@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `ICoroutineRunner.cs` | 接口定义 |
+| [ICoroutineRunner.cs](../../../../Scripts/Runtime/Core/Interfaces/ICoroutineRunner.cs) | 接口定义 |
 
 ## 公开 API
 

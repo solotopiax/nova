@@ -78,7 +78,7 @@ Mobile IAP 旧版本地未完成订单仓库使用 `tableId` 作为唯一键。�
 ## 验证依据
 
 - Runtime：`MobileOrderKey`、`MobileStorePersistData.OrderRecordsByKey`、`MobileValidationService`、`MobilePurchaseService`。
-- Docs：`com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md`、`MobileIAP-Architecture.md`、`MobileUtils.md`。
+- Docs：`com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileStore.md`、[MobileIAP-Architecture.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileIAP-Architecture.md)、[MobileUtils.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/MobileUtils.md)。
 - 测试：`MobileOrderKeyPersistDataTests` 覆盖订单键生成、旧存档迁移和同 `tableId` 多 `ReceiptParam` 共存；`MobileValidationInternalSplitTests` 覆盖重复 `tableId` 验单批次拆单。
 
 ## 关联

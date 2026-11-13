@@ -13,11 +13,11 @@ YooAsset 标准 AssetBundle 与可选 RawFile 构建薄封装。两个入口使�
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.BundleBuilder.cs` | `EditorUtil.BundleBuilder` | public API、默认版本号、首包拷贝校验与 WebGL `None` 旧目录清理 |
-| `EditorUtil.BundleBuilder.Visitors.cs` | `EditorUtil.BundleBuilder` | 日志常量 |
-| `EditorUtil.BundleBuilder.Methods.cs` | `EditorUtil.BundleBuilder` | 私有方法：`ResolveClassName` / `CreateInstanceOrNull` / `ResolveBuiltinShaderBundleName` |
-| `AssetBundleBuildArgs.cs` | `AssetBundleBuildArgs` | `[Serializable]` 标准 AssetBundle 构建参数 DTO |
-| `RawFileBuildArgs.cs` | `RawFileBuildArgs` | `[Serializable]` RawFile 构建参数 DTO |
+| [EditorUtil.BundleBuilder.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.cs) | `EditorUtil.BundleBuilder` | public API、默认版本号、首包拷贝校验与 WebGL `None` 旧目录清理 |
+| [EditorUtil.BundleBuilder.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.Visitors.cs) | `EditorUtil.BundleBuilder` | 日志常量 |
+| [EditorUtil.BundleBuilder.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.Methods.cs) | `EditorUtil.BundleBuilder` | 私有方法：`ResolveClassName` / `CreateInstanceOrNull` / `ResolveBuiltinShaderBundleName` |
+| [AssetBundleBuildArgs.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.BundleBuilder/AssetBundleBuildArgs.cs) | `AssetBundleBuildArgs` | `[Serializable]` 标准 AssetBundle 构建参数 DTO |
+| [RawFileBuildArgs.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.BundleBuilder/RawFileBuildArgs.cs) | `RawFileBuildArgs` | `[Serializable]` RawFile 构建参数 DTO |
 
 ---
 

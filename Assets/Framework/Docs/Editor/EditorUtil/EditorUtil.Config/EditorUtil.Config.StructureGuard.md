@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.cs` | `EditorUtil.Config.StructureGuard` | 工具类定义（含 MissingRef 嵌套结构体） |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.cs) | `EditorUtil.Config.StructureGuard` | 工具类定义（含 MissingRef 嵌套结构体） |
 
 ---
 

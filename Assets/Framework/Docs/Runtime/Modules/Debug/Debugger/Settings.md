@@ -4,7 +4,7 @@
 
 ## 默认值与生效点
 
-下表是源码初始值；发行资源 `Assets/Framework/Resources/Debug/Settings.asset` 可以覆盖它们，`DebugComponent` 初始化又可覆盖日志容量和字体。现有项目的序列化值不能由源码默认值推断。
+下表是源码初始值；发行资源 [Resources/Debug/Settings.asset](../../../../../Resources/Debug/Settings.asset) 可以覆盖它们，`DebugComponent` 初始化又可覆盖日志容量和字体。现有项目的序列化值不能由源码默认值推断。
 
 | 属性 | 源码默认值 | 主要消费 |
 |---|---|---|

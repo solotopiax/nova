@@ -75,7 +75,7 @@ related:
 
 ## 验证方式
 
-- 代码检查：`Assets/Framework/Scripts/Runtime/**/{Xxx}ManagerBase.cs`
+- 代码检查：[Scripts/Runtime/](../../../Scripts/Runtime/) 下的 `{Xxx}ManagerBase.cs`
 - 检索关键词：`override int Priority =>`
 - 文档检查：`Docs` 中不应再维护与代码分离的另一套 Priority 真值
 

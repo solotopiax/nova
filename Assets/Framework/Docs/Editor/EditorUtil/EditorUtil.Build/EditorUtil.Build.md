@@ -19,15 +19,15 @@ iOS 隐私构建处理器从当前已导出的 `ConfigRuntimeSO.PrivacyConfigs` 
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Build.cs` | `EditorUtil.Build` | public API：BuildPlayer |
-| `EditorUtil.Build.Visitors.cs` | `EditorUtil.Build` | 常量：c_LogPrefix |
-| `EditorUtil.Build.Methods.cs` | `EditorUtil.Build` | 私有方法：ResolveScenes |
-| `EditorUtil.Build.BuildReadiness.cs` | `EditorUtil.Build` | 内部只读构建前置探针，供 `nova.project.build.inspect-readiness` 使用 |
-| `EditorUtil.Build.Definitions.cs` | `EditorUtil.Build` | 嵌套类型：BuildMode 枚举 |
-| `../../BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs` | `YooAssetRuntimeSettingsStaging` | YooAssetSettings 临时副本的解析、所有权记录、恢复与清理 |
-| `../../BuildProcessor/Core/YooAssetRuntimeSettingsBuildCallbacks.cs` | 构建回调 | 正式 Player 构建前 staging、构建后清理；跳过 HybridCLR 裁剪 AOT 临时构建 |
-| `../../BuildProcessor/Core/NovaBuildPostprocessor.cs` | `NovaBuildPostprocessor` | 分发平台后处理；WebGL 额外生成无 404 的资源布局清单 |
-| `../../BuildProcessor/Core/IOSPodsDeploymentTargetPostprocessor.cs` | `IOSPodsDeploymentTargetPostprocessor` | 在 EDM4U 的 Podfile 生成与 pod install 之间设置 Pods iOS 部署版本下限 |
+| [EditorUtil.Build.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.cs) | `EditorUtil.Build` | public API：BuildPlayer |
+| [EditorUtil.Build.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.Visitors.cs) | `EditorUtil.Build` | 常量：c_LogPrefix |
+| [EditorUtil.Build.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.Methods.cs) | `EditorUtil.Build` | 私有方法：ResolveScenes |
+| [EditorUtil.Build.BuildReadiness.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.BuildReadiness.cs) | `EditorUtil.Build` | 内部只读构建前置探针，供 `nova.project.build.inspect-readiness` 使用 |
+| [EditorUtil.Build.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.Definitions.cs) | `EditorUtil.Build` | 嵌套类型：BuildMode 枚举 |
+| [../../BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs](../../../../Scripts/Editor/BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs) | `YooAssetRuntimeSettingsStaging` | YooAssetSettings 临时副本的解析、所有权记录、恢复与清理 |
+| [../../BuildProcessor/Core/YooAssetRuntimeSettingsBuildCallbacks.cs](../../../../Scripts/Editor/BuildProcessor/Core/YooAssetRuntimeSettingsBuildCallbacks.cs) | 构建回调 | 正式 Player 构建前 staging、构建后清理；跳过 HybridCLR 裁剪 AOT 临时构建 |
+| [../../BuildProcessor/Core/NovaBuildPostprocessor.cs](../../../../Scripts/Editor/BuildProcessor/Core/NovaBuildPostprocessor.cs) | `NovaBuildPostprocessor` | 分发平台后处理；WebGL 额外生成无 404 的资源布局清单 |
+| [../../BuildProcessor/Core/IOSPodsDeploymentTargetPostprocessor.cs](../../../../Scripts/Editor/BuildProcessor/Core/IOSPodsDeploymentTargetPostprocessor.cs) | `IOSPodsDeploymentTargetPostprocessor` | 在 EDM4U 的 Podfile 生成与 pod install 之间设置 Pods iOS 部署版本下限 |
 
 ---
 
@@ -229,7 +229,7 @@ This keeps `EditorUtil.Build` as a thin BuildPipeline wrapper while allowing Pip
 
 ## Android Manifest Launcher Selection
 
-Android builds use `Assets/Framework/Scripts/Editor/BuildProcessor/Android/UnityManifest.xml` as a clean manifest baseline. The baseline contains both Unity default launcher candidates:
+Android builds use the package-local [UnityManifest.xml](../../../../Scripts/Editor/BuildProcessor/Android/UnityManifest.xml) as a clean manifest baseline. The resolver checks the development asset path first, then the current package resolved path. The baseline contains both Unity default launcher candidates:
 
 - `com.unity3d.player.UnityPlayerActivity`
 - `com.unity3d.player.UnityPlayerGameActivity`
@@ -267,7 +267,7 @@ NovaBuildParentObservers 与 NativeBuildPreviewObservers 默认无租约时空�
 
 Android 安装权限扫描基于真实 BuildSettings 保存场景，enabled→active→config→总门逐级短路，inactive 不触发 getter；POST_NOTIFICATIONS 先登记，只有扫描实际 true 才 REQUEST_INSTALL_PACKAGES。观察失败不撤销已登记规则。Manifest bootstrap 的冻结预测入口只改私有 XML，不读 Unity设置或写盘；原入口仍按原时点逐个求值，缺 launcher 保留原早退，不能提前补值。
 
-CustomAndroidManifest 的 Mode 并非每类都支持 Remove：Activity 已实现，其它若不支持可能按 Add/Merge 继续。Merge 追加 intent children 不去重，匹配只看 actions 子集和可选 scheme，不核 categories/host/path；meta-data resource/value 可残留互斥旧属性，空属性通常不能清旧值。DOM部分失败不回滚，Save 原地覆写。UnityManifest.xml 含 Activity/GameActivity 两候选，先按 applicationEntry 留一项；具体 SDK 可再注册名称，不能将模板双候选当最终产物。
+CustomAndroidManifest 的 Mode 并非每类都支持 Remove：Activity 已实现，其它若不支持可能按 Add/Merge 继续。Merge 追加 intent children 不去重，匹配只看 actions 子集和可选 scheme，不核 categories/host/path；meta-data resource/value 可残留互斥旧属性，空属性通常不能清旧值。DOM部分失败不回滚，Save 原地覆写。[UnityManifest.xml](../../../../Scripts/Editor/BuildProcessor/Android/UnityManifest.xml) 含 Activity/GameActivity 两候选，先按 applicationEntry 留一项；具体 SDK 可再注册名称，不能将模板双候选当最终产物。
 
 YooAsset staging 先写归属 marker，再复制正文并生成独立 meta；Hash 只绑正文，内容漂移保留副本和 marker，正式 cleanup 失败会抛使构建不能成功，重载/退出后台只日志保留。空 Resources 删除返回值未完整核，marker tmp 写失败也可能残留；只有确认本轮创建且空的目录可清。内部 HybridCLR 跳过是输出路径子串判断，不是通用路径授权。
 

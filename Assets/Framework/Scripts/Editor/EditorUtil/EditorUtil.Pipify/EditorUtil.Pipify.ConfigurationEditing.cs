@@ -269,7 +269,8 @@ namespace NovaFramework.Editor
                         type == typeof(PipifySteps.PackageParams) || type == typeof(PipifySteps.GooglePlayUploadParams) ||
                         type == typeof(PipifySteps.ConfigExportParams) || type == typeof(PipifySteps.OpenFolderParams) ||
                         type == typeof(PipifySteps.FeishuWebhookParams) || type == typeof(PipifySteps.CdnDeployParams) ||
-                        type == typeof(PipifySteps.CdnWhitelistDeployParams) || type == typeof(PipifySteps.CdnPurgeParams);
+                        type == typeof(PipifySteps.CdnWhitelistDeployParams) || type == typeof(PipifySteps.CdnPurgeParams) ||
+                        type == typeof(SpriteAtlasGenerationStepArgs) || type == typeof(SpriteAtlasGenerationRecoveryStepArgs);
                 }
 
                 /// <summary>只在副本改变目标 Batch；其它 Batch 通过整体序列化逐项核对保持原样。</summary>

@@ -3,7 +3,7 @@
 `ThirdPayStore` 负责客户端造单、统一支付配置、支付 URL、Google 外链政策、支付页、验单与本地补单。
 
 
-支付打点统一包含 `nova_platform`、`nova_channel`、`nova_store_type`：前两项来自商店初始化时的 `PlatformType` / `ChannelType` 枚举名称，商店类型固定为 `ThirdPay`；三项名称按实例缓存，发送时只复制缓存，重新初始化时刷新。不再把商店类型写入 `nova_channel`。大小写、缺失配置和路由失败边界见 [父包三维属性](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md#支付打点三维属性)。
+支付打点统一包含 `nova_platform`、`nova_channel`、`nova_store_type`：前两项来自商店初始化时的 `PlatformType` / `ChannelType` 枚举名称，商店类型固定为 `ThirdPay`；三项名称按实例缓存，发送时只复制缓存，重新初始化时刷新。不再把商店类型写入 `nova_channel`。大小写、缺失配置和路由失败边界见 [父包三维属性](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/IAP-Architecture.md#支付打点三维属性`）。
 ## 接入与验收顺序
 
 1. 按 [包安装说明](../../README.md#安装) 安装本包及其声明的依赖，在 ConfigWindow 的 `IAPPluginConfig.StoreConfigs` 中登记并启用 `ThirdPayStoreConfig`；在 `Products` 中配置对应商品的 `TableId`、非空 `Name` 和 `ThirdProductID`。商品可从 IAP SKU Excel 导入，但导入会全量覆盖当前内联商品表，随后仍需保存 ConfigMaster、导出目标 Runtime 配置，并核对导出结果。
@@ -12,7 +12,7 @@
 4. 通过 `IAPPlugin.PayAsync<IAPResult>(new IAPThirdPayRequest { ... }, ct)` 发起支付；按 `IAPResult` 和 `PaySuccess` / `PayFailed` 处理业务反馈，发货以服务端验单和幂等履约结果为准。支付页成功回调与服务端验单属于不同阶段；关闭页面、返回 App 或取消等待都不等于撤销已建立的订单。
 5. 分别验收 Editor 展示与模拟、Android Auth Tab / Custom Tabs / 系统浏览器回退、iOS Safe Browsing、Deep Link、真实商户资格、服务端验单与补单、重复回调和幂等发货。Editor 或静态检查不能证明真机支付与后台履约成功。
 
-`IAPDemo` 的可选 ThirdPay 模块及示例配置见 [IAPDemo README](../../../../Assets/Samples/IAPDemo/README.md)；示例商品和服务端地址需按目标环境替换，不能作为生产商户配置。
+`IAPDemo` 的可选 ThirdPay 模块及示例配置见 [IAPDemo README](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Sample IAPDemo / README.md`）；示例商品和服务端地址需按目标环境替换，不能作为生产商户配置。
 
 上架前还须按目标商店地区和已登记的支付计划完成 [平台支付政策核对](PlatformPaymentPolicy.md)。本包的支付页、现有 Google 外部结算接口或服务端 `enabled` 均不能单独证明符合当前平台要求；未满足对应选择、披露、Entitlement、平台 API 与交易上报条件时，应保持该地区数字商品的 ThirdPay 入口关闭。
 
@@ -297,7 +297,7 @@ URL 构造还要求公共 Header 的 `AppId > 0`、本地商品 `Name` 及服务
 
 ## 协议
 
-协议源位于 `Nova/Protos/pb_net_third_pay.proto`，生成代码位于 `Nova/Scripts/Runtime/Protos/PbNetThirdPay.cs`。
+协议源位于 [Nova/Protos/pb_net_third_pay.proto](../Protos/pb_net_third_pay.proto)，生成代码位于 [Nova/Scripts/Runtime/Protos/PbNetThirdPay.cs](../Scripts/Runtime/Protos/PbNetThirdPay.cs)。
 
 | NetCmd | 路径 | 用途 |
 |---|---|---|

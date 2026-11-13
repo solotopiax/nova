@@ -21,6 +21,8 @@ related:
 
 # PAT-85：Vault 检索同义词扩张铁律
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 ## 适用场景（When）
 
 - 任何 agent / 主会话在「动手前」做 Vault 前置查询
@@ -130,5 +132,5 @@ grep -rln "颜色区分" Assets/Framework/Minds/   # 命中 0 条 → 答"未找
 ## 关联
 
 - 双通道铁律：[[PAT-17-obs-memory-split|PAT-17]]（memory + obs 分工）
-- 改前查铁律：[[feedback_obs_rules_pre_action_lookup]]（动手三问 + grep 自检）
-- 强制术语对齐：`Assets/Framework/Minds/0-Index/0-Index-Terms.md`
+- 改前查铁律的历史 memory 指针：`feedback_obs_rules_pre_action_lookup`（动手三问 + grep 自检；外部旧记忆，本仓无对应文件）；现行入口见 [Minds 工作指引](../../../AGENTS.md)。
+- 强制术语对齐：[Assets/Framework/Minds/0-Index/0-Index-Terms.md](../../../0-Index/0-Index-Terms.md)

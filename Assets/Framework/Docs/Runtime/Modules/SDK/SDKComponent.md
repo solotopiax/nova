@@ -10,10 +10,10 @@
 
 | 文件 | 说明 |
 |---|---|
-| `SDKComponent.cs` | `Awake` / `Start` / `OnDestroy` 和对外薄委托 API |
-| `SDKComponent.Visitors.cs` | 序列化字段、只读属性、`InitializeTask` |
-| `SDKComponent.Methods.cs` | `GetOrCreateInitializeTask()`，负责缓存单次初始化任务 |
-| `SDKComponent.Lifecycle.cs` | `OnApplicationPause` / `OnApplicationFocus` / `OnApplicationQuit` 转发 |
+| [SDKComponent.cs](../../../../Scripts/Runtime/Modules/SDK/SDKComponent.cs) | `Awake` / `Start` / `OnDestroy` 和对外薄委托 API |
+| [SDKComponent.Visitors.cs](../../../../Scripts/Runtime/Modules/SDK/SDKComponent.Visitors.cs) | 序列化字段、只读属性、`InitializeTask` |
+| [SDKComponent.Methods.cs](../../../../Scripts/Runtime/Modules/SDK/SDKComponent.Methods.cs) | `GetOrCreateInitializeTask()`，负责缓存单次初始化任务 |
+| [SDKComponent.Lifecycle.cs](../../../../Scripts/Runtime/Modules/SDK/SDKComponent.Lifecycle.cs) | `OnApplicationPause` / `OnApplicationFocus` / `OnApplicationQuit` 转发 |
 
 ## 当前公开成员
 

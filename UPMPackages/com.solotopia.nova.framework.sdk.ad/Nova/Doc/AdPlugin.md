@@ -12,9 +12,9 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Nova/Scripts/Runtime/AdPlugin.cs` | `AdPlugin` | 公开 API：IAdPlugin 实现（RequestAsync / IsReady / ShowAsync）、IBannerControl 委托实现、SDKPluginBase 生命周期 |
-| `Nova/Scripts/Runtime/AdPlugin.Visitors.cs` | `AdPlugin` | 渠道列表与 ChannelRegistration 所有权、请求汇聚状态、生命周期取消源、共享释放结果、Events 及插件元数据 |
-| `Nova/Scripts/Runtime/AdPlugin.Methods.cs` | `AdPlugin` | 私有方法：`SelectBestChannel`、`BroadcastRequestAsync`、`ObserveChannelRequestAsync`、`CreateChannel`、`PrepareAndInitializeChannelAsync`、`WireChannelEvents`、`TryUnsubscribeChannelEvent`、`DisposeChannelsAsync`、`RegisterChannel`、`OnChannelInitResult`、`TryPublishCountryCodeFromChannel`、`TryPublishCountryCode` |
+| [Nova/Scripts/Runtime/AdPlugin.cs](../Scripts/Runtime/AdPlugin.cs) | `AdPlugin` | 公开 API：IAdPlugin 实现（RequestAsync / IsReady / ShowAsync）、IBannerControl 委托实现、SDKPluginBase 生命周期 |
+| [Nova/Scripts/Runtime/AdPlugin.Visitors.cs](../Scripts/Runtime/AdPlugin.Visitors.cs) | `AdPlugin` | 渠道列表与 ChannelRegistration 所有权、请求汇聚状态、生命周期取消源、共享释放结果、Events 及插件元数据 |
+| [Nova/Scripts/Runtime/AdPlugin.Methods.cs](../Scripts/Runtime/AdPlugin.Methods.cs) | `AdPlugin` | 私有方法：`SelectBestChannel`、`BroadcastRequestAsync`、`ObserveChannelRequestAsync`、`CreateChannel`、`PrepareAndInitializeChannelAsync`、`WireChannelEvents`、`TryUnsubscribeChannelEvent`、`DisposeChannelsAsync`、`RegisterChannel`、`OnChannelInitResult`、`TryPublishCountryCodeFromChannel`、`TryPublishCountryCode` |
 
 ---
 

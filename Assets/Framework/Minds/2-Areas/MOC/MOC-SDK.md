@@ -17,6 +17,7 @@ related:
   - "[[ADR-008-managerbase-internal-abstract|ADR-008]]"
   - "[[ADR-012-third-party-info-isolation|ADR-012]]"
   - "[[ADR-022-sdk-plugin-architecture|ADR-022]]"
+  - "[[ADR-088-sdk-dependency-and-login-delivery|ADR-088]]"
   - "[[ADR-072-iap-mobile-passthrough-param-layout|ADR-072]]"
   - "[[PAT-33-sdk-plugin-sop|PAT-33]]"
 ---
@@ -54,6 +55,8 @@ ISDKPlugin
 - `Nova.SDK.Get<TPlugin>()`
 - `Nova.SDK.TryGet<TPlugin>(out plugin)`
 - `Nova.SDK.GetAll<TInterface>()`
+- `Nova.SDK.GetPluginInitializationState<TPlugin>()`
+- `Nova.SDK.WaitForPluginAsync<TPlugin>(ct)`
 - `Nova.SDK.Login(userId)`
 
 ## 配置注入的真实边界
@@ -61,7 +64,7 @@ ISDKPlugin
 当前代码不是“业务侧手工注入配置”的模型，而是：
 
 1. `SDKComponent` 在 `Start()` 把 `SDKPluginEntry` 列表交给 `SDKManager.Initialize`
-2. `SDKManager.InitializeAsync()` 按优先级初始化插件
+2. `SDKManager.InitializeAsync()` 按启用配置发现插件，再按显式能力依赖调度；无依赖插件并发初始化
 3. `SDKManager` 根据 `SDKPluginBase.RequiredConfigType`
 4. 通过 `IConfigManager.GetSDKPluginConfig(type)` 自动拉取对应配置
 5. 把配置传给插件 `InitializeAsync`
@@ -76,7 +79,7 @@ ISDKPlugin
 
 - 纯 C# 类，不挂 `MonoBehaviour`
 - 继承 `SDKPluginBase`
-- 通过 `Priority` 参与初始化顺序
+- 通过 `ISDKInitializationDependencies` 声明初始化依赖；`Priority` 只维持稳定遍历与释放顺序
 - 需要配置时声明 `RequiredConfigType`
 - 初始化成功后由基类管理 `IsAvailable`
 
@@ -84,7 +87,7 @@ ISDKPlugin
 
 - `Config`：提供插件配置
 - `Event`：`Login` 会向事件系统发送 `SDKEventData.UserLogin`
-- `Procedure / 业务入口`：通常在启动后等待 `InitializeTask` 再使用具体插件
+- `Procedure / 业务入口`：`InitializeTask` 表示所有启用插件得到终态，必需插件另查 `Ready`；`Get` / `TryGet` / `GetAll` 只提供已就绪且可用的插件
 
 ## 常见误区
 

@@ -12,10 +12,10 @@ Nova 包版本更新提示窗口，以表格形式展示所有已安装包中存
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `CheckUpdateWindow.cs` | `partial CheckUpdateWindow` | 生命周期：`OnEnable`、`OnDisable`、`OnGUI`、`OnDestroy` |
-| `CheckUpdateWindow.Visitors.cs` | `partial CheckUpdateWindow` | 常量、颜色常量、单例及全部实例字段 |
-| `CheckUpdateWindow.Methods.cs` | `partial CheckUpdateWindow` | 公有入口 `Open()`、`Open(items)`、`Open(externalItems, internalItems)`；私有方法：`StartCheckAsync`、`EnsureStyles`、`DrawHeader`、`DrawTableHeader`、`DrawRow`、`DrawFooter`、`DrawHorizontalLine` |
-| `CheckUpdateWindow.Definitions.cs` | `partial CheckUpdateWindow` | 嵌套类型定义（当前为空） |
+| [CheckUpdateWindow.cs](../../../Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.cs) | `partial CheckUpdateWindow` | 生命周期：`OnEnable`、`OnDisable`、`OnGUI`、`OnDestroy` |
+| [CheckUpdateWindow.Visitors.cs](../../../Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Visitors.cs) | `partial CheckUpdateWindow` | 常量、颜色常量、单例及全部实例字段 |
+| [CheckUpdateWindow.Methods.cs](../../../Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs) | `partial CheckUpdateWindow` | 公有入口 `Open()`、`Open(items)`、`Open(externalItems, internalItems)`；私有方法：`StartCheckAsync`、`EnsureStyles`、`DrawHeader`、`DrawTableHeader`、`DrawRow`、`DrawFooter`、`DrawHorizontalLine` |
+| [CheckUpdateWindow.Definitions.cs](../../../Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Definitions.cs) | `partial CheckUpdateWindow` | 嵌套类型定义（当前为空） |
 
 ---
 

@@ -14,12 +14,12 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `Managers/Interfaces/IDebugManager.cs` | `IDebugManager` | 对 `DebugComponent` 暴露的最小契约 |
-| `Managers/Implements/DebugManagerBase.cs` | `DebugManagerBase` | 抽象基类，定义优先级与生命周期抽象方法 |
-| `Managers/DebugManagerConfig.cs` | `DebugManagerConfig` | 初始化配置，当前持有 `DiskCheckingConfigs` |
-| `Managers/Implements/DebugManager.cs` | `DebugManager` | 初始化、关闭与字段清理 |
-| `Managers/Implements/DebugManager.Visitors.cs` | `DebugManager` | 字段定义：配置集合、当前平台配置、事件管理器、取消令牌 |
-| `Managers/Implements/DebugManager.Methods.cs` | `DebugManager` | 平台配置选择、磁盘空间查询、循环检测与事件发布 |
+| [Managers/Interfaces/IDebugManager.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/Interfaces/IDebugManager.cs) | `IDebugManager` | 对 `DebugComponent` 暴露的最小契约 |
+| [Managers/Implements/DebugManagerBase.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/Implements/DebugManagerBase.cs) | `DebugManagerBase` | 抽象基类，定义优先级与生命周期抽象方法 |
+| [Managers/DebugManagerConfig.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/DebugManagerConfig.cs) | `DebugManagerConfig` | 初始化配置，当前持有 `DiskCheckingConfigs` |
+| [Managers/Implements/DebugManager.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/Implements/DebugManager.cs) | `DebugManager` | 初始化、关闭与字段清理 |
+| [Managers/Implements/DebugManager.Visitors.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/Implements/DebugManager.Visitors.cs) | `DebugManager` | 字段定义：配置集合、当前平台配置、事件管理器、取消令牌 |
+| [Managers/Implements/DebugManager.Methods.cs](../../../../Scripts/Runtime/Modules/Debug/Managers/Implements/DebugManager.Methods.cs) | `DebugManager` | 平台配置选择、磁盘空间查询、循环检测与事件发布 |
 
 ## 当前关键字段
 

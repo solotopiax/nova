@@ -11,7 +11,7 @@ Luban Tables 总管理器接口，框架层通过此接口操作游戏层 Luban 
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Core/Table/ILubanTables.cs` | `ILubanTables` | 接口定义 |
+| [Core/Table/ILubanTables.cs](../../../../Scripts/Runtime/Core/Table/ILubanTables.cs) | `ILubanTables` | 接口定义 |
 
 ---
 

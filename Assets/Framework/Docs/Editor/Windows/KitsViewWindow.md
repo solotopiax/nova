@@ -4,16 +4,16 @@
 **命名空间**：`NovaFramework.Editor`  
 **菜单入口**：`Nova/Open Kits View`
 
-`KitsViewWindow` 用于浏览当前工程中已安装的 Kit 包。它会扫描 `Packages/packages-lock.json` 与 `Packages/manifest.json`，筛出 `com.solotopia.nova.framework.kit` 前缀的包，并展示包信息与 `Nova/Protos/*.proto` 内容。
+`KitsViewWindow` 用于浏览当前工程中已安装的 Kit 包。它会扫描 `Packages/packages-lock.json` 与 `Packages/manifest.json`，筛出 `com.solotopia.nova.framework.kit` 前缀的包，并展示包信息与 [按包定位：Nova/Protos/*.proto](../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 内容。
 
 ## 文件拆分
 
 | 文件 | 说明 |
 |---|---|
-| `KitsViewWindow.cs` | `Open`、`OnEnable`、`OnGUI`、`OnDestroy` |
-| `KitsViewWindow.Visitors.cs` | 常量、样式、滚动状态 |
-| `KitsViewWindow.Definitions.cs` | `KitEntry`、`ProtoFileEntry` |
-| `KitsViewWindow.Methods.cs` | 数据收集、package.json 解析、Proto 收集、条目绘制 |
+| [KitsViewWindow.cs](../../../Scripts/Editor/Windows/KitsViewWindow/KitsViewWindow.cs) | `Open`、`OnEnable`、`OnGUI`、`OnDestroy` |
+| [KitsViewWindow.Visitors.cs](../../../Scripts/Editor/Windows/KitsViewWindow/KitsViewWindow.Visitors.cs) | 常量、样式、滚动状态 |
+| [KitsViewWindow.Definitions.cs](../../../Scripts/Editor/Windows/KitsViewWindow/KitsViewWindow.Definitions.cs) | `KitEntry`、`ProtoFileEntry` |
+| [KitsViewWindow.Methods.cs](../../../Scripts/Editor/Windows/KitsViewWindow/KitsViewWindow.Methods.cs) | 数据收集、package.json 解析、Proto 收集、条目绘制 |
 
 ## 当前行为
 
@@ -24,9 +24,11 @@
   - 从 `Packages/manifest.json` 判断某个包是否是 `file:` 开发引用；
   - 在开发模式下解析本地包目录，在消费者模式下解析 `Library/PackageCache`；
   - 读取 `package.json` 的名称、显示名、版本、描述、依赖；
-  - 收集 `Nova/Protos/*.proto` 文件内容。
+  - 收集 [按包定位：Nova/Protos/*.proto](../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 文件内容。
 
 ## 关键边界
+
+上述目录候选描述窗口当前实现，不是 Agent 通用的包根规则。需要读取实际 Kit 时按 [SDK / Kit 包文档发现](../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 核对当前 `resolvedPath`；缓存中存在目录不能单独证明它是当前安装版本。
 
 - 这是一个只读浏览窗口，不修改 `manifest.json`。
 - 它只关心 Kit 包，不展示普通 Framework 包。

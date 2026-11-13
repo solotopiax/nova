@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `NovaLinkedSet.cs` | Set 容器类主体 |
+| [NovaLinkedSet.cs](../../../../Scripts/Runtime/Core/Collections/NovaLinkedSet.cs) | Set 容器类主体 |
 
 ## 关键属性
 

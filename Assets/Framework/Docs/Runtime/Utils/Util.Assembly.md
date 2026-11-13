@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Runtime/Core/Util/Util.Assembly/Util.Assembly.cs` | 全部实现：程序集查找、类型缓存、子类名称收集、缓存刷新 |
+| [Runtime/Core/Util/Util.Assembly/Util.Assembly.cs](../../../Scripts/Runtime/Core/Util/Util.Assembly/Util.Assembly.cs) | 全部实现：程序集查找、类型缓存、子类名称收集、缓存刷新 |
 
 ---
 

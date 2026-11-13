@@ -5,18 +5,18 @@ re-license the whole package as a single Solotopia MIT grant.
 
 ## Boundary
 
-- The contents under `Core/**`, together with the upstream `LICENSE` / `NOTICE`
+- The contents under [Core/**](Core/), together with the upstream `LICENSE` / `NOTICE`
   / `THIRD_PARTY` files bundled there, remain under their original upstream
   license, EULA, or third-party notices.
-- The UPM packaging-layer files (`package.json`, `README.md`, `CHANGELOG.md`,
-  this `LICENSE.md`, `THIRD_PARTY_NOTICES.md`) and any content under `Nova/**`
+- The UPM packaging-layer files ([package.json](package.json), [README.md](README.md), [CHANGELOG.md](CHANGELOG.md),
+  this `LICENSE.md`, [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)) and any content under [Nova/**](Nova/)
   or explicitly marked as Solotopia / Nova are authored by Solotopia and
   provided under the MIT License (Copyright (c) 2026 Solotopia). They do NOT
-  override the original license boundary of `Core/**`.
+  override the original license boundary of [Core/**](Core/).
 
 ## Redistribution
 
-- When distributing publicly, retain the upstream license chain under `Core/**`
+- When distributing publicly, retain the upstream license chain under [Core/**](Core/)
   first, then add separate license text for the Solotopia-authored layer as
   needed.
 
@@ -28,9 +28,9 @@ re-license the whole package as a single Solotopia MIT grant.
 
 ## 边界
 
-- `Core/` 目录及其中附带的 `LICENSE`、`LICENSE.md`、`NOTICE`、`README`、`Third Party Notices`、`3RD-PARTY-LICENSES` 等文件，继续遵循对应上游项目的原始许可证、EULA 或第三方声明。
-- `Core/` 内进一步携带的第三方源码、二进制、资源和依赖，也继续遵循其各自的原始许可链。
-- 包内用于 UPM 封装、版本管理、接入说明的包装层文件，以及明确标注为 Solotopia 的自增内容，不反向覆盖 `Core/` 及其内部第三方内容的许可证边界。
+- [Core/](Core/) 目录及其中附带的 `LICENSE`、`LICENSE.md`、`NOTICE`、`README`、`Third Party Notices`、`3RD-PARTY-LICENSES` 等文件，继续遵循对应上游项目的原始许可证、EULA 或第三方声明。
+- [Core/](Core/) 内进一步携带的第三方源码、二进制、资源和依赖，也继续遵循其各自的原始许可链。
+- 包内用于 UPM 封装、版本管理、接入说明的包装层文件，以及明确标注为 Solotopia 的自增内容，不反向覆盖 [Core/](Core/) 及其内部第三方内容的许可证边界。
 
 ## 当前约束
 

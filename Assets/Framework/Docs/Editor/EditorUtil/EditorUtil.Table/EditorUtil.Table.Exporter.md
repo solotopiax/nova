@@ -43,7 +43,7 @@ Exporter 结构化传递：
 
 ## Agent 表源编辑与普通字段追加
 
-自然语言数据编辑复用随包 `Agents/Tools/nova_table_source.py`，完整请求与边界见 [Table Skill source-edit](../../../../Agents/Skills/nova-project-integrate-table/references/source-edit.md)。已有标量只导出数据；已有自描述 xlsx 的 `layout=table-fields` 支持追加 `int/long/float/double/bool/string` 普通字段，冻结唯一 `readSchemaFromFile=true` 的 `Sheet@xlsx` Schema 映射、源/Schema SHA、旧列/行键与明确默认或全键逐行值。只填相邻空列，保留旧样式/单元格与非目标 ZIP 原压缩记录；Schema 文件不写入。复杂 Schema、公式/合并风险及不完整键集阻断。
+自然语言数据编辑复用随包 [Agents/Tools/nova_table_source.py](../../../../Agents/Tools/nova_table_source.py)，完整请求与边界见 [Table Skill source-edit](../../../../Agents/Skills/nova-project-integrate-table/references/source-edit.md)。已有标量只导出数据；已有自描述 xlsx 的 `layout=table-fields` 支持追加 `int/long/float/double/bool/string` 普通字段，冻结唯一 `readSchemaFromFile=true` 的 `Sheet@xlsx` Schema 映射、源/Schema SHA、旧列/行键与明确默认或全键逐行值。只填相邻空列，保留旧样式/单元格与非目标 ZIP 原压缩记录；Schema 文件不写入。复杂 Schema、公式/合并风险及不完整键集阻断。
 
 源 CLI 的 inspect/plan/一次 execute/只读 verify 与本 Exporter 分离；请求、Plan、Receipt 与写锁统一使用本地 `Library/Nova/AgentActions/TableSource/`。源 Verify 后必须用已确认描述导出代码和数据并等待编译，用户要求运行可用时还需实际 Play 读键/字段。测试结束恢复权威 Excel 后重新正式导出，不手工维护生成属性。
 

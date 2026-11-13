@@ -5,13 +5,16 @@ description: Use when 项目组要接入或调整已确认的 Luban 表源数据
 
 # Nova 接入数据表
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在当前决策分支读取下列一页：确认 Project、导出描述或加载描述时读 `Docs/Runtime/Modules/Table/Definitions/TableSettings.md` 和 `Docs/Editor/Inspectors/TableComponentInspector/TableComponentInspector.md`；执行导出时直接调用 `nova.project.table.export`，只有 Action 报告配置问题时才读 `Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md`；排查或验证运行时加载时读 `Docs/Runtime/Modules/Table/TableComponent.md` 与 `Docs/Runtime/Modules/Table/TableManager.md`。不要递归加载 Table、Luban 或 Pipify 的全部文档。
+仅要求从官方模板新建配表时，选择合同 `source-template-copy` 分支，按 [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 的“配表模板与样式”使用同一 [nova_excel_template.py](../../Tools/nova_excel_template.py) 的 `mode=copy`（来源 `table-list/table-map/table-one`）。整书原样复制并核对 SHA，不套用 UI/Sound 行模型、不改多 Sheet、合并或示例值；此步只准备表源物料，不要求 Unity 或完整接入输入。随后按本领域既有入口编辑业务内容并保留样式；入口不支持时停止对应写入，不从空白工作簿重建。
 
-用户要修改已有 Excel/CSV 的数据，或给已自描述 xlsx 追加普通字段时，读取[按行键编辑表源](references/source-edit.md)，复用随包 `Agents/Tools/nova_table_source.py` 的 `inspect → plan → execute → verify`；不为每次改数值临时重写表格脚本。
+
+再读取 [references/contract.json](references/contract.json)。仅在当前决策分支读取下列一页：确认 Project、导出描述或加载描述时读 [Docs/Runtime/Modules/Table/Definitions/TableSettings.md](../../../Docs/Runtime/Modules/Table/Definitions/TableSettings.md) 和 [Docs/Editor/Inspectors/TableComponentInspector/TableComponentInspector.md](../../../Docs/Editor/Inspectors/TableComponentInspector/TableComponentInspector.md)；执行导出时直接调用 `nova.project.table.export`，只有 Action 报告配置问题时才读 [Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md](../../../Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md)；排查或验证运行时加载时读 [Docs/Runtime/Modules/Table/TableComponent.md](../../../Docs/Runtime/Modules/Table/TableComponent.md) 与 [Docs/Runtime/Modules/Table/TableManager.md](../../../Docs/Runtime/Modules/Table/TableManager.md)。不要递归加载 Table、Luban 或 Pipify 的全部文档。
+
+用户要修改已有 Excel/CSV 的数据，或给已自描述 xlsx 追加普通字段时，读取[按行键编辑表源](references/source-edit.md)，复用随包 [Agents/Tools/nova_table_source.py](../../Tools/nova_table_source.py) 的 `inspect → plan → execute → verify`；不为每次改数值临时重写表格脚本。
 
 需要设置 Project、导出/加载描述或业务读取入口时，读[设置与实际消费绑定](references/settings-and-consumption.md)，复用已有 `settings.inspect-target/patch-target` 或共享 Unity MCP 的精确字段/保存路线，并在业务源码中复用公开加载查询 API。Inspector 类型和 C# API 仅说明底层事实，不是可直接调用的方法工具。
 
@@ -29,7 +32,7 @@ description: Use when 项目组要接入或调整已确认的 Luban 表源数据
 
 | Input | 现有 Action Adapter | Artifact | Evidence |
 |---|---|---|---|
-| 已冻结的行键、字段、类型、原值、文件摘要和输出边界 | 随包 `nova_table_source.py` 处理已有标量或 `layout=table-fields` 严格普通字段追加；复杂结构使用已确认 Schema 入口 | 指定表源 | CLI Verify 精确值/文件摘要一致；不伪造正式导出 |
+| 已冻结的行键、字段、类型、原值、文件摘要和输出边界 | 随包 [nova_table_source.py](../../Tools/nova_table_source.py) 处理已有标量或 `layout=table-fields` 严格普通字段追加；复杂结构使用已确认 Schema 入口 | 指定表源 | CLI Verify 精确值/文件摘要一致；不伪造正式导出 |
 | 已冻结的 Luban Project、描述和表源 | 受控 settings Action 或已声明共享 Unity MCP 精确字段及单文件保存，详 settings-and-consumption reference | `TableSettings` 中的 Project、导出描述、加载描述与显式 Asset 地址映射 | 独立读回目标设置和落盘文件；不调用私有 Inspector 方法 |
 | 已冻结的 `ProjectId/DescriptionId` 与输出范围 | `nova.project.table.export` | 该描述的代码和数据正式产物 | Action Verify 成功，且只出现 Plan 范围内的产物变化 |
 | 已冻结的加载时序、表类型和读取样例 | 授权业务源码复用既有启动链；共享 Unity 工具运行已保存入口并观察 `LoadAsync/LoadSync`、`HasTable/GetTable` | 可查询的目标表 | Play Mode 中加载成功、存在目标类型并读取到指定行/字段；不是任意 C# 即时执行 |

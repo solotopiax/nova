@@ -11,7 +11,7 @@ Nova 资源策略枚举。资源策略与运行平台解耦，底层文件系统
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Definitions/AssetPlayMode.cs` | `AssetPlayMode` | 枚举定义 |
+| [Definitions/AssetPlayMode.cs](../../../../../Scripts/Runtime/Modules/Asset/Definitions/AssetPlayMode.cs) | `AssetPlayMode` | 枚举定义 |
 
 ---
 

@@ -10,10 +10,10 @@
 
 | 文件 | 说明 |
 |------|------|
-| `EventComponentInspector.cs` | 主体：OnEnable 初始化、OnInspectorGUI 绘制流程 |
-| `EventComponentInspector.Visitors.cs` | SerializedProperty 字段声明（m_CurManagerTypeName、m_EventPoolMode、m_MaxDispatchPerFrame 等） |
-| `EventComponentInspector.Methods.cs` | DrawConfigs / DrawRuntimeInfos / DrawRuntimeLists 私有绘制方法 |
-| `EventComponentInspector.EventListRuntimeDrawer.cs` | 嵌套类 `EventListRuntimeDrawer`：运行时已注册事件列表诊断面板 |
+| [EventComponentInspector.cs](../../../../Scripts/Editor/Inspectors/EventComponentInspector/EventComponentInspector.cs) | 主体：OnEnable 初始化、OnInspectorGUI 绘制流程 |
+| [EventComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/EventComponentInspector/EventComponentInspector.Visitors.cs) | SerializedProperty 字段声明（m_CurManagerTypeName、m_EventPoolMode、m_MaxDispatchPerFrame 等） |
+| [EventComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/EventComponentInspector/EventComponentInspector.Methods.cs) | DrawConfigs / DrawRuntimeInfos / DrawRuntimeLists 私有绘制方法 |
+| [EventComponentInspector.EventListRuntimeDrawer.cs](../../../../Scripts/Editor/Inspectors/EventComponentInspector/EventComponentInspector.EventListRuntimeDrawer.cs) | 嵌套类 `EventListRuntimeDrawer`：运行时已注册事件列表诊断面板 |
 
 ---
 

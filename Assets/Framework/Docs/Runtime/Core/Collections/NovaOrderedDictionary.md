@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `NovaOrderedDictionary.cs` | 序列字典类主体及内部 `ReadOnlyWrapper` |
+| [NovaOrderedDictionary.cs](../../../../Scripts/Runtime/Core/Collections/NovaOrderedDictionary.cs) | 序列字典类主体及内部 `ReadOnlyWrapper` |
 
 ## 关键属性
 

@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Interfaces/IRawFileHandle.cs` | `IRawFileHandle` | 接口定义 |
+| [Managers/AssetManager/Interfaces/IRawFileHandle.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IRawFileHandle.cs) | `IRawFileHandle` | 接口定义 |
 
 ---
 

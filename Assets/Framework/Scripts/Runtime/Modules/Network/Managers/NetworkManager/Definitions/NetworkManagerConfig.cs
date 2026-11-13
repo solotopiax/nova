@@ -32,5 +32,10 @@ namespace NovaFramework.Runtime
         /// </summary>
         public List<NetCmdUnitSetting> NetCmdUnitSettings;
 
+        /// <summary>
+        /// 启动 GM 应用配置每次物理请求的超时时间（秒）；由 NetworkComponent 的 HttpSettings 注入。
+        /// </summary>
+        public float StartupAppConfigRequestTimeout = 5f;
+
     }
 }

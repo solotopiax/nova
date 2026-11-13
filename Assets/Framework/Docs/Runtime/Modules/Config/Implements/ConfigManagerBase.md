@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Managers/Implements/ConfigManagerBase.cs` | `ConfigManagerBase` | 抽象基类定义 |
+| [Managers/Implements/ConfigManagerBase.cs](../../../../../Scripts/Runtime/Modules/Config/Managers/Implements/ConfigManagerBase.cs) | `ConfigManagerBase` | 抽象基类定义 |
 
 ---
 
@@ -64,6 +64,7 @@ public abstract float GetFloat(string key, float defaultValue = default);
 public abstract bool GetBool(string key, bool defaultValue = default);
 public abstract bool TryGetString(string key, out string value);
 public abstract UniTask<bool> RefreshAppConfigAsync();
+public abstract UniTask<bool> WaitForStartupAppConfigAsync(CancellationToken cancellationToken = default);
 
 // --- SDK PluginConfig 查询（abstract）---
 public abstract T GetSDKPluginConfig<T>() where T : class, ISDKPluginConfig;

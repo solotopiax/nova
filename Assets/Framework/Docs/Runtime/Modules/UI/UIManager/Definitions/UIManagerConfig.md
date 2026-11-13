@@ -11,7 +11,7 @@ UI 管理器配置，由 UIComponent 在 Start 阶段构造并传入 `IUIManager
 
 | 文件 | 说明 |
 |------|------|
-| `UIManagerConfig.cs` | 配置数据类，位于 `Managers/UIManager/Definitions/` |
+| [UIManagerConfig.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/UIManagerConfig.cs) | 配置数据类，位于 [Managers/UIManager/Definitions/](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/) |
 
 ## 关键字段/属性
 

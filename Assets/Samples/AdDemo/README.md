@@ -26,13 +26,13 @@ MAX Banner 后台协议与 ad_ilrd 共用一份累计和存档，当前阈值为
 
 收益上报与广告加载、预载相互独立。当前 Sample 初始化完成后不会自动请求 Rewarded、Interstitial 或 AppOpen，Banner 也不会因初始化自动创建；业务仍需显式调用 `RequestAsync`，再按事件和 `IsReady` 结果决定展示。
 
-当前 `Editor/ConfigMaster.asset` 的广告全局配置已将 `m_RevenueReportCmdName` 设置为 `AdRevenueReport`。渠道在自己的收益派发入口显式调用基类 `StartRevenueReport`：MAX 为 `TrackMaxAdIlrd`，AdMob 为 `TrackAdMobRevenue`。基类生成稳定的 `report_id`，由 `Services/AdRevenueReportNetService.cs` 发送 `PbNetIAAReportReq`；业务页面无需直接调用网络接口。`RaiseRevenue` / `RaiseRevenueImmediately` 只通知原始收益。
+当前 [Editor/ConfigMaster.asset](Editor/ConfigMaster.asset) 的广告全局配置已将 `m_RevenueReportCmdName` 设置为 `AdRevenueReport`。渠道在自己的收益派发入口显式调用基类 `StartRevenueReport`：MAX 为 `TrackMaxAdIlrd`，AdMob 为 `TrackAdMobRevenue`。基类生成稳定的 `report_id`，由 `Services/AdRevenueReportNetService.cs` 发送 `PbNetIAAReportReq`；业务页面无需直接调用网络接口。`RaiseRevenue` / `RaiseRevenueImmediately` 只通知原始收益。
 
 请求中的字段映射为：`AdFormat.ToString()` → `iaa.ad_type`，`AdChannelType.ToString()` → `ad_channel`，真实广告位 → `iaa.ad_id`，美元收益 → `iaa.price_usd`。协议类型固定为 `PbIAAReportData`、`PbNetIAAReportReq` 和 `PbNetIAAReportResp`，客户端命令名使用 `AdRevenueReport`，不改写为太极 V2 类型名；服务端路由仍以协议源注释的 `POST /v1/taijiv2/report` 为准。
 
 `AdPlugin.Events.RevenuePaid` 只是 Unity 主线程收益业务通知，表示收益事件已经进入广告聚合层，不表示网络请求已成功或服务端已经计入。网络失败、业务 `error_code`、`duplicate` 等结果以收益上报 Service 日志和响应为准；旧资产将 `m_RevenueReportCmdName` 留空时保持兼容并跳过自动上报。
 
-安装包按实际日志顺序核对：“广告收益上报配置 / 未启用”（Info）→“收到广告收益 / 已跳过”（Debug）→“广告收益上报参数”（Debug）→“广告收益上报网络结果”（Debug）。当前没有单独的 Info“准备发送”日志；关闭 Debug 时只看到初始化 Info 和异常 Warning，并不意味着协议一定没有发出。响应 JSON 可能省略 false / 0，外层状态和 `data.iaa_report_id / utc_day / duplicate / error_code` 需分开核对。MAX 原厂日志开关不能替代 Nova Debug 与 Player 日志配置。旧字段自动迁移；更新 Runtime 后还须更新设备实际使用的配置 Bundle、首包或热更新版本。完整发送与错误边界见[收益协议与日志](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+安装包按实际日志顺序核对：“广告收益上报配置 / 未启用”（Info）→“收到广告收益 / 已跳过”（Debug）→“广告收益上报参数”（Debug）→“广告收益上报网络结果”（Debug）。当前没有单独的 Info“准备发送”日志；关闭 Debug 时只看到初始化 Info 和异常 Warning，并不意味着协议一定没有发出。响应 JSON 可能省略 false / 0，外层状态和 `data.iaa_report_id / utc_day / duplicate / error_code` 需分开核对。MAX 原厂日志开关不能替代 Nova Debug 与 Player 日志配置。旧字段自动迁移；更新 Runtime 后还须更新设备实际使用的配置 Bundle、首包或热更新版本。完整发送与错误边界见[收益协议与日志](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。
 
 ## 独立协议测试页
 
@@ -48,7 +48,7 @@ MAX Banner 后台协议与 ad_ilrd 共用一份累计和存档，当前阈值为
 
 当前源码通过 `Nova.SDK.TryGet(out AdPlugin adPlugin)` 获取聚合插件；找不到时在反馈区提示不可用。等待聚合 SDK 初始化任务结束，仅表示配置和聚合初始化步骤已执行，不能替代 MAX 原厂初始化或 `IsReady(format)` 检查。
 
-当前仓内包清单为 `sdk.ad@1.2.2` 与 `sdk.max@0.2.1`；MAX 包依赖 `com.applovin.mediation.ads@8.6.6` 及其原厂适配器，实际原生依赖由消费工程解析。iOS 接入前还须核对 [MAX 构建处理器](../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPluginBuildProcessor.md) 中适配器声明与 Pod/SPM 归属脚本的一致性，当前版本差异不能用 Editor 初始化成功代替。本 Sample Runtime asmdef 为 `NovaFramework.Sdk.Ad.Samples.Runtime`，`autoReferenced=false`，排除 WebGL 并声明 `!UNITY_WEBGL`。本 Sample 不提供 WebGL 广告运行验证。
+当前仓内包清单为 `sdk.ad@1.2.2` 与 `sdk.max@0.2.1`；MAX 包依赖 `com.applovin.mediation.ads@8.6.6` 及其原厂适配器，实际原生依赖由消费工程解析。iOS 接入前还须核对 [MAX 构建处理器](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPluginBuildProcessor.md`） 中适配器声明与 Pod/SPM 归属脚本的一致性，当前版本差异不能用 Editor 初始化成功代替。本 Sample Runtime asmdef 为 `NovaFramework.Sdk.Ad.Samples.Runtime`，`autoReferenced=false`，排除 WebGL 并声明 `!UNITY_WEBGL`。本 Sample 不提供 WebGL 广告运行验证。
 
 ## 业务调用与参数
 
@@ -107,12 +107,27 @@ MAX 激励的 `RewardGranted` 以官方奖励回调为准，关闭结果保留�
 
 真实填充、断网、切后台、过期广告、全屏互斥、收益和奖励结果需要 Android / iOS 真机及有效广告后台配置验证。编辑器中的配置保存、静态源码对照和按钮调用日志不能替代这些验证；开屏当前未配置真实 ID，不具备本 Sample 的开屏播放验收条件。
 
-- [广告聚合文档索引](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md)
-- [广告聚合配置与统一间隔](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginConfig.md)
-- [全局广告事件](../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginEvents.md)
-- [MAX 渠道文档](../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md)
-- [MAX 构建处理器](../../../UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPluginBuildProcessor.md)
-- [独立 AdMob 当前状态](../../../UPMPackages/com.solotopia.nova.framework.sdk.admob/Nova/Doc/INDEX.md)
+- [广告聚合文档索引](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md`）
+- [广告聚合配置与统一间隔](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginConfig.md`）
+- [全局广告事件](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginEvents.md`）
+- [MAX 渠道文档](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPlugin.md`）
+- [MAX 构建处理器](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPluginBuildProcessor.md`）
+- [独立 AdMob 当前状态](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.admob` 包内 `Nova/Doc/INDEX.md`）
 - [Demo 业务调用源码](./Scripts/Runtime/UIs/DemoAdView/DemoAdView.Methods.cs)
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+
+## 启动配置等待
+
+`ProcedurePreload` 在网络表加载成功后，等待本次启动的同一轮 GM 应用配置拉取，再继续 SDK 等后续步骤；拉取失败、超时或未配置时继续使用当前配置。仍保留原有八步顺序，预加载重试和重复等待不会重新发起启动拉取。Network Inspector 的“启动时GM配置请求超时时间（秒）”默认每次请求 5 秒，主备请求和重试分别计时，整轮总耗时可能超过 5 秒。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Onboarding/PROJECT_STRUCTURE.md` |
+| `com.solotopia.nova.framework.sdk.ad` | `Nova/Doc/INDEX.md` | `Nova/Doc/AdPluginConfig.md`<br>`Nova/Doc/AdPluginEvents.md`<br>`Nova/Doc/INDEX.md`<br>`Nova/Doc/INDEX.md#广告收益上报-proto-协议层` |
+| `com.solotopia.nova.framework.sdk.admob` | `Nova/Doc/INDEX.md` | `Nova/Doc/INDEX.md` |
+| `com.solotopia.nova.framework.sdk.max` | `Nova/Doc/INDEX.md` | `Nova/Doc/MaxAdPlugin.md`<br>`Nova/Doc/MaxAdPluginBuildProcessor.md` |

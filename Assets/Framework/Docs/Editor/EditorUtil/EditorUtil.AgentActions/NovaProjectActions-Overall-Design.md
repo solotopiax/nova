@@ -8,11 +8,11 @@ Nova Project Skill 负责理解项目组自然语言任务、冻结输入和组�
 
 当前基线：
 
-- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 34 项，统一使用 `nova-project-*`。
-- Skill 发现 Catalog：`Assets/Framework/Agents/catalog.json`。它只路由 Skill，不复制 Action Descriptor。
+- 随 Framework 分发的消费端 Skills：[Agents/Skills/](../../../../Agents/Skills/)，共 35 项，统一使用 `nova-project-*`。
+- Skill 发现 Catalog：[Agents/catalog.json](../../../../Agents/catalog.json)。它只路由 Skill，不复制 Action Descriptor。
 - Action 唯一执行真相：运行中的 C# Registry Descriptor；所有已注册 Project Action 都进入显式 MCP 白名单，并通过 `describe` 渐进读取 Schema。
-- 已注册 Action：39 个。
-- 当前 MCP 明确开放：39 个。
+- 已注册 Action：41 个。
+- 当前 MCP 明确开放：41 个；当前宿主仍须通过 live `describe` 核对。
 - Registry 与显式白名单必须完全一致；任一遗漏或陈旧 ID 都会使 Gateway 整体 fail-closed。
 - 原 47 项不是实施 KPI；经源码审计后分成“已实现、需前置能力、已合并、不产品化、封闭”五类。
 
@@ -41,14 +41,16 @@ Nova Project Skill 负责理解项目组自然语言任务、冻结输入和组�
 
 ## 3. Skills 的真源、命名与发现
 
+目录入口：[随包 Agents/ 目录](../../../../Agents/)。以下均为包内相对布局：
+
 ```text
-Assets/Framework/Agents/
+Agents/
 ├── catalog.json              # Skill 轻量发现与路由
 ├── Skills/nova-project-*/    # 项目组消费态 Skill 真源
 └── Tools/                    # 安装包内的发现、同步和校验工具
 ```
 
-- `Assets/Framework/Agents/` 是开发态和消费态共享、受 Git 管理的真源；共享表示 Nova 开发仓可直接验证消费效果，不表示这里存放框架开发 Skill。
+- [Agents/](../../../../Agents/) 提供同一套随包能力；开发仓的 Git 真源位于 [Agents/](../../../../Agents/)，消费项目读取当前已安装包的快照。框架开发 Skill 不放在该目录。
 - 框架开发态 Skill 继续位于仓库根 `.agents/skills/nova-*`。
 - Framework 安装或升级后，包内全量消费 Skill 会同步到消费项目 `.agents/skills/` 的受管副本；不需要 `sync --profile`。
 - Framework 删除或重命名 Skill 时，只删除 Nova 管理且未被用户修改的旧副本；冲突时返回 `partial`，不覆盖用户内容。
@@ -56,7 +58,7 @@ Assets/Framework/Agents/
 
 ## 4. 渐进式披露
 
-1. L0：`catalog.json`、Skill frontmatter、`Docs/START_HERE.md` 完成意图路由。
+1. L0：[catalog.json](../../../../Agents/catalog.json)、Skill frontmatter、[Docs/START_HERE.md](../../../START_HERE.md) 完成意图路由。
 2. L1：只读命中 Skill 的 `references/contract.json`，冻结输入、副作用、锁、确认门和最低证据。
 3. L2：只读当前分支真正需要的模块 Docs。
 4. L3：调用 `describe(action_id)` 获取当前 Request Schema 和 Descriptor；Tool 缺失、Action 未注册或 Gateway 因白名单漂移 fail-closed 时停止执行。
@@ -66,14 +68,16 @@ Assets/Framework/Agents/
 
 三个版本字段彼此独立：`Agents/catalog.json.schemaVersion` 表示 Skill Catalog 文件格式，单 Skill `references/contract.json.schemaVersion` 表示 Skill 契约文件格式，`AgentActionDescriptor.ContractMajor` 表示 Action 与 Recovery Receipt 的兼容语义；数值不能横向比较，也不代表 Framework 包版本。
 
-Skill 发现与投影继续由 `Agents/catalog.json` 和 `EditorUtil.AgentSkills` 提供；Action 能力通过 live Registry 与 MCP `describe` 查询，不再提供独立的能力总览窗口。
+Skill 发现与投影继续由 [Agents/catalog.json](../../../../Agents/catalog.json) 和 `EditorUtil.AgentSkills` 提供；Action 能力通过 live Registry 与 MCP `describe` 查询，不再提供独立的能力总览窗口。
 
 ## 5. Action 内核
 
 ### 5.1 代码位置
 
+目录入口：[EditorUtil.AgentActions 源码目录](../../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/)。
+
 ```text
-Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/
+Scripts/Editor/EditorUtil/EditorUtil.AgentActions/
 ├── Definitions/                       # 公共枚举、Descriptor、Plan、Result、Receipt
 ├── Core/                              # Handler、PlanStore、OperationStore、锁、主线程边界
 ├── Handlers/<OperationType>/          # 每个稳定 Action 一个强类型 Handler
@@ -151,17 +155,13 @@ Plan 的可执行 HandlerState 只在内存存在，domain reload 后失效。`r
 
 ## 7. MCP Adapter
 
-Framework 必需的 Editor 配套包：
-
-```text
-UPMPackages/com.solotopia.nova.framework.mcp/
-```
+Framework 必需的 Editor 配套包为 `com.solotopia.nova.framework.mcp`；从 [SDK / Kit 包文档发现](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 读取当前有效包根及其包内文档，不从开发仓 `UPMPackages/` 推断消费项目位置。
 
 它是 Nova 自有的 MCP 契约与 Tool Adapter 包。UPM 安装链当前为 `Framework -> Nova MCP -> Unity MCP`；编译链通过独立程序集保持单向：`NovaFramework.Mcp.Editor` 只包含中立 Provider SPI 与 Gateway，`NovaFramework.Mcp.UnityMcp.Editor` 只做默认 Provider 的薄适配，`NovaFramework.Editor` 依赖中立 SPI 并在 domain load 注册唯一 Action Provider。
 
 正式消费链还要求每个依赖版本及其 registry scope 在安装 Framework 之前就可解析。当前默认依赖为 `com.coplaydev.unity-mcp@10.2.0`，由 NovaSpark 预先配置 OpenUPM 精确 scope 后按 Nova MCP 包的 semver 传递依赖解析；正式发布前必须用真实消费工程验证该来源。开发工程中另外安装的 Provider 只用于开发态验证，不改变对外包默认适配 Unity MCP 的事实。
 
-34 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
+35 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
 
 唯一 Tool：
 
@@ -206,6 +206,8 @@ nova_project_action
 | `nova.project.build.inspect-readiness` | Inspect | 只读冻结 Target、场景、Config、YooAsset Package 与 HybridCLR 构建前置 | 开放 | `nova-project-preflight-build` |
 | `nova.project.table.export` | Generate | 冻结活动场景 TableSettings 与 Project/Description，按 all/code/data 导出并核验目录摘要 | 开放 | `nova-project-integrate-table` |
 | `nova.project.ui.export` | Generate | 冻结当前 UISettings 与表源，单次导出并通过对应编译及产物核验 | 开放 | `nova-project-ui-create-view` / `nova-project-update-ui-view` / `nova-project-data-driven-ui` |
+| `nova.project.ui.inspect-bindings` | Inspect | 普通 Prefab 的 UIView/字段/控件持久身份只读查询 | 开放 | 既有页面创建/更新的可选分支 |
+| `nova.project.ui.configure-bindings` | Ensure | 精确绑定空字段或单独生成归属 partial；生成编译重载后新计划绑定 | 开放 | 既有页面创建/更新的可选分支，见 [UIBindings](../EditorUtil.UIBindings.md) |
 | `nova.project.network.export` | Generate | 冻结活动场景 NetworkSettings，按 HostKey/NetCmd/Proto 与 all/code/data 导出并核验产物 | 开放 | `nova-project-integrate-network-api` |
 | `nova.project.sound.export` | Generate | 冻结活动场景 SoundSettings 与 Unit，按 all/code/data 导出并核验产物 | 开放 | `nova-project-integrate-sound` |
 | `nova.project.vibration.export` | Generate | 冻结 Emphasis/Custom 区域与 Unit，按 all/code/data 导出并核验产物 | 开放 | `nova-project-integrate-vibration` |
@@ -305,8 +307,8 @@ nova_project_action
 ## 14. 关联入口
 
 - 当前实现事实：[EditorUtil.AgentActions.md](EditorUtil.AgentActions.md)
-- 消费端 Skills：[Assets/Framework/Agents/INDEX.md](../../../../Agents/INDEX.md)
+- 消费端 Skills：[Nova Project Skills](../../../../Agents/INDEX.md)
 - Agent 快速入口：[Docs/START_HERE.md](../../../START_HERE.md)
 - 架构决策：`ADR-081`
 - Excel 领域边界：`ADR-073`
-- MCP 必需配套包：`UPMPackages/com.solotopia.nova.framework.mcp/`
+- MCP 必需配套包：[按包定位：UPMPackages/com.solotopia.nova.framework.mcp/](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)

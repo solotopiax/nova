@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP 文档索引
 
 > 本包是 Nova IAP 核心包，负责调度多渠道 Store、提供通用契约和运行期上下文。
-> 当前事实以 `Nova/Scripts/Runtime/**` 与本目录活跃文档为准。
+> 当前事实以 [Nova/Scripts/Runtime/**](../Scripts/Runtime/) 与本目录活跃文档为准。
 
 ## 业务侧公开 API
 
@@ -46,9 +46,9 @@
 
 ## 子包
 
-- [`com.solotopia.nova.framework.sdk.iap.mobile`](../../../com.solotopia.nova.framework.sdk.iap.mobile/Nova/DOCS/INDEX.md)：Google Play + iOS App Store 官方内购 Store。
-- [`com.solotopia.nova.framework.sdk.iap.thirdpay`](../../../com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/INDEX.md)：第三方支付 Store，含 Android 重复点击补单查询、运行时查询设置与升级说明。
-- [`com.solotopia.nova.framework.sdk.iap.voucher`](../../../com.solotopia.nova.framework.sdk.iap.voucher/Nova/Doc/INDEX.md)：代金券 Store。
+- [`com.solotopia.nova.framework.sdk.iap.mobile`](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.mobile` 包内 `Nova/DOCS/INDEX.md`）：Google Play + iOS App Store 官方内购 Store。
+- [`com.solotopia.nova.framework.sdk.iap.thirdpay`](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/INDEX.md`）：第三方支付 Store，含 Android 重复点击补单查询、运行时查询设置与升级说明。
+- [`com.solotopia.nova.framework.sdk.iap.voucher`](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.voucher` 包内 `Nova/Doc/INDEX.md`）：代金券 Store。
 
 ## SDK 初始化与账号规则
 

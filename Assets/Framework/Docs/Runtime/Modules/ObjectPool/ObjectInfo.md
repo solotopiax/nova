@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/Definitions/ObjectInfo.cs` | 结构体定义 |
+| [Managers/Definitions/ObjectInfo.cs](../../../../Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/ObjectInfo.cs) | 结构体定义 |
 
 ## 关键字段/属性
 

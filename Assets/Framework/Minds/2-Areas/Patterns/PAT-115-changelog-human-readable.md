@@ -57,9 +57,9 @@ related:
 
 - 只提炼值得项目组关注的实质功能和升级影响，不要求每个包都有重要提示。
 - 常规依赖调整、示例修复保留在普通变更记录；确实要求项目组执行迁移或改变使用方式时，说明受影响者及必要动作。
-- 接口名称或调用形式保留、但参数含义或运行行为改变时，必须在所属包的 Important 对照旧行为、新行为和迁移操作；旧代码仍能编译不代表兼容，不能仅以普通修复条目带过。具体维护边界见 `.nova/rules/RELEASE.md`。
+- 接口名称或调用形式保留、但参数含义或运行行为改变时，必须在所属包的 Important 对照旧行为、新行为和迁移操作；旧代码仍能编译不代表兼容，不能仅以普通修复条目带过。具体维护边界见 [.nova/rules/RELEASE.md](../../../../../.nova/rules/RELEASE.md)。
 - 发布名单、包的选取规则、内部流程等维护策略放在维护规范中，不写入消费者 CHANGELOG。
-- 由 Agent 根据实际变更提炼草稿，经用户确认后写入各包自己的 `CHANGELOG.md` 的 `Important`；具体格式、版本归档和发布授权复用 `.nova/rules/RELEASE.md` 与 `nova-publish`，不增加第二套确认流程。
+- 由 Agent 根据实际变更提炼草稿，经用户确认后写入各包自己的 `CHANGELOG.md` 的 `Important`；具体格式、版本归档和发布授权复用 [.nova/rules/RELEASE.md](../../../../../.nova/rules/RELEASE.md) 与 `nova-publish`，不增加第二套确认流程。
 - 实际声明只维护在各包 CHANGELOG；本条目保存写作规则，不复制各版本声明，也不建立平行的重要说明清单。
 
 ### 安装条件与操作必须可执行
@@ -96,11 +96,11 @@ related:
 
 ## 来源、影响与验证依据
 
-- 当前仓库规则：根 `AGENTS.md` 的“面向项目组的文案”；发布声明的唯一来源和原有授权边界见 `.nova/rules/RELEASE.md` 的“CHANGELOG 收口”及 `.agents/skills/nova-publish/SKILL.md`。
-- 当前格式与消费方式：`Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md`。正文由各包 CHANGELOG 读取，未发布草稿不作为已发布声明展示。
-- 实际功能先行示例：`Assets/Framework/CHANGELOG.md` 的 `Important` 说明自然语言协助查阅、配置、导出、构建和排障的作用；`UPMPackages/com.solotopia.nova.framework.sdk.iap/CHANGELOG.md` 的 `Important` 说明商品配置上传带来的操作收益。
-- 实际安装条件示例：`UPMPackages/com.solotopia.nova.framework.memory.protection/CHANGELOG.md` 的 `Important` 同时说明防护作用、准确依赖包名、PlugPals 内部云仓库入口及授权前提。
-- 实际升级动作示例：`UPMPackages/com.solotopia.nova.framework.sdk.ad/CHANGELOG.md` 与 `UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/CHANGELOG.md` 的 `Important` 分别说明重试配置、自定义渠道适配，以及服务端和支付网页配对要求。
+- 当前仓库规则：[根 AGENTS.md](../../../../../AGENTS.md) 的“面向项目组的文案”；发布声明的唯一来源和原有授权边界见 [.nova/rules/RELEASE.md](../../../../../.nova/rules/RELEASE.md) 的“CHANGELOG 收口”及 [.agents/skills/nova-publish/SKILL.md](../../../../../.agents/skills/nova-publish/SKILL.md)。
+- 当前格式与消费方式：[Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)。正文由各包 CHANGELOG 读取，未发布草稿不作为已发布声明展示。
+- 实际功能先行示例：[CHANGELOG.md](../../../CHANGELOG.md) 的 `Important` 说明自然语言协助查阅、配置、导出、构建和排障的作用；[UPMPackages/com.solotopia.nova.framework.sdk.iap/CHANGELOG.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/CHANGELOG.md) 的 `Important` 说明商品配置上传带来的操作收益。
+- 实际安装条件示例：[UPMPackages/com.solotopia.nova.framework.memory.protection/CHANGELOG.md](../../../../../UPMPackages/com.solotopia.nova.framework.memory.protection/CHANGELOG.md) 的 `Important` 同时说明防护作用、准确依赖包名、PlugPals 内部云仓库入口及授权前提。
+- 实际升级动作示例：[UPMPackages/com.solotopia.nova.framework.sdk.ad/CHANGELOG.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.ad/CHANGELOG.md) 与 [UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/CHANGELOG.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/CHANGELOG.md) 的 `Important` 分别说明重试配置、自定义渠道适配，以及服务端和支付网页配对要求。
 - 影响所有面向项目组的文案；以上来源用于核对写法和实际内容，不代替功能运行、安装授权或服务端兼容性验收。具体版本声明留在原包中，随原有发布流程归档，不在本条目记录发布过程。
 
 ## 关联

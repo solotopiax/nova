@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Device/IDeviceIdProvider.cs` | `IDeviceIdProvider` | 接口定义，继承 ISDKPlugin |
+| [Scripts/Runtime/Modules/SDK/Plugins/Device/IDeviceIdProvider.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Device/IDeviceIdProvider.cs) | `IDeviceIdProvider` | 接口定义，继承 ISDKPlugin |
 
 ---
 

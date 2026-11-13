@@ -11,7 +11,7 @@ WebSocket 管理器公开接口，定义长连接通道的生命周期管理、�
 
 | 文件 | 说明 |
 |------|------|
-| `IWebSocketManager.cs` | WebSocket 管理器接口定义 |
+| [IWebSocketManager.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Interfaces/IWebSocketManager.cs) | WebSocket 管理器接口定义 |
 
 ## 公开 API
 

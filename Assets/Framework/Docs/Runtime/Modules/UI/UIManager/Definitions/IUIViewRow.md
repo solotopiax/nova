@@ -11,7 +11,7 @@ UI 视图数据行接口，Luban 生成的 UI 视图 bean 类须实现此接口�
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Runtime/Modules/UI/Managers/UIManager/Definitions/IUIViewRow.cs` | `interface IUIViewRow` | UI 视图数据行接口定义 |
+| [Runtime/Modules/UI/Managers/UIManager/Definitions/IUIViewRow.cs](../../../../../../Scripts/Runtime/Modules/UI/Managers/UIManager/Definitions/IUIViewRow.cs) | `interface IUIViewRow` | UI 视图数据行接口定义 |
 
 ---
 

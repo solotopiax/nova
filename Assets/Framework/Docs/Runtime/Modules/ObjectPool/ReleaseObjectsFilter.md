@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/Definitions/ReleaseObjectsFilter.cs` | `ReleaseObjectsFilter<T>` | 委托定义 |
+| [Managers/Definitions/ReleaseObjectsFilter.cs](../../../../Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/ReleaseObjectsFilter.cs) | `ReleaseObjectsFilter<T>` | 委托定义 |
 
 ---
 

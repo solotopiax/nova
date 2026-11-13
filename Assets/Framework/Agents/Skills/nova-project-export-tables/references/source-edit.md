@@ -1,6 +1,6 @@
 # 修改表源后导出
 
-纯导出直接调用 `nova.project.table.export`。只有用户要求“改 Excel/CSV 数据或为已有自描述 xlsx 追加普通字段再导出”时，读取共享的[按行键编辑表源](../../nova-project-integrate-table/references/source-edit.md)，使用随包 `Agents/Tools/nova_table_source.py` 的 inspect/plan/execute/verify；不新增导出算法或按表名建立 Skill。
+纯导出直接调用 `nova.project.table.export`。只有用户要求“改 Excel/CSV 数据或为已有自描述 xlsx 追加普通字段再导出”时，读取共享的[按行键编辑表源](../../nova-project-integrate-table/references/source-edit.md)，使用随包 [Agents/Tools/nova_table_source.py](../../../Tools/nova_table_source.py) 的 inspect/plan/execute/verify；不新增导出算法或按表名建立 Skill。
 
 从当前有效 TableSettings、luban.conf 和 Schema 确认实际源文件/Sheet、rowKey、字段类型、原值、整文件摘要及所有正式输出目录。源编辑授权与导出输出范围分别冻结，已有授权继续适用。CLI 支持已有 xlsx/csv 标量，以及共享 source-edit 中的 `layout=table-fields` 普通字段追加；结构分支冻结 SchemaHash、唯一自描述映射、原行键、字段类型/注释及明示 default 或全键 values。不能修改外部 Schema/行键/公式、xls/宏或复杂字段，生成物不作为源。
 

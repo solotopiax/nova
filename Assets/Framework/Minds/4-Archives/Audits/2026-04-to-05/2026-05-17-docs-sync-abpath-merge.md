@@ -1,5 +1,7 @@
 # 文档同步审计报告：ABPath+AssetName → AssetLocation 合并
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 **日期**：2026-05-17
 **范围**：`Assets/Framework/Docs/` 全树（L0/L1/L2 三层）
 **对应代码变更**：Batch 1-10 代码合并（ABPath+AssetName 双字段寻址 → AssetLocation 单字段）

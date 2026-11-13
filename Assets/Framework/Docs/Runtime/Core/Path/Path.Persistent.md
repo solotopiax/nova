@@ -10,7 +10,7 @@ persistentDataPath 可写路径容器。
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Core/Path/Path.Persistent.cs` | `Path.Persistent` | persistentDataPath 可写路径 |
+| [Core/Path/Path.Persistent.cs](../../../../Scripts/Runtime/Core/Path/Path.Persistent.cs) | `Path.Persistent` | persistentDataPath 可写路径 |
 
 ## § 5 公开 API
 

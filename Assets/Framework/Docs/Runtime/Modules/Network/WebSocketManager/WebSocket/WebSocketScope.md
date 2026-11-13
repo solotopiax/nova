@@ -11,18 +11,18 @@ WebSocket 模块所有类型的命名容器（分部类）。将通道类型、�
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.cs` | 分部类主体（空壳） |
-| `WebSocketState.cs` | 嵌套枚举 `WebSocketState`：连接就绪状态 |
-| `Messages/WebSocketScope.MessageType.cs` | 嵌套枚举 `MessageType`：内置协议 ID |
-| `Messages/WebSocketScope.NetMessageBase.cs` | 嵌套抽象类 `NetMessageBase`：消息基类 |
-| `Messages/WebSocketScope.NetMessageTcpBase.cs` | 嵌套类 `NetMessageTcpBase`：TCP 消息基类 |
-| `Messages/WebSocketScope.TcpMessage.cs` | 嵌套密封类 `TcpMessage`：TCP 明文消息 |
-| `Messages/WebSocketScope.TcpPbMessage.cs` | 嵌套密封类 `TcpPbMessage`：TCP Protobuf 消息 |
-| `Channels/WebSocketScope.NetChannelType.cs` | 嵌套枚举 `NetChannelType`：通道类型 |
-| `Channels/WebSocketScope.NetChannelBase.cs` | 嵌套抽象类 `NetChannelBase`：通道基类 |
-| `Channels/WebSocketScope.TcpChannel.cs` | 嵌套密封类 `TcpChannel`：TCP 明文通道 |
-| `Channels/WebSocketScope.TcpPbChannel.cs` | 嵌套密封类 `TcpPbChannel`：TCP Protobuf 通道 |
-| `WebSocketScope.WebGL.cs` | 嵌套静态类 `WebGL`：WebGL 平台原生 JS 库桥接 |
+| [WebSocketScope.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/WebSocketScope.cs) | 分部类主体（空壳） |
+| [WebSocketState.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/WebSocketState.cs) | 嵌套枚举 `WebSocketState`：连接就绪状态 |
+| [WebSocketScope.MessageType.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.MessageType.cs) | 嵌套枚举 `MessageType`：内置协议 ID |
+| [WebSocketScope.NetMessageBase.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.NetMessageBase.cs) | 嵌套抽象类 `NetMessageBase`：消息基类 |
+| [WebSocketScope.NetMessageTcpBase.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.NetMessageTcpBase.cs) | 嵌套类 `NetMessageTcpBase`：TCP 消息基类 |
+| [WebSocketScope.TcpMessage.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.TcpMessage.cs) | 嵌套密封类 `TcpMessage`：TCP 明文消息 |
+| [WebSocketScope.TcpPbMessage.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.TcpPbMessage.cs) | 嵌套密封类 `TcpPbMessage`：TCP Protobuf 消息 |
+| [WebSocketScope.NetChannelType.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.NetChannelType.cs) | 嵌套枚举 `NetChannelType`：通道类型 |
+| [WebSocketScope.NetChannelBase.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.NetChannelBase.cs) | 嵌套抽象类 `NetChannelBase`：通道基类 |
+| [WebSocketScope.TcpChannel.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.TcpChannel.cs) | 嵌套密封类 `TcpChannel`：TCP 明文通道 |
+| [WebSocketScope.TcpPbChannel.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Channels/WebSocketScope.TcpPbChannel.cs) | 嵌套密封类 `TcpPbChannel`：TCP Protobuf 通道 |
+| [WebSocketScope.WebGL.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/WebSocketScope.WebGL.cs) | 嵌套静态类 `WebGL`：WebGL 平台原生 JS 库桥接 |
 
 ## 类型总览
 

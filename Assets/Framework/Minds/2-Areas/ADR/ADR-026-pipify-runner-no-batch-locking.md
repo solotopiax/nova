@@ -54,7 +54,7 @@ Pipify `EditorUtil.Pipify.Runner.RunBatchAsync` 历史上把整个 Batch 包在�
 
 ## 验证依据（Verification）
 
-- 文件：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs`
-- 文件：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.EDM4U.cs`（Step 不再做"临时豁免"假设）
+- 文件：[Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs)
+- 文件：[Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.EDM4U.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.EDM4U.cs)（Step 不再做"临时豁免"假设）
 - grep 关键词：`LockReloadAssemblies` / `StartAssetEditing` 应只出现在解释性注释里，无实际调用点
 - 复现路径：PipifyWindow → "更新bundle" / "自动部署测试-全量" → 运行 → 改一行 cs → Unity 自动编译

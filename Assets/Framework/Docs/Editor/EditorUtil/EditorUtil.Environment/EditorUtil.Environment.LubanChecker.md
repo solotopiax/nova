@@ -3,7 +3,7 @@
 **类签名**：`[InitializeOnLoad] internal static class LubanChecker`（嵌套于 `EditorUtil.Environment`）
 **命名空间**：`NovaFramework.Editor`
 
-Luban 运行环境检查器，检测 dotnet-sdk 路径、版本（[8.0.127, 10.0.203] 闭区间）和 Luban.dll 是否存在，结果缓存到 `SessionState`。
+Luban 包的实际根目录按 [包发现规则](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 核对。Luban 运行环境检查器，检测 dotnet-sdk 路径、版本（[8.0.127, 10.0.203] 闭区间）和 Luban.dll 是否存在，结果缓存到 `SessionState`。
 
 ---
 
@@ -11,7 +11,7 @@ Luban 运行环境检查器，检测 dotnet-sdk 路径、版本（[8.0.127, 10.0
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.cs` | `EditorUtil.Environment.LubanChecker` | 检查器主体（含 `EnvironmentIssue` 枚举 + `EnvironmentCheckResult` readonly struct） |
+| [EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.cs) | `EditorUtil.Environment.LubanChecker` | 检查器主体（含 `EnvironmentIssue` 枚举 + `EnvironmentCheckResult` readonly struct） |
 
 ---
 

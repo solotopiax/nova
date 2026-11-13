@@ -112,5 +112,5 @@ UniTask 2.5.11 升级曾暴露出这一盲区：
 ## 关联
 
 - 相关 Pattern：[[PAT-13-publish-no-cascade|PAT-13]]
-- 发布规则：`.agents/skills/nova-publish/SKILL.md`
+- 发布规则：[.agents/skills/nova-publish/SKILL.md](../../../../../.agents/skills/nova-publish/SKILL.md)
 - 火种入口：`NovaSpark2.2.cs`

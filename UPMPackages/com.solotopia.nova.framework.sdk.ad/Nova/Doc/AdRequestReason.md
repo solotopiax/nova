@@ -13,7 +13,7 @@
 |---|---|---|
 | `Types/AdRequestReason.cs` | `AdRequestReason` | 请求原因枚举定义 |
 
-文件位于 `Nova/Scripts/Runtime/`。
+文件位于 [Nova/Scripts/Runtime/](../Scripts/Runtime/)。
 
 ---
 

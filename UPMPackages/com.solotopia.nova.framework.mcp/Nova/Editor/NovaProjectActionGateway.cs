@@ -74,6 +74,8 @@ namespace NovaFramework.Mcp.Editor
             new ExposurePolicy("nova.project.table.export"),
             new ExposurePolicy("nova.project.tracks.generate-registry"),
             new ExposurePolicy("nova.project.ui.export"),
+            new ExposurePolicy("nova.project.ui.inspect-bindings"),
+            new ExposurePolicy("nova.project.ui.configure-bindings"),
             new ExposurePolicy("nova.project.network.export"),
             new ExposurePolicy("nova.project.sound.export"),
             new ExposurePolicy("nova.project.vibration.export"),

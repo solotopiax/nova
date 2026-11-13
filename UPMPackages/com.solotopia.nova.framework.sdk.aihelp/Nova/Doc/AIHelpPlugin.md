@@ -87,4 +87,4 @@ Android Gradle 导出回调不以 Runtime Config 的启用状态作为门禁：�
 
 ## 与官方 SDK 的关系
 
-本插件基于随包 bundle 的 AIHelp Unity SDK 6.0（`Core/AIHelp/`）封装，调用 vendor API 时统一使用 `global::AIHelp.*` 全限定名以避免命名空间遮蔽。vendor 层的初始化参数、`EventType` 枚举等底层概念见 [官方SDK技术文档.md](./官方SDK技术文档.md)。
+本插件基于随包 bundle 的 AIHelp Unity SDK 6.0（[Core/AIHelp/](../../Core/AIHelp/)）封装，调用 vendor API 时统一使用 `global::AIHelp.*` 全限定名以避免命名空间遮蔽。vendor 层的初始化参数、`EventType` 枚举等底层概念见 [官方SDK技术文档.md](./官方SDK技术文档.md)。

@@ -21,6 +21,8 @@
 | Coplay Unity MCP、Nova MCP | 由 Framework 的精确 UPM 依赖闭包安装；核对实际注册身份与版本。默认 Provider 自动准备本地运行环境、启动或复用服务、连接本 Editor，并为 Codex 写入当前项目的匹配绑定。保留已有服务和有效配置，不覆盖其他项目或客户端。 |
 | Nova Skills | 按当前 Framework Catalog 自动同步 `.agents/skills/`，再执行 dry-run 核对全部受管项；本地内容冲突会保留并报告，避免覆盖用户数据。 |
 
+共同入口校验同时支持旧版文字引用和准确指向 [Docs/START_HERE.md](../../../START_HERE.md) 的同包相对链接，仍要求它出现在 Skill 首个正文段落；错误链接或后置引用不能通过。Router 的发现描述覆盖未点名 Nova 的一般 Unity 请求，项目识别与工具优先规则统一见 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充)。
+
 Unity 官方 `com.unity.pipeline` 用于 CLI，不能替代 Nova 当前使用的 `com.coplaydev.unity-mcp`。两条连接各自验证。正常安装会修改主机工具、插件状态、项目 MCP 配置及 Pipeline 包依赖；不会调用模型推理，不修改业务资源或凭据，不执行 Git 操作。
 
 ## 结果与连接边界

@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/Definitions/ObjectPoolManagerConfig.cs` | 配置类定义 |
+| [Managers/Definitions/ObjectPoolManagerConfig.cs](../../../../Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/ObjectPoolManagerConfig.cs) | 配置类定义 |
 
 ## 关键字段/属性
 

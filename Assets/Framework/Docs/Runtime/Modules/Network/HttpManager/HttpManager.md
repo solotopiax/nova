@@ -10,12 +10,12 @@ HTTP 短连接管理器，固定以 UnityWebRequest 和系统 DNS 执行 GET、P
 
 | 文件 | 说明 |
 |---|---|
-| HttpManager.cs | 初始化固定的 UnityWebRequest 实现，并转发公开 HTTP 与下载 API |
-| HttpManager.Visitors.cs | 默认请求总超时、业务路由偏好与内部传输字段 |
-| HttpManager.Methods.cs | HostKey + NetCmd 的最近成功优先、多轮与重试请求链 |
-| HttpManager.Telemetry.cs | 单 URL 和业务主备链的 UWR 埋点编排 |
-| Diagnostics/UwrNetworkTelemetry.cs | `1 start → 0～N error → 1 end` 事件构造与派发 |
-| Transports/UnityWebRequestTransport.cs | 请求、上传、下载、取消、进度与空闲超时实现 |
+| [HttpManager.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Implements/HttpManager.cs) | 初始化固定的 UnityWebRequest 实现，并转发公开 HTTP 与下载 API |
+| [HttpManager.Visitors.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Implements/HttpManager.Visitors.cs) | 默认请求总超时、业务路由偏好与内部传输字段 |
+| [HttpManager.Methods.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Implements/HttpManager.Methods.cs) | HostKey + NetCmd 的最近成功优先、多轮与重试请求链 |
+| [HttpManager.Telemetry.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Implements/HttpManager.Telemetry.cs) | 单 URL 和业务主备链的 UWR 埋点编排 |
+| [Diagnostics/UwrNetworkTelemetry.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Diagnostics/UwrNetworkTelemetry.cs) | `1 start → 0～N error → 1 end` 事件构造与派发 |
+| [Transports/UnityWebRequestTransport.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Transports/UnityWebRequestTransport.cs) | 请求、上传、下载、取消、进度与空闲超时实现 |
 
 ## 公开 API
 
@@ -53,7 +53,7 @@ GetAsync 禁用不可控的本地缓存复用。DownloadBinaryAsync 与 Download
 
 ## UWR 埋点
 
-启用 `EnableUWRTracks` 后，每条逻辑请求严格上报 `1 uwr_request_start → 0～N uwr_request_error → 1 uwr_request_end`。业务主备、多轮和重试仍属于同一条逻辑链；`uwr_retry_index`、`uwr_round_index`、`uwr_candidate_index` 与 `uwr_send_index` 可还原每次物理发送。三个事件通过 `uwr_chain_id` 关联，schema 版本固定为 1；完整字段定义见 `Assets/Framework/Tracks/Tracks.xlsx`。
+启用 `EnableUWRTracks` 后，每条逻辑请求严格上报 `1 uwr_request_start → 0～N uwr_request_error → 1 uwr_request_end`。业务主备、多轮和重试仍属于同一条逻辑链；`uwr_retry_index`、`uwr_round_index`、`uwr_candidate_index` 与 `uwr_send_index` 可还原每次物理发送。三个事件通过 `uwr_chain_id` 关联，schema 版本固定为 1；完整字段定义见 [Tracks/Tracks.xlsx](../../../../../Tracks/Tracks.xlsx)。
 
 普通 HTTP 令牌末位重载的预取消没有发送事件；在飞请求取消且未取得正式服务器响应时，沿上述集中归属上报一次 error，end 的 `uwr_result=aborted`、`uwr_error_type=cancelled`；正式服务器响应仍优先保留其结果语义。下载的预取消边界见 [IDownloadService.md](IDownloadService.md#内置下载的边界)。
 

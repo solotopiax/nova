@@ -70,8 +70,8 @@ UPMPackages/com.solotopia.nova.framework.{kit|sdk}.<name>/
 - [NetErrorCode.md](./NetErrorCode.md) / [LoginErrorCode.md](./LoginErrorCode.md)
 
 ## 相关
-- 主框架文档：`Assets/Framework/Docs/Runtime/Modules/Network/NetworkComponent.md`
-- 主框架索引：`Assets/Framework/Docs/INDEX.md`
+- 主框架文档：`<FrameworkRoot>/Docs/Runtime/Modules/Network/NetworkComponent.md`
+- 主框架索引：`<FrameworkRoot>/Docs/INDEX.md`
 ```
 
 ### 3. 每个公开类一份 .md 文档（参照 Framework Docs 模板）
@@ -89,11 +89,11 @@ UPMPackages/com.solotopia.nova.framework.{kit|sdk}.<name>/
 
 | 层级 | 写在哪 | 写什么 |
 |---|---|---|
-| 主框架 Component（`NetworkComponent`） | `Assets/Framework/Docs/Runtime/Modules/Network/NetworkComponent.md` | Component 自身 + `Kit<T>()` 入口 + 主框架视角的扩展点 |
+| 主框架 Component（`NetworkComponent`） | [Docs/Runtime/Modules/Network/NetworkComponent.md](../../../Docs/Runtime/Modules/Network/NetworkComponent.md) | Component 自身 + `Kit<T>()` 入口 + 主框架视角的扩展点 |
 | Kit 包内类（`NetService` / `Login` / `NetBuilder`） | `UPMPackages/<pkg>/Nova/Docs/<Class>.md` | 类自身 API 全文档；不重复 Component 层 |
-| 主框架 INDEX.md | `Assets/Framework/Docs/INDEX.md` | 列主框架文档 + 给每个 Kit 包加一行**软链**到 `UPMPackages/<pkg>/Nova/Docs/INDEX.md` |
+| 主框架 INDEX.md | [Docs/INDEX.md](../../../Docs/INDEX.md) | 列主框架文档 + 给每个 Kit 包加一行**软链**到 `UPMPackages/<pkg>/Nova/Docs/INDEX.md` |
 
-**严禁把 Kit 包内类文档写到 `Assets/Framework/Docs/`**——主框架 Docs 不应感知 Kit 实现细节，否则 Kit 包搬走时主框架文档残留断链。
+**严禁把 Kit 包内类文档写到 [Docs/](../../../Docs/INDEX.md)**——主框架 Docs 不应感知 Kit 实现细节，否则 Kit 包搬走时主框架文档残留断链。
 
 ### 5. 发版校验
 
@@ -113,7 +113,7 @@ UPMPackages/com.solotopia.nova.framework.{kit|sdk}.<name>/
 ## 反模式（Anti-patterns）
 
 - ❌ Kit/SDK 包只有 README.md，没有 `Nova/Docs/`
-- ❌ Kit 包内类文档写到 `Assets/Framework/Docs/Runtime/Modules/<Module>/<Class>.md`（主框架 Docs 不应感知 Kit 实现细节）
+- ❌ Kit 包内类文档写到 `<FrameworkRoot>/Docs/Runtime/Modules/<Module>/<Class>.md`（主框架 Docs 不应感知 Kit 实现细节）
 - ❌ `Nova/Docs/` 放包根（应在 `Nova/` 下，与 Scripts 同级）
 - ❌ 仅有一份 `Nova/Docs/README.md` 没有 INDEX.md（业务侧无法快速定位类）
 - ❌ 文档只列签名不带使用示例（业务侧仍需读源码）
@@ -125,9 +125,9 @@ UPMPackages/com.solotopia.nova.framework.{kit|sdk}.<name>/
 
 ## 落地参考点
 
-- 主框架 Docs 范本：`Assets/Framework/Docs/`（含 ARCHITECTURE.md / INDEX.md / Runtime / Editor 分层）
+- 主框架 Docs 范本：[Docs/](../../../Docs/INDEX.md)（含 ARCHITECTURE.md / INDEX.md / Runtime / Editor 分层）
 - 现有 Kit 包结构：`UPMPackages/com.solotopia.nova.framework.kit.network/Nova/{Scripts,Protos}/`（**当前缺 Docs/**，应按本规范补齐）
-- 现有 SDK 包结构：`UPMPackages/com.solotopia.nova.framework.sdk.tga/Nova/Scripts/`（**当前缺 Docs/**，应按本规范补齐）
+- 现有 SDK 包结构：[UPMPackages/com.solotopia.nova.framework.sdk.tga/Nova/Scripts/](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.tga/Nova/Scripts/)（**当前缺 Docs/**，应按本规范补齐）
 
 ## 关联
 

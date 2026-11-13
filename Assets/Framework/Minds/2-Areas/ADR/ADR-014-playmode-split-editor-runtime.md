@@ -51,7 +51,7 @@ EnableHotfix 总开关落地后，YooAsset `AssetPlayMode` 在 Editor / Player �
 
 ### 一、字段拆分
 
-`AssetManagerConfig.cs` 新增 2 字段（**[Serializable] 业务范畴独立成簇**，不属于"热更配置"）：
+[AssetManagerConfig.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs) 新增 2 字段（**[Serializable] 业务范畴独立成簇**，不属于"热更配置"）：
 
 ```csharp
 public AssetPlayMode EditorPlayMode  = AssetPlayMode.EditorSimulateMode;
@@ -87,7 +87,7 @@ AssetPlayMode effectiveMode = Application.isEditor
 | `RuntimePlayMode` | `OfflinePlayMode` | `EnableHotfix` → `false` |
 | `RuntimePlayMode` | `HostPlayMode` | `EnableHotfix` → `true` |
 
-落地见 `AssetComponentInspector.Methods.cs::DrawConfigs` + `DrawRuntimePlayModePopup`，详细范式见 [[PAT-09-inspector-config-i18n|PAT-09]] §九。
+落地见 [AssetComponentInspector.Methods.cs::DrawConfigs](../../../Scripts/Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.Methods.cs) + `DrawRuntimePlayModePopup`，详细范式见 [[PAT-09-inspector-config-i18n|PAT-09]] §九。
 
 ### 四、Inspector 字段范畴归属
 
@@ -129,7 +129,7 @@ Inspector 中两字段独立成第 2 顶层子簇，置于 `TypesSelector` HelpB
 
 ## 验证依据（Verification）
 
-- **代码路径**：
+- **历史开发态代码路径**（记录本决策当时的位置；其中 `LaunchConfig.cs` 原路径已失效；当前配置说明见 [AssetComponent](../../../Docs/Runtime/Modules/Asset/AssetComponent.md)，已删除项仅作历史来源）：
   - `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs`（新增 EditorPlayMode/RuntimePlayMode）
   - `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs::BuildPlayModeOptions`（三元表达式简化）
   - `Assets/Framework/Scripts/Runtime/Modules/Launch/Definitions/LaunchConfig.cs`（删 DefaultPlayMode）

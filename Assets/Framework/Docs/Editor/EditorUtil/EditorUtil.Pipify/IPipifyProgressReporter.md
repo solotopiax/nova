@@ -12,7 +12,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/Definitions/IPipifyProgressReporter.cs` | `IPipifyProgressReporter` | 接口定义 |
+| [EditorUtil.Pipify/Definitions/IPipifyProgressReporter.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Definitions/IPipifyProgressReporter.cs) | `IPipifyProgressReporter` | 接口定义 |
 
 ## §5 公开 API
 

@@ -99,6 +99,7 @@ auto_generated: true
 - [ADR-083 Nova 网络统一采用 UnityWebRequest 与共享主备执行机制](../2-Areas/ADR/ADR-083-uwr-primary-fallback-network.md) — UWR 系统 DNS 承载三模块共享主备执行机制
 - [ADR-087 微信小游戏能力统一收口 Plugin 并以 Solar 公开行为为覆盖基线](../2-Areas/ADR/ADR-087-wechat-minigame-plugin-facade-and-capability-baseline.md) — 微信能力统一由Plugin稳定封装
 - [ADR-088 SDK 初始化按能力依赖调度，登录资料按当前会话补交](../2-Areas/ADR/ADR-088-sdk-dependency-and-login-delivery.md) — SDK 依赖显式声明，登录 UID 与属性在插件就绪后交付
+- [ADR-092 MainDemo 预加载作为所有新游戏的默认产品基线](../2-Areas/ADR/ADR-092-main-demo-product-preload-baseline.md) — 新游戏默认落实MainDemo八项预加载
 
 ## quality
 
@@ -118,4 +119,4 @@ auto_generated: true
 
 
 ---
-_共 76 条，分布于 10 个 category。_
+_共 77 条，分布于 10 个 category。_

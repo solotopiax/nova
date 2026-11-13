@@ -2,7 +2,7 @@
 
 **类签名**：`public abstract partial class AdChannelPluginBase : IAdInternalPlugin, IAdChannelLifecycle`
 **命名空间**：`NovaFramework.SDK.AdPlugin.Runtime`
-**源码目录**：`Nova/Scripts/Runtime/AdChannelPluginBase/`
+**源码目录**：[Nova/Scripts/Runtime/AdChannelPluginBase/](../Scripts/Runtime/AdChannelPluginBase/)
 
 广告渠道共享基类，封装广告组加载、真实 Ready 查询、收益候选选择、展示生命周期、七类事件和通用打点。具体渠道负责初始化原厂 SDK，以及单个真实广告位的 Load / Ready / Show 调用；业务通过聚合层 `IAdPlugin` 使用广告，不传组 ID 或广告位 ID。
 
@@ -489,13 +489,13 @@ loaded 回调必须确认原厂真实 Ready；首次查询不可播时等待一�
 
 `group` 使用本组首个真实广告 ID，与渠道及格式组合关联；`round` 是现有托管轮次，不能当作 MAX 请求 token。`item` 从 1 开始显示，运行时 `ActiveUnitIndex` 仍从 0 开始。平台加载失败后，同组还有下一项时继续串行请求该项，可通过失败回调与随后请求的 `placement / item` 核对；整组失败后按配置间隔重试，新轮仍从首项开始。
 
-业务准备请求与展示见 [AdPlugin.md](./AdPlugin.md#本地请求与展示日志)，MAX 实际原厂展示与回调日志见 [MaxAdPlugin.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md#本地调用与回调日志)。
+业务准备请求与展示见 [AdPlugin.md](./AdPlugin.md#本地请求与展示日志)，MAX 实际原厂展示与回调日志见 [MaxAdPlugin.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPlugin.md#本地调用与回调日志`）。
 
 ### 原厂过期重载与被动刷新
 
 `RaiseAdCacheReplaced` 仅在原厂真实 Ready 时采纳：同组当前 Ready 项，或无活动加载 / 展示的 Idle / WaitingRetry 项。成功采纳后更新当前缓存、取消旧 timer 并归零间隔下标；不完成主动加载轮、不复活已结束批次，也不虚构 request / fill。
 
-Loading / Showing 时的 expiry 仅用于诊断，不当作主动 Load 终态。当前 MAX 适配的 Load 回调只有真实 ID，没有加载请求 token，Nova 也没有撤销原厂加载的入口：托管 `RoundId` 能过滤旧 timer、排队动作和业务观察，无法识别所有同 ID 跨轮迟到回调，也不能禁止原厂自主 expiry / mediation 请求。MAX 原厂细节见 [MaxAdPlugin.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md)。
+Loading / Showing 时的 expiry 仅用于诊断，不当作主动 Load 终态。当前 MAX 适配的 Load 回调只有真实 ID，没有加载请求 token，Nova 也没有撤销原厂加载的入口：托管 `RoundId` 能过滤旧 timer、排队动作和业务观察，无法识别所有同 ID 跨轮迟到回调，也不能禁止原厂自主 expiry / mediation 请求。MAX 原厂细节见 [MaxAdPlugin.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPlugin.md`）。
 
 Banner 每组只含一个真实 ID，多组可以并行；不进行组内多 ID waterfall，也不参加全屏互斥；主动单 ID 加载失败仍走组重试间隔。MAX 的 Banner 视图刷新由原厂驱动：被动成功可更新已注册缓存并派发 fill，被动失败因没有当前主动 Loading 项而不发起 Nova 重试。重复 Request 已创建视图不保证触发一次新的原厂加载。
 
@@ -603,7 +603,7 @@ private void OnRewardedLoaded(string placementId, MaxSdkBase.AdInfo info)
 }
 ~~~
 
-加载失败同样先复制错误字段，再调用 `RaiseAdLoadFailed`。展示调用前记录 `TrackAdShow`；displayed 调用 `RaiseShowCompleted`；匹配关闭或展示失败后调用 `RaiseAdClosed / RaiseShowFailed`，再完成渠道自己的展示 TCS。涉及渠道字段和完成源时先通过 `PostAdCallbackToMainThread` 执行，终态领取一次并在 `finally` 完成等待。完整实现见 [MaxAdPlugin.RV.cs](../../../com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/MaxAdPlugin.RV.cs)。
+加载失败同样先复制错误字段，再调用 `RaiseAdLoadFailed`。展示调用前记录 `TrackAdShow`；displayed 调用 `RaiseShowCompleted`；匹配关闭或展示失败后调用 `RaiseAdClosed / RaiseShowFailed`，再完成渠道自己的展示 TCS。涉及渠道字段和完成源时先通过 `PostAdCallbackToMainThread` 执行，终态领取一次并在 `finally` 完成等待。完整实现见 [MaxAdPlugin.RV.cs](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Scripts/Runtime/MaxAdPlugin.RV.cs`）。
 
 ### 业务层请求与展示
 
@@ -648,7 +648,7 @@ if (bannerLoaded.Success)
 - [IAdPlugin.md](./IAdPlugin.md) — 业务接口、结果获取和示例
 - [IBannerControl.md](./IBannerControl.md) — Banner 控制接口
 - [AdPluginEvents.md](./AdPluginEvents.md) — 七类事件与奖励资格
-- [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — 事件订阅、补发与生命周期
+- [ObservableEvent.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Events/ObservableEvent.md`） — 事件订阅、补发与生命周期
 - [IAdInternalPlugin.cs](../Scripts/Runtime/Interfaces/IAdInternalPlugin.cs) — 渠道接口源码
 - [AdGroupConfigParser.cs](../Scripts/Runtime/AdChannelPluginBase/AdGroupConfigParser.cs) — 配置解析与只读校验结果
-- [MaxAdPlugin.md](../../../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPlugin.md) — MAX 原厂回调与平台边界
+- [MaxAdPlugin.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPlugin.md`） — MAX 原厂回调与平台边界

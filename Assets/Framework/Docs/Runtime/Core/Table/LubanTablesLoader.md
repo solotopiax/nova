@@ -2,7 +2,7 @@
 
 **命名空间**：`NovaFramework.Runtime`
 
-**文件位置**：`Runtime/Core/Table/LubanTablesLoader.cs`
+**文件位置**：[Runtime/Core/Table/LubanTablesLoader.cs](../../../../Scripts/Runtime/Core/Table/LubanTablesLoader.cs)
 
 Luban Tables 反射加载器。通过反射构造 `*Tables` 实例（如 `ConfigTables`），并提取其中的所有 `ITable` 实现到字典中。Config、Network、Sound 等专用模块继续共用此实现；通用 Table 模块使用 `ILubanTableBinding`。
 
@@ -12,7 +12,7 @@ Luban Tables 反射加载器。通过反射构造 `*Tables` 实例（如 `Config
 
 | 文件 | 说明 |
 |------|------|
-| `Runtime/Core/Table/LubanTablesLoader.cs` | 静态加载器实现 |
+| [Runtime/Core/Table/LubanTablesLoader.cs](../../../../Scripts/Runtime/Core/Table/LubanTablesLoader.cs) | 静态加载器实现 |
 
 ---
 

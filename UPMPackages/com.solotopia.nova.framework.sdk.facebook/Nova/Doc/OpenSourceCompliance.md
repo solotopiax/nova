@@ -2,20 +2,22 @@
 
 This note summarizes the compliance boundary for `com.solotopia.nova.framework.sdk.facebook`. It is a release checklist aid, not a legal guarantee. Recheck all upstream license, policy, privacy, App Review, ATT, and trademark requirements at release time.
 
+Sample paths below identify development source relative to the Nova repository root. In consumer projects, locate `FacebookDemo` through Package Manager's actual import list and resolve sample files from that imported directory; these development paths are not installation locations.
+
 ## License Boundary
 
 | Package area | Source | Status for public release |
 |---|---|---|
-| `Nova/**` | Solotopia / Nova adapter layer | Solotopia / Nova MIT content. Keep `LICENSE.md` with public distribution. |
+| [Nova/**](../) | Solotopia / Nova adapter layer | Solotopia / Nova MIT content. Keep [LICENSE.md](../../LICENSE.md) with public distribution. |
 | Root package docs and metadata authored by Solotopia | Solotopia / Nova packaging | Solotopia / Nova MIT content. Keep notices with public distribution. |
-| `Core/FacebookSDK/**` | Upstream Facebook Unity SDK `18.0.0` | Upstream Facebook SDK material. Keep `Core/FacebookSDK/LICENSE.txt` and follow Facebook platform terms, developer policies, and notice requirements. |
-| `Core/Editor/DisableBitcode.cs` | Imported with the Facebook SDK package | Treat as upstream SDK material unless replaced by a Nova-owned implementation. |
+| [Core/FacebookSDK/**](../../Core/FacebookSDK/) | Upstream Facebook Unity SDK `18.0.0` | Upstream Facebook SDK material. Keep [Core/FacebookSDK/LICENSE.txt](../../Core/FacebookSDK/LICENSE.txt) and follow Facebook platform terms, developer policies, and notice requirements. |
+| [Core/Editor/DisableBitcode.cs](../../Core/Editor/DisableBitcode.cs) | Imported with the Facebook SDK package | Treat as upstream SDK material unless replaced by a Nova-owned implementation. |
 
-The whole package must not be described as pure MIT because it includes upstream Facebook SDK material under `Core/FacebookSDK/**`.
+The whole package must not be described as pure MIT because it includes upstream Facebook SDK material under [Core/FacebookSDK/**](../../Core/FacebookSDK/).
 
 ## Third-Party Dependency List
 
-Declared in `Core/FacebookSDK/Plugins/Editor/Dependencies.xml`.
+Declared in [Core/FacebookSDK/Plugins/Editor/Dependencies.xml](../../Core/FacebookSDK/Plugins/Editor/Dependencies.xml).
 
 Android dependencies resolved by EDM4U:
 
@@ -36,7 +38,7 @@ iOS pods resolved by EDM4U:
 
 ## Public Release Requirements
 
-- Retain `LICENSE.md`, `THIRD_PARTY_NOTICES.md`, and `Core/FacebookSDK/LICENSE.txt`.
+- Retain [LICENSE.md](../../LICENSE.md), [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md), and [Core/FacebookSDK/LICENSE.txt](../../Core/FacebookSDK/LICENSE.txt).
 - Keep the official Facebook SDK `Examples` folder excluded unless a separate review explicitly approves inclusion.
 - Keep Facebook example-only media such as `meta-logo.png` and `meta.mp4` excluded.
 - Do not include private Facebook app credentials in package docs, package metadata, sample configs, scenes, or committed Unity assets.

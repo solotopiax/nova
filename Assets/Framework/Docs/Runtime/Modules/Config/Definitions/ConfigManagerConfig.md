@@ -11,7 +11,7 @@ ConfigManager 初始化入参；携带 Asset 地址，由 ConfigComponent 在 St
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Managers/Definitions/ConfigManagerConfig.cs` | `ConfigManagerConfig` | 纯数据类，无方法 |
+| [Managers/Definitions/ConfigManagerConfig.cs](../../../../../Scripts/Runtime/Modules/Config/Managers/Definitions/ConfigManagerConfig.cs) | `ConfigManagerConfig` | 纯数据类，无方法 |
 
 ---
 

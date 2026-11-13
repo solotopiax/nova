@@ -1,7 +1,7 @@
 # Nova Framework - SDK - IAP - ThirdPay
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.thirdpay`
-> 当前版本：`0.1.4`
+> 当前版本：`0.1.5`
 
 Nova 的应用内第三方支付 Store。客户端生成订单号与加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 当前调用 Unity Purchasing 5.4.4 的 `ExternalBillingProgramClient` 外部结算接口。平台计划资格和现行选择、披露及上报要求须另行核对；接入时须核对当前商品协议、支付网页参数和商户映射。
 
@@ -22,7 +22,7 @@ Android 重复点击购买时，默认在首次建单后的 30 分钟内先查�
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.4"
+    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.5"
   }
 }
 ```
@@ -31,8 +31,8 @@ Android 重复点击购买时，默认在首次建单后的 30 分钟内先查�
 
 - 仅支持 InAppAuto，不对业务暴露支付页打开器或 DeepLink 模式；iOS 内部通过 Safe Browsing 与 Deep Link 完成支付回调。
 - 支付页打开方式由平台固定决定，不通过国家列表配置：Android 默认使用外部支付页，iOS 使用 UniWebView Safe Browsing，Editor 使用嵌入式 UniWebView。
-- Android 打开支付页前会先执行 Google 外链信息页流程；当前系统不支持该信息页时继续进入浏览器打开规则。外部支付页通过包内 `Nova/Plugins/Android/ThirdPayAuthTab.androidlib` 优先打开 Auth Tab，不支持时回退 AndroidX Browser `1.10.0` Custom Tabs；两者不可用或打开失败时，由 C# 层调用 `Application.OpenURL` 回退系统浏览器。外部支付会话直接订阅 Unity `Application.deepLinkActivated`；三种方式收到 `pay_callback` 成功回调后都会核对活动订单并立即验单，App 返回倒计时仅用于没有收到成功回调时的兜底。
-- Android 通过包内 `Nova/Plugins/Android/NovaThirdPayBillingBridge.java` 读取 Google Play Billing 商店地区代码；Google 外链政策仍使用 Unity Purchasing 的 `ExternalBillingProgramClient`。该裸 Java 插件依赖 Unity Purchasing 5.4.4 注入的 `com.android.billingclient:billing:9.0.0`，不需要额外的 `.androidlib`。
+- Android 打开支付页前会先执行 Google 外链信息页流程；当前系统不支持该信息页时继续进入浏览器打开规则。外部支付页通过包内 [Nova/Plugins/Android/ThirdPayAuthTab.androidlib](Nova/Plugins/Android/ThirdPayAuthTab.androidlib/) 优先打开 Auth Tab，不支持时回退 AndroidX Browser `1.10.0` Custom Tabs；两者不可用或打开失败时，由 C# 层调用 `Application.OpenURL` 回退系统浏览器。外部支付会话直接订阅 Unity `Application.deepLinkActivated`；三种方式收到 `pay_callback` 成功回调后都会核对活动订单并立即验单，App 返回倒计时仅用于没有收到成功回调时的兜底。
+- Android 通过包内 [Nova/Plugins/Android/NovaThirdPayBillingBridge.java](Nova/Plugins/Android/NovaThirdPayBillingBridge.java) 读取 Google Play Billing 商店地区代码；Google 外链政策仍使用 Unity Purchasing 的 `ExternalBillingProgramClient`。该裸 Java 插件依赖 Unity Purchasing 5.4.4 注入的 `com.android.billingclient:billing:9.0.0`，不需要额外的 `.androidlib`。
 - 国家码不从 `ThirdPayStoreConfig` 读取，也不提供配置默认值；Store 初始化时只并发启动 Billing、iOS Storefront、AD 三路查询，不等待结果，也不请求用户态配置。AD 查询会等待 SDK 统一初始化完成，并持续等待广告插件首次发布国家码，不受广告业务接口默认超时限制。登录后首次通过 `GetCountryCode()` 取得的有效自动解析结果会按 `Billing > iOS Storefront > AD` 锁定到当前 Store 生命周期，后续异步来源和重新登录不会改变业务国家；`SetDebugCountryCode` 仅作为显式 Debug 覆盖，不重写自动锁定值。所有来源执行 `Trim + ToUpperInvariant`，`IV` / `UNKNOWN` / 空值都视为无国家码。
 - iOS 使用 UniWebView Safe Browsing；回调、关闭和异常清理由包内服务统一处理。
 - 应用 Pause/Focus 生命周期由 `SDKComponent` 统一广播到 `IAPPlugin`，再转发给 `ThirdPayStore`；ThirdPay 不创建独立隐藏 GameObject 监听生命周期。
@@ -51,3 +51,13 @@ Android 重复点击购买时，默认在首次建单后的 30 分钟内先查�
 面向 Google Play 或 Apple App Store 上架前，先按 [平台支付政策核对](./Nova/Doc/PlatformPaymentPolicy.md) 确认目标商店地区和计划；当前客户端不自动完成所有新计划所需的平台 API、选择/披露或交易上报。
 
 接入时先在 `IAPPluginConfig` 中登记 `ThirdPayStoreConfig` 和带 `ThirdProductID` 的商品，保存 ConfigMaster 并导出当前平台的 Runtime 配置；再核对 `ThirdGetPaymentConfig`、`ThirdQueryPendingOrder`、`ThirdVerifyIap` 三条 NetCmd 的实际路由与后端实现。登录后须取得有效国家码，服务端统一配置须允许支付并提供目标商品及 HTTPS 支付页地址，才能发起新支付。完整步骤与验证边界见 [ThirdPayStore.md](./Nova/Doc/ThirdPayStore.md#接入与验收顺序)。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework.sdk.iap` | `Nova/Doc/INDEX.md` | `Nova/Doc/IAP-Architecture.md#支付打点三维属性`<br>`Sample IAPDemo / README.md` |
+
+`Sample 名称 / 相对路径` 表示该包导入的示例内容；通过 Package Manager 和实际导入清单定位当前副本，再从其 README 进入。不要把开发仓源目录或某个版本的导入目录当作固定位置。

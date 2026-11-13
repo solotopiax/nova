@@ -94,7 +94,7 @@
 
 ## UI 注册表概要
 
-DemoXxxView 及 2 个辅助 view 的注册源为 `Excels/UIs/UIs.xlsx`（正式 JSON：`Jsons/UIs.json`）；新增页面须同步注册源并通过正式导出更新产物：
+DemoXxxView 及 2 个辅助 view 的注册源为 [Excels/UIs/UIs.xlsx](Excels/UIs/UIs.xlsx)（正式 JSON：[Jsons/UIs.json](Jsons/UIs.json)）；新增页面须同步注册源并通过正式导出更新产物：
 
 - `UIGroupName`：Demo 分组（`Nova.prefab` 中 `m_Depth=1`，`PauseCoveredUIView=false`）
 - `AssetLocation`：`DemoXxxView`（当前 `AddressByFileName` 采集，与 prefab 文件名对应）
@@ -106,4 +106,4 @@ DemoXxxView 及 2 个辅助 view 的注册源为 `Excels/UIs/UIs.xlsx`（正式 
 
 - [`DESIGN.md`](DESIGN.md) — 当前基类说明与历史设计背景
 - [`README.md`](README.md) — MainDemo 工程总览与 Codex 使用入口
-- 已安装 Framework 包的 `Docs/INDEX.md`、`Docs/START_HERE.md` 与 `Agents/INDEX.md` — 模块文档与复用技能入口；由实际包解析位置读取，不依赖主仓目录
+- 已安装 Framework 包的 [Docs/INDEX.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/INDEX.md`）、[Docs/START_HERE.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/START_HERE.md`） 与 [Agents/INDEX.md](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Agents/INDEX.md`） — 模块文档与复用技能入口；由实际包解析位置读取，不依赖主仓目录

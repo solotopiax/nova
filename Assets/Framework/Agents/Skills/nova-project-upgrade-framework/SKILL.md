@@ -5,30 +5,30 @@ description: Use when Nova 项目组要把当前 direct Nova Framework 从既有
 
 # Nova 升级消费项目 Framework
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-先读取 `references/contract.json`，冻结目标、来源、依赖闭包、确认门和恢复语义。仅在当前外部 UPM 宿主的包管理参数不明确时，读取它的 live 能力清单与当前 Schema；仅在重载后核验实际 Framework 与受管投影时，使用已解析 Framework 包内的 `Agents/Tools/nova_skills.py`。不要读取主仓 `.nova/`、`Minds/`、绝对路径或用 Framework 内的 C# Action 代替包外宿主。
+先读取 [references/contract.json](references/contract.json)，冻结目标、来源、依赖闭包、确认门和恢复语义。仅在当前外部 UPM 宿主的包管理参数不明确时，读取它的 live 能力清单与当前 Schema；仅在重载后核验实际 Framework 与受管投影时，使用已解析 Framework 包内的 [Agents/Tools/nova_skills.py](../../Tools/nova_skills.py)。不要读取主仓 `.nova/`、`Minds/`、绝对路径或用 Framework 内的 C# Action 代替包外宿主。
 
 ## 范围与前置门
 
-本 Operation 只升级当前消费项目 `Packages/manifest.json` 中的 direct `com.solotopia.nova.framework`：目标只能是同一已配置 registry 的远端 `latest`，或同一来源可解析的明确、更高版本。指定历史版本、降级、Git/file/local 来源、registry 切换、批量包升级或 Framework 发布均为 `not_applicable`。
+本 Operation 只升级当前消费项目 [Packages/manifest.json（定位）](../../../Docs/START_HERE.md#先确定框架位置与文档入口) 中的 direct `com.solotopia.nova.framework`：目标只能是同一已配置 registry 的远端 `latest`，或同一来源可解析的明确、更高版本。指定历史版本、降级、Git/file/local 来源、registry 切换、批量包升级或 Framework 发布均为 `not_applicable`。
 
-升级必须由 Framework 外部、跨 reload 仍独立的受控 UPM 宿主完成。先根据它当前公开的 live Schema 确认：只修改这个 direct dependency、触发并等待 Unity Resolve，且能在 domain reload 后重新连接核验。缺少任一能力，或无法证明目标 Framework 的 Nova MCP 默认 Adapter 依赖闭包可解析时，执行前返回 `blocked`。绝不调用 `nova_project_action`、Framework C# AgentAction、任意 C#、反射、菜单模拟或手写 `manifest.json` 来升级 Framework。
+升级必须由 Framework 外部、跨 reload 仍独立的受控 UPM 宿主完成。先根据它当前公开的 live Schema 确认：只修改这个 direct dependency、触发并等待 Unity Resolve，且能在 domain reload 后重新连接核验。缺少任一能力，或无法证明目标 Framework 的 Nova MCP 默认 Adapter 依赖闭包可解析时，执行前返回 `blocked`。绝不调用 `nova_project_action`、Framework C# AgentAction、任意 C#、反射、菜单模拟或手写 [manifest.json（定位）](../../../Docs/START_HERE.md#先确定框架位置与文档入口) 来升级 Framework。
 
 ## Freeze → Confirm → Upgrade → Recover
 
 1. 只读冻结唯一项目根、当前 manifest direct entry、当前 lock 解析版本与来源、脱敏后的 registry 身份和可达性、`latest` 或精确目标版本、目标元数据，以及目标 Framework → Nova MCP 包 → 默认 Provider Adapter 的可解析闭包。当前版本已等于或高于目标为 `not_applicable`；任何来源、版本、依赖或宿主不唯一为 `blocked`。
 2. 展示唯一的 Framework 版本 diff、目标来源、预期 Resolve 影响、后续重载风险和验证清单。只有用户确认该冻结计划后，才调用外部宿主的一次升级；若宿主要求自己的确认，仍须按其精确 Schema 单独完成。
 3. 外部宿主提交 manifest 变更并触发 Resolve 后，连接中断、domain reload 或编译尚未稳定时只能返回 `partial`，保留已知的目标与宿主 receipt（如有）。不得自动重试、复用旧请求、清缓存、回滚或改写其它包。
-4. 重连到同一项目且 Unity 稳定后，先由包外宿主只读核验 direct manifest、packages-lock、目标 Framework 版本和同源解析。再从新解析的 Framework 读取其 `Agents/catalog.json`，以该版本 Catalog 的实际项数运行 `nova_skills.py doctor --project-root <projectRoot>`，确认投影没有 missing、modified、sourceChanged 或未完成事务。
-5. 新版本包含工具链检查时，等待安装或包升级后自动触发的 `[Nova AI 工具链]` 安装、绑定及复核结果；缺失项自动补齐并重试，不要求项目组另行安装。需要重试时仅调用固定菜单 `Nova/Check and Setup AI Toolchain`，等待异步检查结束，逐项报告官方插件、Unity CLI、Coplay Unity MCP、Nova MCP 和 Nova Skills 的证据。菜单返回只表示已安排检查；超时、未知状态或缺项均不能写成通过。旧版本没有该入口时保留具体未覆盖项，不能用任意 C# 或反射补装工具。完整检查语义见目标包 `Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md`。
+4. 重连到同一项目且 Unity 稳定后，先由包外宿主只读核验 direct manifest、packages-lock、目标 Framework 版本和同源解析。再从新解析的 Framework 读取其 [Agents/catalog.json](../../catalog.json)，以该版本 Catalog 的实际项数运行 `nova_skills.py doctor --project-root <projectRoot>`，确认投影没有 missing、modified、sourceChanged 或未完成事务。
+5. 新版本包含工具链检查时，等待安装或包升级后自动触发的 `[Nova AI 工具链]` 安装、绑定及复核结果；缺失项自动补齐并重试，不要求项目组另行安装。需要重试时仅调用固定菜单 `Nova/Check and Setup AI Toolchain`，等待异步检查结束，逐项报告官方插件、Unity CLI、Coplay Unity MCP、Nova MCP 和 Nova Skills 的证据。菜单返回只表示已安排检查；超时、未知状态或缺项均不能写成通过。旧版本没有该入口时保留具体未覆盖项，不能用任意 C# 或反射补装工具。完整检查语义见目标包 [Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md](../../../Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
 6. 重新执行 MCP `tools/list`，确认 `nova_project_action` 已重新出现，再调用其只读 `describe` 验证当前项目的连接；不得用它补做 Framework 升级。Unity CLI 的命令可执行与连接 Editor 分开报告；自动流程只从固定官方入口安装缺失 CLI/插件、补齐 Pipeline 并绑定本项目 MCP；这些随安装升级自动执行，不另行要求项目组确认补装。当前聊天是否加载工具须现场验收。
 
 ## 结果与不可越界项
 
-目标 Framework 含重要升级提示能力时，重载稳定后会从实际安装包的 `CHANGELOG.md` 正式版本提取 `### Important` 并自动弹窗；跨版本声明按版本分组。外部宿主没有传入显式批次时按同步升级补查处理，不推断用户点击范围。窗口等待人工确认不等于 UPM 卡死；Agent 不得自动确认或修改 `Library/Nova/ImportantUpdates`，不得为关闭窗口重放升级。仅需解释时读取目标包 `Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md`，分别报告安装核验与人工阅读状态。
+目标 Framework 含重要升级提示能力时，重载稳定后会从实际安装包的 [CHANGELOG.md（当前包定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 正式版本提取 `### Important` 并自动弹窗；跨版本声明按版本分组。外部宿主没有传入显式批次时按同步升级补查处理，不推断用户点击范围。窗口等待人工确认不等于 UPM 卡死；Agent 不得自动确认或修改 [Library/Nova/ImportantUpdates（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，不得为关闭窗口重放升级。仅需解释时读取目标包 [Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，分别报告安装核验与人工阅读状态。
 
 所有版本、来源、编译、Catalog 投影、工具链逐项证据及当前会话 `nova_project_action` 的只读连接核验均符合冻结目标时才为 `success`。写入前缺少外部 UPM 宿主、当前默认 Provider Adapter 或可解析闭包时为 `blocked`；写入已提交后因 Resolve、重载、编译、投影、工具链或 MCP 重连未完成时为 `partial`，只给出恢复核验路径，不回滚。
 

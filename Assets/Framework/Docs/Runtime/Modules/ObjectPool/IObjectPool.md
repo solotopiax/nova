@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Managers/Definitions/IObjectPool.cs` | 接口定义 |
+| [Managers/Definitions/IObjectPool.cs](../../../../Scripts/Runtime/Modules/ObjectPool/Managers/Definitions/IObjectPool.cs) | 接口定义 |
 
 ## 关键属性
 

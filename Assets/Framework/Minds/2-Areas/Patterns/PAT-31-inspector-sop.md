@@ -27,7 +27,7 @@ related:
 
 ## 适用场景
 
-- 在 `Assets/Framework/Scripts/Editor/Inspectors/` 下新增或改造 Component Inspector。
+- 在 [Scripts/Editor/Inspectors/](../../../Scripts/Editor/Inspectors) 下新增或改造 Component Inspector。
 - 评审 Inspector PR 是否符合 Nova Editor 规范。
 
 ## 核心做法

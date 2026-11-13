@@ -6,12 +6,12 @@
 
 | 内容 | 维护位置 |
 |---|---|
-| Framework 埋点及既有用户、公共属性说明 | `Assets/Framework/Tracks/Tracks.xlsx`（发布包内为 `Tracks/Tracks.xlsx`） |
-| 广告聚合及 MAX 等广告渠道的事件、追加字段 | `com.solotopia.nova.framework.sdk.ad/Nova/Tracks/Tracks.xlsx` |
-| IAP 核心及 Mobile、ThirdPay、Voucher 的事件 | `com.solotopia.nova.framework.sdk.iap/Nova/Tracks/Tracks.xlsx` |
+| Framework 埋点及既有用户、公共属性说明 | [Tracks/Tracks.xlsx](../Tracks/Tracks.xlsx) |
+| 广告聚合及 MAX 等广告渠道的事件、追加字段 | [按包定位：com.solotopia.nova.framework.sdk.ad/Nova/Tracks/Tracks.xlsx](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| IAP 核心及 Mobile、ThirdPay、Voucher 的事件 | [按包定位：com.solotopia.nova.framework.sdk.iap/Nova/Tracks/Tracks.xlsx](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
 | TGA 的既有固定用户、公共属性 | Framework 既有说明页，不另建 TGA 表 |
-| 独立业务模块（Login、Bind、Firebase、WeChatMiniGame 等） | 所属包的 `Nova/Tracks/Tracks.xlsx` |
-| MemoryProtection 独立核心扩展 | `com.solotopia.nova.framework.memory.protection/Nova/Tracks/Tracks.xlsx`，仅 `打点表-MemoryProtection`；从 Framework 原表迁出，事件、属性和目标不变 |
+| 独立业务模块（Login、Bind、Firebase、WeChatMiniGame 等） | 所属包的 [按包定位：Nova/Tracks/Tracks.xlsx](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) |
+| MemoryProtection 独立核心扩展 | [按包定位：com.solotopia.nova.framework.memory.protection/Nova/Tracks/Tracks.xlsx](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)，仅 `打点表-MemoryProtection`；从 Framework 原表迁出，事件、属性和目标不变 |
 
 新增、修改或删除实际埋点调用时，同步维护既有归属的表。源码位于独立子包不表示必须独立建表；禁止为了补漏把广告渠道、支付子包或 TGA 的既有定义拆出。只有接口转发、没有自有固定事件或属性的适配包不需要空表。
 
@@ -35,7 +35,7 @@
 
 ## Network 视觉模板
 
-唯一模板是 `Assets/Framework/Tracks/Tracks.xlsx` 中的 `打点表-Network`。源表与 `EditorUtil.TrackRegistry.XlsxWriter` 生成表必须同步遵守，不能只修改当前 Excel。
+唯一模板是 [Tracks/Tracks.xlsx](../Tracks/Tracks.xlsx) 中的 `打点表-Network`。源表与 `EditorUtil.TrackRegistry.XlsxWriter` 生成表必须同步遵守，不能只修改当前 Excel。
 
 | 项目 | 标准 |
 |---|---|
@@ -79,7 +79,7 @@ SDK Inspector 的“打开打点表”按钮和受控 `nova.project.tracks.gener
 
 ## 自然语言能力与结构事务
 
-日常埋点维护复用 `nova-project-onboard-sdk-kit/references/tracks-maintenance.md`；同领域 Operation 覆盖调用接入、已有文字、新增事件/属性/事件页、定向目标与事件页样式，不新增逐事件、字段或渠道 Skill。已有文字复用 `Agents/Tools/nova_table_source.py`；事件页结构复用 `Agents/Tools/nova_tracks_source.py` 的固定 `inspect/plan/execute/verify/recover`，权威源限当前真实登记的自有工作区，已安装缓存或厂商包只读。
+日常埋点维护复用 `nova-project-onboard-sdk-kit/references/tracks-maintenance.md`；同领域 Operation 覆盖调用接入、已有文字、新增事件/属性/事件页、定向目标与事件页样式，不新增逐事件、字段或渠道 Skill。已有文字复用 [Agents/Tools/nova_table_source.py](../Agents/Tools/nova_table_source.py)；事件页结构复用 [Agents/Tools/nova_tracks_source.py](../Agents/Tools/nova_tracks_source.py) 的固定 `inspect/plan/execute/verify/recover`，权威源限当前真实登记的自有工作区，已安装缓存或厂商包只读。
 
 结构 Plan 冻结全登记源/meta、manifest/lock、package.json、Unity 已解析 package 元数据、代码证据与完整草稿，不写源或汇总。草稿仅新增事件、追加属性、新事件页、定向文字/目标和单色样式；原事件/属性/顺序/归属保留，目标修改需精确原值与目的地证据。只改被授权页与必须的 OOXML 部件，不保存重建整本工作簿；说明页、删除、重命名、移表和不支持扩展关系明确阻断。全书公式/图表/计算链、数据验证、条件样式和打印/自定义定义名等坐标绑定保持只读；唯一支持的内置 `_xlnm._FilterDatabase` 按精确页序同步到本次 `A1:I<lastRow>` 筛选范围。
 

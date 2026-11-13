@@ -45,6 +45,26 @@
       "kind": "csharp-api",
       "entry": "Nova.UI.OpenUIViewSync<T> / OpenUIViewAsync<T> / OpenUIViewSync(string uiViewName, object userData = null) / OpenUIViewAsync(string uiViewName, object userData = null) / OpenUIViewByAssetSync / OpenUIViewByAssetAsync",
       "when": "在已授权业务源码接入中按类型、UI表Name或唯一AssetLocation选择配置；所有打开先加载UI注册表，分组、暂停与池化以表为准，缺失或歧义返回-1；旧bool重载仅供迁移且不再覆盖表格"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "UIView.OpenScope / UIViewScope.Token / IsDisposed / Own / AddCleanup / Subscribe<TEvent> / Dispose",
+      "when": "只在已授权业务源码主动接入本次打开工作，scope惰性创建且只清明确登记对象；框架受控关闭/回收/销毁收尾，隐藏/暂停不结束。原手工订阅取消清理不扫描接管，不双重清理；不是MCP Action。"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.UI.OpenUIViewAwaitAsync<T> / OpenUIViewAwaitAsync(string,object,CancellationToken) / OpenUIViewByAssetAwaitAsync",
+      "when": "只在已授权业务源码明确需要等待时接入可选IUIOpenAwaiter门面；注册/分组/暂停/池化来源不变，完成需OnInit/OnOpen/组刷新，取消仅本请求，结果当时快照不能长期持池化View；旧入口不迁移，不是MCP Action。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.ui.inspect-bindings",
+      "when": "只读发现精确项目普通Prefab内View、对象和直接字段及受阻原因；所有ID/类型来自当前Inspect，不依赖节点名或整数位置。"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.ui.configure-bindings",
+      "when": "明确选mode=bind或generate，live Schema经Plan/单次Execute/只读Verify；bind只填空或同引用no-op不改事件/层级，generate只工具归属字段partial与首次meta，本次编译重载后重新Inspect并新Plan绑定。不接管旧页，恢复不完整保留回执和目录，不重放或任意代码恢复。"
     }
   ],
   "inputs": [
@@ -110,6 +130,66 @@
       "name": "screenAdaptationPlan",
       "required": false,
       "constraint": "按 Docs/Runtime/Modules/UI/UIComponent.md 的屏幕适配与安全区章节由Agent读取并冻结；创建页面必需，更新/Workflow仅布局、画布、方向或安全区分支必需。包含平台方向、设计尺寸/比例和支持范围、缩放/安全区唯一拥有者、有效配置/原目标值、变化刷新与验收；纯数据/事件且布局不变记录沿用及影响范围，不要求用户重复填写可读事实。"
+    },
+    {
+      "name": "officialTemplateCopySourceAndTarget",
+      "required": false,
+      "constraint": "仅选中 nova-project-integrate-table 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 仅source-template-copy必需：mode=copy、table-list/table-map/table-one中实际来源、目标Assets内xlsx及原SHA/新建null、真实sourceRoots/generatedRoots；模板SHA由Plan冻结，禁止rows/sheetName/title。"
+    },
+    {
+      "name": "officialTemplateAndSourceRows",
+      "required": false,
+      "constraint": "仅选中 nova-project-ui-create-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 仅source-from-template必需：实际官方template、target及原SHA/新建null、真实sourceRoots/generatedRoots、Sheet名、全部字段/类型/业务行与可选标题；来源选择与保真验收按RESOURCE_WORKFLOW.md。"
+    },
+    {
+      "name": "optionalOpenLifetimeScope",
+      "required": false,
+      "constraint": "仅选中 nova-project-ui-create-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 仅本次明确选择作用域时必需：当前打开拥有者、主动登记的IDisposable/cleanup/handler与Token用途、原有手工工作保持归属及关闭/回池/销毁证据；未访问OpenScope不启用，不要求旧项目迁移。 仅显式取得且尚未Awake的本作用域有短期Update兜底，觉醒/结束/重开停止；关闭同步，未Awake销毁检测依赖后续PlayerLoop，需本次真Play验收。"
+    },
+    {
+      "name": "optionalAwaitOpenRequest",
+      "required": false,
+      "constraint": "仅选中 nova-project-ui-create-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 仅本次新等待分支必需：原表Name/类型/唯一地址、调用点、userData、请求取消拥有者、Opened/Failed/Cancelled/Closed/Shutdown处理；旧int签名/流程保留，不支持可选接口时明确NotSupportedException，不轮询伪装完成。"
+    },
+    {
+      "name": "optionalControlBindings",
+      "required": false,
+      "constraint": "仅选中 nova-project-ui-create-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 仅明确选择批量绑定/字段生成时必需：同一已有项目普通Prefab、Inspect真实View/Object GlobalObjectId、字段名/完整AssemblyQualifiedName、原值/目标映射及bind或generate模式；复杂/嵌套/变体/脏态不迁移；生成仅预先partial业务类，编译重载Verify后另计划bind。 预检覆盖本Prefab全部MonoBehaviour：业务/未知来源序列化、OnValidate、ExecuteAlways/ExecuteInEditMode回调阻断，正常uGUI/TMP仅真实程序集/注册包/MonoScript物理来源一致才放行；不承诺隔离装载期或全局Import/AssetPostprocessor。"
+    },
+    {
+      "name": "existingViewAndPrefab",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 "
+    },
+    {
+      "name": "desiredChangeAndAcceptance",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 "
+    },
+    {
+      "name": "uiGroupAndRegistrationSource",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 "
+    },
+    {
+      "name": "uiExportAction",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 使用nova.project.ui.export，传scope与可选精确sourcePath；单文件all不支持，不拼接伪原子调用"
+    },
+    {
+      "name": "ordinaryUiUpdateOrBatchLocalizationBindingIntent",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 "
+    },
+    {
+      "name": "confirmedPrefabOrSceneNodeSetAndAuthoritativeKeyFontMarkMapping",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 批量本地化分支必需；从精确自有页面/目录读出节点与现有绑定，冻结映射、补组件、override/源范围，不猜Key、不覆盖无关节点"
+    },
+    {
+      "name": "localizationSourceFontResourceDependencyAndRequestedLanguageSetAcceptance",
+      "required": false,
+      "constraint": "仅选中 nova-project-update-ui-view 对应分支时透传并满足该Operation原输入与确认条件；未选分支不执行。 批量本地化分支必需；语言源/正式导出复用update-localization，字体Mark/资源/布局与完整请求Play语言集合明确：三种请求覆盖三种，明确单语言不扩大；只要求切换但未指定集合时冻结基准与目标至少两种，记录测试偏好及恢复路径"
     }
   ],
   "effects": [
@@ -131,7 +211,16 @@
       "UI Action planned shared UITables, _configs and exact owned stale/counterpart deletions",
       "confirmed Luban schema through its dedicated editor; existing project-owned xlsx/csv non-sensitive scalar cells or strict table-fields append-only ordinary fields in self-described xlsx through shared nova_table_source.py",
       "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON",
-      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope"
+      "project-owned UIComponent only through selected nova-project-edit-settings and its exact authorized write scope",
+      "source-template-copy: exact confirmed project-owned Assets/**/*.xlsx target plus TableSource plan/receipt; source template is read-only",
+      "source-from-template: confirmed project-owned Assets/**/*.xlsx target and exact TableSource plan/receipt; official template remains read-only",
+      "optional configure-bindings: exact planned existing business Prefab for bind, or sole owned <Type.Name>.UIBindings.g.cs plus only its initially missing meta for generate; original business sources remain protected",
+      "confirmed existing business UIView source",
+      "confirmed existing target Prefab and serialized bindings",
+      "confirmed existing UI registration source",
+      "generated UI output required by this registration change",
+      "confirmed project-owned UI node set missing TextLocalizing and explicit Key/FontMark fields through shared Unity MCP or selected edit-settings Operation",
+      "necessary authoritative localization source and formal output only through selected nova-project-update-localization and its exact write scope"
     ],
     "deny": [
       "Nova Manager and UIManager implementation",
@@ -145,7 +234,13 @@
       "manual edits to generated table output",
       "unrelated Luban project, export description or output",
       "macro/formula modification, row insertion/deletion, duplicate key cells, arbitrary source/generated boundaries or secret/identity field edits through the generic source CLI",
-      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes"
+      "duplicate root scaling or repeated safe-area insets; physical pixel margins assigned directly to scaled Canvas offsets; implicit global adaptation config changes",
+      "unrelated generated output",
+      "implicit migration of existing fields/listeners/lifetimes, overwritten different or missing references, unsupported variant/nested Prefab conversion, arbitrary generated content/output path or replay after reload",
+      "unknown layout or unrelated Prefab nodes",
+      "unrelated UI registration or generated output",
+      "unconfirmed global TextLocalizing repair, inferred Key mapping, duplicate component, inherited source Apply/Unpack or unknown Stage/global dirty asset save",
+      "runtime TextLocalizing setters used as a substitute for persistent binding, handwritten RTL reversal or unconfirmed input/layout migration"
     ]
   },
   "locks": [
@@ -157,7 +252,12 @@
     "ui-registration",
     "selected-output-directory",
     "ui-export",
-    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json",
+    "table-source-shared-write-lock",
+    "ui-bindings",
+    "ui-binding-code-output",
+    "batch-localization-node-mapping-and-prefab-override",
+    "localization-play-language-preference"
   ],
   "idempotency": "orchestrate",
   "confirmation": {
@@ -168,7 +268,7 @@
       "replace non-generated asset",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "Workflow 权限等于子 Operation 权限并集，确认门取最高等级，不因编排扩大授权。 UI导出确认绑定Action PlanId及展示的共享配置、UITables和删除范围。 可选sourceCellEdits继承Table Operation现有标量或严格table-fields分支的精确源/Schema/生成边界、输入hash、一次性计划和文件锁；仅用户明确要求该表修改时执行，普通字段追加正式代码+数据导出/编译先于UI绑定，未经该分支授权不修改表源。 requires仅登记可能的复用闭包；当前View存在选择update，缺失且授权创建选择create，不执行未选分支。"
+    "rule": "Workflow 权限等于子 Operation 权限并集，确认门取最高等级，不因编排扩大授权。 UI导出确认绑定Action PlanId及展示的共享配置、UITables和删除范围。 可选sourceCellEdits继承Table Operation现有标量或严格table-fields分支的精确源/Schema/生成边界、输入hash、一次性计划和文件锁；仅用户明确要求该表修改时执行，普通字段追加正式代码+数据导出/编译先于UI绑定，未经该分支授权不修改表源。 requires仅登记可能的复用闭包；当前View存在选择update，缺失且授权创建选择create，不执行未选分支。 可选作用域、等待打开、控件绑定/字段生成只在当前所选页面Operation主动启用，原工作与旧页面不接管；模板来源分支仅对应源缺失且本次授权时透传。各分支输入/写集/锁继承原合同，字段生成编译重载Verify后另建绑定计划。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -184,6 +284,7 @@
     "字段绑定与入口行为",
     "打开、显示、关闭的 Play smoke",
     "布局分支实施前已有 screenAdaptationPlan，实际 UIComponent/CanvasScaler 配置与唯一安全区拥有者符合计划；实际入口的参考/边界比例、安全区、支持方向及重开 Play 布局证据，移动端交付按目标补 Player/设备证据，缺失保持 partial。纯数据/事件且布局不变不扩大验收。",
-    "将 screenAdaptationPlan 和布局验收透传所选 create/update Operation；表/数据验证不能替代布局证据。UIComponent配置只经页面分支与edit-settings的精确写集；方向修改另核对宿主真实Player Settings通道及授权，不假装普通资产Action覆盖任意ProjectSettings。"
+    "将 screenAdaptationPlan 和布局验收透传所选 create/update Operation；表/数据验证不能替代布局证据。UIComponent配置只经页面分支与edit-settings的精确写集；方向修改另核对宿主真实Player Settings通道及授权，不假装普通资产Action覆盖任意ProjectSettings。",
+    "所选页面Operation的可选scope/await/控件生成绑定输入、精确写集、锁和条件验收已透传；未选分支不执行。生成、编译重载、新计划绑定与数据/页面Play分别验收，不能因Workflow降低任一确认/恢复/证据门。"
   ]
 }

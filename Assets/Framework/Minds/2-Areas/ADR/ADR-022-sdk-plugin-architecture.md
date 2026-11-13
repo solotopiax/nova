@@ -28,7 +28,7 @@ related:
 
 ## 背景
 
-`Assets/Framework/Scripts/Runtime/Modules/SDK/` 旧实现存在三层中间件、字符串键查询、MonoBehaviour Plugin 和 Inspector 直填机密等问题，因此收敛为纯 C# Plugin + 具体类型查询 + 运行时注入。
+[Scripts/Runtime/Modules/SDK/](../../../Scripts/Runtime/Modules/SDK) 旧实现存在三层中间件、字符串键查询、MonoBehaviour Plugin 和 Inspector 直填机密等问题，因此收敛为纯 C# Plugin + 具体类型查询 + 运行时注入。
 
 ## 决策
 
@@ -97,7 +97,7 @@ Plugin 内部允许任意线程执行（iOS/Android Native 回调常在非主线
 
 ## 来源
 
-- 文档：`Assets/Framework/Docs/Runtime/Modules/SDK/ARCHITECTURE.md` §18 ADR 摘要（L1109-1149）+ §7.1 时序约束 + §8 线程模型
+- 文档：[Docs/Runtime/Modules/SDK/ARCHITECTURE.md](../../../Docs/Runtime/Modules/SDK/ARCHITECTURE.md) §18 ADR 摘要（L1109-1149）+ §7.1 时序约束 + §8 线程模型
 - 用户决策：2026-04 SDK S 级重构期间拍板，本次 docs 迁移识别为应入 ADR
 
 ---

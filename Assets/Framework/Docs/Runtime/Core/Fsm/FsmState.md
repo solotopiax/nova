@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Core/Fsm/FsmState.cs` | `abstract FsmState<T>` | 泛型状态基类，5 个生命周期 + ChangeState |
+| [Core/Fsm/FsmState.cs](../../../../Scripts/Runtime/Core/Fsm/FsmState.cs) | `abstract FsmState<T>` | 泛型状态基类，5 个生命周期 + ChangeState |
 
 ---
 

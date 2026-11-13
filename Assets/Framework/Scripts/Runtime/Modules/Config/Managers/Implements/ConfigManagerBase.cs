@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace NovaFramework.Runtime
@@ -118,6 +119,13 @@ namespace NovaFramework.Runtime
         /// <param name="value">命中时的当前生效字符串。</param>
         /// <returns>云端或本地路径存在且不是显式 null 时返回 true。</returns>
         public abstract bool TryGetString(string key, out string value);
+
+        /// <summary>
+        /// 等待本次启动自动拉取的最终结果；不创建新请求，完成结果保留到关闭。
+        /// </summary>
+        /// <param name="cancellationToken">只取消当前等待者，不影响共享启动任务。</param>
+        /// <returns>启动远端配置已应用返回 true；未加载、跳过、失败或关闭返回 false。</returns>
+        public abstract UniTask<bool> WaitForStartupAppConfigAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 显式从 GM 后台拉取并应用一轮应用配置。

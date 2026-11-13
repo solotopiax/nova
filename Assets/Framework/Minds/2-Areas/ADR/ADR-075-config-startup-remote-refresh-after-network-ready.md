@@ -63,12 +63,22 @@ Config，又会让原本只负责 HostKey / NetCmd 路由的加载入口产生�
    调用方默认值；远端非 null 值转换失败时回退本地，远端显式 `null` 直接返回调用方默认值；不发送配置变更事件。
 8. 网络刷新与路径 getter 由框架内部 `IAppConfigManager` 与 `INetworkReadySignal` 承接，不向公开 Manager
    接口增加方法；公开配置属性按最终命名直接采用 `Custom`，不保留旧开发版 `CustomConfigs` 迁移层。
+9. 需要在后续步骤使用本轮云端配置时，通过 Component 的 `WaitForStartupAppConfigAsync` 等待启动的同一轮任务，
+   不以显式刷新代替等待。启动完成源在后台等待 Network 前建立，成功、失败和跳过结果均保留到关闭；重复等待、
+   预加载重试及后续手动刷新不覆盖它。MainDemo 及其他 Demo 均在网络表成功加载后接入此等待，失败继续使用当前配置。
+   这不改变 Config 本地加载非阻塞、Network 只负责路由、公开 Manager 接口不扩张的边界。
+10. 启动层每次只发起一轮拉取；网络路由就绪后，使用 Network Inspector 独立配置的单次请求超时，默认 5 秒。
+    主地址、备用地址和重试分别计时，语义与普通业务请求超时一致；Config 不设置整轮总计时器，
+    整轮耗时可随候选数量和重试次数增加，整轮结束后固化成功或失败结果。
+    独立手动刷新与其他业务请求使用普通业务请求超时；并发刷新合流时沿用先发起请求的单次超时设置。
+    调用者可单独取消自己的等待，框架关闭则取消共享请求并解除等待；
+    迟到响应必须同时校验请求取消、发起生命周期和快照身份。
 
 ## 后果
 
 ### 正面
 
-- 项目原有 Procedure 和启动调用无需修改，Config 加载与游戏启动不等待远端网络。
+- 项目原有 Procedure 和启动调用无需修改即可继续自动刷新；Config 本地加载不等待远端网络，需要等待云端结果的业务可显式复用本轮启动任务。
 - Config 继续拥有配置状态，Network 继续只拥有路由与发送能力，跨模块职责不反转。
 - 弱网、离线和协议错误都有稳定回退；服务端删除字段会随完整快照替换而消失，不会残留旧的部分缓存。
 - 云端可以独立新增嵌套字段或数组，无需先发布一份本地 key 清单。
@@ -80,7 +90,7 @@ Config，又会让原本只负责 HostKey / NetCmd 路由的加载入口产生�
 - `CustomConfigCmdName` 或 `CustomName` 为空时远端刷新完全关闭；这两个字段不提供隐式默认值。
 - 已接入旧开发版 `GetCustomConfigCmdName` 字段的资产或代码需要直接改为 `CustomConfigCmdName`；不提供兼容层。
 - 已接入旧开发版 `CustomConfigs` 属性的自定义 ConfigManager 需要直接改为 `Custom`；不提供序列化或 API 迁移层。
-- 第一版每次启动只自动尝试一次，不提供后台重试、定时刷新或变更事件。
+- 每次启动只自动发起一轮，不提供启动层自动重试、定时刷新或变更事件；底层 HTTP 主备与重试策略独立生效。
 - 本地默认值仍以字符串行维护；需要本地构造的路径仅支持属性段和非负数组下标。
 
 ## 被排除方案
@@ -88,7 +98,7 @@ Config，又会让原本只负责 HostKey / NetCmd 路由的加载入口产生�
 | 方案 | 否决理由 |
 |---|---|
 | Config.LoadAsync 同步等待 Network 并拉取 | 会阻塞启动，并在 Network 尚未加载路由时形成依赖倒置 |
-| 业务 Procedure 在 Network.LoadAsync 后显式刷新 | 每个项目都要改启动代码，无法无感升级且容易漏接 |
+| 业务 Procedure 用显式刷新代替等待启动结果 | 已结束后再次调用会重发；等待应复用独立保留的启动结果，既有项目仍可维持自动刷新 |
 | Network.LoadAsync 成功后主动调用 Config | Network 加载产生隐藏 Config 副作用，职责反转 |
 | 扩张公开 IConfigManager / INetworkManager | 破坏项目已有自定义 Manager 的源码兼容性 |
 | 用本地 key 白名单裁剪云端 JSON | 阻止后台独立新增字段，要求云端与客户端预先对齐，违背 Custom 的动态配置用途 |
@@ -96,13 +106,13 @@ Config，又会让原本只负责 HostKey / NetCmd 路由的加载入口产生�
 
 ## 验证依据
 
-- 协议与生成物：`Assets/Framework/Protos/pb_net_app_custom_config.proto`、
-  `Assets/Framework/Scripts/Runtime/Modules/Network/Protos/PbNetAppCustomConfig.cs`。
+- 协议与生成物：[Protos/pb_net_app_custom_config.proto](../../../Protos/pb_net_app_custom_config.proto)、
+  [Scripts/Runtime/Modules/Network/Protos/PbNetAppCustomConfig.cs](../../../Scripts/Runtime/Modules/Network/Protos/PbNetAppCustomConfig.cs)。
 - Config 实现：`ConfigManager` 的本地快照、磁盘原子缓存、后台等待、单次刷新和类型化读取。
 - Network 实现：标准 `NetworkManager` 仅在路由成功构建后完成 `INetworkReadySignal`。
 - EditMode：`AppConfigRuntimeTests` 覆盖字段默认值、导出、嵌套对象、数组、云端独有路径、完整快照替换、
   显式 null、非法 JSON、磁盘缓存、类型化回退、接口兼容、Prefab 绑定和 Proto 输出路径。
-- PlayMode：MainDemo 可进入 `ProcedurePlaying`；未阻塞启动，自动刷新真实发送点每次启动只出现一次；
+- PlayMode：MainDemo 在启动拉取结束后继续进入 `ProcedurePlaying`，失败仍可回退继续；自动刷新真实发送点每次启动只出现一次；
   2.9 按钮可手动刷新并通过 `Nova.Config.Custom` 显示当前路径值。
 
 ## 关联

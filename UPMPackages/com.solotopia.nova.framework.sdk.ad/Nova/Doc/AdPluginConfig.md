@@ -11,7 +11,7 @@ AdPlugin 配置，由 SDKManager 注入 AdPlugin 初始化；持有所有渠道�
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Nova/Scripts/Runtime/AdPluginConfig.cs` | `AdPluginConfig` | 全部定义 |
+| [Nova/Scripts/Runtime/AdPluginConfig.cs](../Scripts/Runtime/AdPluginConfig.cs) | `AdPluginConfig` | 全部定义 |
 
 ---
 
@@ -85,7 +85,7 @@ MAX.AppOpenPlacementGroups: ["O1,O2"]
 
 List每项是一组，英文逗号和竖线是同义组内分隔符，可混用。每组从首ID开始，失败立即尝试下一项，成功停止本组并将间隔下标归零。仅末项失败时取本组当前间隔，推进一次下标并等待后回组首；默认连续整组失败等待2、4、8、16、32、2秒，持续循环。旧单ID列表自然为多个单ID组，首次并发保持。Banner 每项填写单个真实 ID，多项并行；主动加载失败使用组间隔，原厂自动刷新间隔独立。
 
-广告组字段改名仍用 FormerlySerializedAs 保留 Unity 旧资产，MAX / AdMob 的旧 *PlacementIds 属性返回解析后的真实 ID 快照。MAX 初始化按表达式注册有序组；当前 AdMob 已实现官方 SDK 的四格式与 UMP，但初始化通过这些真实 ID 访问器展开后调用 RegisterAdUnits，因此每个 ID 是独立单 ID 组，不保留源表达式的组内串行拓扑。AdMob 还需官方依赖、平台 App ID 与 Android / iOS Player，详情见 [AdMobAdPlugin.md](../../../com.solotopia.nova.framework.sdk.admob/Nova/Doc/AdMobAdPlugin.md)。
+广告组字段改名仍用 FormerlySerializedAs 保留 Unity 旧资产，MAX / AdMob 的旧 *PlacementIds 属性返回解析后的真实 ID 快照。MAX 初始化按表达式注册有序组；当前 AdMob 已实现官方 SDK 的四格式与 UMP，但初始化通过这些真实 ID 访问器展开后调用 RegisterAdUnits，因此每个 ID 是独立单 ID 组，不保留源表达式的组内串行拓扑。AdMob 还需官方依赖、平台 App ID 与 Android / iOS Player，详情见 [AdMobAdPlugin.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.admob` 包内 `Nova/Doc/AdMobAdPlugin.md`）。
 
 旧逐 ID 重试次数、单值间隔、兼容访问器与槽位重试字段已删除，不将旧单值迁移为新序列；旧配置缺少新数组时使用默认序列。外部渠道若引用被删除成员，需要同步源码。配置编辑不缓存解析，MAX 初始化物化运行计划；ApplyGlobalConfig 复制有效间隔序列，后续配置数组修改不会改变渠道已注入值。
 
@@ -98,4 +98,4 @@ List每项是一组，英文逗号和竖线是同义组内分隔符，可混用�
 
 - [IAdPlugin.md](./IAdPlugin.md) — 配置注入的目标插件
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道实例基类
-- [ISDKPluginConfig.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) — 配置 marker 接口
+- [ISDKPluginConfig.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md`） — 配置 marker 接口

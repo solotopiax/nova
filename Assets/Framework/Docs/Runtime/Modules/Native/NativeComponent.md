@@ -12,11 +12,11 @@
 
 | 文件 | 说明 |
 |---|---|
-| `NativeComponent.cs` | `Awake` / `Start` / `OnDestroy` 与公开原生能力 API |
-| `NativeComponent.AppInstall.cs` | 可选自身 APK 安装、来源许可查询与显式设置薄门面 |
-| `NativeComponent.Visitors.cs` | Manager 类型、初始化配置与私有 Manager 引用 |
-| `Managers/Interfaces/INativeManager.cs` | 原生能力 Manager 公共契约 |
-| `Managers/Implements/NativeManager*.cs` | 默认实现、并发协调与 Android / iOS / 非移动平台分发 |
+| [NativeComponent.cs](../../../../Scripts/Runtime/Modules/Native/NativeComponent.cs) | `Awake` / `Start` / `OnDestroy` 与公开原生能力 API |
+| [NativeComponent.AppInstall.cs](../../../../Scripts/Runtime/Modules/Native/NativeComponent.AppInstall.cs) | 可选自身 APK 安装、来源许可查询与显式设置薄门面 |
+| [NativeComponent.Visitors.cs](../../../../Scripts/Runtime/Modules/Native/NativeComponent.Visitors.cs) | Manager 类型、初始化配置与私有 Manager 引用 |
+| [Managers/Interfaces/INativeManager.cs](../../../../Scripts/Runtime/Modules/Native/Managers/Interfaces/INativeManager.cs) | 原生能力 Manager 公共契约 |
+| [NativeManager 实现目录（Managers/Implements/）](../../../../Scripts/Runtime/Modules/Native/Managers/Implements/) | 默认实现、并发协调与 Android / iOS / 非移动平台分发 |
 
 ## 公开 API
 
@@ -143,8 +143,10 @@ MainDemo 的 `2.Modules > 2.17 Native` 页面演示查询通知权限、请求 `
 
 同页另有「Android 应用内评价测试」与「iOS 应用内评价测试」两个显式按钮；二者均调用唯一公开门面 `Nova.Native.RequestInAppReviewAsync()`，不会伪造两套平台 API。Android / iOS 真机只启用当前平台对应按钮；Editor 与其他平台保留两个入口，以展示真实 `Unsupported` 回退。评价结果单独显示，`RequestDispatched` 只表示请求已交给系统流程，不表示系统提示实际展示、用户评价或提交成功。
 
-- 页面源码：[`DemoNativeView.cs`](../../../../../Samples/MainDemo/Scripts/Runtime/UIs/DemoNativeView/DemoNativeView.cs)
-- 页面 Prefab：[`DemoNativeView.prefab`](../../../../../Samples/MainDemo/Prefabs/UIs/DemoNativeView/DemoNativeView.prefab)
+先从 [当前 Framework 的 samples 声明](../../../../package.json) 找到 MainDemo，并以实际导入目录及其 `SamplePathManifest` 定位；按 [Sample 导入定位规则](../../../Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核实后，以下路径均相对于该 Sample 根，不能从 Framework 包根直接跨目录拼接。
+
+- 页面源码：`Scripts/Runtime/UIs/DemoNativeView/DemoNativeView.cs`
+- 页面 Prefab：`Prefabs/UIs/DemoNativeView/DemoNativeView.prefab`
 
 Editor 中页面会展示真实的 `Unsupported` 结果，不模拟移动平台授权或应用内评价；系统弹窗、设置页跳转和应用内评价提示需要在目标设备上验证。iOS 应用内评价仅支持 iOS 16 及以上；系统是否显示提示和用户交互结果不向 Nova 回传。
 

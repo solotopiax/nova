@@ -2,6 +2,11 @@
   "schemaVersion": 1,
   "package": "com.solotopia.nova.framework",
   "capabilityGroups": {
+    "development": [
+      "nova-project-development",
+      "nova-project-router",
+      "nova-project-check-readiness"
+    ],
     "assessment": [
       "nova-project-router",
       "nova-project-check-readiness",
@@ -129,6 +134,21 @@
   },
   "skills": [
     {
+      "id": "nova-project-development",
+      "path": "Skills/nova-project-development",
+      "kind": "router",
+      "status": "experimental",
+      "journeys": [
+        "assessment",
+        "feature",
+        "diagnosis"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
       "id": "nova-project-router",
       "path": "Skills/nova-project-router",
       "kind": "router",
@@ -218,7 +238,8 @@
       "effects": [
         "workspace-write",
         "unity-write",
-        "credential"
+        "credential",
+        "generated-output"
       ],
       "minimumEvidence": "static"
     },

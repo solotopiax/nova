@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// UI 管理器基类。
     /// </summary>
-    internal abstract class UIManagerBase : FrameworkManager, IUIManager
+    internal abstract class UIManagerBase : FrameworkManager, IUIManager, IUIOpenAwaiter
     {
         /// <summary>
         /// 异步打开视图失败事件，参数依次为视图序列编号、资源地址和错误信息。
@@ -469,5 +470,29 @@ namespace NovaFramework.Runtime
         /// <param name="isForGUISystem">是否以 GUI 系统坐标系为准。</param>
         /// <returns>矩形信息（实际物理像素区域，非画布自动缩放后的坐标）。</returns>
         public abstract Rect GetDeviceSafeArea(bool isForGUISystem = false);
+
+        /// <summary>可选的按类型完成入口；旧扩展管理器无需增加实现。</summary>
+        /// <typeparam name="T">注册视图类型。</typeparam>
+        /// <param name="userData">本次业务数据。</param>
+        /// <param name="cancellationToken">本次取消令牌。</param>
+        /// <returns>由支持该能力的管理器提供准确终态。</returns>
+        public virtual UniTask<UIViewOpenResult> OpenUIViewAwaitAsync<T>(object userData = null, CancellationToken cancellationToken = default) where T : UIView
+            => throw new NotSupportedException("当前 UI 管理器未实现打开完成能力。");
+
+        /// <summary>可选的按名称完成入口；默认明确拒绝，不改变旧打开入口。</summary>
+        /// <param name="uiViewName">注册名称。</param>
+        /// <param name="userData">业务数据。</param>
+        /// <param name="cancellationToken">本次取消令牌。</param>
+        /// <returns>支持能力的管理器返回请求结果。</returns>
+        public virtual UniTask<UIViewOpenResult> OpenUIViewAwaitAsync(string uiViewName, object userData = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException("当前 UI 管理器未实现打开完成能力。");
+
+        /// <summary>可选的按地址完成入口；默认不支持，旧管理器仍可原样编译。</summary>
+        /// <param name="assetLocation">唯一资源地址。</param>
+        /// <param name="userData">业务数据。</param>
+        /// <param name="cancellationToken">本次取消令牌。</param>
+        /// <returns>支持能力的管理器返回请求结果。</returns>
+        public virtual UniTask<UIViewOpenResult> OpenUIViewByAssetAwaitAsync(string assetLocation, object userData = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException("当前 UI 管理器未实现打开完成能力。");
     }
 }

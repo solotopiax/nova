@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.cs` | `EditorUtil.Asset.Operator` | 静态工具类定义 |
+| [Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.cs) | `EditorUtil.Asset.Operator` | 静态工具类定义 |
 
 ---
 

@@ -43,7 +43,7 @@ Directory.Copy 先创建目标再扫描源，以字符串 Replace 映射子路�
 
 Directory.Delete 默认 recursive=true，成功删目录后还删除相邻 `.meta`，此段不局限 Editor。文件 Delete/Copy/Move 的相邻 meta 处理仅在 Editor；均不更新 AssetDatabase。文件 Delete 只重试 IOException/UnauthorizedAccessException：UNITY_WEBGL 一次，其余最多三次，每次失败触发 GC 与等待 finalizer，前两次再阻塞 50ms；最终仅日志和 false，公开 Delete 丢弃该结果。主文件缺失时不删孤立 meta，主文件成功后 meta 失败也可能继续发同步请求。
 
-`WebGLSyncFs` 只有 UNITY_WEBGL 且非 Editor 调用桥接，其他分支为空。静态委托保活回调；jslib 的 NovaSyncFsState 合并重叠请求，串行执行 `FS.syncfs(false)`，不为每次 C# 调用返回独立完成结果。错误回调映射 1，托管侧仅日志；IndexedDB 不存在时只警告一次，数据限本 session，仍回调 0。因此无错误日志或写入 UniTask 完成不能证明持久化。jslib/extern 的真实绑定可从同目录 `Plugins/WebGL/WebGLExtensions.jslib` 和 `Util.SysIO.WebGL.cs` 查阅。
+`WebGLSyncFs` 只有 UNITY_WEBGL 且非 Editor 调用桥接，其他分支为空。静态委托保活回调；jslib 的 NovaSyncFsState 合并重叠请求，串行执行 `FS.syncfs(false)`，不为每次 C# 调用返回独立完成结果。错误回调映射 1，托管侧仅日志；IndexedDB 不存在时只警告一次，数据限本 session，仍回调 0。因此无错误日志或写入 UniTask 完成不能证明持久化。jslib/extern 的真实绑定可从同目录 `Plugins/WebGL/WebGLExtensions.jslib` 和 [Util.SysIO.WebGL.cs](../../../Scripts/Runtime/Core/Util/Util.SysIO/Util.SysIO.WebGL.cs) 查阅。
 
 WebGL `OpenURL(url,target)` 直接 UTF8ToString 后交给 window.open，没有默认 target、校验或成功返回；能否打开由浏览器策略决定。
 

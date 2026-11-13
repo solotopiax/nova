@@ -5,11 +5,11 @@ description: Use when Nova 消费项目需要在已冻结 Android 或 iOS 设备
 
 # Nova 真机运行时诊断
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-先读取 `references/contract.json`。仅在需要确认实际 Framework 与随包 Docs 时，使用已解析 Framework 包内的 `Agents/Tools/nova_skills.py resolve --project-root <projectRoot>`。仅当日志、Bundle ID 或症状明确指向某个已安装 Nova SDK / Kit 时，才从消费项目的 `Packages/<package>/Nova/{Doc,Docs,DOCS}/INDEX.md`，或 `Library/PackageCache/<package>@<version>/Nova/{Doc,Docs,DOCS}/INDEX.md` 查找首个存在的包内 INDEX；先读 INDEX，再按它的链接读取当前错误相关页面。不要使用主仓 `.nova/`、`Minds/`、绝对路径、未命中的厂商源码或其他包的文档替代目标包事实。
+先读取 [references/contract.json](references/contract.json)。仅在需要确认实际 Framework 与随包 Docs 时，使用已解析 Framework 包内的 [nova_skills.py](../../Tools/nova_skills.py) 的 `resolve --project-root <projectRoot>`。仅当日志、Bundle ID 或症状明确指向某个已安装 Nova SDK / Kit 时，才按该包实际 `PackageInfo.resolvedPath` 或有效 manifest/lock 确定根目录，再从其 [Nova/Doc/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[Nova/Docs/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)、[Nova/DOCS/INDEX.md（包内定位）](../../../Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现) 中查找首个存在的入口；不拼缓存版本或 hash。先读 INDEX，再按它的链接读取当前错误相关页面。不要使用主仓 `.nova/`、`Minds/`、绝对路径、未命中的厂商源码或其他包的文档替代目标包事实。
 
 ## 冻结诊断会话
 

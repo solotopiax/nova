@@ -28,4 +28,4 @@
 
 OSS 顺序覆盖不是远端事务：中途失败可能已写入前面的对象。保持 `partial`、记录已知完成/失败 Key，不自动重放整批、不猜旧值回滚。任何实际上传或 Cloudflare 参数/请求/业务失败会中断 Batch；Job Succeeded 不代替所有预期对象、正式产物、CDN 读取或设备验收。白名单临时 JSON 清理警告仍须核对并清理本轮目录，不视作完成。
 
-保存正式 Batch；运行后恢复本轮 Target/development、场景/Runtime/签名与测试态设置，清理可归属临时日志、密码文件、缓存探针与对象，不删除正式交付物或用户缓存。报告“已保存 / 已执行 / 已验证 / 外部条件未验证”和清场结果。实际参数与行为来源为随包 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md` 的 CDN 三节及对应 `PipifySteps.CDN.cs`，不存在专用 CDN Project Action 的承诺。
+保存正式 Batch；运行后恢复本轮 Target/development、场景/Runtime/签名与测试态设置，清理可归属临时日志、密码文件、缓存探针与对象，不删除正式交付物或用户缓存。报告“已保存 / 已执行 / 已验证 / 外部条件未验证”和清场结果。实际参数与行为来源为随包 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) 的 CDN 三节及对应 [PipifySteps.CDN.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.CDN.cs)，不存在专用 CDN Project Action 的承诺。

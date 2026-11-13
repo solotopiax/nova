@@ -82,7 +82,7 @@
 
 ## 关键边界
 
-支付公共接口只提供最小调用面：`IIAPRequest.TableId` 是商品表行 ID，价格与平台 ProductId 来自实际商品配置；`PayAsync<T>` 的结果类型必须匹配实现，否则 `as T` 可得到 null。恢复接口收集各 store 能转换为 T 的结果，不等于补单发货或完成外部验单。`IIAPResult` 的 `ErrorSource` 与 `ErrorCode` 必须联合解释，同一非零整数在不同错误域含义不同；OrderId 用于关联定位，早期失败可为 null，不能替代 receipt 或服务端确认。`IsSuccess`、客户端统计与最终发货各有边界，详见实际安装的 [IAP 包文档](../../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md)。
+支付公共接口只提供最小调用面：`IIAPRequest.TableId` 是商品表行 ID，价格与平台 ProductId 来自实际商品配置；`PayAsync<T>` 的结果类型必须匹配实现，否则 `as T` 可得到 null。恢复接口收集各 store 能转换为 T 的结果，不等于补单发货或完成外部验单。`IIAPResult` 的 `ErrorSource` 与 `ErrorCode` 必须联合解释，同一非零整数在不同错误域含义不同；OrderId 用于关联定位，早期失败可为 null，不能替代 receipt 或服务端确认。`IsSuccess`、客户端统计与最终发货各有边界，详见实际安装的 IAP 包文档（包 `com.solotopia.nova.framework.sdk.iap`，包内 [按包定位：Nova/Doc/INDEX.md](INDEX.md#sdk--kit-包文档发现)）。
 
 包内 `IAPResult` 的 `CanDeliver` 与 `IsSuccess` 分别判断。Android ThirdPay 购买前补单可以返回成功但不可发货的批次完成结果；Mobile 的消耗品补单与订阅、非消耗品恢复也使用不同事件。业务按真实订单身份复用已有幂等履约入口，不能给返回值、事件重放和恢复结果各发一份奖励。
 

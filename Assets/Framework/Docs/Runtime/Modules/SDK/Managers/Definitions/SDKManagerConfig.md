@@ -11,7 +11,7 @@ SDK 管理器构造配置 DTO，由 SDKComponent.Start() 构造后传入 ISDKMan
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/Definitions/SDKManagerConfig.cs` | `SDKManagerConfig` | 全部定义 |
+| [Managers/Definitions/SDKManagerConfig.cs](../../../../../../Scripts/Runtime/Modules/SDK/Managers/Definitions/SDKManagerConfig.cs) | `SDKManagerConfig` | 全部定义 |
 
 ---
 

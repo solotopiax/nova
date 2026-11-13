@@ -5,7 +5,7 @@
 
 本包提供独立 Google AdMob 渠道配置与运行时适配，供 Nova 广告聚合插件创建和托管。当前源码已实现 UMP 隐私流程、Google Mobile Ads SDK 初始化，以及 Rewarded、Interstitial、Banner、AppOpen 的原厂加载、展示、收入回调与真实 Ready 查询；业务仍通过父包 `AdPlugin` / `IAdPlugin` 调用。
 
-AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式接入父包 `AdChannelPluginBase.StartRevenueReport`。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，非 Banner 按次发送，Banner 复用共享渠道累计入口，默认 5 次合并一批，仅维护一份存档。当前没有独立分析 ad_ilrd，不依赖 MAX 的分析目标；`RaiseRevenue` 仍逐次通知业务，不重复发送协议。`AdRevenueReportNetService` 构造 `PbNetIAAReportReq`；`RevenuePaid` 不表示服务端已计入，详见[父包收益文档](../com.solotopia.nova.framework.sdk.ad/Nova/Doc/INDEX.md#广告收益上报-proto-协议层)。
+AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式接入父包 `AdChannelPluginBase.StartRevenueReport`。配置 `AdPluginConfig.RevenueReportCmdName=AdRevenueReport` 后，非 Banner 按次发送，Banner 复用共享渠道累计入口，默认 5 次合并一批，仅维护一份存档。当前没有独立分析 ad_ilrd，不依赖 MAX 的分析目标；`RaiseRevenue` 仍逐次通知业务，不重复发送协议。`AdRevenueReportNetService` 构造 `PbNetIAAReportReq`；`RevenuePaid` 不表示服务端已计入，详见[父包收益文档](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/INDEX.md#广告收益上报-proto-协议层`）。
 
 这些实现只在安装匹配官方 SDK 的 Android / iOS Player 中执行，不能据此认定 Unity 编译、原生构建或真机广告已经验收。
 
@@ -21,7 +21,7 @@ AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式接入父包 `AdChannelPlug
 }
 ```
 
-当前 `package.json` 声明的直接依赖如下：
+当前 [package.json](package.json) 声明的直接依赖如下：
 
 | 包 | 声明版本 |
 |---|---|
@@ -32,7 +32,7 @@ AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式接入父包 `AdChannelPlug
 
 接入时在 ConfigWindow 的广告聚合渠道列表中保留一项启用的 `AdMobAdChannelConfig`，填写目标平台 App ID、所需格式的真实广告位 ID 与 `TagForUnderAgeOfConsent` 年龄标记，保存 ConfigMaster 并正式导出当前坐标的 ConfigRuntime。App ID 使用 `~`，广告位 ID 使用 `/`，两者不可混填；配置保存或导出成功不等于原厂初始化或广告可播。
 
-项目组通过 Nova 的 PlugPals 安装 Nova 包时使用内部云仓库；需要对应内部 registry 的访问权限。Google 原厂 SDK 使用其官方外网安装入口与依赖来源，网络条件及原生依赖解析须分别满足；PlugPals 的窗口操作见 [安装与包管理](../../Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md)。
+项目组通过 Nova 的 PlugPals 安装 Nova 包时使用内部云仓库；需要对应内部 registry 的访问权限。Google 原厂 SDK 使用其官方外网安装入口与依赖来源，网络条件及原生依赖解析须分别满足；PlugPals 的窗口操作见 [安装与包管理](README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Editor/Windows/PlugPalsWindow.md`）。
 
 ## 广告组配置
 
@@ -44,9 +44,9 @@ AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式接入父包 `AdChannelPlug
 
 父包的完整广告组调度契约为组间并行、组内串行，没有广告组选择模式。组内单个 ID 失败只推进后项；整组本轮全部失败后才使用 `AdPluginConfig.ChannelConfigs.GroupRetryIntervalsSeconds` 等待。全部渠道与格式共用同一间隔配置，各组独立维护下标；本组任意 ID 加载成功后归零，到末项后循环回首项。默认等待为 `2、4、8、16、32、2……` 秒；空列表或任意非有限正数使整个序列回退默认值。
 
-当前 `AdMobAdPlugin` 读取兼容 `*PlacementIds` 快照，将全屏表达式展开后调用 `RegisterAdUnits`，每个真实 ID 实际注册为独立单 ID 组。业务请求时，各 ID 可以并行加载，各自失败后按共享间隔循环重试；原始表达式的组内串行拓扑没有保留，不能把上述完整组契约当作本渠道已经实现的 waterfall。详细契约见 [AdMobAdChannelConfig](./Nova/Doc/AdMobAdChannelConfig.md)，共享间隔见 [AdPluginConfig](../com.solotopia.nova.framework.sdk.ad/Nova/Doc/AdPluginConfig.md)。
+当前 `AdMobAdPlugin` 读取兼容 `*PlacementIds` 快照，将全屏表达式展开后调用 `RegisterAdUnits`，每个真实 ID 实际注册为独立单 ID 组。业务请求时，各 ID 可以并行加载，各自失败后按共享间隔循环重试；原始表达式的组内串行拓扑没有保留，不能把上述完整组契约当作本渠道已经实现的 waterfall。详细契约见 [AdMobAdChannelConfig](./Nova/Doc/AdMobAdChannelConfig.md)，共享间隔见 [AdPluginConfig](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.ad` 包内 `Nova/Doc/AdPluginConfig.md`）。
 
-本包已有 `AdMobAdPluginBuildProcessor`，从激活的 ConfigRuntime 中读取启用的独立 AdMob 配置，在 Nova Android / iOS 预处理链把目标 App ID 写入项目 `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset`，后续 Manifest / plist 与依赖仍由官方处理链维护。启用独立 AdMob 时，缺少匹配 SDK、无效 App ID、重复启用配置或官方 Settings 类型/字段不匹配会阻断构建。MAX 包的 [MaxAdPluginBuildProcessor](../com.solotopia.nova.framework.sdk.max/Nova/Doc/MaxAdPluginBuildProcessor.md) 另读取 `MaxAdChannelConfig.AdMobAppIdAndroid/IOS` 并写入 `AppLovinSettings`，不读取本包配置。
+本包已有 `AdMobAdPluginBuildProcessor`，从激活的 ConfigRuntime 中读取启用的独立 AdMob 配置，在 Nova Android / iOS 预处理链把目标 App ID 写入项目 `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset`，后续 Manifest / plist 与依赖仍由官方处理链维护。启用独立 AdMob 时，缺少匹配 SDK、无效 App ID、重复启用配置或官方 Settings 类型/字段不匹配会阻断构建。MAX 包的 [MaxAdPluginBuildProcessor](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.max` 包内 `Nova/Doc/MaxAdPluginBuildProcessor.md`） 另读取 `MaxAdChannelConfig.AdMobAppIdAndroid/IOS` 并写入 `AppLovinSettings`，不读取本包配置。
 
 渠道每个实例只承担一轮生命周期；释放时注销准确订阅、取消本轮等待并销毁本渠道原厂广告对象，重复释放复用同一次清理结果，不重置原厂全局隐私状态。同一 `AdPlugin` / `AdMobAdPlugin` 释放后不重新初始化，SDKManager 完整释放后，新的初始化周期创建新的聚合插件和渠道实例。UMP 流程结束不证明用户同意个性化广告，真实填充、展示、奖励与收入仍须设备和厂商证据。
 
@@ -55,3 +55,13 @@ AdMob 在 `Paid` 中通过 `TrackAdMobRevenue` 显式接入父包 `AdChannelPlug
 ## 维护
 
 详细入口见 [包内文档索引](./Nova/Doc/INDEX.md)，变更记录见 [CHANGELOG.md](./CHANGELOG.md)。日常变更写入 `[Unreleased]`；正式发版时生成对应版本节，发布脚本会检查变更记录。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Editor/Windows/PlugPalsWindow.md` |
+| `com.solotopia.nova.framework.sdk.ad` | `Nova/Doc/INDEX.md` | `Nova/Doc/AdChannelPluginBase.md`<br>`Nova/Doc/AdPluginConfig.md`<br>`Nova/Doc/AdPluginConfig.md#4-关键字段表`<br>`Nova/Doc/AdPluginEvents.md#11-使用示例`<br>`Nova/Doc/INDEX.md#广告收益上报-proto-协议层` |
+| `com.solotopia.nova.framework.sdk.max` | `Nova/Doc/INDEX.md` | `Nova/Doc/MaxAdPluginBuildProcessor.md` |

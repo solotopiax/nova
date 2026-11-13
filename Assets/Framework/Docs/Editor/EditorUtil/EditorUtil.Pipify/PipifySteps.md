@@ -1,5 +1,7 @@
 # PipifySteps
 
+可选主图集步骤为 `spriteatlas.generate`（默认 `PreviewOnly=true`）与 `spriteatlas.recover`。仅项目主动加入的 Batch 会执行；实际生成应显式放在 Bundle 之前，旧 Batch 和直接 Bundle 入口不变。配置、输出归属、失败与恢复见 [图集生产](../EditorUtil.SpriteAtlasGeneration.md)。
+
 `PipifySteps` 是 Pipify 的内置步骤目录。  
 这页不再试图充当“所有 Step 参数字典总表”，而是回答三个更关键的问题：
 
@@ -131,7 +133,7 @@ Google Play 发布使用独立 Step `googleplay.upload_aab`，添加在 `build.p
 
 安装 `com.solotopia.nova.framework.sdk.iap` 后会自动注册 `iap.product_catalog.upload`，分类为 `IAP`，显示名为“导出IAP数据到服务器”。该步骤没有参数配置项，也不会显示参数配置区域。
 
-该 Step 读取当前激活且已导出的 `ConfigRuntimeSO`，与 IAP Config 商品列表中的“上传支付表到服务器”按钮共用 IAP 包内的静态上传入口。请求外层由明文 `head` 和 Base64 AES 密文 `body` 组成；Body 使用同一份导出物的 `AppAesKey/AppAesIV` 加密，两个值按 UTF-8 编码必须分别为 16 字节。Debug 上传测试服务器，Release 上传正式服务器；配置校验、取消、超时、网络异常或其他非 2xx 响应会抛错并中断 Batch。仅 HTTP 409 且业务码准确为 `CATALOG_VERSION_CONFLICT` 时，IAP 上传入口记 Warning 并让 Step 继续；该次商品表未生效，须核对表并使用新客户端版本重传。Framework 只提供通用注册和执行能力，不依赖 IAP 包。完整字段与失败条件见 IAP 包的 `Nova/Doc/IAPProductCatalogProtocol.md`。
+该 Step 读取当前激活且已导出的 `ConfigRuntimeSO`，与 IAP Config 商品列表中的“上传支付表到服务器”按钮共用 IAP 包内的静态上传入口。请求外层由明文 `head` 和 Base64 AES 密文 `body` 组成；Body 使用同一份导出物的 `AppAesKey/AppAesIV` 加密，两个值按 UTF-8 编码必须分别为 16 字节。Debug 上传测试服务器，Release 上传正式服务器；配置校验、取消、超时、网络异常或其他非 2xx 响应会抛错并中断 Batch。仅 HTTP 409 且业务码准确为 `CATALOG_VERSION_CONFLICT` 时，IAP 上传入口记 Warning 并让 Step 继续；该次商品表未生效，须核对表并使用新客户端版本重传。Framework 只提供通用注册和执行能力，不依赖 IAP 包。完整字段与失败条件见 IAP 包的 [按包定位：Nova/Doc/IAPProductCatalogProtocol.md](../../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)。
 
 ### 6. 系统外壳辅助
 
@@ -177,7 +179,7 @@ Google Play 发布使用独立 Step `googleplay.upload_aab`，添加在 `build.p
 - `WebhookUrl`：窗口标签为 `Webhook URL`，使用密码框遮罩，但仍以明文保存在 PipifySettingsSO
 - `MessageText`：窗口标签为“文案”，使用 3–8 行自适应 TextArea，可直接输入并保留换行排版
 
-所有 Pipify Step 的字符串参数均由 Runner 在调用前统一解析 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。其中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`（即当前激活 `ConfigMasterSO.CurrentPlatform`），`{Channel}` 取当前激活 `ConfigMasterSO.CurrentChannel`，从 canonical `Nova.prefab` 读取 YooAsset 默认资源包名，
+所有 Pipify Step 的字符串参数均由 Runner 在调用前统一解析 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。其中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`（即当前激活 `ConfigMasterSO.CurrentPlatform`），`{Channel}` 取当前激活 `ConfigMasterSO.CurrentChannel`，从 canonical [Nova.prefab](../../../../Prefabs/Nova.prefab) 读取 YooAsset 默认资源包名，
 Version 使用 `Application.version`，Time 使用该 Step 的统一解析时刻并格式化为 `yyyy-MM-dd-HH-mm-ss`。替换发生在 CLI 临时覆盖之后，只修改本次调用参数，不回写 ParamsJson。
 参数区 HelpBox 会直接展示这些规则；未知占位符保持原样。
 

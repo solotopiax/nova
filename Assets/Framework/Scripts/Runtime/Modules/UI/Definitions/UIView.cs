@@ -19,6 +19,9 @@ namespace NovaFramework.Runtime
     /// </summary>
     public abstract partial class UIView : MonoBehaviour, IUIView
     {
+        /// <summary>初始化钩子的失败记录；新完成入口可检查，旧入口仍沿用原日志及返回方式。</summary>
+        internal Exception InitializationException { get; private set; }
+
         /// <summary>
         /// 框架初始化入口（实现 IUIView.OnInit）。
         /// 负责维护框架侧字段，仅在新实例时触发。
@@ -46,12 +49,14 @@ namespace NovaFramework.Runtime
                 return;
             }
 
+            InitializationException = null;
             try
             {
                 OnInit(userData);
             }
             catch (Exception exception)
             {
+                InitializationException = exception;
                 Log.Error(LogTag.UI, "视图 '[{0}]{1}' OnInit 异常：{2}", m_SerialID, m_AssetLocation, exception);
             }
         }

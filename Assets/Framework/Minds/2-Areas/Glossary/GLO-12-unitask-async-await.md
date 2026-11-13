@@ -46,7 +46,7 @@ UniTask<IAssetHandle<T>> LoadAsync<T>(string location, CancellationToken ct = de
 ## 来源与验证
 
 - `Packages/manifest.json`：`com.solotopia.unitask` 本地 UPM 包引入。
-- `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetManager.cs`：UniTask 返回签名。
-- `Assets/Framework/Scripts/Runtime/Modules/Network/Managers/HttpManager/Interfaces/IHttpManager.cs`：HTTP 异步接口签名。
-- `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetService.cs`：业务协议 `SendAsync` 调用链。
+- [Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetManager.cs](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetManager.cs)：UniTask 返回签名。
+- [Scripts/Runtime/Modules/Network/Managers/HttpManager/Interfaces/IHttpManager.cs](../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Interfaces/IHttpManager.cs)：HTTP 异步接口签名。
+- [Scripts/Runtime/Modules/Network/Kit/NetService.cs](../../../Scripts/Runtime/Modules/Network/Kit/NetService.cs)：业务协议 `SendAsync` 调用链。
 - PAT-146：完成结果缓存与重试语义。

@@ -29,6 +29,6 @@ FillGap 默认长度为 15，按 UTF-16 长度截取前 length 个单元或右�
 
 | 文件 | 说明 |
 |------|------|
-| `Txt.cs` | 静态门面 |
-| `Interfaces/ITxtHelper.cs` | 文本助手接口 |
-| `Implements/TxtHelper.cs` | 默认实现（`string.Format` 封装） |
+| [Txt.cs](../../../../Scripts/Runtime/Core/Txt/Txt.cs) | 静态门面 |
+| [ITxtHelper.cs](../../../../Scripts/Runtime/Core/Txt/ITxtHelper.cs) | 文本助手接口 |
+| [TxtHelper.cs](../../../../Scripts/Runtime/Core/Txt/TxtHelper.cs) | 默认实现（`string.Format` 封装） |

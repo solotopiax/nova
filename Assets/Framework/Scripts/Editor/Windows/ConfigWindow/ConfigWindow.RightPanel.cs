@@ -697,7 +697,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
                     "本地键值对使用 JSONPath，例如 User.Level、Rewards[0].Id；Value 是本地默认字符串。",
-                    "游戏启动时 Config 会在后台等待 Network 就绪，再拉取一次完整云端 JSON 对象并缓存，不阻塞启动。",
+                    "游戏启动时会在网络配置就绪后自动拉取一次云端配置；本地配置加载不等待它，标准预加载会等本轮结果，失败使用缓存或本地默认值继续启动。",
                     "读取顺序为云端缓存 → 本地路径值 → 调用方默认值；云端可包含本地未配置的任意路径。",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);

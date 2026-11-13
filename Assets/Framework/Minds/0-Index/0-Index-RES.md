@@ -19,6 +19,7 @@ auto_generated: true
 - [RES-002-unity-addressables-tutorial Unity Addressables 教程](../3-Resources/Unity/RES-002-unity-addressables-tutorial.md) — Addressables 入门与 Nova 对照整理稿
 - [RES-003-unity-yooasset-tutorial Unity YooAsset 教程](../3-Resources/Unity/RES-003-unity-yooasset-tutorial.md) — YooAsset 3.0.5 热更与 Host 模式指南
 - [RES-005-psd2ugui-internal-upm-migration PSD2UGUI 商业插件内部 UPM 改造与升级重放记录](../3-Resources/RES-005-psd2ugui-internal-upm-migration.md) — PSD2UGUI 内部 UPM 改造与升级重放依据
+- [RES-006-tengine-source-comparison TEngine 源码对比与 Nova 借鉴评估](../3-Resources/RES-006-tengine-source-comparison.md) — TEngine 借鉴取舍、可选落地与原生能力纠偏
 
 ## network
 
@@ -26,4 +27,4 @@ auto_generated: true
 
 
 ---
-_共 5 条，分布于 3 个 category。_
+_共 6 条，分布于 3 个 category。_

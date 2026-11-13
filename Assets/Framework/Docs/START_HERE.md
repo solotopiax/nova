@@ -2,11 +2,42 @@
 
 这是一份给 Agent 的 Level 0 路由。首次接触 Nova、接手已有项目、调整场景或资源流程时，先用本页建立最低限度的正确上下文，再按任务进入 Level 1 页面和现有模块文档。
 
+## 日常研发的共同入口
+
+进入任意 Nova 研发任务并定位当前 Framework 后，先读取[日常研发的最小原则](Onboarding/DEVELOPMENT_CONSTRAINTS.md#日常研发的最小原则)，再按任务选择相关 NA 条目和具体操作；在展开模块合同、业务日志或源码前完成这一步。相同工程、同一会话中已读取且未变化的共同上下文可以复用。这些原则覆盖所有 Nova 项目 Skill，不需要先触发 `nova-project-development`。
+
+完整方法按[阅读导航](Onboarding/AI_DEVELOPMENT_WORKFLOW.md#按需阅读导航)选择章节；明确的单点任务直接进入已有 Operation。只有需要比较玩法方案、梳理变化中的复杂需求或组织多个依赖阶段时，才使用[复杂需求梳理入口](../Agents/Skills/nova-project-development/SKILL.md)。
+
+## 设计依据与历史知识
+
+需要解释“为什么这样设计”、统一术语或核查历史边界时，从当前包的 [Minds 索引](../Minds/0-Index/0-Index.md)进入，再读最相关的类型索引和命中条目；普通局部任务不额外展开整库。Minds 整库随 Framework 分发，包含现行知识、资源、画布、视图与既有历史归档，无需安装 Obsidian。
+
+消费端只读当前已解析包内的知识，不修改包快照，也不把整库复制进项目规则或常驻上下文。已归档或旧版本记录只用于追溯，旧路径、命令及开发仓工具不构成当前执行要求；当前行为以核实后的包源码和 Docs 为准。项目专有经验保存在项目自有资料中。旧版包尚无 Minds 时直接报告知识入口不可用，继续独立任务，不扫描其他开发仓补齐。
+
+## 先确定框架位置与文档入口
+
+本文及框架文档中的 `<FrameworkRoot>` 指 `com.solotopia.nova.framework` **当前实际解析的物理根目录**，不是固定的项目相对路径。
+
+- Unity 已解析包时，按准确包名取得当前 `PackageInfo`，以其 `resolvedPath` 定位；不要从 `Library/PackageCache` 目录名猜版本或哈希，也不要把缓存中另一个版本当作当前安装包。
+- Unity 尚未完成注册时，只能根据 `Packages/manifest.json` 中该包的有效绑定定位：本地 `file:` 引用按 manifest 所在目录解析并核对目标 `package.json.name`；registry/Git 引用尚不能证明物理目录时，先报告待解析。Nova 开发仓当前采用 `file:../Assets/Framework`，所以该仓可落在 `Assets/Framework`；消费工程的位置须重新读取。
+- 框架内的文档、源码和资源链接都相对于同一包，不随两态安装位置改变。工程操作中的物理路径先解析 `<FrameworkRoot>` 再拼包内路径，不能把占位符原样当成可访问文件或 Markdown 链接。
+- 其他 SDK/Kit 按准确包名和包内入口发现，见 [SDK / Kit 包文档发现](Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)。MainDemo 等 Sample 先读取当前包 [package.json 的 samples 声明](../package.json)，再按 [Sample 导入定位规则](Onboarding/PROJECT_STRUCTURE.md#sample-的导入辅助工具与页面边界) 核对实际导入目录和 `SamplePathManifest`；开发仓的 `Assets/Samples/<Sample>` 不代表消费态导入位置。
+
+共用规则正文在 [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md)。`NA-001`～`NA-016` 是该页内的规则编号；例如 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充)，用于先查现有能力和前置条件，再选择接口或报告缺口。路径与 Markdown 引用的统一红线见 [NA-015：源码、文档、知识说明和 Agent 暴露同轮一致](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-015源码文档知识说明和-agent-暴露同轮一致)。
+
+发现属于 NA 范畴的共用要求时，按 [共用约束的主动沉淀](Onboarding/DEVELOPMENT_CONSTRAINTS.md#5-共用约束的主动沉淀) 在本轮主动维护；只读任务、消费包缓存、受管投影及真源不可访问时按该节报告候选与阻塞，不越权写回。
+
+第三方原厂内容按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 保持原样，批量文档整理也不修改；必要的接入或定位说明写在自有文档中。
+
 ## AI Project Skills：共同底线、自动发现与执行边界
+
+Nova 项目先执行 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 的识别与入口优先要求；无需用户在每条需求中重复说 Nova。宿主发现阶段由 [项目任务路由](../Agents/Skills/nova-project-router/SKILL.md) 的描述覆盖一般 Unity 请求，进入后按当前包事实选择最窄路径。通用 Unity Skill 在选定路径中提供引擎操作指导，不单独替换框架方案；包未解析或工具未连接按具体缺项处理。
 
 所有 `nova-project-*` Skill 触发后都先读取本页。本页定义项目组消费态日常任务的共同底线；它不是需要用户手工选择或按顺序执行的 Skill。
 
-新增、修改或审查业务与框架调用时，按任务读取 [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md) 的相关 NA 条目。普通业务的公开入口是否获准使用按该页 NA-001/002 判断；下文“公开 API”和旧示例不单独构成使用许可。共同约束的存在不表示已部署自动语义检查器或完成存量整改。
+新建项目和整套交付也按 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 在各阶段写入前选定并读取对应 Skill/contract，按其声明入口执行；参数来源、缺值处理和实际执行路径按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 核对。新项目阶段衔接见 [开工准备](Onboarding/PROJECT_STRUCTURE.md#新项目开工准备)，不能只在最后构建时使用 Skill。
+
+新增、修改或审查业务与框架调用时，按任务读取 [开发与 Agent 执行约束](Onboarding/DEVELOPMENT_CONSTRAINTS.md) 的相关 NA 条目。普通业务的公开入口是否获准使用按 [NA-001：正常业务通过 Component 使用框架](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-001正常业务通过-component-使用框架) 与 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 判断；下文“公开 API”和旧示例不单独构成使用许可。共同约束的存在不表示已部署自动语义检查器或完成存量整改。
 
 需要理解 Skill、Router、Workflow、Operation、Action 与 MCP 各自做什么，先读 [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)。该页把任务拆解和请求传递分别说明，并解释 Nova MCP 包如何扩展 Unity MCP。
 
@@ -14,20 +45,20 @@
 
 对规范、执行与知识联动整体统一使用 [「Nova 协作体系」](Onboarding/AI_SKILLS_ACTIONS_MCP.md#nova-协作体系)，不再逐个列举组成载体；只有定位文件或解释具体职责时才展开精确名称。
 
-发现前置遗漏、重复重试或验收结论过界时，按共用约束 NA-016 和 [原因与防复发](Onboarding/VALIDATION.md#前置问题的原因与防复发) 修正对应入口与证据门；规则沉淀和原问题实际修复分别报告。
+发现前置遗漏、重复重试或验收结论过界时，按共用约束 [NA-016：当前事实、设计建议、条件风险和实测故障分别报告](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-016当前事实设计建议条件风险和实测故障分别报告) 和 [原因与防复发](Onboarding/VALIDATION.md#前置问题的原因与防复发) 修正对应入口与证据门；规则沉淀和原问题实际修复分别报告。
 
-`Assets/Framework/Agents/` 是开发态和消费态共享的唯一 Git 真源。在 Nova 开发仓中，Editor 会用这份真源在仓库根 `.agents/skills/` 生成 `nova-project-*` 的自动生成受管同步副本（下文简称“投影”），让开发者快速验证项目组消费态下的发现和触发效果；发布后，消费项目从已安装的 Framework 包获得同一份内容。该目录只包含项目组消费态 Skill：每个 Skill 的目录名、Catalog id 与 `SKILL.md` 的 `name` 都必须使用 `nova-project-*`。框架开发态 Skill 保留在仓库根 `.agents/skills/` 的既有 `nova-*` 命名空间；两者可在开发仓并列发现，但只有 `nova-project-*` 进入本 Catalog 与 UPM 同步范围。
+Framework 包内 [Agents/](../Agents/) 提供开发态与消费态共用的内容；唯一 Git 真源在 Nova 开发仓的 [Agents/](../Agents/)。开发仓 Editor 会用这份真源在仓库根 `.agents/skills/` 生成 `nova-project-*` 的自动生成受管同步副本（下文简称“投影”），让开发者快速验证项目组消费态下的发现和触发效果；发布后，消费项目从已安装的 Framework 包获得同一份内容。该目录只包含项目组消费态 Skill：每个 Skill 的目录名、Catalog id 与 `SKILL.md` 的 `name` 都必须使用 `nova-project-*`。框架开发态 Skill 保留在仓库根 `.agents/skills/` 的既有 `nova-*` 命名空间；两者可在开发仓并列发现，但只有 `nova-project-*` 进入本 Catalog 与 UPM 同步范围。
 
 Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户安装或升级 Nova 后首次打开 Unity，Editor 会在编译和包更新结束后检查，并按需把包内 Catalog Skill 同步为项目根 `.agents/skills/` 下的受管同步副本，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
 
 通过 NovaSpark 安装、矫正配置，以及手动升级 Framework 后，Editor 会自动补齐并绑定 Unity 官方 Agent 插件、Unity CLI、Coplay Unity MCP、Nova MCP 和 Nova Skills，无需项目组手动补装。Console 的 `[Nova AI 工具链]` 显示实际结果；失败自动重试，NovaSpark 等本地安装和绑定验证通过后才删除自身。需要立即重试时使用 **Nova → Check and Setup AI Toolchain**。当前聊天的工具列表仍需由 Agent 现场确认。触发、安装范围与连接边界见 [AI 工具链安装](Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
 
-Skill 发现与 MCP Tool 发现是两条不同链路：34 个 `nova-project-*` 是 Agent 从 `.agents/skills/` 读取的任务说明，不会被 MCP Provider 逐个注册成 34 个 Tool。对外 Nova MCP UPM 包当前默认适配 Unity MCP，只注册一个 Nova Tool：`nova_project_action`；该 Tool 再通过 live `describe` 公开当前安全开放的 Action。NovaSpark 会先在项目 manifest 中配置 OpenUPM 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework 及其 Nova MCP 依赖；Unity MCP 由 Nova MCP 包的 semver 依赖自动解析，不作为项目 direct Git dependency。安装包不能替外部 Agent 启动 Server、占用端口或热刷新既有会话；首次连接或包升级后，宿主仍需连接当前 MCP Provider，已有会话未刷新 Tool 列表时需重连或开启新会话。
+Skill 发现与 MCP Tool 发现是两条不同链路：35 个 `nova-project-*` 是 Agent 从 `.agents/skills/` 读取的任务说明，不会被 MCP Provider 逐个注册成 35 个 Tool。对外 Nova MCP UPM 包当前默认适配 Unity MCP，只注册一个 Nova Tool：`nova_project_action`；该 Tool 再通过 live `describe` 公开当前安全开放的 Action。NovaSpark 会先在项目 manifest 中配置 OpenUPM 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework 及其 Nova MCP 依赖；Unity MCP 由 Nova MCP 包的 semver 依赖自动解析，不作为项目 direct Git dependency。安装包不能替外部 Agent 启动 Server、占用端口或热刷新既有会话；首次连接或包升级后，宿主仍需连接当前 MCP Provider，已有会话未刷新 Tool 列表时需重连或开启新会话。
 
 三处位置的职责不同：
 
-- 开发仓 Git 真源：`Assets/Framework/Agents/Skills/`。
-- 已安装包快照：`PackageInfo.resolvedPath/Agents/Skills/`；它随当前 Framework 版本提供，只读且不可反向编辑。
+- 开发仓 Git 真源：[Agents/Skills/](../Agents/Skills/)。
+- 已安装包快照：[Agents/Skills/](../Agents/Skills/)；它随当前 Framework 版本提供，只读且不可反向编辑。
 - Agent 发现入口：`<project>/.agents/skills/nova-project-*`；这是自动生成的受管同步副本（简称“投影”），不是第二真源。
 
 `.agents/skills/` 遇到同名用户目录、已修改或缺失的受管同步副本时会保守保留现场，并以 `partial` 报告无法完成的项；其他可安全完成的项仍会继续。同步器先恢复已有合法事务，再解析当前包真源；因此真源缺失时，已有事务仍可能完成已登记的投影写入或清理。当前真源不可用会阻止建立新同步计划，并在 Unity Console 报告错误。
@@ -41,9 +72,15 @@ Skill 发现与 MCP Tool 发现是两条不同链路：34 个 `nova-project-*` �
 /.agents/.nova-skills-staging/
 ```
 
-全量可发现不等于全量按顺序执行。当前 34 项消费态能力只根据自然语言任务的目标、范围和约束匹配需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
+全量可发现不等于全量按顺序执行。当前 35 项消费态能力只根据自然语言任务的目标、范围和约束匹配需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
 
-函数签名和局部说明来自源码/XML，流程、配置与生命周期说明来自所属 Docs，执行保护来自 Skill/Action 契约。`Agents/coverage.json` 和自动生成的便携符号索引提供导航；本地查询缓存位于 `Library/Nova/AgentIndex/`，可删除重建，不入 Git。任务结果在本次执行后于对话报告，不查询或分发历史验收档案。
+已确认仅修改项目自有普通业务源码中的文案、常量等局部字面量，且不触及框架调用、配置/表源、序列化资产或生成链时，完成定位后按本项目源码编辑规则直接处理，并做相应局部检查。不强行套用页面 Operation 或复杂需求 Skill；经过只读 Router 时，先结束路由，再进入用户已授权的源码编辑，不能把 Router 自身写成可修改项目的操作。
+
+所有 Nova 项目必须配置并实际使用 Config（ConfigMaster）、Pipify、PlugPals，执行 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 和[三工具基线](Onboarding/PROJECT_STRUCTURE.md#configpipifyplugpals-基线)，由就绪检查路由缺项到对应 Skill；不能把 Pipify 或 PlugPals 当成可选工具。所需 PlugPals package 的自主选型与安装按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 的长期授权执行，不逐包重复询问，仍完成计划、Resolve 与后验验证。
+
+HybridCLR 安装、启用、配置及正式生成同样是所有 Nova 项目必备项，按 [NA-004：业务默认进入热更范围，AOT 例外须证明必要性](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-004业务默认进入热更范围aot-例外须证明必要性) 与[三平台构建基线](Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)衔接配置、生成、DLL 部署和完整 Batch；不因离线/单机自行改为非热更方案。源配置、安装、生成、资源、最终 Player 与实际加载分别验收，不自动开展未请求的三平台构建。
+
+函数签名和局部说明来自源码/XML，流程、配置与生命周期说明来自所属 Docs，执行保护来自 Skill/Action 契约。[Agents/coverage.json](../Agents/coverage.json) 和自动生成的便携符号索引提供导航；本地查询缓存位于 `Library/Nova/AgentIndex/`，可删除重建，不入 Git。任务结果在本次执行后于对话报告，不查询或分发历史验收档案。
 
 函数、重载与参数的确定性查询见 [自然语言开发入口](Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md)；函数声明与运行时有效配置分别核实，源码位置变化后先刷新索引，不能沿用旧偏移；只按实际行为变化审查受影响实现。
 
@@ -59,7 +96,7 @@ Skill 发现与 MCP Tool 发现是两条不同链路：34 个 `nova-project-*` �
 
 “只导出已有声音、振动或网络表的代码和数据”复用对应接入 Skill 的 `export-code-data` 分支，读取真实源和导出设置，执行既有导出 Action，再核对正式产物与编译。无需为导出提供 AudioClip、业务调用点、真机体感或测试服务账号；完整业务接入仍按原运行与设备要求验收。分支由 Skill 契约定义，任务只引用 ID，不能自行更改最低证据或省略安全约束。
 
-项目组只需用自然语言说明目标、已知范围和约束，不必记住或手工执行 Skill 名称。Agent 先从项目根 `.agents/skills/nova-project-*` 发现当前 Framework 自带的全量能力：任务不清楚时先用 `nova-project-router`，任务已明确时可直接进入对应 Operation。常见匹配包括：接手项目→`nova-project-check-readiness`；安装/升级最新普通 UPM 包或卸载 direct dependency→`nova-project-manage-upm-package`；升级 Nova Framework 自身→`nova-project-upgrade-framework`，由包外 UPM 宿主执行并在重载后核验 Skills/MCP 恢复；接入已发布 SDK/Kit→`nova-project-onboard-sdk-kit`；启动失败→`nova-project-diagnose-startup`；PSD/PSB转换、来源同步与AI识别→`nova-project-psd2ugui`；新增/更新业务页面→`nova-project-ui-create-view` / `nova-project-update-ui-view`；接入业务事件、存档或资源化 Content 场景→`nova-project-integrate-event` / `nova-project-integrate-persistence` / `nova-project-integrate-content-scene`；接入已确认协议的业务 HTTP API→`nova-project-integrate-network-api`；加入大厅 BGM、按钮点击音效、其他声音或振动→`nova-project-integrate-sound` / `nova-project-integrate-vibration`；新增业务流程→`nova-project-integrate-procedure`；打包前检查、既有构建失败与真机日志问题→`nova-project-preflight-build` / `nova-project-diagnose-build` / `nova-project-diagnose-device-runtime`；Android EDM4U 解析→`nova-project-resolve-android-dependencies`。刷新 HybridCLR 业务热更 DLL→`nova-project-refresh-hotfix-dlls`；生成 HybridCLR bridge/AOT/link.xml 预构建产物→`nova-project-generate-hybridclr-artifacts`。所有已注册 Project Action 默认进入 MCP 显式白名单，但写入、破坏性或外部操作仍必须经过 Plan、一次性确认、资源锁与 Verify。两项 HybridCLR Operation 都不代表 Bundle、最终 Player、CDN 或运行时成功，最终 Player 后的 `CopyAotDlls` 也不属于 Generate All。表、配置、本地化、资源、启动场景、Bundle、Player 分别进入同名领域 Operation；表驱动页面则由 `nova-project-data-driven-ui` 编排。
+项目组只需用自然语言说明目标、已知范围和约束，不必记住或手工执行 Skill 名称。Agent 先从项目根 `.agents/skills/nova-project-*` 发现当前 Framework 自带的全量能力：任务不清楚时先用 `nova-project-router`，任务已明确时可直接进入对应 Operation。常见匹配包括：接手项目→`nova-project-check-readiness`；安装/升级最新普通 UPM 包或卸载 direct dependency→`nova-project-manage-upm-package`；升级 Nova Framework 自身→`nova-project-upgrade-framework`，由包外 UPM 宿主执行并在重载后核验 Skills/MCP 恢复；接入已发布 SDK/Kit→`nova-project-onboard-sdk-kit`；启动失败→`nova-project-diagnose-startup`；PSD/PSB转换、来源同步与AI识别→`nova-project-psd2ugui`；新增/更新业务页面→`nova-project-ui-create-view` / `nova-project-update-ui-view`；接入业务事件、存档或资源化 Content 场景→`nova-project-integrate-event` / `nova-project-integrate-persistence` / `nova-project-integrate-content-scene`；接入已确认协议的业务 HTTP API→`nova-project-integrate-network-api`；加入大厅 BGM、按钮点击音效、其他声音或振动→`nova-project-integrate-sound` / `nova-project-integrate-vibration`；新增业务流程→`nova-project-integrate-procedure`；打包前检查、既有构建失败与真机日志问题→`nova-project-preflight-build` / `nova-project-diagnose-build` / `nova-project-diagnose-device-runtime`；Android EDM4U 解析→`nova-project-resolve-android-dependencies`。刷新 HybridCLR 业务热更 DLL→`nova-project-refresh-hotfix-dlls`；生成 HybridCLR [bridge/AOT/link.xml](../Scripts/Runtime/Modules/Debug/Core/Options/link.xml) 预构建产物→`nova-project-generate-hybridclr-artifacts`。所有已注册 Project Action 默认进入 MCP 显式白名单，但写入、破坏性或外部操作仍必须经过 Plan、一次性确认、资源锁与 Verify。两项 HybridCLR Operation 都不代表 Bundle、最终 Player、CDN 或运行时成功，最终 Player 后的 `CopyAotDlls` 也不属于 Generate All。表、配置、本地化、资源、启动场景、Bundle、Player 分别进入同名领域 Operation；表驱动页面则由 `nova-project-data-driven-ui` 编排。
 
 每个匹配到的 Skill 都按渐进式披露执行：L0 只用 Catalog、frontmatter 与本页发现能力；L1 读取当前 Skill 和契约，冻结输入、写入集、确认门与最低证据；L2 仅按当前分支读取需要的模块 Docs 和项目事实；L3 在确认后调用声明的 Action Adapter（C# API、Unity Editor/MCP、Pipify、CLI 或工作区编辑）；L4 只验证本次需要的证据。这样既能复用日常流程，也不会为了一个任务重复分析所有 Nova 模块。
 
@@ -67,11 +104,15 @@ Workflow 的 `requires` 只描述其内部 Operation 的依赖图，不影响安
 
 ## 执行任务与清场的共同约束
 
-新建 Nova 项目先按 [新项目开工准备](Onboarding/PROJECT_STRUCTURE.md#新项目开工准备) 建立 MainDemo 预加载参考、固定启动 Resources、配置/导出与平台环境基线，取得最小启动证据后再做依赖它们的业务。每项说明已就绪、待准备或不适用及依据；现有项目仅复核相关事实，不强套整个 Sample。HybridCLR 的包、安装、启用与运行状态必须分开报告，不能因普通 APK 成功便省略安装失败。
+日常共同原则和按需方法从本页开头的[共同入口](#日常研发的共同入口)读取；具体执行仍由所选任务合同决定，不把复杂需求梳理作为每项操作的前置。
 
-每次启动或重新连接 Unity、包安装/解析、编译重载、平台切换、Play 或构建等待期间，先按 [NA-014](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 执行编辑器就绪检查。发现弹窗或工具首次超时，立即按 [窗口处理与恢复顺序](Onboarding/VALIDATION.md#unity-窗口处理与恢复顺序) 检查并处理，不等待多轮超时或通过反复重启跳过。操作结束后的辅助窗口关闭及交付前复查也按该入口执行。只读任务保持只读，窗口操作沿用实际任务已有授权。
+任何新游戏先按 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 和 [标准产品预加载基线](Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线) 完整落实当前 MainDemo `ProcedurePreload` 的标准动作，连同固定启动 Resources、配置/导出与平台环境先准备、再验证、再开展依赖业务；不因体量小、单机或当前仅用部分模块自行裁减。逐项记录来源、真实结果与已就绪/待准备/阻塞，平台限制保留在能力节点内处理，进度完成不代替基线。现有项目局部任务只核对相关事实，不自动迁移或照搬整个 Sample。HybridCLR 的包、安装、启用与运行状态必须分开报告，不能因普通 APK 成功便省略安装失败。
 
-新项目在制作 UI 前、已有项目在创建页面或调整布局/画布/安全区前，先按 [NA-002](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 与 [屏幕适配与安全区](Runtime/Modules/UI/UIComponent.md#屏幕适配与安全区) 冻结适配方案并核对有效配置。沿用项目已有方案；缺失时在授权内确定合理默认并告知用户，只有实质歧义才澄清。纯文案、事件或数据绑定且布局不变时，仅复核受影响范围。
+新建或扩展 Excel 配表先按 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 与 [配表模板与样式](Onboarding/RESOURCE_WORKFLOW.md#配表模板与样式) 选择项目既有表或当前包官方模板，再填业务内容并核对样式保真；Table、网络、本地化、振动、Tracks、SDK/Kit 与未来新增表型同样适用。已有官方模板原样复制与 UI/Sound 行填入按该页分别选入口，工具支持范围不能缩小约束范围。此约束优先于通用表格工具的默认美化；数据可导出不等于工作簿风格已验收。
+
+每次启动或重新连接 Unity、包安装/解析、编译重载、平台切换、Play 或构建等待期间，先按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 执行编辑器就绪检查。发现弹窗或工具首次超时，立即按 [窗口处理与恢复顺序](Onboarding/VALIDATION.md#unity-窗口处理与恢复顺序) 检查并处理，不等待多轮超时或通过反复重启跳过。操作结束后的辅助窗口关闭及交付前复查也按该入口执行。只读任务保持只读，窗口操作沿用实际任务已有授权。
+
+新项目在制作 UI 前、已有项目在创建页面或调整布局/画布/安全区前，先按 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 与 [屏幕适配与安全区](Runtime/Modules/UI/UIComponent.md#屏幕适配与安全区) 冻结适配方案并核对有效配置。沿用项目已有方案；缺失时在授权内确定合理默认并告知用户，只有实质歧义才澄清。纯文案、事件或数据绑定且布局不变时，仅复核受影响范围。
 
 每个匹配任务先从当前工程读取实参来源、当前值、声明默认与生效时机，冻结目标、最小写入集、实际 Action/API/CLI 和验收入口。路径、类型、GUID、已存在组件和配置由 Agent 查明；玩法、素材、协议或外部账号缺失时只保留依赖它们的具体缺项。固定操作直接复用已有接口；Action 按 live `describe → plan → execute → verify`，一般 Unity MCP 按真实 Schema、草稿检查、精确保存与读回执行。
 
@@ -89,7 +130,7 @@ Workflow 的 `requires` 只描述其内部 Operation 的依赖图，不影响安
 4. 哪些目录与场景由项目明确交给 Nova 管理；不要接管未声明范围。
 5. 用户本次要解决的具体任务，再决定需要阅读哪些模块文档。
 
-若一个场景负责承载 Nova，必须使用框架提供的完整 canonical Prefab：`Assets/Framework/Prefabs/Nova.prefab`。不要新建空 GameObject 后只挂 `Nova`、`AssetComponent` 或少数组件来仿造它。
+若一个场景负责承载 Nova，必须使用框架提供的完整 canonical Prefab：[Nova.prefab](../Prefabs/Nova.prefab)。不要新建空 GameObject 后只挂 `Nova`、`AssetComponent` 或少数组件来仿造它。
 
 ## 按任务检查与验证
 
@@ -106,7 +147,7 @@ Nova 不再提供 Project Guard 窗口、规则 Profiles 或进入 Play 前的�
 - `Resources/BuiltIn/**` 是框架的特殊内置资源区，允许通过 Resources 接口加载。
 - UPM 包以及导入到 `Assets/**` 的第三方插件可以保留并使用自身的 Resources，不要求 Nova Contract 白名单。
 - Nova 业务资源推荐使用 YooAsset/Bundle，以获得版本、卸载和发布能力；这个建议不能据此否定插件或未声明范围内的合法资源方案。
-- Unity Build、`BuildPipeline.BuildPlayer` 和 `EditorUtil.Build` 都是合法构建入口；Pipify 是可选自动化入口，不是唯一入口。
+- Unity Build、`BuildPipeline.BuildPlayer` 和 `EditorUtil.Build` 仍是合法底层构建入口；Nova 项目必须配置并使用 Pipify，完整日常打包按[三平台构建基线](Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)编排，不因底层入口存在而省略项目流水线。
 
 ## 按任务继续阅读
 
@@ -122,7 +163,7 @@ Nova 不再提供 Project Guard 窗口、规则 Profiles 或进入 Play 前的�
 - 新项目的必需环境、固定启动资源、配置及导出已准备，最小启动闭环已验证；每项缺口或不适用有依据，HybridCLR 安装状态未被构建成功代替。
 - 使用 Unity 时已检查当前工程窗口与阻塞提示；新项目或 UI 布局任务已先确定屏幕适配方案、有效配置及验收范围。
 - 已检查现有工程事实，没有把 Sample 或 Starter 当成强制模板。
-- 承载 Nova 的场景引用完整的 `Assets/Framework/Prefabs/Nova.prefab`。
+- 承载 Nova 的场景引用完整的 [Nova.prefab](../Prefabs/Nova.prefab)。
 - 已确认运行拓扑中 Nova 的唯一性，以及 Content 的显式加载和卸载责任。
 - 已区分业务资源、`Resources/BuiltIn` 与第三方插件 Resources。
 - 已选择与任务相称的验证层级，按需调用只读构建预检。

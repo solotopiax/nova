@@ -5,7 +5,7 @@ The shaping implementation in this directory is adapted from
 `f480419bbbffed1be3c129d68cc0182afcfbcac3`.
 
 The upstream implementation is licensed under the MIT License. The complete
-license text is preserved in `LICENSE.RTLTMPro.txt`.
+license text is preserved in [LICENSE.RTLTMPro.txt](LICENSE.RTLTMPro.txt).
 
 Nova keeps these types internal and integrates them through TMP's
 `ITextPreprocessor`; the upstream TMP subclasses and editor integration are not

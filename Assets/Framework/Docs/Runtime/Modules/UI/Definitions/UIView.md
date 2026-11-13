@@ -11,9 +11,10 @@ UI 视图抽象基类，业务层所有视图均继承此类。提供完整的�
 
 | 文件 | 说明 |
 |------|------|
-| `UIView.cs` | 公开方法与 IUIView 生命周期接口实现 |
-| `UIView.Methods.cs` | 非公开实现方法：`OnInit(userData)` 钩子、`InternalSetVisible`、`InternalSetLayerRecursively` |
-| `UIView.Visitors.cs` | 字段与属性访问器：框架状态字段、常量 |
+| [UIView.cs](../../../../../Scripts/Runtime/Modules/UI/Definitions/UIView.cs) | 公开方法与 IUIView 生命周期接口实现 |
+| [UIView.Methods.cs](../../../../../Scripts/Runtime/Modules/UI/Definitions/UIView.Methods.cs) | 非公开实现方法：`OnInit(userData)` 钩子、`InternalSetVisible`、`InternalSetLayerRecursively` |
+| [UIView.Visitors.cs](../../../../../Scripts/Runtime/Modules/UI/Definitions/UIView.Visitors.cs) | 字段与属性访问器：框架状态字段、常量 |
+| [UIView.Scope.cs](../../../../../Scripts/Runtime/Modules/UI/Definitions/UIView.Scope.cs) | 主动取用的本次打开作用域，不接管旧页手工工作 |
 
 ## 关键字段/属性
 
@@ -32,8 +33,11 @@ UI 视图抽象基类，业务层所有视图均继承此类。提供完整的�
 | `Visible` | `bool` | 视图是否可见（需 Available 为 true） |
 | `OriginalDepth` | `int` | Canvas 初始 sortingOrder，用于深度增量计算 |
 | `Depth` | `int` | 当前 Canvas.sortingOrder |
+| `OpenScope` | `UIViewScope` | 本次打开期间主动取用才创建的可选作用域；只收尾明确登记的工作 |
 
 ## 公开 API
+
+按需的 [UIViewScope](UIViewScope.md) 可集中管理本次打开的 token、事件订阅和可释放对象；关闭/回收/销毁结束，隐藏/暂停不结束。旧页面不访问、不登记就保持原手工生命周期，框架不会扫描或接管原订阅、CTS 与清理代码。
 
 ```csharp
 // ===== IUIView 生命周期（框架驱动调用） =====
@@ -88,6 +92,8 @@ static void SetMainFont(Font mainFont);
 ## 状态与初始化失败
 
 公开 OnInit 先写序号、地址、分组及策略；复用实例不再调用受保护初始化，新实例才执行该钩子。钩子异常被记录并吞掉，不向 Manager 返回失败，已写字段不回滚，因此后续 OnOpen 仍可能执行。默认钩子增加 Canvas/GraphicRaycaster、记根 Layer/原深度并拉伸 RectTransform，要求有效的 UI 根；自动本地化/主字体应用代码当前未执行，SetMainFont 只缓存旧 UGUI 字体入口。
+
+上述为旧序号入口保留的初始化边界。新可选 [可等待打开](../UIManager/Interfaces/IUIOpenAwaiter.md) 会读取本次已记录的初始化异常并返回失败，不把钩子记录日志后继续误判为成功；未选择新入口的调用不因此迁移。
 
 Available/Visible 是框架状态：Visible 读取 Available 与内部可见字段，不检查 activeInHierarchy，父节点关闭时仍可能返回 true。Visible setter 在不可用时只警告，合法修改先写字段再 SetActive；激活失败不回滚。OnPause/OnResume 默认通过 Visible 禁用/启用 GameObject，不重载数据。
 

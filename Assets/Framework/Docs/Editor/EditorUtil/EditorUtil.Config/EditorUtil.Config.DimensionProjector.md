@@ -11,7 +11,7 @@ Config 面板维度投影器；按 `PanelDimensionMask` 在 `m_WorkingCopy` 上�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs` | `EditorUtil.Config.DimensionProjector` | 维度投影器主体（含公开枚举 / 公开操作 / 全部私有辅助） |
+| [Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.cs) | `EditorUtil.Config.DimensionProjector` | 维度投影器主体（含公开枚举 / 公开操作 / 全部私有辅助） |
 
 ---
 
@@ -168,7 +168,7 @@ SDK / Kit 广播与投影调用此 helper 将源格的 `[SerializeReference]` �
 | 保存时用一个完整坐标覆盖全部组 | 未选轴取当前值，已选轴逐组保留；自动清理旧分支并重新校验 |
 | 开启维度时只复制当前切片 | 先枚举旧掩码的全部逻辑组，再对新轴完整拆分 |
 | 取消维度时拿当前完整坐标覆盖全矩阵 | 对每个剩余逻辑组分别保留顶部当前轴值对应的旧分支 |
-| 顶层类维度切换后不刷 `YooAssetInjector.Inject` | YooAsset mask 变更后路径已更新但注入还是旧值；`ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset` 需在 toggle 回调中调用 |
+| 顶层类维度切换后不刷 `YooAssetInjector.Inject` | YooAsset mask 变更后路径已更新但注入还是旧值；[ConfigWindow.RightPanel.YooAsset.cs](../../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs) 的 `ReInjectYooAsset` 需在 toggle 回调中调用 |
 | 直接复用 SDK/Kit 的配置对象引用 | 通过 `DeepCloneManagedRef` 为每个物理格生成独立实例；新增 SDK/Kit 配置须验证当前 Unity 对实际多态子引用的深拷贝保留 |
 
 ---

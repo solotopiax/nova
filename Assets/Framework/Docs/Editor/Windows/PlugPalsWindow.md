@@ -18,11 +18,11 @@
 
 | 文件 | 说明 |
 |---|---|
-| `PlugPalsWindow.cs` | `Open()`、`Open(bool)`、`OnEnable`、`OnGUI`、`OnDestroy` |
-| `PlugPalsWindow.Visitors.cs` | 仓库地址、菜单路径、分类/筛选/样式状态 |
-| `PlugPalsWindow.Methods.cs` | 请求包列表、过滤、绘制工具栏、表头、卡片与操作按钮 |
-| `PlugPalsWindow.Definitions.cs` | 单仓库列表请求结果，保存本轮来源地址、展示条目及错误状态；包元数据模型仍归工具层 |
-| `PlugPalsMissingRequiredLibrariesWindow.cs` | 安装前依赖预检发现缺失库时弹出的购买/内部云仓库引导提示窗口 |
+| [PlugPalsWindow.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.cs) | `Open()`、`Open(bool)`、`OnEnable`、`OnGUI`、`OnDestroy` |
+| [PlugPalsWindow.Visitors.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Visitors.cs) | 仓库地址、菜单路径、分类/筛选/样式状态 |
+| [PlugPalsWindow.Methods.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Methods.cs) | 请求包列表、过滤、绘制工具栏、表头、卡片与操作按钮 |
+| [PlugPalsWindow.Definitions.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsWindow.Definitions.cs) | 单仓库列表请求结果，保存本轮来源地址、展示条目及错误状态；包元数据模型仍归工具层 |
+| [PlugPalsMissingRequiredLibrariesWindow.cs](../../../Scripts/Editor/Windows/PlugPalsWindow/PlugPalsMissingRequiredLibrariesWindow.cs) | 安装前依赖预检发现缺失库时弹出的购买/内部云仓库引导提示窗口 |
 
 ## 当前公开入口
 
@@ -91,7 +91,7 @@ public static void OpenInternalRegistry();
 - 双仓库来源判断继续停留在窗口层；`EditorUtil.PlugPals` 仍保持单仓库工具层，不增加仓库来源字段。
 - 包管理逻辑不应回流到窗口类，窗口只做调用与展示。
 - 安装前依赖预检（`CheckDependencies`）、购买/内仓引导归 `EditorUtil.PlugPals`；窗口只负责打开”内部云仓库”页签（`OpenInternalRegistry()`）和展示 `PlugPalsMissingRequiredLibrariesWindow` 提示窗口。
-- 因为代码位于 `Scripts/Editor/Windows/PlugPalsWindow/`，文档归类也应在 `Docs/Editor/Windows/`，而不是 `Tools/`。
+- 因为代码位于 [Scripts/Editor/Windows/PlugPalsWindow/](../../../Scripts/Editor/Windows/PlugPalsWindow/)，文档归类也应在 [Docs/Editor/Windows/](./)，而不是 `Tools/` 文档分类。
 
 ## 关联文档
 

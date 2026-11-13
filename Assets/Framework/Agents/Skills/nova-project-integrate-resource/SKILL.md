@@ -1,13 +1,13 @@
 ---
 name: nova-project-integrate-resource
-description: 在项目组要接入 Nova 业务资源、对象池或引用池生命周期，配置资源加密与轮换，或按明确范围清理本地热更缓存并核验时使用。
+description: 在项目组要接入 Nova 业务资源、图片异步绑定或指定内容包加载，维护对象池/引用池生命周期、资源加密与轮换，或按明确范围清理本地热更缓存并核验时使用。
 ---
 
 # Nova 接入业务资源
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
-再读取 `references/contract.json`，先确认本次是资源接入、池生命周期、资源加密还是本地缓存清理。资源分支冻结资源归属、目标 Package、地址、消费方和生命周期；池与缓存只冻结本次分支的必要输入。`Resources/BuiltIn/**`、第三方插件资源或已有非 Nova 资源方案不因本 Skill 自动迁移。
+再读取 [references/contract.json](references/contract.json)，先确认本次是资源接入、池生命周期、资源加密还是本地缓存清理。资源分支冻结资源归属、目标 Package、地址、消费方和生命周期；池与缓存只冻结本次分支的必要输入。[Resources/BuiltIn/**（定位）](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md)、第三方插件资源或已有非 Nova 资源方案不因本 Skill 自动迁移。
 
 ## 渐进式披露
 
@@ -15,12 +15,14 @@ description: 在项目组要接入 Nova 业务资源、对象池或引用池生�
 
 | 条件 | 读取 |
 |---|---|
-| 要判定资源归属或是否应走 Bundle | `Docs/Onboarding/RESOURCE_WORKFLOW.md` |
-| 要配置当前项目的 YooAssetSettings 或 Collector 路径 | `Docs/Editor/Config/Definitions/YooAssetEditorConfigs.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md` |
-| 要加载、持有或释放非场景资源 | `Docs/Runtime/Modules/Asset/AssetComponent.md` 与 `Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md` |
-| 资源是需实例化的 Prefab | `Docs/Runtime/Modules/Prefab/PrefabComponent.md` 与 `Docs/Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md` |
+| 要判定资源归属或是否应走 Bundle | [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) |
+| 要配置当前项目的 YooAssetSettings 或 Collector 路径 | [Docs/Editor/Config/Definitions/YooAssetEditorConfigs.md](../../../Docs/Editor/Config/Definitions/YooAssetEditorConfigs.md) 与 [Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
+| 要加载、持有或释放非场景资源 | [Docs/Runtime/Modules/Asset/AssetComponent.md](../../../Docs/Runtime/Modules/Asset/AssetComponent.md) 与 [Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md) |
+| 要从指定内容包加载，或多个包有相同地址 | [显式包加载](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetPackageLoader.md) 与 [生命周期参考](references/resource-lifecycle.md) 的“显式选择内容包”；旧调用不迁移 |
+| 要给 Image/SpriteRenderer 异步换普通图或图集子图 | [SpriteBinding](../../../Docs/Runtime/Modules/Asset/SpriteBinding.md) 与 [生命周期参考](references/resource-lifecycle.md) 的“图片绑定”；先确定目标与唯一拥有者 |
+| 资源是需实例化的 Prefab | [Docs/Runtime/Modules/Prefab/PrefabComponent.md](../../../Docs/Runtime/Modules/Prefab/PrefabComponent.md) 与 [Docs/Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md](../../../Docs/Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md) |
 | 本次确需构建选定 Package | 路由到 `nova-project-build-bundles`，由该 Skill 按需读取构建文档 |
-| 本次配置资源加密、客户端密钥源码或轮换 | [资源加密参考](references/resource-encryption.md)，再按需读取 `Docs/Runtime/Modules/Asset/ResourceEncryption.md` |
+| 本次配置资源加密、客户端密钥源码或轮换 | [资源加密参考](references/resource-encryption.md)，再按需读取 [Docs/Runtime/Modules/Asset/ResourceEncryption.md](../../../Docs/Runtime/Modules/Asset/ResourceEncryption.md) |
 | 本次使用对象池/引用池、修资源异步持有，或清编辑器/运行时冗余缓存 | [生命周期与缓存参考](references/resource-lifecycle.md)，只读本次分支 |
 
 ## 冻结输入

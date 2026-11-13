@@ -88,11 +88,11 @@ Pipify Step `googleplay.upload_aab`（发布 → Google Play 上传 AAB）使用
 
 ### 凭据与外网物料边界
 
-仓库根目录 `Docs/` 与包内 `Assets/Framework/Docs/` 是两类目录。GitHub 公开同步使用共享 `PUBLIC_EXCLUDE` 的 `Docs/` 前缀，排除根目录全部内容，包含 `Docs/certificates/` 和 `Docs/evidences/`；即使这些文件被 Git 跟踪也会过滤。内网保留与使用不受该公开同步规则限制。
+Nova 开发仓根目录 `Docs/` 与 [Framework 包内 Docs/](../../../) 是两类目录。GitHub 公开同步使用共享 `PUBLIC_EXCLUDE` 的 `Docs/` 前缀，排除根目录全部内容，包含 `Docs/certificates/` 和 `Docs/evidences/`；即使这些文件被 Git 跟踪也会过滤。内网保留与使用不受该公开同步规则限制。
 
-UPM 仅打包 `Assets/Framework` 和所选 `UPMPackages` 包目录，不打包仓库根目录 `Docs/`。包内配置资产及参数源码的凭据路径在公开副本中替换为占位符；路径脱敏与凭据文件过滤分别检查，不能相互替代。包内技术文档正常保留。
+Nova 开发仓的 UPM 发布器仅打包开发态 `Assets/Framework` 和所选 `UPMPackages` 包目录，不打包开发仓根目录 `Docs/`。包内配置资产及参数源码的凭据路径在公开副本中替换为占位符；路径脱敏与凭据文件过滤分别检查，不能相互替代。包内技术文档正常保留。
 
-规则入口：`.agents/skills/_shared/public_exclude.py`、`.agents/skills/nova-publish/scripts/publish_packages.py` 和 `.nova/rules/RELEASE.md`。
+框架维护者在 Nova 开发仓核对 `.agents/skills/_shared/public_exclude.py`、`.agents/skills/nova-publish/scripts/publish_packages.py` 和 `.nova/rules/RELEASE.md`；这些开发态来源不随包提供，消费项目的引用边界见 [NA-015：源码、文档、知识说明和 Agent 暴露同轮一致](../../../Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-015源码文档知识说明和-agent-暴露同轮一致)。
 
 ## CI
 

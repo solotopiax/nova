@@ -1,4 +1,4 @@
 interface:
   display_name: "Nova 项目任务路由"
-  short_description: "路由 Nova 项目接入、包管理、开发、构建与排障任务"
-  default_prompt: "使用 $nova-project-router 分析当前 Nova 项目任务并选择安全的执行路径。"
+  short_description: "先识别 Unity 工程的 Nova 上下文，再选择开发、构建与排障入口"
+  default_prompt: "使用 $nova-project-router 先识别当前 Unity 工程是否使用或明确要求 Nova；无需用户点名 Nova，按当前框架能力选择最窄路径，再使用必要的 Unity 工具。"

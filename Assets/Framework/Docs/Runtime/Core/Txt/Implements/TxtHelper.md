@@ -11,7 +11,7 @@ Unity 平台文本工具实现，实现 `ITxtHelper` 接口。使用 `[ThreadSta
 
 | 文件 | 说明 |
 |------|------|
-| `Implements/TxtHelper.cs` | 文本工具实现 |
+| [TxtHelper.cs](../../../../../Scripts/Runtime/Core/Txt/TxtHelper.cs) | 文本工具实现 |
 
 ## 关键字段
 

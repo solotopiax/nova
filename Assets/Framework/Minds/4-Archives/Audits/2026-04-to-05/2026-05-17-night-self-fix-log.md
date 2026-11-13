@@ -1,5 +1,7 @@
 # 夜间自修日志（2026-05-17）
 
+> 关联说明：文内路径、命令和行号保留当时的开发态值；当前位置从 [框架文档索引](../../../../Docs/INDEX.md) 或 [Minds 索引](../../../0-Index/0-Index.md) 定位，原路径不作为当前导航。
+
 > 任务：ABPath/AssetName → AssetLocation 全模块合并改造（10 批次）
 > 中断策略：C — 子 agent 自修 P0/P1，超 3 轮挂起；**严禁触及框架原则与架构层大变动**（接口三层结构、Component+Manager 模式、HybridCLR 约束、Config 不可序列化、序列化结构等）。
 

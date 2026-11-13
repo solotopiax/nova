@@ -419,6 +419,7 @@
     "product catalog upload: original describe/Plan, exact saved Master ExportTarget and six-file/memory/code identity, mode/version/catalogHash/productCount/requestSha256/requestByteCount; App AES values, Body and raw response never emitted",
     "product catalog upload: exact external authorization and one consumed Plan/Prepared; durable pre-network intent and finite outcome under Library/Nova/AgentActions/IapCatalogUploads; shared legacy/Action busy guard, no queued retry",
     "product catalog upload: read-only Verify of original attempt; 2xx only HTTP acceptance, exact409 code CATALOG_VERSION_CONFLICT means not-applied; missing/partial outcome, cancellation, failure or reload never drives resend; current application proof absent means partial",
-    "product catalog upload: independent catalog branch only, no added top-level Skill/task profile or original payment task completion; no-network fake sender tests are not actual backend upload acceptance"
+    "product catalog upload: independent catalog branch only, no added top-level Skill/task profile or original payment task completion; no-network fake sender tests are not actual backend upload acceptance",
+    "任务所需包可由Agent主动选定；UPM节点按NA-014核对长期必要安装授权，仍绑定实时Plan并Resolve/Verify，不要求逐包重复批准；升级或其他操作不由安装授权自动放行"
   ]
 }

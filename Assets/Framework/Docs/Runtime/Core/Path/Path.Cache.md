@@ -10,7 +10,7 @@ Unity 缓存目录路径容器。WebGL 不提供 `UnityEngine.Caching` API，因
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Core/Path/Path.Cache.cs` | `Path.Cache` | Unity Caching 缓存路径 |
+| [Core/Path/Path.Cache.cs](../../../../Scripts/Runtime/Core/Path/Path.Cache.cs) | `Path.Cache` | Unity Caching 缓存路径 |
 
 ## § 5 公开 API
 

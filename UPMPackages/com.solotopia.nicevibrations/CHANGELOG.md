@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [10.0.7] - 2026-11-13
+
+### Changed
+
+- 完善 Nice Vibrations 原厂目录、LofeltHaptics Android 库、原厂说明和第三方许可文件的链接，方便核对随包内容的使用与再分发边界。
+
 ## [10.0.6] - 2026-10-23
 
 ### Fixed

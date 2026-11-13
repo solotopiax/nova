@@ -289,5 +289,5 @@ m_Hub.RunBackgroundTask(async runtimeCt =>
 
 ## §13 关联文档
 
-- MobileStore 主类文档：`./MobileStore.md`
-- 内部服务架构总览：`./MobileIAP-Architecture.md`
+- MobileStore 主类文档：[./MobileStore.md](MobileStore.md)
+- 内部服务架构总览：[./MobileIAP-Architecture.md](MobileIAP-Architecture.md)

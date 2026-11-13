@@ -5,18 +5,18 @@ description: Use when Nova 消费项目的 Player 构建、平台工程导出或
 
 # Nova Player 构建故障诊断
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在已存在的失败证据指向对应阶段时按需读取下列随 Framework 发布的文档；不要在路由阶段加载全部平台、SDK 或构建文档。
+再读取 [references/contract.json](references/contract.json)。仅在已存在的失败证据指向对应阶段时按需读取下列随 Framework 发布的文档；不要在路由阶段加载全部平台、SDK 或构建文档。
 
 | 证据指向的阶段 | 读取 |
 |---|---|
-| Unity Build、BuildReport、输出路径、YooAsset staging 或 HybridCLR ABI | `Docs/Onboarding/VALIDATION.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md` |
-| Android 依赖解析、Manifest 或 Gradle 前置 | `Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md` |
-| 失败入口明确为项目已有 Pipify Batch | `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md` |
-| 已有日志命中 Nova 前/后处理器 | 先读上述 Build 文档，再在已解析 Framework 的 `Scripts/Editor/BuildProcessor/` 中只读核对对应 `NovaBuildPreprocessor`、`NovaSDKBuildProcessor`、`NovaBuildPostprocessor` 或 staging 回调 |
+| Unity Build、BuildReport、输出路径、YooAsset staging 或 HybridCLR ABI | [Docs/Onboarding/VALIDATION.md](../../../Docs/Onboarding/VALIDATION.md) 与 [Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md](../../../Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) |
+| Android 依赖解析、Manifest 或 Gradle 前置 | [Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md](../../../Docs/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) |
+| 失败入口明确为项目已有 Pipify Batch | [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
+| 已有日志命中 Nova 前/后处理器 | 先读上述 Build 文档，再在已解析 Framework 的 [Scripts/Editor/BuildProcessor/](../../../Scripts/Editor/BuildProcessor/) 中只读核对对应 `NovaBuildPreprocessor`、`NovaSDKBuildProcessor`、`NovaBuildPostprocessor` 或 staging 回调 |
 
 这是严格只读的诊断 Operation：只分析既有 `BuildReport`、Unity Console / `Editor.log`、构建入口记录、已生成的 Android / Xcode / WebGL 输出和对应源码。不得重新构建、触发编译、运行 EDM4U Resolve、清缓存 / 删除输出、修改源码或配置、重新导出 Gradle / Xcode / WebGL 工程，也不得用“验证一下”重跑失败命令。
 

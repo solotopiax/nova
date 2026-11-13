@@ -2,7 +2,7 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.8`
+> 当前版本：`0.1.9`
 >
 > 当前默认 Provider：`com.coplaydev.unity-mcp@10.3.0`
 
@@ -12,10 +12,12 @@ Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `no
 
 - 显式列出并开放 Registry 中全部 Nova Project Action；两者不一致时整体 fail-closed。
 - 不提供任意 C#、CLR 类型名、方法名或反射执行入口。
-- Nova Framework 通过 `package.json` 显性依赖本包；中立契约程序集不依赖具体 Provider，默认 Unity MCP Adapter 放在独立程序集。
+- Nova Framework 通过 [package.json](package.json) 显性依赖本包；中立契约程序集不依赖具体 Provider，默认 Unity MCP Adapter 放在独立程序集。
 - Action 的当前 Schema、证据与副作用以运行中的 Registry `describe` 为准；README 不充当第二份静态 Action Catalog。
 
 ## 安装与自动衔接
+
+新增界面控件查询与绑定操作需由 Framework `0.7.9` 与本包 `0.1.9` 配套提供。请从 `Nova → Open PlugPals → 外网仓库` 升级 Framework，由 UPM 解析匹配的 MCP 包；新旧版本混装会使整个 Project Action 网关不可用。
 
 消费项目只安装或升级 `com.solotopia.nova.framework`；UPM 应沿 Framework 的显性依赖自动解析本包，再解析：
 
@@ -42,7 +44,7 @@ Codex 已有精确匹配的项目或用户级 MCP 绑定时直接复用；缺少
 
 ready Plan 会在项目 `Library/Nova/AgentActions/Operations/` 写最小恢复元数据；domain reload 后只允许 Verify，不恢复或重放 Execute。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` Action 同样开放，但必须保留强类型 Schema、一次性确认、锁、Receipt、结果脱敏和 Verify，不能借开放策略绕过执行协议。
 
-当前 Registry 的 39 个 Action 已全部进入显式白名单，包含配置批量编辑、UI 导出、UPM 卸载、EDM4U、HybridCLR Generate、Bundle、Player、异步 Pipify Batch、PSD2UGUI 可选插件操作与 IAP 商品目录一次提交。实际列表与 Schema 仍以运行中的 `describe` 为准。`nova.project.iap.upload-product-catalog` 仍走原四阶段网关、精确外部授权与一次性计划；HTTP 2xx 当前最高只为 `partial`，不证明后台目录应用、支付或发货，失败和重载不自动重发。
+当前 Registry 的 41 个 Action 已全部进入显式白名单，包含配置批量编辑、UI 导出、已有普通界面的控件查询/精确绑定与可选字段生成、UPM 卸载、EDM4U、HybridCLR Generate、Bundle、Player、异步 Pipify Batch、PSD2UGUI 可选插件操作与 IAP 商品目录一次提交。控件工具只在显式请求时执行，字段生成编译重载后须另计划绑定；用途与包内发现位置见 [控件绑定入口](Nova/Docs/INDEX.md#可选界面控件绑定)。实际列表与 Schema 仍以运行中的 `describe` 为准。`nova.project.iap.upload-product-catalog` 仍走原四阶段网关、精确外部授权与一次性计划；HTTP 2xx 当前最高只为 `partial`，不证明后台目录应用、支付或发货，失败和重载不自动重发。
 
 长计划可在同一 `operation=plan` 内用 `plan_mode=start/status/forget` 登记、读取或释放传输记录；调用方保留同一 `request_id` 取回结果，不自动重跑。同步 `plan` 与原一次性执行协议保持兼容；完整状态与失效边界见下方包内文档。 较慢的只读核验可同样使用 `operation=verify` 的 `verify_mode=start/status/forget` 与独立 `request_id`，取回同一次核验的完整脱敏响应；省略模式保持同步 Verify，原 partial 不因收件完成升级。
 
@@ -52,13 +54,21 @@ ready Plan 会在项目 `Library/Nova/AgentActions/Operations/` 写最小恢复�
 
 ## 目录结构
 
-- `Nova/Editor/`：Provider 中立的契约、Registry 与受控 Gateway。
-- `Nova/UnityMcp/Editor/`：当前默认 Unity MCP Provider 的薄 Tool Adapter。
-- `Nova/Docs/`：安装后可直接查阅的包内文档入口。
-- `Core/`：第三方源码槽位；当前通过 UPM 依赖使用 Unity MCP，不复制其源码，因此为空。
+- [Nova/Editor/](Nova/Editor/)：Provider 中立的契约、Registry 与受控 Gateway。
+- [Nova/UnityMcp/Editor/](Nova/UnityMcp/Editor/)：当前默认 Unity MCP Provider 的薄 Tool Adapter。
+- [Nova/Docs/](Nova/Docs/)：安装后可直接查阅的包内文档入口。
+- [Core/](Core/)：第三方源码槽位；当前通过 UPM 依赖使用 Unity MCP，不复制其源码，因此为空。
 
 ## 维护
 
 - 修改公开 Tool envelope、Action 暴露范围或恢复语义时，必须同步包内文档和测试。
 - 默认 Unity MCP 依赖变化时，同步更新 `dependencies`、安装说明与 CHANGELOG；`coreVersion` 表示 Nova MCP 自身的内核契约基线，不跟随第三方 Provider 版本。
 - 变更记录见 [CHANGELOG.md](./CHANGELOG.md)，许可见 [LICENSE.md](./LICENSE.md)。
+
+## 跨包文档定位
+
+本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
+
+| 包名 | 包内文档入口 | 本文引用的包内位置 |
+|---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md`、`Docs/Editor/EditorUtil/EditorUtil.UIBindings.md` |

@@ -82,7 +82,7 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 
 ## 验证依据（Verification）
 
-- 文件：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs`（`CheckDependencies`）、`EditorUtil.PlugPals.cs`（`InstallPackage`）、`PlugPalsWindow/PlugPalsWindow.Methods.cs`（`BuildKnownRegistryPackages`）。
+- 文件：[Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs)（`CheckDependencies`）、[EditorUtil.PlugPals.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.cs)（`InstallPackage`）、`PlugPalsWindow/PlugPalsWindow.Methods.cs`（`BuildKnownRegistryPackages`）。
 - grep 自查：`CheckDependencies` / `RegistrySource` 存在；全仓 `defineSymbols` / `PlugPalsInjectedDefines` / `RunRequiredLibraryAudit` 应零残留。
 - 测试：`PlugPalsRequiredLibraryTests`（`CheckDependencies_*`，含 `CheckDependencies_CoveredByProjectScopedRegistries_PassesThrough_20260630` 等项目 scope 放行三测）。
 

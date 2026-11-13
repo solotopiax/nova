@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -51,6 +52,18 @@ namespace NovaFramework.Runtime
         public UniTask LoadAsync()
         {
             return m_ConfigManager.LoadAsync();
+        }
+
+        /// <summary>
+        /// 等待本次启动自动拉取应用配置的最终结果；重复等待不会重新请求，失败仍可继续启动。
+        /// </summary>
+        /// <param name="cancellationToken">只取消当前调用者的等待，不取消共享的启动拉取。</param>
+        /// <returns>启动拉取已成功应用远端配置时返回 true；未加载、未启用、失败或关闭时返回 false。</returns>
+        public UniTask<bool> WaitForStartupAppConfigAsync(CancellationToken cancellationToken = default)
+        {
+            return m_ConfigManager is IAppConfigManager appConfigManager
+                ? appConfigManager.WaitForStartupAppConfigAsync(cancellationToken)
+                : UniTask.FromResult(false);
         }
 
         /// <summary>

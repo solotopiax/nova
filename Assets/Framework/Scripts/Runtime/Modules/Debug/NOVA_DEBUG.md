@@ -1,8 +1,8 @@
-# Nova Framework Debug 模块技术文档
+# Debug 旧实现迁移参考
 
-> **路径：** `Assets/Framework/Scripts/Runtime/Modules/Debug/`
-> **用途：** 运行时调试面板，基于 IMGUI (OnGUI) 实现。功能平移到 RuntimeDebuggerger 时以本文件为技术基础。
-> **关联文档：** `Assets/Framework/Docs/Runtime/Modules/Debug/DebuggerLegacyReference.md`（迁移参考）
+> **路径：** [Scripts/Runtime/Modules/Debug/](./)
+> **用途：** 保留旧 IMGUI 调试面板的历史结构和迁移参考；下方类型、文件清单与接口不代表当前实现，不作为新接入入口。
+> **当前入口：** [DebugComponent.md](../../../../Docs/Runtime/Modules/Debug/DebugComponent.md) 与 [Debug 模块工作指引](AGENTS.md)。
 
 ---
 

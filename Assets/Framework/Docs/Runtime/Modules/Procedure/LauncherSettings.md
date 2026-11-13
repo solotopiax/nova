@@ -31,7 +31,7 @@
 - `ProgressPanelPrefab`
 - `DialogPanelPrefab`
 
-它们都是相对 `Resources/` 的路径，最终由 `LauncherUIController.LoadPanel<T>()` 通过 `Resources.Load` 加载。
+它们都是 [固定启动资源规则](../../../Onboarding/RESOURCE_WORKFLOW.md#新项目默认固定启动资源) 中约定的相对 `Resources/` 加载键，最终由 `LauncherUIController.LoadPanel<T>()` 通过 `Resources.Load` 加载。
 
 ### 3. `LocalizationJsonPathTemplate`
 

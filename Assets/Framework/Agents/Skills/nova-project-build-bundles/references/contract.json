@@ -63,6 +63,11 @@
       "name": "sharedWritesAndCallbacks",
       "required": true,
       "constraint": "读取Plan正式解析的OutputCache、脚本/临时输出、可选数据库、共享缓存及回调编译身份；未知回调、脏资产或原临时目录阻断。RawFile独立Package有效组须主Collector/PackRawFile，混合配置阻断，无Raw主Collector不适用。 Collector默认规则编译身份冻结，同名冲突/自定义规则未审写集阻断，不在Plan实例化。 AssetBundle另冻已保存scene setup、有效Collector根递归依赖的路径/GUID/dependencyHash/实物/meta与关键ProjectSettings；已审SBP回调按精确实现和实际分支接受；Analytics已开启时只接受已审空provider集合，未知内部Shader实现/事件、ProBuilder对象/脚本依赖仍阻断，不关闭任何开关。 SRPDisabledCompute仅全部Quality/defaultGraphics无SRP且CoreBuildData未初始化或无SRP空缓存；不调用lazy getter。 ProBuilder正式Settings实例须已初始化，首次静态初始化的迁移/保存订阅未纳入空分支。 IAP有BillingMode时按原store规则冻结canonical/fallback插件候选与Androidcompat/file/meta；无唯一目标或已满足目标值可接受，需改变兼容性仍阻断。 Firebase正常Android回调冻结四资源/必要目录/meta及l:gvh实际候选和manifest非空行闭包；只读Plan不读Measurement实例，同意选择已完成且保留Enabled原值。Package候选只读，可写Assets metadata只允许正规labels结果，其它meta原字节保持；未知token/布局/路径阻断。"
+    },
+    {
+      "name": "optionalSpriteAtlasPrerequisite",
+      "required": false,
+      "constraint": "只有项目明确选择图集生产时，复用configure-pipeline图集reference先预演/生成后进入Bundle；本Action不生成，不插旧Batch，不要求旧项目启用。原自有生产流程继续自身归属。"
     }
   ],
   "effects": [
@@ -132,7 +137,8 @@
     "callbacks.knownEffects列明已核内存统计和原外部统计条件/字段；下游未审仍blocked，产物成功不升级外部送达证据",
     "Firebase CallbackExecutionReceipt冻结真实before/after、Generated、实际changedPaths、两个本次资源成功日志与所有写失败日志；XML GUID/Unity版本、create-only文件保持及meta标签边界合法。Generated已true跳过时保持文件，不重置或重放；普通Log失败和旧合法文件不能证明本次生成。已审Report(string,string)无网络发送。VersionHandler日志固定Console/空文件名/无外部委托，并冻结target和level；日志闭包漂移阻断。内部恢复Payload使用有界gzip/版本/原文长度/SHA-256完整封装，保持公共OperationStore上限，兼容旧明文Receipt；解码损坏或超限阻断，不截断来源或回调证据。",
     "Android scene typed before/after binds full graph/state/artifacts/tools/scheduler/logging/settings; first scene requires actual ordered starting/checking/skipped/succeeded and cursor growth, later scenes require no resolution event and normal cursor growth. Verify is read-only without ReadAll/Resolve. Logger observation records fixed tokens only, retains real duplicates, removes only its owned observer and rejects delegate/instance drift.",
-    "本次 Android 场景回调有序日志/计数或精确完整 SBP 缓存 trace 与报告证据；同域自然 Editor update 的 Version Handler 前后观察，超时/未知调度/旧 Receipt 保持 partial，不推进或清空官方队列。"
+    "本次 Android 场景回调有序日志/计数或精确完整 SBP 缓存 trace 与报告证据；同域自然 Editor update 的 Version Handler 前后观察，超时/未知调度/旧 Receipt 保持 partial，不推进或清空官方队列。",
+    "可选图集只在项目主动选择时作为前置，分别核实际生成与Bundle产物及真实子图加载；没有选择时旧Bundle入口/Batch不运行新工具，不将文档接线当旧项目已验收。"
   ],
   "externalCompletionPolicy": "incidental-build-telemetry"
 }

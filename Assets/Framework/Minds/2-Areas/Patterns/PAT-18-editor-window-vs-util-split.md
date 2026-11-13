@@ -37,8 +37,8 @@ related:
 
 | 归属 | 职责 |
 |---|---|
-| **EditorWindow**（`Assets/Framework/Scripts/Editor/Windows/`） | 仅 UI 交互：绘制、按钮、状态切换、焦点管理、弹框调用 |
-| **EditorUtil**（`Assets/Framework/Scripts/Editor/EditorUtil/`） | 文件读写、反射扫描、数据校验、导入导出、数据转换、ScriptableObject 创建、Asset 查询、类型发现 |
+| **EditorWindow**（[Scripts/Editor/Windows/](../../../Scripts/Editor/Windows)） | 仅 UI 交互：绘制、按钮、状态切换、焦点管理、弹框调用 |
+| **EditorUtil**（[Scripts/Editor/EditorUtil/](../../../Scripts/Editor/EditorUtil)） | 文件读写、反射扫描、数据校验、导入导出、数据转换、ScriptableObject 创建、Asset 查询、类型发现 |
 
 ### 命名规约
 

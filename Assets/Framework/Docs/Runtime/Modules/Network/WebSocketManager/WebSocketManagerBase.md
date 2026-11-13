@@ -11,7 +11,7 @@ WebSocket 管理器抽象基类，继承 `FrameworkManager` 并实现 `IWebSocke
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketManagerBase.cs` | WebSocket 管理器抽象基类定义 |
+| [WebSocketManagerBase.cs](../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/Implements/WebSocketManagerBase.cs) | WebSocket 管理器抽象基类定义 |
 
 ## 继承关系
 

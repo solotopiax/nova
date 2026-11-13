@@ -51,7 +51,7 @@ related: []
 
 ## 验证依据（Verification）
 
-- 文件：`Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetResponse.cs`（Fail 3 参重载）、`NetService.cs`（失败分支解析 BusinessData）
+- 文件：[Scripts/Runtime/Modules/Network/Kit/NetResponse.cs](../../../Scripts/Runtime/Modules/Network/Kit/NetResponse.cs)（Fail 3 参重载）、[NetService.cs](../../../Scripts/Runtime/Modules/Network/Kit/NetService.cs)（失败分支解析 BusinessData）
 - 运行时反射验证：构造 `PbNetBindResp(existing_uid=99)` 序列化 → 模拟失败分支 `parser.ParseFrom` → `Fail(10402, msg, data)` → 结果 `IsSuccess=False / ErrorCode=10402 / Data.ExistingUid=99`
 
 ## 来源（Origin）

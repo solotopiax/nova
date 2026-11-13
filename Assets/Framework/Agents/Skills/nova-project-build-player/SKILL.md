@@ -5,11 +5,11 @@ description: Use when Nova 项目组需要按明确平台、场景、模式与�
 
 # Nova 构建本地 Player
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-再读取 `references/contract.json`、`Docs/Onboarding/VALIDATION.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md`。发现适合当前任务的已有 Pipify Batch 时读取 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`；仅在当前项目启用 HybridCLR 或目标为 Android 时读取对应 ABI、输出与签名段落。用户要求完整三平台、Player 运行或独立进程存档验收时，按需读取 [三平台验收参考](references/platform-validation.md) 的共同准备与所需平台段落；普通单次构建不加载全部验收链。
+再读取 [references/contract.json](references/contract.json)、[Docs/Onboarding/VALIDATION.md](../../../Docs/Onboarding/VALIDATION.md) 与 [Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md](../../../Docs/Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md)。发现适合当前任务的已有 Pipify Batch 时读取 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md)；仅在当前项目启用 HybridCLR 或目标为 Android 时读取对应 ABI、输出与签名段落。用户要求完整三平台、Player 运行或独立进程存档验收时，按需读取 [三平台验收参考](references/platform-validation.md) 的共同准备与所需平台段落；普通单次构建不加载全部验收链。
 
 该 Operation 默认生成本地 Player 安装包或平台工程与 BuildReport。用户明确要求运行验收时，再读取 [平台 CLI](references/platform-cli.md) 的相应分支，复用实际宿主工具或本 Skill 的 WebGL 脚本；不部署 CDN、不上传商店，不执行 Git 或 UPM 发布，也不以“打包”为由自动运行无关导出。
 
@@ -55,7 +55,7 @@ TMP 与 Facebook 仅按独立已审分支进入构建：已有字体合法加载
 
 直接 Player Action 在写入前拒绝 HybridCLR AOT 重建目录与冻结输入、正规 Bee 裁剪源或本次 Player 产物重叠；构建后仅接受与本次 `ManagedStripped` 逐名及 SHA 一致的非空平铺 DLL 集，额外文件、子目录和缺失回执摘要均不通过。`Unity.ProjectAuditor.Editor.Build.LastBuildReportProvider` 已接入独立报告基线和官方延迟复制等待：最多等待十秒，保持主线程且不阻塞 Editor update，不执行或移除官方回调；完成后核对本轮 BuildReport GUID、源和复制目标完整摘要。原报告备份只保存在 Plan 明确展示的本地恢复目录，正常完成或准确恢复后清理。超时、复制持续失败或归属不明时返回 `partial` 并保留恢复材料，不假称恢复；Verify 只读检查，不重放构建或自动覆盖报告。该回调局部合同不解除其他尚未审完的 Player 门，不能通过普通 Build API、任意代码或未审 Batch 绕过它们。
 
-WebGL 本机验收复用随包 `scripts/serve_webgl.py`：`inspect --build-root` 返回目录 `contentHash`，`serve --build-root --expected-sha256 --port` 绑定同一摘要，仅监听 `127.0.0.1`；实际线程构建才启用 `--cross-origin-isolation`。冻结完整导出文件，正确处理 gzip/Brotli 与 Wasm MIME；端口占用、路径越界或文件漂移直接失败，不接管服务、不改产物。Android/iOS 的安装、签名及运行按平台 CLI 分层处理，本地构建请求不自动触发设备写入。
+WebGL 本机验收复用随包 [scripts/serve_webgl.py](scripts/serve_webgl.py)：`inspect --build-root` 返回目录 `contentHash`，`serve --build-root --expected-sha256 --port` 绑定同一摘要，仅监听 `127.0.0.1`；实际线程构建才启用 `--cross-origin-isolation`。冻结完整导出文件，正确处理 gzip/Brotli 与 Wasm MIME；端口占用、路径越界或文件漂移直接失败，不接管服务、不改产物。Android/iOS 的安装、签名及运行按平台 CLI 分层处理，本地构建请求不自动触发设备写入。
 
 Artifact 是 `BuildReport.summary.outputPath` 指向的本地 APK、AAB、Xcode/Android 工程或 WebGL 目录，以及对应 BuildReport。只有 BuildResult 为 `Succeeded`、输出存在并对应冻结的 Target、Scene、模式和路径时才返回 `success`；代码编译、旧包存在或 Bundle 成功都不能代替 Player 构建证据。
 

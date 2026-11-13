@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.simplediskutils",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "1.0.2",
   "displayName": "Simple Disk Utils",
@@ -14,5 +14,8 @@
   ],
   "author": {
     "name": "Solotopia"
+  },
+  "nova": {
+    "releaseTime": "2026-11-13T07:06:01Z"
   }
 }

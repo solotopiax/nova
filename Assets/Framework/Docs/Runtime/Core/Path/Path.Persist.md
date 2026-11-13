@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Path.Persist.cs` | 持久化存储路径相关静态类 |
+| [Path.Persist.cs](../../../../Scripts/Runtime/Core/Path/Path.Persist.cs) | 持久化存储路径相关静态类 |
 
 ## 关键字段
 

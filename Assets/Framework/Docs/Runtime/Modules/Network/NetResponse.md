@@ -4,7 +4,7 @@
 
 `NetResponse<T>` 是业务层网络请求结果的泛型包装，业务侧通过 `IsSuccess` / `ErrorCode` / `Data` 三字段读取请求结果，无需感知底层 HTTP 或加解密过程。
 
-**所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetResponse.cs`
+**所在文件：** [Scripts/Runtime/Modules/Network/Kit/NetResponse.cs](../../../../Scripts/Runtime/Modules/Network/Kit/NetResponse.cs)
 **命名空间：** `NovaFramework.Runtime`
 **类签名：** `public sealed class NetResponse<T> where T : IMessage<T>`
 

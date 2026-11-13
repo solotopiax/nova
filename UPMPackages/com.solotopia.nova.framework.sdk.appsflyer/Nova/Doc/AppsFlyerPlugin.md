@@ -122,7 +122,7 @@ AttributionData result = await attribution.GetAttributionAsync(cts.Token);
 
 示例参数表把值保存为字符串，界面预览不证明原厂最终 payload；清空表单只清本页字典，不清历史事件或插件归因缓存。登录沿用 GameLogin 对 SDK 的通知，页面不重复广播；本页没有关闭取消令牌或点击互斥，关页不会撤销登录、ID 等待或已经派发的操作。读取到空字典也不能当作真实平台已返回有效归因。
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”。
 
 ## 相关
 

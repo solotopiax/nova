@@ -46,4 +46,4 @@ public UniTask LogoutAsync(CancellationToken ct = default);
 
 页面使用不随 UIView 关闭取消的认证等待；`OnClose` 仅清本页缓存与显示，已启动的异步调用仍可能继续更新旧页面。拿到 Plugin 引用也不证明目标平台受支持或已认证，真实 Apple 登录、游戏服校验和账号绑定须分别判断。
 
-导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 `Docs/Onboarding/PROJECT_STRUCTURE.md` 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。
+导入路径重写、旧版本目录清理、Sample 基类与启动流程的共同边界，见已安装 Framework 的 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Onboarding/PROJECT_STRUCTURE.md`） 中“Sample 的导入、辅助工具与页面边界”；本页只补充当前示例的差异。

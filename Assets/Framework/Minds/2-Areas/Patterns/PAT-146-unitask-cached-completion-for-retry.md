@@ -119,6 +119,6 @@ token/version 异常，导致真正的网络失败被新的异步生命周期错
 ## 关联
 
 - 相关 ADR：[[ADR-022-sdk-plugin-architecture|ADR-022]]
-- 当前实现：`Assets/Framework/Scripts/Runtime/Modules/SDK/SDKComponent.Methods.cs`
+- 当前实现：[Scripts/Runtime/Modules/SDK/SDKComponent.Methods.cs](../../../Scripts/Runtime/Modules/SDK/SDKComponent.Methods.cs)
 - 回归测试：`Assets/Tests/Editor/SDKComponentInitializeTaskTests.cs`
-- 当前文档：`Assets/Framework/Docs/Runtime/Modules/SDK/SDKComponent.md`
+- 当前文档：[Docs/Runtime/Modules/SDK/SDKComponent.md](../../../Docs/Runtime/Modules/SDK/SDKComponent.md)

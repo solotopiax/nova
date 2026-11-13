@@ -55,5 +55,5 @@ tags: [nova, publish, docs]
 
 ## 关联
 
-- [[PAT-115|PAT-115]]
-- [[PAT-53|PAT-53]]
+- [PAT-115](PAT-115-changelog-human-readable.md)
+- [PAT-53](PAT-53-changelog-grep-script-enforce.md)

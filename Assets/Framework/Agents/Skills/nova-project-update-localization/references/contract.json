@@ -101,6 +101,11 @@
       "kind": "unity-editor-automation",
       "entry": "Unity compilation and existing business localization entry Play requested-language-set text/font readback",
       "when": "执行已保存业务入口完成Load/InitCurrentLanguage后逐一验证完整冻结请求语言集合，核实际TMP文字/方向/字体与布局；请求三种必须三种全部通过、单语言只验该项；GetText静态预览或部分语言截图不计完整成功"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>",
+      "when": "仅source-template-copy分支，mode=copy与localization-text/localization-font官方来源；完整工作簿逐字节复制，保留样式/多Sheet/合并；不填业务值、不导出、不启动Unity"
     }
   ],
   "inputs": [
@@ -143,6 +148,11 @@
       "name": "activeConfigMasterAndGeneratedNamespace",
       "required": false,
       "description": "text/font 全部 scope 均按当前 Action 必需：由 Agent 读取 ProjectSettings/Nova/Globals.json 的 configMasterGuid/configMasterPathHint 与实际可加载 ConfigMasterSO 的 GUID/资产路径及原文件摘要，冻结顶层 Namespace；all/code 纯导出 profile 另验预期生成类型全名，不读取 ConfigRuntime.Namespace 或维度解析值。未绑定、身份/源字节/值漂移时 blocked；已绑定 Master 明确空值允许 global namespace。languages/data 只发布语言数据和临时配置，不要求 Master，也不证明代码 Namespace 或运行时加载；不要求 Collector、账号或端点。"
+    },
+    {
+      "name": "officialTemplateCopySourceAndTarget",
+      "required": false,
+      "description": "仅source-template-copy必需：mode=copy、localization-text/localization-font中实际来源、目标Assets内xlsx及原SHA/新建null、真实sourceRoots/generatedRoots；模板SHA由Plan冻结，禁止rows/sheetName/title。"
     }
   ],
   "effects": [
@@ -158,7 +168,8 @@
       "confirmed localization generated text, font, type and supported-language output",
       "confirmed project-owned localization-texts xlsx append-only Key/Language cells through the same source CLI; no column shifting or other ZIP member changes",
       "current Localization Action Plan explicitly frozen formal outputs/deletions, regenerated _configs and output-manifest where applicable, temporary workspace and listed file/directory .meta; no handwritten generated output or expansion beyond live writeSet",
-      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON"
+      "project-local Library/Nova/AgentActions/TableSource/ request, registry snapshot, plan, receipt and owned backup JSON",
+      "source-template-copy: exact confirmed project-owned Assets/**/*.xlsx target plus TableSource plan/receipt; source template is read-only"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -174,7 +185,8 @@
     "localization-source",
     "localization-output",
     "selected-prefab",
-    "project-local Library/Nova/AgentActions/TableSource/write-lock.json"
+    "project-local Library/Nova/AgentActions/TableSource/write-lock.json",
+    "table-source-shared-write-lock"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -184,7 +196,7 @@
       "replace non-generated asset or change a TextLocalizing binding",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定实际源范围、已有UI绑定、正式导出范围与完整验证语言；Key/语言追加冻结全部最终译文/物理写集，复用既有CLI计划；已有同范围明确授权不重复询问，实际范围/包语言声明漂移重新冻结。 完整更新的全链输入适用于业务/绑定更新；export-code-data 仅冻结 profile.requiredInputs、当前导出 Action PlanId 与完整 writeSet，target 仅 text/font 且 scope 仅 all/code；危险副作用原确认门全部继承，源/身份/值或范围漂移重新Plan。"
+    "rule": "确认绑定实际源范围、已有UI绑定、正式导出范围与完整验证语言；Key/语言追加冻结全部最终译文/物理写集，复用既有CLI计划；已有同范围明确授权不重复询问，实际范围/包语言声明漂移重新冻结。 完整更新的全链输入适用于业务/绑定更新；export-code-data 仅冻结 profile.requiredInputs、当前导出 Action PlanId 与完整 writeSet，target 仅 text/font 且 scope 仅 all/code；危险副作用原确认门全部继承，源/身份/值或范围漂移重新Plan。 source-template-copy只确认冻结的官方来源与模板SHA、目标原SHA和精确写集，不要求完整业务输入；已有替换授权持续有效，原危险副作用门不变。"
   },
   "minimumEvidence": "play",
   "resultStates": [
@@ -202,7 +214,8 @@
     "新来源契约Receipt完整输入/配置/正式产物及删除范围与SHA验收，code包含本次编译token和实际载入类型身份；只读Verify不重放，来源/配置/证据缺失或漂移不能success",
     "旧Receipt原checksum success及边界Warnings只证明历史产物摘要，不视为新输入冻结/配置Namespace/本次compile/type完整验收，也不替代global Play",
     "export-code-data profile仅text/font all/code的compile+artifact及清场；完整更新仍逐一验证请求语言Play与必要字体，不借profile降低data/languages或业务验收",
-    "Localization新Receipt sourceContractVersion=1 明确版本/完整字段，显式null或损坏新字段不降为旧；text/font全部scope冻结持久配置Namespace，languages/data只数据+临时配置；仅代码范围需compilationToken和实际类型"
+    "Localization新Receipt sourceContractVersion=1 明确版本/完整字段，显式null或损坏新字段不降为旧；text/font全部scope冻结持久配置Namespace，languages/data只数据+临时配置；仅代码范围需compilationToken和实际类型",
+    "source-template-copy: inspect/plan/execute/verify绑定实际模板与目标SHA，目标整文件与冻结模板字节一致；该分支仅物料准备，业务修改/导出/运行各自验收。"
   ],
   "taskProfiles": [
     {
@@ -230,6 +243,30 @@
         "workspace-write",
         "unity-write",
         "generated-output"
+      ]
+    },
+    {
+      "id": "source-template-copy",
+      "description": "只原样复制所属领域官方模板作为建表物料，保留全部样式/Sheet/合并；不修改示例值、不宣称业务数据、导出或运行已完成。",
+      "taskIds": [
+        "localization.source.create"
+      ],
+      "requiredInputs": [
+        "projectRoot",
+        "officialTemplateCopySourceAndTarget"
+      ],
+      "actionAdapters": [
+        {
+          "kind": "cli",
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_excel_template.py\" --project-root <projectRoot> inspect|plan|execute|verify <documented arguments>"
+        }
+      ],
+      "minimumEvidence": "static",
+      "additionalEvidence": [
+        "artifact"
+      ],
+      "effects": [
+        "workspace-write"
       ]
     }
   ]

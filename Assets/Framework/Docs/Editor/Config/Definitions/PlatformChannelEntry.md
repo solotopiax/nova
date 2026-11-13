@@ -11,7 +11,7 @@ Platform × Channel 矩阵的一行；App、Privacy、SDK 与 Kit 配置均按 D
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Config/Definitions/PlatformChannelEntry.cs` | `PlatformChannelEntry` | 同文件另定义 `DevelopModeAppConfigsEntry`、`DevelopModePrivacyConfigsEntry`、`DevelopModeSDKEntry`、`DevelopModeKitEntry`；它们不是 `PlatformChannelEntry` 的嵌套类型 |
+| [Editor/Config/Definitions/PlatformChannelEntry.cs](../../../../Scripts/Editor/Config/Definitions/PlatformChannelEntry.cs) | `PlatformChannelEntry` | 同文件另定义 `DevelopModeAppConfigsEntry`、`DevelopModePrivacyConfigsEntry`、`DevelopModeSDKEntry`、`DevelopModeKitEntry`；它们不是 `PlatformChannelEntry` 的嵌套类型 |
 
 ---
 

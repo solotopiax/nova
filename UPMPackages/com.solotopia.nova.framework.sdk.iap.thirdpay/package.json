@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.iap.thirdpay",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - IAP - ThirdPay",
@@ -27,6 +27,6 @@
     "com.unity.purchasing": "5.4.4"
   },
   "nova": {
-    "releaseTime": "2026-11-11T03:13:06Z"
+    "releaseTime": "2026-11-13T07:12:30Z"
   }
 }

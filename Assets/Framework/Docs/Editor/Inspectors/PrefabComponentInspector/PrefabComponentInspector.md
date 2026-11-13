@@ -12,9 +12,9 @@
 
 | 文件 | 说明 |
 |------|------|
-| `PrefabComponentInspector.cs` | 主 Inspector：OnEnable 绑定属性 + OnInspectorGUI 调用 DrawConfigs + RequiresConstantRepaint |
-| `PrefabComponentInspector.Visitors.cs` | 属性与字段声明 |
-| `PrefabComponentInspector.Methods.cs` | DrawConfigs 私有方法 |
+| [PrefabComponentInspector.cs](../../../../Scripts/Editor/Inspectors/PrefabComponentInspector/PrefabComponentInspector.cs) | 主 Inspector：OnEnable 绑定属性 + OnInspectorGUI 调用 DrawConfigs + RequiresConstantRepaint |
+| [PrefabComponentInspector.Visitors.cs](../../../../Scripts/Editor/Inspectors/PrefabComponentInspector/PrefabComponentInspector.Visitors.cs) | 属性与字段声明 |
+| [PrefabComponentInspector.Methods.cs](../../../../Scripts/Editor/Inspectors/PrefabComponentInspector/PrefabComponentInspector.Methods.cs) | DrawConfigs 私有方法 |
 
 ---
 

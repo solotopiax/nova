@@ -25,12 +25,12 @@
 
 | 路径 | 职责 |
 |---|---|
-| `Nova/Scripts/Runtime/Data` | 公开只读模型、内部钱包数据和交易存档 DTO |
-| `Nova/Scripts/Runtime/Services/Net` | protobuf 请求发送与领域映射 |
-| `Nova/Scripts/Runtime/Services/Quote` | 无网络和持久化依赖的纯报价算法 |
-| `Nova/Scripts/Runtime/Services/Transaction` | 稳定订单、journal、恢复和终态派发 |
-| `Nova/Scripts/Runtime/Services/Wallet` | 账号 generation、取消令牌和钱包发布 |
-| `Nova/Scripts/Runtime/Protos` | 由 protoc 生成的内部协议类型 |
+| [Nova/Scripts/Runtime/Data](../Scripts/Runtime/Data/) | 公开只读模型、内部钱包数据和交易存档 DTO |
+| [Nova/Scripts/Runtime/Services/Net](../Scripts/Runtime/Services/Net/) | protobuf 请求发送与领域映射 |
+| [Nova/Scripts/Runtime/Services/Quote](../Scripts/Runtime/Services/Quote/) | 无网络和持久化依赖的纯报价算法 |
+| [Nova/Scripts/Runtime/Services/Transaction](../Scripts/Runtime/Services/Transaction/) | 稳定订单、journal、恢复和终态派发 |
+| [Nova/Scripts/Runtime/Services/Wallet](../Scripts/Runtime/Services/Wallet/) | 账号 generation、取消令牌和钱包发布 |
+| [Nova/Scripts/Runtime/Protos](../Scripts/Runtime/Protos/) | 由 protoc 生成的内部协议类型 |
 
 `NovaFramework.SDK.IAP.Voucher.Runtime` 只依赖 `NovaFramework.Runtime`、`NovaFramework.SDK.IAP.Runtime` 和 `UniTask`。包不声明友元程序集；Editor 测试仅通过 public API 和反射验证程序集导出边界，不直接访问内部实现。
 

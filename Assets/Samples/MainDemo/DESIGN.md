@@ -15,7 +15,7 @@
 
 ## § 1 BaseDemoView 当前基类契约
 
-> `BaseDemoView : UIView` 是可实例化的 partial 基类，位于 `Scripts/Runtime/UIs/BaseDemoView/`，另有 `.Definitions.cs` 声明反馈级别。
+> `BaseDemoView : UIView` 是可实例化的 partial 基类，位于 [Scripts/Runtime/UIs/BaseDemoView/](Scripts/Runtime/UIs/BaseDemoView/)，另有 `.Definitions.cs` 声明反馈级别。
 
 ### Visitors（字段表）
 
@@ -376,7 +376,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 ## § 4 历史资源候选清单
 
 > 来源 `Solar/Game/Textures/PicsForAtlas/ExampleBookAtlas/`（51 张）+ `Solar/Game/Sounds/`。
-> 仅引用规范化后的 final 名，按 PAT-72 第 7 步 7c/d 落盘到 `Assets/Samples/MainDemo/Sprites/DemoAtlas/` + `Assets/Samples/MainDemo/Sounds/`。
+> 仅引用规范化后的 final 名，按 PAT-72 第 7 步 7c/d 落盘到 `Assets/Samples/MainDemo/Sprites/DemoAtlas/` + [Assets/Samples/MainDemo/Sounds/](Sounds/)。
 
 ### 图片（11 张，最小集）
 
@@ -410,7 +410,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 | Prefab | 路径 | 用途 |
 |---|---|---|
-| `BaseDemoView.prefab` | `Prefabs/UIs/BaseDemoView/` | 三段式骨架基板 |
+| `BaseDemoView.prefab` | [Prefabs/UIs/BaseDemoView/](Prefabs/UIs/BaseDemoView/) | 三段式骨架基板 |
 | `DemoPrefabBlock.prefab` | `Prefabs/DemoPrefabView/` | DemoPrefab 实例化目标（UI 绿块 + 自旋，私有依赖） |
 | `DemoToastView.prefab` | `Prefabs/DemoToastView/` | DemoUI 子页面 + Localization 演示 |
 | `DemoDialogView.prefab` | `Prefabs/DemoDialogView/` | DemoUI 子页面（带按钮） |
@@ -445,7 +445,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 追加 sheet `Demo_VibrateCustom`：列 Name / Intensity / Sharpness / PreDuration / Duration，2 行（Demo_Light / Demo_Heavy）。
 - 追加 sheet `Demo_VibrateEmphasis`：列 Name / Amplitude / Frequency / PreDuration / Interval，2 行（Demo_Tap / Demo_Knock）。
 
-### UI 模块（`Excels/UIs/UIs.xlsx`）
+### UI 模块（[Excels/UIs/UIs.xlsx](Excels/UIs/UIs.xlsx)）
 - 追加 34 行 Demo*View 注册（详见 § 6）。
 
 ### Network / Config / Procedure 模块
@@ -455,7 +455,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 ## § 6 UI 注册表设计清单（地址已按当前采集规则校正）
 
-> 当前 `Editor/BundleCollectorSetting.asset` 使用 `AddressByFileName`，实际地址不带 `UIs/` 前缀。表源与 JSON 仍须正式导出并核对；本清单不是导出物。列：Name / Desc / AssetLocation / UIGroupName / PauseCoveredUIView。
+> 当前 [Editor/BundleCollectorSetting.asset](Editor/BundleCollectorSetting.asset) 使用 `AddressByFileName`，实际地址不带 `UIs/` 前缀。表源与 JSON 仍须正式导出并核对；本清单不是导出物。列：Name / Desc / AssetLocation / UIGroupName / PauseCoveredUIView。
 
 | Name（=类名 +.View） | Desc | AssetLocation | UIGroup | Pause |
 |---|---|---|---|---|
@@ -507,10 +507,10 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 ### D 路（基板，先行 1 阶段）
 - **负责**：BaseDemoView 三件套 + DemoToastView/DemoDialogView 辅助 view
 - **文件**：
-  - `Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs`
-  - `Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Visitors.cs`
-  - `Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Methods.cs`
-  - `Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Definitions.cs`
+  - [Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs](Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.cs)
+  - [Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Visitors.cs](Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Visitors.cs)
+  - [Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Methods.cs](Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Methods.cs)
+  - [Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Definitions.cs](Scripts/Runtime/UIs/BaseDemoView/BaseDemoView.Definitions.cs)
   - `Scripts/Runtime/DemoToastView/DemoToastView.cs`
   - `Scripts/Runtime/DemoDialogView/DemoDialogView.cs`
 - **阻塞**：无（最先起跑）

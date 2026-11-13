@@ -9,7 +9,7 @@ HTTP 管理器初始化配置。由 NetworkComponent 将 Inspector 中的 UWR �
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| Managers/HttpManager/Definitions/HttpManagerConfig.cs | HttpManagerConfig | HTTP 初始化数据类 |
+| [Managers/HttpManager/Definitions/HttpManagerConfig.cs](../../../../../../Scripts/Runtime/Modules/Network/Managers/HttpManager/Definitions/HttpManagerConfig.cs) | HttpManagerConfig | HTTP 初始化数据类 |
 
 ## 公开 API
 

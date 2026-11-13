@@ -31,6 +31,6 @@
 
 保留 PSD/PSB、编辑 `.asset` 及 `.meta`、正式输出和生成记录。清理仅针对当前 Action 支持且已计划的精确范围；未开放清理时不手工删除这些持久身份材料。验证临时资产和本轮辅助窗口按共同入口收尾。
 
-遇到示例的 `Authoring~` 时，先读取该示例 README 并检查插件是否安装：其中可能是缺插件时自动收起的编辑数据，不是垃圾或旧备份。保留文件和 `.meta`，不要强行复制出第二套同 GUID 资产。该保护不等于任意项目资源都能安全卸载；移除插件前保存并关闭编辑树，并按包管理流程核对实际消费者。生成的 uGUI 与插件编辑树分别检查依赖，不能因为产物可用就删除来源记录。示例目录和公开分发边界见 `Docs/Onboarding/PROJECT_STRUCTURE.md` 的 Sample 小节。
+遇到示例的 `Authoring~` 时，先读取该示例 README 并检查插件是否安装：其中可能是缺插件时自动收起的编辑数据，不是垃圾或旧备份。保留文件和 `.meta`，不要强行复制出第二套同 GUID 资产。该保护不等于任意项目资源都能安全卸载；移除插件前保存并关闭编辑树，并按包管理流程核对实际消费者。生成的 uGUI 与插件编辑树分别检查依赖，不能因为产物可用就删除来源记录。示例目录和公开分发边界见 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../../../Docs/Onboarding/PROJECT_STRUCTURE.md) 的 Sample 小节。
 
-消费工程导入 MainDemo 后，核对编辑树源路径、`Psd2UIFormConfig` 的复用目录和 `.ui.asset` 的输出记录都已指向本次实际 Sample 目录；不能只检查 Prefab 的 PSD 对象引用。缺插件时路径清单仍需处理 `Authoring~` 中的数据，恢复后保持 GUID 不变。工程级图片、UIForm 与 AI Prompt 目录另由当前设置决定，保留用户自定义路径；可写产物始终留在 `Assets/`，不把 Sample 路径统一改成 `Packages/`。多个配置共存时以本次源/编辑树邻近配置或明确的 `configAssetPath` 为准，空查询、当前选择和正在编辑的目标不能混为一谈。
+消费工程导入 MainDemo 后，核对编辑树源路径、`Psd2UIFormConfig` 的复用目录和 `.ui.asset` 的输出记录都已指向本次实际 Sample 目录；不能只检查 Prefab 的 PSD 对象引用。缺插件时路径清单仍需处理 `Authoring~` 中的数据，恢复后保持 GUID 不变。工程级图片、UIForm 与 AI Prompt 目录另由当前设置决定，保留用户自定义路径；可写产物始终留在 [Assets/（项目位置）](../../../../Docs/Onboarding/PROJECT_STRUCTURE.md)，不把 Sample 路径统一改成 [Packages/（包定位）](../../../../Docs/START_HERE.md#先确定框架位置与文档入口)。多个配置共存时以本次源/编辑树邻近配置或明确的 `configAssetPath` 为准，空查询、当前选择和正在编辑的目标不能混为一谈。

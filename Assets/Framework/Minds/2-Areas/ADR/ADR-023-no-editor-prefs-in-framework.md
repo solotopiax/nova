@@ -54,7 +54,7 @@ PipifyWindow 此前用 `EditorPrefs` 持久化绑定 GUID，导致新用户空�
 
 ### 适用场景（When）
 
-- 在 `Assets/Framework/Scripts/` 下编写任何 Editor 工具（EditorWindow / Inspector / 导出器 / 自定义抽屉）。
+- 在 [Scripts/](../../../Scripts) 下编写任何 Editor 工具（EditorWindow / Inspector / 导出器 / 自定义抽屉）。
 - 工具需要"上次选中 / 上次绑定 / 上次打开 / 折叠态记忆 / 滚动位置"等跨会话恢复的状态。
 - 框架以 UPM 包形式分发到不同项目，新用户首次安装、换机器、换项目都属覆盖范围。
 

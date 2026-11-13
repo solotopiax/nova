@@ -5,13 +5,13 @@ description: Use when Nova 消费项目出现编译失败、Play 被门禁、启
 
 # Nova 启动故障诊断
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-WebGL 浏览器已导出页面启动失败时，先读取[浏览器启动阶段](references/webgl-startup.md)，以当前已打开页面的 loader/Wasm/data 证据判断是否已进入 Unity 和 Nova；其余分支再读取 `references/contract.json`、`Docs/Onboarding/VALIDATION.md`。仅在证据指向对应阶段时继续读取 `Docs/Runtime/Modules/Procedure/ProcedureComponent.md`、`Docs/Runtime/Modules/Config/ConfigComponent.md` 或 `Docs/Runtime/Modules/Asset/AssetComponent.md`，不预加载无关模块。
+WebGL 浏览器已导出页面启动失败时，先读取[浏览器启动阶段](references/webgl-startup.md)，以当前已打开页面的 loader/Wasm/data 证据判断是否已进入 Unity 和 Nova；其余分支再读取 [references/contract.json](references/contract.json)、[Docs/Onboarding/VALIDATION.md](../../../Docs/Onboarding/VALIDATION.md)。仅在证据指向对应阶段时继续读取 [Docs/Runtime/Modules/Procedure/ProcedureComponent.md](../../../Docs/Runtime/Modules/Procedure/ProcedureComponent.md)、[Docs/Runtime/Modules/Config/ConfigComponent.md](../../../Docs/Runtime/Modules/Config/ConfigComponent.md) 或 [Docs/Runtime/Modules/Asset/AssetComponent.md](../../../Docs/Runtime/Modules/Asset/AssetComponent.md)，不预加载无关模块。
 
-该 Operation 只读诊断，不修改源码、配置、Scene、Prefab、Build Settings 或生成物，不安装或升级包，也不通过删除 `Library/`、缓存或输出目录尝试修复。
+该 Operation 只读诊断，不修改源码、配置、Scene、Prefab、Build Settings 或生成物，不安装或升级包，也不通过删除 [Library/（项目本地位置）](../../../Docs/START_HERE.md#执行任务与清场的共同约束)、缓存或输出目录尝试修复。
 
 ## Input
 
@@ -20,7 +20,7 @@ WebGL 浏览器已导出页面启动失败时，先读取[浏览器启动阶段]
 ## 已有 Action Adapter
 
 1. 使用已解析宿主的 Python 3.9+ 运行 `nova_skills.py resolve` 确认项目实际解析到的 Framework 包与 Docs：macOS/Linux 使用 `python3`，Windows 使用 `py -3`。
-2. 先按 `Docs/Onboarding/VALIDATION.md` 的窗口处理与恢复顺序，只读检查工程/版本/进程、原生窗口、编译和导入进度；首次超时先查阻塞窗口，不连续重试或重启。MCP 无响应时用当前宿主可用的原生 UI 只读观察，不用同一阻塞通道证明没有弹窗。此 Operation 不点击、不关闭窗口；已有开发授权的窗口处理在诊断之外按共同约束执行，处理后继续诊断，不重新索取同范围授权。再检查已有编译结果、Console / Editor.log、当前入口 Scene、实际组件与配置绑定，定位直接错误。使用当前宿主已提供的只读场景和日志工具，不用任意 C#、代码字符串或反射补入口；缺少当前结构证据时保留对应 `partial`，继续已有日志诊断。推荐做法的偏离本身不是启动失败根因。
+2. 先按 [Docs/Onboarding/VALIDATION.md](../../../Docs/Onboarding/VALIDATION.md) 的窗口处理与恢复顺序，只读检查工程/版本/进程、原生窗口、编译和导入进度；首次超时先查阻塞窗口，不连续重试或重启。MCP 无响应时用当前宿主可用的原生 UI 只读观察，不用同一阻塞通道证明没有弹窗。此 Operation 不点击、不关闭窗口；已有开发授权的窗口处理在诊断之外按共同约束执行，处理后继续诊断，不重新索取同范围授权。再检查已有编译结果、Console / Editor.log、当前入口 Scene、实际组件与配置绑定，定位直接错误。使用当前宿主已提供的只读场景和日志工具，不用任意 C#、代码字符串或反射补入口；缺少当前结构证据时保留对应 `partial`，继续已有日志诊断。推荐做法的偏离本身不是启动失败根因。
 3. WebGL 浏览器先按已有页面/loader → Wasm/data → Unity 实例 → Nova 分层，只读当前宿主实际可用的 Console/Network/页面信息；其它 Editor 分支按“编译 → Play 门禁 → Nova/Manager Awake → Procedure → Config → Asset/热更 → 网络或外部服务”定位最早出现直接失败证据的阶段，并在该阶段停止扩散扫描。
 4. 仅在用户允许且当前 Unity 可用时复现编译或 Play。不得因发现修复点而顺手写入；将修复建议交给匹配的写入 Skill 或用户确认后的后续任务。
 

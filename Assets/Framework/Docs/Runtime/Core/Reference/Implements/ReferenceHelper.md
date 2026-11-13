@@ -11,8 +11,8 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Implements/ReferenceHelper.cs` | 引用助手主体 |
-| `Implements/ReferenceHelper.ReferenceCollection.cs` | 内部引用集合容器 |
+| [ReferenceHelper.cs](../../../../../Scripts/Runtime/Core/Reference/ReferenceHelper.cs) | 引用助手主体 |
+| [ReferenceHelper.ReferenceCollection.cs](../../../../../Scripts/Runtime/Core/Reference/ReferenceHelper.ReferenceCollection.cs) | 内部引用集合容器 |
 
 ## 关键字段
 

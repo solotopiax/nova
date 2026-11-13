@@ -1,6 +1,6 @@
 # Util.SQLite
 
-`NovaFramework.Runtime.Util.SQLite` 在 `!UNITY_WEBGL` 编译；同步包装 `SqlCipher4Unity3D.SQLiteConnection`。源码位于 `Runtime/Core/Util/Util.SQLite/`。
+`NovaFramework.Runtime.Util.SQLite` 在 `!UNITY_WEBGL` 编译；同步包装 `SqlCipher4Unity3D.SQLiteConnection`。源码位于 [Runtime/Core/Util/Util.SQLite/](../../../Scripts/Runtime/Core/Util/Util.SQLite/)。
 
 ## 连接与维护
 

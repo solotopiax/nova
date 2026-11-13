@@ -11,7 +11,7 @@ TCP 协议网络消息基类，在 `NetMessageBase` 基础上增加协议 ID（C
 
 | 文件 | 说明 |
 |------|------|
-| `WebSocketScope.NetMessageTcpBase.cs` | TCP 协议消息基类定义 |
+| [WebSocketScope.NetMessageTcpBase.cs](../../../../../../../Scripts/Runtime/Modules/Network/Managers/WebSocketManager/WebSocket/Messages/WebSocketScope.NetMessageTcpBase.cs) | TCP 协议消息基类定义 |
 
 ## 关键字段/属性
 

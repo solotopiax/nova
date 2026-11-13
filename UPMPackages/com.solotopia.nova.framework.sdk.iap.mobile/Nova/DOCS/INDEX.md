@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP - Mobile 文档索引
 
 > 本包是 Nova IAP 的移动端官方内购商店，实现 Google Play 与 iOS App Store 支付链路。
-> 当前事实以 `Nova/Scripts/Runtime/**` 与本目录活跃文档为准。
+> 当前事实以 [Nova/Scripts/Runtime/**](../Scripts/Runtime/) 与本目录活跃文档为准。
 
 ## 业务侧公开 API
 
@@ -73,6 +73,6 @@
 ## 相关
 
 - [接入与验收顺序](./MobileStore.md#接入与验收顺序)
-- [父包文档索引](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/INDEX.md)
-- [父包类规格](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAPPlugin.md)
-- [父包架构](../../../com.solotopia.nova.framework.sdk.iap/Nova/Doc/IAP-Architecture.md)
+- [父包文档索引](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/INDEX.md`）
+- [父包类规格](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/IAPPlugin.md`）
+- [父包架构](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Nova/Doc/IAP-Architecture.md`）

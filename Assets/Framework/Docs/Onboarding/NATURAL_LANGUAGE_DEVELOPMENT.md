@@ -2,11 +2,13 @@
 
 用户只需描述希望游戏发生什么变化，例如“给大厅加设置页”“把这批关卡数据接入”“解释并调整请求超时”。Codex 先读取当前项目事实，复用 Nova 已有 Skill 与执行接口，完成源数据、配置、资源、业务调用和验证链。只有确实需要用户决定的规则、素材、协议或外部账号才补问；不要求用户记忆类型名、菜单路径或导出顺序。
 
+即使用户只提 Unity 或功能名称，也先按 [NA-002：先核对当前能力，再选择接口或提出补充](DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 识别 Nova；明确任务直接选 Operation，首次识别或范围不明进入 [项目任务路由](../../Agents/Skills/nova-project-router/SKILL.md)。通用 Unity Skill 在已选路径内补充引擎操作。
+
 当前能力由 [任务与功能导航](../../Agents/coverage.json)、所属源码/XML、Docs 与 Skill/Action 契约共同给出。自动生成的符号索引只定位身份、位置与文档，不保存第二份人工语义。导航与结构通过不能代表人工已审或运行完成；任务须在本次执行验收。实际计数使用下面的只读命令查询，不另存进度或历史验收摘要。
 
 ## 查询、解释和固定操作
 
-安装包中的 `Agents/Tools/nova_capabilities.py` 提供确定性查询，Python 标准库即可执行，不加载 Unity、不修改业务文件、不执行任意源码；查询缓存仅写项目 Library。开发仓例子：
+安装包中的 [Agents/Tools/nova_capabilities.py](../../Agents/Tools/nova_capabilities.py) 提供确定性查询，Python 标准库即可执行，不加载 Unity、不修改业务文件、不执行任意源码；查询缓存仅写项目 Library。开发仓例子：
 
 ```sh
 python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . inventory --kind tasks --query '配置' --detail summary --limit 5 --json
@@ -16,7 +18,7 @@ python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . describe 
 python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . describe '<精确任务或函数 id>' --detail full --json
 ```
 
-消费项目把脚本路径替换成当前 `PackageInfo.resolvedPath/Agents/Tools/nova_capabilities.py`，`--root` 为消费项目根；需要显式包位置时使用 `--agents-root <resolvedPath>/Agents`。Windows 使用 `py -3 -B`。`inventory` 支持 `functions / fields / files / inputs / entries / features / tasks`，默认25条、最多200条，按 `nextOffset` 分页。默认 `summary`；锁定精确函数或任务 ID 后用 `describe <id> --detail full` 展开。同名和重载存在歧义时返回候选，不猜选。
+消费项目把脚本路径替换成已核实的 [Agents/Tools/nova_capabilities.py](../../Agents/Tools/nova_capabilities.py)，`--root` 为消费项目根；需要显式包位置时，`--agents-root` 指向上文已核实的 [Agents 目录](../../Agents)。Windows 使用 `py -3 -B`。`inventory` 支持 `functions / fields / files / inputs / entries / features / tasks`，默认25条、最多200条，按 `nextOffset` 分页。默认 `summary`；锁定精确函数或任务 ID 后用 `describe <id> --detail full` 展开。同名和重载存在歧义时返回候选，不猜选。
 
 日常函数查询只取命中的索引条目、所属导航和实际来源文件，不加载全库 Docs/知识/源文件。首次使用便携快照时在项目 `Library/Nova/AgentIndex/` 建立 SQLite 派生缓存；后续按键读取。快照变化则重建缓存，缓存可删除，不入 Git。安装包已携带便携索引，查询只需 Python 标准库，无需 .NET。
 
@@ -25,6 +27,8 @@ python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . describe 
 固定的导出、构建、包管理等操作复用已声明的 Action 或已有 CLI/Pipify。Project Action 使用 `nova_project_action` 的 live `describe → plan → execute → verify`；确认与目标绑定，重复调用、domain reload、取消和失败按当前契约处理。开放式页面设计与业务代码仍由 Operation Skill 编排，通过 Unity Editor 修改资产并验证，不能用万能反射入口代替。
 
 ## 每个业务任务的执行闭环
+
+所有 Nova 研发任务先从[共同入口](../START_HERE.md#日常研发的共同入口)读取[最小原则](DEVELOPMENT_CONSTRAINTS.md#日常研发的最小原则)，不依赖研发 Skill 被选中。详细做法按[手册导航](AI_DEVELOPMENT_WORKFLOW.md#按需阅读导航)读取；仅比较方案、梳理复杂变化或阶段依赖时使用[复杂需求梳理](../../Agents/Skills/nova-project-development/SKILL.md)。明确单点操作继续直接执行既有任务。
 
 业务调用、状态与副作用的判断依据见 [开发与 Agent 执行约束](DEVELOPMENT_CONSTRAINTS.md)。以下“公开领域 API”须先符合其中的消费边界；旧示例、可见接口或 Component 返回的 Manager 不单独构成许可，能力缺口只阻断依赖它的分支。
 
@@ -58,6 +62,8 @@ python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . describe 
 每个可执行任务说明输入、默认与实际值、写入范围、失败/恢复语义以及最低成功证据。任务 `validation` 统一为 `verify-at-execution`，保留 `required` 要求并使用 `retention=ephemeral`；结果在当次对话报告，不读取旧验收文件。导出成功不证明运行消费成功，请求或 serialID 创建不证明行为完成，编译不证明 Play/真机/后台成功。必要绑定或产物缺失时必须保留未完成状态。
 
 ## 维护检查与完整验收
+
+以下命令仅用于 Nova 开发仓维护；消费项目按前文从当前 [Agents/Tools/](../../Agents/Tools/) 定位脚本，不照抄开发路径。
 
 ```sh
 python3 -B Assets/Framework/Agents/Tools/nova_capabilities.py --root . index --json

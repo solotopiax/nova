@@ -48,6 +48,6 @@ Nova 项目开始制作 UI，或调整屏幕方向、根画布和安全区布局
 
 ## 来源、影响与验证边界
 
-- 当前事实来自 `UIComponent.cs`、`UIComponent.Visitors.cs` 的根画布配置与安全区门面，以及 `UIView.cs`、`UIView.Methods.cs` 的初始化/复用语义；路径由上述模块文档进入。
+- 当前事实来自 [UIComponent.cs](../../../Scripts/Runtime/Modules/UI/UIComponent.cs)、[UIComponent.Visitors.cs](../../../Scripts/Runtime/Modules/UI/UIComponent.Visitors.cs) 的根画布配置与安全区门面，以及 [UIView.cs](../../../Scripts/Runtime/Modules/UI/Definitions/UIView.cs)、[UIView.Methods.cs](../../../Scripts/Runtime/Modules/UI/Definitions/UIView.Methods.cs) 的初始化/复用语义；路径由上述模块文档进入。
 - 本条约束跨框架根画布与业务内容的职责分配，不改变运行时代码，也不证明某个项目已通过设备适配验收。
 - [[PAT-79-demo-view-portrait-layout|PAT-79]] 保留 BaseDemoView 的特定竖屏方案，不能推广为 Nova 业务默认值。

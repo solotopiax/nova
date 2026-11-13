@@ -1,7 +1,7 @@
 # Nova Framework - SDK - TGA
 
 > 包名：`com.solotopia.nova.framework.sdk.tga`
-> 当前版本：`0.1.22`
+> 当前版本：`0.2.0`
 
 TGA 数据埋点插件，提供事件追踪服务
 
@@ -20,7 +20,7 @@ TGA 数据埋点插件，提供事件追踪服务
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.tga": "0.1.22"
+  "com.solotopia.nova.framework.sdk.tga": "0.2.0"
 }
 ```
 
@@ -53,4 +53,4 @@ TGA 运行时配置由 `TGAPluginConfig` 承载，并由 `SDKManager` 注入到 
 
 - 包根许可边界说明见 [LICENSE.md](./LICENSE.md)。
 - 上游来源、第三方声明与当前再分发边界见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
-- `Core/` 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。
+- [Core/](Core/) 内随包分发的 `LICENSE`、`NOTICE`、`README` 等文件，应与对应内容一起保留。

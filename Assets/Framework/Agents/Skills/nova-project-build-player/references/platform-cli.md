@@ -17,7 +17,7 @@
 
 ## Android APK
 
-当前 `DebugComponentInspector.InstallAPKToDevice` / `InstallAABToDevice` 只通过 `RunPython` 启动随包 `Scripts/Editor/Tools/Deploys/install_apk.py` / `install_aab.py`；返回值仅表示进程启动。前者列出设备后直接 `adb install`，没有 `-s` 或安装后读回；后者没有 `--device-id`，会先删除已有 APKS，密码以 `pass:` 放入参数，失败异常可能带完整命令。本 Skill 的受控安装直接复用下述当前宿主 CLI 与读回步骤，不能把 Inspector 返回 `true` 当安装成功，也不使用旧脚本替代冻结设备、保留既有 APKS和密码脱敏。
+当前 `DebugComponentInspector.InstallAPKToDevice` / `InstallAABToDevice` 只通过 `RunPython` 启动随包 [Scripts/Editor/Tools/Deploys/install_apk.py](../../../../Scripts/Editor/Tools/Deploys/install_apk.py) / [install_aab.py](../../../../Scripts/Editor/Tools/Deploys/install_aab.py)；返回值仅表示进程启动。前者列出设备后直接 `adb install`，没有 `-s` 或安装后读回；后者没有 `--device-id`，会先删除已有 APKS，密码以 `pass:` 放入参数，失败异常可能带完整命令。本 Skill 的受控安装直接复用下述当前宿主 CLI 与读回步骤，不能把 Inspector 返回 `true` 当安装成功，也不使用旧脚本替代冻结设备、保留既有 APKS和密码脱敏。
 
 先定位当前 Unity/SDK 的 `aapt`、`apksigner`、Java 与 `adb`，读取其 `help`。只读 `adb devices -l` 发现设备；确定 serial 后所有命令使用 `-s`，不随意使用第一个设备。读取 `ro.product.cpu.abilist`、`ro.build.version.sdk`，比对 APK 的 `aapt dump badging` 与 `apksigner verify --print-certs`。签名只报告证书摘要；需要读取已安装包时用该设备的 `pm path` / `dumpsys package`，不要把相同包名当作相同版本/签名。
 
@@ -57,7 +57,7 @@ AAB 不能交给 `adb install`。在当前宿主定位实际 `bundletool` 或 Un
 
 正式 JSON wrapper 的 `apkSetBuild` 使用版本 1，包含 `inputAab / executionPlan / toolDeviceIdentity / buildResult / apkSetVerification / cleanupResult` 六份准确路径与 SHA 引用，以及 `expectedApkCount / outputApksPath`。六份引用全部进入证据的 `artifacts`；原 AAB 必须保留，临时 APKS、提取 APK 和密码文件清理后以实际转换/清场回执保留历史身份，不把已删除路径列为当前产物。
 
-`executionPlan` 冻结 `selectedArtifact.path/sha256`、`deviceSerial`、`packageName`、`outputApks` 与 `actualSigning.certificateSha256`。`toolDeviceIdentity` 记录实际 `tools` 数组中至少 Java/bundletool/adb 的 `id/path/sha256`、`versions.bundletool` 和设备 `serial/model/api/abiList`。设备 serial 仅留受控原始证据，消费记录使用 `context.device=<model>;serial-sha256:<SHA256(serial)>`，`context.target=sha256:<AAB SHA256>`；不得输出密码、密钥或 serial。
+`executionPlan` 冻结 `selectedArtifact.path/sha256`、`deviceSerial`、`packageName`、`outputApks` 与 `actualSigning.certificateSha256`。`toolDeviceIdentity` 记录实际 [tools](../../../tools/) 数组中至少 Java/bundletool/adb 的 `id/path/sha256`、`versions.bundletool` 和设备 `serial/model/api/abiList`。设备 serial 仅留受控原始证据，消费记录使用 `context.device=<model>;serial-sha256:<SHA256(serial)>`，`context.target=sha256:<AAB SHA256>`；不得输出密码、密钥或 serial。
 
 转换回执必须有 `exitCode=0 / outputExists=true`；APK 集回执保留 `apksSha256 / apksBytes` 及完整 `apks` 清单，每项有唯一安全 `entry`、正 `size`、`sha256` 和与冻结策略相同的 `certificateSha256`，数量必须等于 `expectedApkCount`，并包含 `splits/base-master.apk`。清场回执分别确认 `inputAabAndKeystoreUnchanged / ownTemporaryFilesRemoved / passwordFilesRemoved / bundletoolExtractionDirectoryAbsent=true`。这些字段只登记实际观察，不以推测补全。
 
@@ -101,4 +101,4 @@ python3 "$nova_webgl_script" serve --build-root "$nova_webgl_build" --expected-s
 
 从当前构建设置核实线程要求。只有实际需要 `SharedArrayBuffer` / 跨源隔离时加 `--cross-origin-isolation`，它设置 COOP `same-origin` 与 COEP `require-corp`；这会限制跨源资源，必须同时核验实际 CDN 的 CORS/CORP。不开启此选项不代表所有 WebGL 构建都需要它。
 
-核验当前 Wasm/loader/data 与 `StreamingAssets/nova-webgl-layout.txt`、HTTP 响应及浏览器 Console/Network、Nova 入口和真实消费。本机响应头不证明生产 CDN 配置正确；该服务不验 Brotli/Gzip 文件完整性或 Unity 运行。关闭本轮服务使用其进程 Ctrl+C，清理本轮测试浏览器状态；正式导出保留，用户已有浏览器存储不能清空。
+核验当前 Wasm/loader/data 与 [StreamingAssets/nova-webgl-layout.txt（本次构建定位）](../../../../Docs/Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)、HTTP 响应及浏览器 Console/Network、Nova 入口和真实消费。本机响应头不证明生产 CDN 配置正确；该服务不验 Brotli/Gzip 文件完整性或 Unity 运行。关闭本轮服务使用其进程 Ctrl+C，清理本轮测试浏览器状态；正式导出保留，用户已有浏览器存储不能清空。

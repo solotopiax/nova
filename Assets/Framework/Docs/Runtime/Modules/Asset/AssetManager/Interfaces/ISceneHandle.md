@@ -11,7 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Managers/AssetManager/Interfaces/ISceneHandle.cs` | `ISceneHandle` | 接口定义 |
+| [Managers/AssetManager/Interfaces/ISceneHandle.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/ISceneHandle.cs) | `ISceneHandle` | 接口定义 |
 
 ---
 

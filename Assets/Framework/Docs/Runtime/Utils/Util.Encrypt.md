@@ -9,9 +9,9 @@ Nova 的轻量加解密工具集合。当前实现只有两组能力：`AES` 与
 
 | 文件 | 作用 |
 |---|---|
-| `Util.Encrypt.cs` | `Util.Encrypt` 根定义 |
-| `Util.Encrypt.AES.cs` | AES 工具 |
-| `Util.Encrypt.XOR.cs` | XOR 工具 |
+| [Util.Encrypt.cs](../../../Scripts/Runtime/Core/Util/Util.Encrypt/Util.Encrypt.cs) | `Util.Encrypt` 根定义 |
+| [Util.Encrypt.AES.cs](../../../Scripts/Runtime/Core/Util/Util.Encrypt/Util.Encrypt.AES.cs) | AES 工具 |
+| [Util.Encrypt.XOR.cs](../../../Scripts/Runtime/Core/Util/Util.Encrypt/Util.Encrypt.XOR.cs) | XOR 工具 |
 
 ## AES
 

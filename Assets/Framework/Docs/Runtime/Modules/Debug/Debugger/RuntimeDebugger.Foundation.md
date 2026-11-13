@@ -1,6 +1,6 @@
 # RuntimeDebugger Foundation
 
-`Core/Foundation` 是调试器随包携带的基础实现，统一编译在 NovaFramework.Runtime。其旧式集合、协程、服务和输入分支保留既有行为，不应因命名接近框架公共工具就当作可互换 API；新增框架能力仍遵循模块自己的契约。
+[Core/Foundation](../../../../../Scripts/Runtime/Modules/Debug/Core/Foundation/) 是调试器随包携带的基础实现，统一编译在 NovaFramework.Runtime。其旧式集合、协程、服务和输入分支保留既有行为，不应因命名接近框架公共工具就当作可互换 API；新增框架能力仍遵循模块自己的契约。
 
 ## 服务注册与延迟创建
 
@@ -65,7 +65,7 @@ SpringLerp 按 RoundToInt(deltaTime×1000) 次毫秒步进累计，再做标量/
 
 ## 内置 MiniJSON
 
-`Core/Foundation/External/MiniJSON.cs` 的 Json 供内部简易报告/manifest 使用，不等同框架 Util.Json。Deserialize 只读取第一个值，不检查尾部；重复对象键覆盖，数组/对象逗号校验宽松，未闭合字符串可能返回部分文本。空白/EOF、坏 Unicode 转义可抛异常，错误 null 与合法 JSON null 不可区分；没有长度/深度/循环保护。
+[Core/Foundation/External/MiniJSON.cs](../../../../../Scripts/Runtime/Modules/Debug/Core/Foundation/External/MiniJSON.cs) 的 Json 供内部简易报告/manifest 使用，不等同框架 Util.Json。Deserialize 只读取第一个值，不检查尾部；重复对象键覆盖，数组/对象逗号校验宽松，未闭合字符串可能返回部分文本。空白/EOF、坏 Unicode 转义可抛异常，错误 null 与合法 JSON null 不可区分；没有长度/深度/循环保护。
 
 数字解析按是否含点选择 long/double，使用当前 culture；无点科学记数或溢出可解析失败为 0。序列化 float/double 用 InvariantCulture，decimal 先转 double 可能失精度，NaN/Infinity 可写出不合标准 JSON 的数字文本；未知对象退回 ToString 字符串。列表/字典循环可递归不终止，键 ToString 碰撞、枚举变化和用户 ToString 异常不统一隔离，也不自动脱敏。
 

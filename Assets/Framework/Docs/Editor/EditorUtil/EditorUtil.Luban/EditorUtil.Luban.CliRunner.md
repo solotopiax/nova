@@ -10,7 +10,7 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Luban.CliRunner.cs` | `EditorUtil.Luban.CliRunner` | Luban CLI 进程管理（路径解析 + 参数拼接 + 进程启动） |
+| [EditorUtil.Luban.CliRunner.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.CliRunner.cs) | `EditorUtil.Luban.CliRunner` | Luban CLI 进程管理（路径解析 + 参数拼接 + 进程启动） |
 
 ---
 

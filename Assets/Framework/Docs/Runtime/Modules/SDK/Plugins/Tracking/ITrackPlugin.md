@@ -2,7 +2,7 @@
 
 **类签名**：`public interface ITrackPlugin : ISDKPlugin`
 **命名空间**：`NovaFramework.Runtime`
-**源码文件**：`Assets/Framework/Scripts/Runtime/Modules/SDK/Plugins/Tracking/ITrackPlugin.cs`
+**源码文件**：[Scripts/Runtime/Modules/SDK/Plugins/Tracking/ITrackPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Tracking/ITrackPlugin.cs)
 
 通用事件埋点接口，抽象用户属性设置与自定义事件上报能力。
 
@@ -24,7 +24,7 @@
 
 | 文件 | 类型 | 说明 |
 |---|---|---|
-| `Plugins/Tracking/ITrackPlugin.cs` | `ITrackPlugin` | 接口全部定义 |
+| [Plugins/Tracking/ITrackPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Tracking/ITrackPlugin.cs) | `ITrackPlugin` | 接口全部定义 |
 
 ---
 

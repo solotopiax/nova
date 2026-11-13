@@ -13,8 +13,8 @@
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs` | `EditorUtil.Pipify.Runner` | RunBatchAsync 主循环 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | ApplyOverridesForItem / ConvertOverrideValue 私有工具方法 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs) | `EditorUtil.Pipify.Runner` | RunBatchAsync 主循环 |
+| [EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs) | `EditorUtil.Pipify` | ApplyOverridesForItem / ConvertOverrideValue 私有工具方法 |
 
 ## §5 完整公开 API
 

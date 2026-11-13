@@ -5,25 +5,33 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 
 # Nova 创建业务界面
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
-再读取 `references/contract.json`、随包 `Docs/Runtime/Modules/UI/UIComponent.md`、`Docs/Runtime/Modules/UI/Definitions/UIView.md` 和 `Docs/Runtime/Modules/UI/UIManager/UIManager.md`，然后检查当前项目最近的同类业务页面。只修改业务项目内容，不修改 Nova Framework、PackageCache 或 UIManager；不手工编辑生成的 C# / JSON，通过项目已确认的 UI 导出入口更新本次需要的生成物。
+再读取 [references/contract.json](references/contract.json)、随包 [Docs/Runtime/Modules/UI/UIComponent.md](../../../Docs/Runtime/Modules/UI/UIComponent.md)、[Docs/Runtime/Modules/UI/Definitions/UIView.md](../../../Docs/Runtime/Modules/UI/Definitions/UIView.md) 和 [Docs/Runtime/Modules/UI/UIManager/UIManager.md](../../../Docs/Runtime/Modules/UI/UIManager/UIManager.md)，然后检查当前项目最近的同类业务页面。只修改业务项目内容，不修改 Nova Framework、PackageCache 或 UIManager；不手工编辑生成的 C# / JSON，通过项目已确认的 UI 导出入口更新本次需要的生成物。
 
 ## 渐进式披露
 
 - L0：先用 frontmatter、Catalog 与共同底线判断页面创建是否属于本 Skill。
-- L1：只读取本 Skill、`references/contract.json` 和已列出的 UI Docs，冻结 View、UIGroup、注册源与写入集。
+- L1：只读取本 Skill、[references/contract.json](references/contract.json) 和已列出的 UI Docs，冻结 View、UIGroup、注册源与写入集。
 - L2：仅在这些输入已确认后，读取项目中最近的同类 View、Prefab 和实际导出入口；不要预先展开全部 UI、Table 或 Config 文档。
 - L3：确认后才调用源码编辑、Unity Editor/MCP 和`nova.project.ui.export`；Unity 资产写入保持单写者。
 - L4：只验证本次 View 的导出、编译和按需 Play 证据；未执行的层级保持 `partial`。
 
-打开入口先读取当前 `Docs/Runtime/Modules/UI/UIComponent.md`：普通 `OpenUIViewSync/Async` 的字符串首参只接收 UI 表 `Name`；`OpenUIViewByAssetSync/Async` 的首参只接收唯一 `AssetLocation`，泛型入口仍按类型名查表，分组、暂停与池化都来自表格；缺配置或匹配不唯一时停止，不使用旧 bool 重载覆盖配置，也不绕过注册表加载。`Name` 指配置行名称，不是 Excel 文件名；第二参数 `userData` 即使是字符串也只作业务数据，不能继续传旧分组参数。
+仅本次新业务明确需要时，选择 [每次打开作用域](../../../Docs/Runtime/Modules/UI/Definitions/UIViewScope.md) 或 [可等待打开结果](../../../Docs/Runtime/Modules/UI/UIManager/Interfaces/IUIOpenAwaiter.md)。作用域只收尾主动登记的工作，新等待入口复用原注册/分组链；旧页面手工生命周期和返回序号的调用无需迁移。业务源码按本文既有工作区 Adapter 接入，编译后验证关闭/归池/重开、取消与失败，不把接口存在当运行通过。
+
+Prefab 与 View 已创建后，本次明确要批量补直接引用或生成机械字段时，读取既有 [控件绑定分支](../nova-project-update-ui-view/references/control-bindings.md)。复用 `nova.project.ui.inspect-bindings` / `configure-bindings`；生成、编译、重新计划绑定分阶段完成，不接管已有字段/监听或替代注册导出。
+
+打开入口先读取当前 [Docs/Runtime/Modules/UI/UIComponent.md](../../../Docs/Runtime/Modules/UI/UIComponent.md)：普通 `OpenUIViewSync/Async` 的字符串首参只接收 UI 表 `Name`；`OpenUIViewByAssetSync/Async` 的首参只接收唯一 `AssetLocation`，泛型入口仍按类型名查表，分组、暂停与池化都来自表格；缺配置或匹配不唯一时停止，不使用旧 bool 重载覆盖配置，也不绕过注册表加载。`Name` 指配置行名称，不是 Excel 文件名；第二参数 `userData` 即使是字符串也只作业务数据，不能继续传旧分组参数。
 
 ## 冻结输入与预检
 
+仅要求新建 UI Excel 或从官方表恢复样式时，选择合同 `source-from-template` 分支，先读 [Docs/Onboarding/RESOURCE_WORKFLOW.md](../../../Docs/Onboarding/RESOURCE_WORKFLOW.md) 的“配表模板与样式”。使用随包 [nova_excel_template.py](../../Tools/nova_excel_template.py) 从官方表克隆，按已确认业务行填入，不从空白工作簿另造样式。该分支只保存源表并核验数据与样式，不创建 UIView/Prefab、不导出或要求 Unity；进入完整界面接入时再继续以下步骤。已有表的普通值编辑继续原受控源编辑入口，不能用整表替换冒充单元格修改。
+
 确认 `viewName`、命名空间/asmdef、目标 UIGroup、Prefab 路径和资源地址、UI 注册源、布局/交互范围、池化与遮挡策略。若 UIGroup、注册源或资产目录有多个合理候选，先请求用户选择；不要猜测或顺手新增 Framework 结构。
 
-**布局前置**：按 `Docs/Runtime/Modules/UI/UIComponent.md` 的“屏幕适配与安全区”冻结 `screenAdaptationPlan`，从项目读取方向、设计尺寸/比例、匹配策略、实际根 CanvasScaler、安全区唯一拥有者及验证范围。已有方案直接复用；新项目在授权内确定并告知合理默认，实质歧义才澄清。方案未确定不能先写布局或另加根缩放脚本。确需改 UIComponent 时复用 `nova-project-edit-settings`；方向修改按 UIComponent 文档核对宿主真实可用的 Player Settings 编辑通道。先冻结精确目标、原值/目标值与写入范围，不能隐式改全局配置或包内 Prefab。
+**布局前置**：按 [Docs/Runtime/Modules/UI/UIComponent.md](../../../Docs/Runtime/Modules/UI/UIComponent.md) 的“屏幕适配与安全区”冻结 `screenAdaptationPlan`，从项目读取方向、设计尺寸/比例、匹配策略、实际根 CanvasScaler、安全区唯一拥有者及验证范围。已有方案直接复用；新项目在授权内确定并告知合理默认，实质歧义才澄清。方案未确定不能先写布局或另加根缩放脚本。确需改 UIComponent 时复用 `nova-project-edit-settings`；方向修改按 UIComponent 文档核对宿主真实可用的 Player Settings 编辑通道。先冻结精确目标、原值/目标值与写入范围，不能隐式改全局配置或包内 Prefab。
+
+按产品定位只设计和验证声明的横屏或竖屏；完整产品页面清单从独立启动画布的闪屏、Loading/启动弹窗开始，延伸到玩法、暂停/结算，按 UIComponent 文档逐区避让，不能整页统一缩进或只检查玩法首屏。
 
 确认现有场景和导出链能够承载 UI：活动场景中的 Nova/UIComponent、UIGroup 的存在性、项目使用的 UI Excel/Collector/导出入口。只有用户明确要求时才启动 Unity；缺少 Unity 时只交付计划，不宣称页面已创建成功。
 
@@ -32,7 +40,7 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 1. 在项目业务目录创建继承 `UIView` 的代码，沿用最近的命名、生命周期、事件解绑和数据刷新模式；不使用 `GameObject.Find`，不手工编辑生成的 C# / JSON。
 2. 通过 Unity Editor 或 Unity Editor 自动化通道 创建 Prefab、挂载脚本并绑定序列化引用；绝不手写 Prefab 或 Scene YAML。
 3. 仅在用户确认的 UI 注册源中登记 `Name`、`AssetLocation`、`UIGroupName`、`PauseCoveredUIView` 和 `InObjectPools` 等实际需要的字段。
-4. 通过 `nova.project.ui.export` 执行本次必要导出。全量传 `scope=all/code/data`；定向导出传精确 `sourcePath`，只允许 `code` 或 `data`。先 Plan 核对全部 Excel、已保存的场景/`UISettings`、命名空间及写入集，再用当前 `PlanId` 确认一次 Execute。单文件代码仍会更新共享 `UITables.cs`，所有模式会更新 `_configs`；计划同时展示反格式或同源完整过期代码的删除范围。单文件 `all` 不支持，不拼接两次调用伪装事务。`code-only` 的 Map 属性要求已有正式 JSON；新注册先完成 `data`，再 Plan `code`。
+4. 通过 `nova.project.ui.export` 执行本次必要导出。全量传 `scope=all/code/data`；定向导出传精确 `sourcePath`，只允许 `code` 或 `data`。先 Plan 核对全部 Excel、已保存的场景/`UISettings`、命名空间及写入集，再用当前 `PlanId` 确认一次 Execute。单文件代码仍会更新共享 [UITables.cs（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.md)，所有模式会更新 `_configs`；计划同时展示反格式或同源完整过期代码的删除范围。单文件 `all` 不支持，不拼接两次调用伪装事务。`code-only` 的 Map 属性要求已有正式 JSON；新注册先完成 `data`，再 Plan `code`。
    Execute 返回 `partial + Receipt`，等待本次 Unity 编译、代码重载后只读 Verify；跨重载用 `recovery_token`，不重放 Execute。缺少有效所有权、来源漂移、脏场景或定制配置无法冻结时停止；没有受控 Action 时保持 `partial`。导出失败立即停止，不顺带执行全量 Excel 导出、Config 导出或 Build。
 5. 先收集编译证据，再在明确授权且可用的 Unity 环境中验证目标 UIGroup 的打开/关闭；涉及实际布局必须覆盖已冻结的比例、安全区及支持的方向，读回运行时缩放配置。验证和恢复按 UIComponent 文档执行，缺少必要布局/设备证据保持 `partial`。
 

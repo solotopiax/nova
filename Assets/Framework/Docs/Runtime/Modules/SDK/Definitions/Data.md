@@ -1,6 +1,6 @@
 # SDK 数据类型总览
 
-本文只覆盖当前 `Assets/Framework/Scripts/Runtime/Modules/SDK/Definitions/Data/` 下仍存在的公共数据类型。
+本文只覆盖当前 [Scripts/Runtime/Modules/SDK/Definitions/Data/](../../../../../Scripts/Runtime/Modules/SDK/Definitions/Data/) 下仍存在的公共数据类型。
 
 ## 当前数据类型
 
@@ -17,17 +17,17 @@
 
 | 类型 | 位置 | 说明 |
 |---|---|---|
-| `AdLoadResult` | `Plugins/Ad/AdLoadEvent.cs` | 广告加载统一结果，成功/失败由 `Success` 区分 |
+| `AdLoadResult` | [Plugins/Ad/AdLoadEvent.cs](../../../../../Scripts/Runtime/Modules/SDK/Plugins/Ad/AdLoadEvent.cs) | 广告加载统一结果，成功/失败由 `Success` 区分 |
 
 ## 已迁出 Framework 的广告类型
 
-`AdEventType`、`AdResult`、`AdEvent` 仍然存在，当前归属广告聚合包 `com.solotopia.nova.framework.sdk.ad` 的 `Nova/Scripts/Runtime/Types/`，命名空间为 `NovaFramework.SDK.AdPlugin.Runtime`。它们由该包的事件文档维护，不属于 Framework 的 `Definitions/Data/`。
+`AdEventType`、`AdResult`、`AdEvent` 仍然存在，当前归属广告聚合包 `com.solotopia.nova.framework.sdk.ad` 的 [按包定位：Nova/Scripts/Runtime/Types/](../INDEX.md#sdk--kit-包文档发现)，命名空间为 `NovaFramework.SDK.AdPlugin.Runtime`。它们由该包的事件文档维护，不属于 Framework 的 [Definitions/Data/](../../../../../Scripts/Runtime/Modules/SDK/Definitions/Data/)。
 
-`AdFormat`、`BannerPosition` 和 `AdLoadResult` 继续归属 `NovaFramework.Runtime`；`AdLoadResult` 的文件名仍为 `Plugins/Ad/AdLoadEvent.cs`。
+`AdFormat`、`BannerPosition` 和 `AdLoadResult` 继续归属 `NovaFramework.Runtime`；`AdLoadResult` 的文件名仍为 [Plugins/Ad/AdLoadEvent.cs](../../../../../Scripts/Runtime/Modules/SDK/Plugins/Ad/AdLoadEvent.cs)。
 
 ## 已迁出 Framework 的支付类型
 
-`ProductInfo` 已迁到 IAP 核心包 `com.solotopia.nova.framework.sdk.iap` 的 `Nova/Scripts/Runtime/Results/ProductInfo.cs`，命名空间为 `NovaFramework.SDK.IAP.Runtime`，用于平台本地化商品信息。它仍是当前类型，不能按删除处理；其查询能力由实际支付 Store 的能力接口提供。
+`ProductInfo` 已迁到 IAP 核心包 `com.solotopia.nova.framework.sdk.iap` 的 [按包定位：Nova/Scripts/Runtime/Results/ProductInfo.cs](../INDEX.md#sdk--kit-包文档发现)，命名空间为 `NovaFramework.SDK.IAP.Runtime`，用于平台本地化商品信息。它仍是当前类型，不能按删除处理；其查询能力由实际支付 Store 的能力接口提供。
 
 ## 已移除的旧类型
 

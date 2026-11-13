@@ -65,8 +65,8 @@ SDK 模块存在两个正交维度，此前只有能力族插件能同时满足�
 
 ## 验证依据（Verification）
 
-- `Assets/Framework/Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.cs`（Initialize / InitializeAsync）
-- `SDKManager.Methods.cs`（`InstantiateEnabledPluginsFromConfig` / `EnumerateConcreteSDKPluginTypes`）
+- [Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.cs](../../../Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.cs)（Initialize / InitializeAsync）
+- [SDKManager.Methods.cs](../../../Scripts/Runtime/Modules/SDK/Managers/Implements/SDKManager.Methods.cs)（`InstantiateEnabledPluginsFromConfig` / `EnumerateConcreteSDKPluginTypes`）
 - DataMasterDemo Play 实测：日志「SDK 插件按 ConfigMaster 启用实例化：…DataMasterPlugin」→「DataMaster 初始化完成」→ 点按钮 `TryGet` 成功、上报 `demo_button_click success`。
 
 ## 来源（Origin）

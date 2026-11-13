@@ -93,6 +93,8 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 
 ### 4. OpenUIView：先查配置，再决定走对象池还是加载
 
+下述序号返回值与失败通知描述旧打开入口；新可选等待路径的终态、独立取消和异常收尾见 [IUIOpenAwaiter](Interfaces/IUIOpenAwaiter.md)，不据旧路径的即时返回推导新等待已经完成。
+
 所有打开入口先从 `m_UIViewRegistry` 选择配置行：
 
 | 入口 | 选择规则 |
@@ -124,6 +126,8 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 创建实例后会按分组父节点重新归零 localPosition/rotation/scale，并要求根上已有 UIView 子类，不能用任意 IUIView 实现替代这条 Prefab 入口。InternalOpen 按 OnInit→加入组/索引→OnOpen→Refresh 顺序执行，异常包装后传播，但已建立索引、池登记、实例没有完整回滚。UIView 的新实例初始化钩子自身还可能记录并吞异常，继续进入打开链。
 
 异步路径捕获资源/打开异常并转失败事件，事件订阅者异常会记录；主动关闭加载请求或 Shutdown 后的迟到实例走释放分支，不报打开失败。OpenUIViewInfo 来自引用池，Clear 清 group/userData 引用，不销毁业务对象。userData 跨加载等待时的有效性由调用者管理。
+
+需要等待完成的新业务可选 [IUIOpenAwaiter](Interfaces/IUIOpenAwaiter.md) 对应门面；原 serialID 路径继续保留。新路径结算本次请求的初始化、打开、组刷新及失败/关闭/取消/Shutdown 结果，不用轮询查询代替完成协议。主动取用 [UIViewScope](../Definitions/UIViewScope.md) 的页面只对已登记工作增加受控收尾，不接管旧页面原有手工工作。
 
 ### 5. CloseUIView：先脱离分组，再进入回收队列
 

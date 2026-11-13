@@ -12,7 +12,7 @@ Kit 配置缺失异常；Kit Service 通过 `Nova.Config.GetKitConfig<T>()` 取�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Runtime/Modules/Config/Definitions/KitConfigMissingException.cs` | `KitConfigMissingException` | 异常类定义 |
+| [Runtime/Modules/Config/Definitions/KitConfigMissingException.cs](../../../../../Scripts/Runtime/Modules/Config/Definitions/KitConfigMissingException.cs) | `KitConfigMissingException` | 异常类定义 |
 
 ---
 

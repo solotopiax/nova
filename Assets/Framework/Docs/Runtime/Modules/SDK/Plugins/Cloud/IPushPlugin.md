@@ -13,7 +13,7 @@
 
 | 文件 | 类型 | 说明 |
 |---|---|---|
-| `Plugins/Cloud/IPushPlugin.cs` | `IPushPlugin` | 接口全部定义 |
+| [Plugins/Cloud/IPushPlugin.cs](../../../../../../Scripts/Runtime/Modules/SDK/Plugins/Cloud/IPushPlugin.cs) | `IPushPlugin` | 接口全部定义 |
 
 ---
 

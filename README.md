@@ -3,11 +3,13 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.8-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.9-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
 **Nova 是 Solotopia 基于 Unity 深度定制的一套游戏客户端通用解决方案**，把资源、UI、网络、热更、配置、存档、多语言、SDK 接入等通用底座统一收敛、持续维护，让业务团队只需聚焦玩法本身。
+
+本页是源码仓的开发态入口，仓内链接均相对于本文件。消费项目安装后，先从 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按包名 `com.solotopia.nova.framework` 查找，以其 `resolvedPath` 为根打开 `Docs/START_HERE.md` 或 `Docs/INDEX.md`；SDK、Kit 和扩展包分别按自己的包名定位。Sample 以 Package Manager 的实际导入清单和目录为准，不照搬下方的源码仓目录。
 
 ---
 
@@ -34,7 +36,7 @@
 | com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.1 |
-| com.solotopia.nova.framework.mcp | 0.1.8 |
+| com.solotopia.nova.framework.mcp | 0.1.9 |
 
 Android AAB 可通过 Pipify 上传 Google Play，默认内部测试草稿；配置与上传边界见 [Google Play 上传说明](./Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)。
 
@@ -94,9 +96,9 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 默认直接安装的包：
 
-- Nova Framework：`com.solotopia.nova.framework@0.7.8`。
-- Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.3`。
-- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.8`。
+- Nova Framework：`com.solotopia.nova.framework@0.7.9`。
+- Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.4`。
+- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.9`。
 - EDM：`com.google.external-dependency-manager@1.2.190`。
 
 Nova Framework - MCP 提供 Nova 的 MCP 接入基础，`com.coplaydev.unity-mcp` 是其当前使用的 Unity MCP Provider，由包依赖经 OpenUPM 自动解析，不另写入工程的直接依赖。
@@ -160,7 +162,7 @@ var row = Nova.Table.GetTable<TbItem>().Get(itemId);
 
 ---
 
-## 目录结构
+## 源码仓目录结构（开发态）
 
 ```
 Assets/Framework/Scripts/Runtime/  # 运行时核心与业务模块
@@ -194,7 +196,7 @@ Assets/Framework/
 
 常用入口：[Start Here](./Assets/Framework/Docs/START_HERE.md) · [Docs Index](./Assets/Framework/Docs/INDEX.md) · [Architecture](./Assets/Framework/Docs/ARCHITECTURE.md) · [Nova Project Skills](./Assets/Framework/Agents/INDEX.md)
 
-将两层文档提供给 AI Agent，助手即可同时具备"会用 API + 知晓边界 + 沿用既有模式 + 避开已知坑"——这是最快上手的路径，也是项目长期可持续维护的保障。
+源码仓维护者按上述入口查阅 Docs 与 Minds。消费项目从已安装包的 Docs 和 Agents 进入日常任务，无需拥有源码仓的 Minds 或 `.nova`。
 
 ---
 

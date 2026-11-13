@@ -81,10 +81,10 @@ UPM 发版的默认验证范围是：
 
 ## 验证依据（2026-07-21）
 
-一次 13 包 UPM 发布中，额外启动 Test Runner 明显增加了等待时间，且不属于用户要求的发布范围。停止批量测试后，既定发布链路完成了 13 个包的签名与发布，结果为 `Published: 13, Failed: 0`；随后逐包验证目标版本与 `dist-tags.latest`，并确认 Sample 临时目录和 `Nova.prefab` 已还原。
+一次 13 包 UPM 发布中，额外启动 Test Runner 明显增加了等待时间，且不属于用户要求的发布范围。停止批量测试后，既定发布链路完成了 13 个包的签名与发布，结果为 `Published: 13, Failed: 0`；随后逐包验证目标版本与 `dist-tags.latest`，并确认 Sample 临时目录和 [Nova.prefab](../../../Prefabs/Nova.prefab) 已还原。
 
 ## 关联
 
 - 代码运行时验证：[[PAT-03-runtime-verify-three-step|PAT-03]]
 - UPM 版本事实源：[[PAT-113-no-manual-version-bump|PAT-113]]
-- 发布流程：`.agents/skills/nova-publish/SKILL.md`
+- 发布流程：[.agents/skills/nova-publish/SKILL.md](../../../../../.agents/skills/nova-publish/SKILL.md)

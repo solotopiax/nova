@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.7.8`
+> 当前版本：`0.7.9`
 > Unity：仅支持 `6000.4.x`，最低 `6000.4.2f1`；更高的 Unity 次版本存在 HybridCLR 兼容问题。
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -14,7 +14,7 @@ Android 构建可在 Pipify 的 `build.package` 后添加 `googleplay.upload_aab
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.7.8"
+  "com.solotopia.nova.framework": "0.7.9"
 }
 ```
 
@@ -46,7 +46,7 @@ Agent 能力需要 **Nova Framework - MCP**（`com.solotopia.nova.framework.mcp`
 
 ## 依赖
 
-主包 `dependencies`（与 `package.json` 一致）：
+主包 `dependencies`（见 [package.json](package.json)）：
 
 | 包名 | 版本 |
 |---|---|
@@ -62,11 +62,11 @@ Agent 能力需要 **Nova Framework - MCP**（`com.solotopia.nova.framework.mcp`
 | com.solotopia.nicevibrations | 10.0.6 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.1 |
-| com.solotopia.nova.framework.mcp | 0.1.8 |
+| com.solotopia.nova.framework.mcp | 0.1.9 |
 
 ## 可选核心扩展
 
-内存数值防护独立为 `com.solotopia.nova.framework.memory.protection`，主包无此功能的代码或强制依赖。需要 `ProtectedInt` / `ProtectedLong` 的项目请安装该包，并在业务 asmdef 显式引用 `NovaFramework.MemoryProtection.Runtime`；命名空间保持 `NovaFramework.Runtime`。用法见 [MemoryProtection 包文档](../../UPMPackages/com.solotopia.nova.framework.memory.protection/Nova/Docs/INDEX.md)，示例从该包导入 `MemoryProtectionDemo`。
+内存数值防护独立为 `com.solotopia.nova.framework.memory.protection`，主包无此功能的代码或强制依赖。需要 `ProtectedInt` / `ProtectedLong` 的项目请安装该包，并在业务 asmdef 显式引用 `NovaFramework.MemoryProtection.Runtime`；命名空间保持 `NovaFramework.Runtime`。用法见 [SDK / Kit 包文档发现](Docs/Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)，按该包名定位其包内 `Nova/Docs/INDEX.md`，示例从该包导入 `MemoryProtectionDemo`。
 
 ## Samples
 
@@ -74,20 +74,20 @@ Agent 能力需要 **Nova Framework - MCP**（`com.solotopia.nova.framework.mcp`
 
 ## Nova Project Skills
 
-项目组（消费端）AI Skill 随 `com.solotopia.nova.framework` 同版本管理。开发仓 Git 真源位于 `Assets/Framework/Agents/Skills/`，已安装包内则位于 `Agents/Skills/`。用户安装或升级 Nova 后首次打开 Unity，Editor 会自动将包内全部 Skill 投影到项目根 `.agents/skills/`，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
+项目组（消费端）AI Skill 随 `com.solotopia.nova.framework` 同版本管理。开发态与消费态都使用当前 Framework 包内的 [Agents/Skills/](Agents/Skills/)；开发仓维护真源，消费端读取已安装包。用户安装或升级 Nova 后首次打开 Unity，Editor 会自动将包内全部 Skill 投影到项目根 `.agents/skills/`，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
 
 `.agents/skills/` 是仅供发现的受管副本，不能反向编辑真源。若存在同名用户目录、已修改或缺失的受管副本，系统会 fail-closed：不静默覆盖或删除，并以 `partial` 报告无法完成的项，同时继续其他可安全完成的项。Agent 只根据自然语言任务匹配当前需要的 Skill；全量可发现不代表全量顺序执行，写入、构建、外部发布和 Git 操作仍遵守各自的确认门。三层位置、已安装包路径与项目 Git 忽略边界统一见 [Docs/START_HERE.md](Docs/START_HERE.md)。
 
 ## 文档
 
-详细的框架 API 与架构文档位于 `Assets/Framework/Docs/`：
+先按 [当前工程形态定位框架](Docs/START_HERE.md#先确定框架位置与文档入口)，详细 API 与架构说明位于包内 [Docs/](Docs/)：
 
 - [START_HERE.md](Docs/START_HERE.md) — Agent 首次接入、场景/资源与验证的渐进式入口
 - [Agents/INDEX.md](Agents/INDEX.md) — 项目组 Nova Project Skills 的位置、自动发现与安全边界
-- `ARCHITECTURE.md` — 架构总览
-- `INDEX.md` — 类型索引
-- `Runtime/` — 运行时 API 文档
-- `Editor/` — 编辑器扩展文档
+- [ARCHITECTURE.md](Docs/ARCHITECTURE.md) — 架构总览
+- [INDEX.md](Docs/INDEX.md) — 类型索引
+- [Runtime/](Docs/Runtime/) — 运行时 API 文档
+- [Editor/](Docs/Editor/) — 编辑器扩展文档
 
 ## 维护
 

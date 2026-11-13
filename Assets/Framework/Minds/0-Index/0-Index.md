@@ -5,7 +5,7 @@ date: 2026-06-05
 
 # Nova Minds 索引
 
-`Assets/Framework/Minds/` 是 **Nova 的长期知识层**。  
+[Minds](../) 是 **Nova 的长期知识层**，整库随 Framework 包和公开仓提供，现行条目、资源、画布、视图和历史归档均保留。
 它回答的是：
 
 - 为什么这样设计
@@ -24,11 +24,13 @@ date: 2026-06-05
 
 | 位置 | 定位 |
 |---|---|
-| `Assets/Framework/Docs/` | 当前代码事实层 |
-| `Assets/Framework/Minds/` | 长期知识层 |
+| [Docs](../../Docs/INDEX.md) | 当前代码事实层 |
+| [Minds](../) | 长期知识层 |
 
 如果问题是“现在代码怎么实现”，先查 `Docs`。  
 如果问题是“为什么这样定 / 这个词该怎么用 / 改动会不会撞历史边界”，再查 `Minds`。
+
+消费端从[当前包的共同入口](../../Docs/START_HERE.md#设计依据与历史知识)进入，只读当前已解析版本的知识；不用安装 Obsidian，也不需要开发仓的私有规则或维护工具。本机 `.obsidian/` 配置与系统缓存不分发。
 
 ## 默认查询顺序
 
@@ -49,16 +51,16 @@ date: 2026-06-05
 
 ## 默认只看这些区域
 
-- `0-Index/`
-- `2-Areas/ADR/`
-- `2-Areas/Patterns/`
-- `2-Areas/Glossary/`
-- `2-Areas/MOC/`
+- [0-Index/](./)
+- [2-Areas/ADR/](../2-Areas/ADR/)
+- [2-Areas/Patterns/](../2-Areas/Patterns/)
+- [2-Areas/Glossary/](../2-Areas/Glossary/)
+- [2-Areas/MOC/](../2-Areas/MOC/)
 
 只有在追溯历史或找外部背景时，才进入：
 
-- `3-Resources/`
-- `4-Archives/`
+- [3-Resources/](../3-Resources/)
+- [4-Archives/](../4-Archives/)
 - [审计归档索引](../4-Archives/Audits/INDEX.md)：历史审计、计划与风险台账
 - [旧协作归档索引](../4-Archives/Collaboration/INDEX.md)：已退役协作栈的历史材料
 
@@ -66,4 +68,5 @@ date: 2026-06-05
 
 - 普通局部改动默认不展开整个 `Minds`
 - `Docs` 与 `Minds` 冲突时，以 `Docs + 源码` 为当前事实基线
+- 归档状态只影响阅读判断，不影响公开范围；旧路径、旧命令及未随包提供的历史附件不作为当前操作要求
 - 只有能长期复用的结论才进入 `Minds`

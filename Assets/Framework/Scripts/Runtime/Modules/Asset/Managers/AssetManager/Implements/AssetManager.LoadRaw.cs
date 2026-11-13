@@ -25,7 +25,33 @@ namespace NovaFramework.Runtime
         /// <returns>原始文件句柄，调用方负责 Release。</returns>
         public override IRawFileHandle LoadRawSync(string location)
         {
-            ResourcePackage pkg = GetPackage(m_DefaultPackageName);
+            return LoadRawSyncCore(GetPackage(m_DefaultPackageName), location);
+        }
+
+        /// <summary>
+        /// 同步加载指定包的原始文件句柄，不自动注册包或加载清单。
+        /// 调用方持有成功返回的句柄，并负责在使用结束后 Release。
+        /// </summary>
+        /// <param name="package">精确包名，必填且不得为 null、空串或空白；不会回退默认包。</param>
+        /// <param name="location">该包内的资源地址。</param>
+        /// <returns>由调用方持有并负责释放的资源句柄。</returns>
+        /// <exception cref="System.NotSupportedException">当前资源管理器不支持显式包加载。</exception>
+        /// <exception cref="System.ArgumentException">内置实现收到空白包名。</exception>
+        /// <exception cref="System.InvalidOperationException">内置实现中目标包未注册。</exception>
+        public override IRawFileHandle LoadRawFromPackageSync(string package, string location)
+        {
+            return LoadRawSyncCore(GetExplicitPackage(package), location);
+        }
+
+        /// <summary>
+        /// 同步执行默认包与显式包共用的原始文件加载；保持原等待、失败与清理顺序。
+        /// 调用方持有成功返回的句柄，并负责在使用结束后 Release。
+        /// </summary>
+        /// <param name="pkg">已经选定的资源包。</param>
+        /// <param name="location">该包内的资源地址。</param>
+        /// <returns>由调用方持有并负责释放的资源句柄。</returns>
+        private IRawFileHandle LoadRawSyncCore(ResourcePackage pkg, string location)
+        {
             AssetHandle inner = null;
             YooAssetRawFileHandleAdapter adapter = null;
             try
@@ -62,7 +88,36 @@ namespace NovaFramework.Runtime
         /// <returns>原始文件句柄，调用方负责 Release。</returns>
         public override async UniTask<IRawFileHandle> LoadRawAsync(string location, CancellationToken ct = default)
         {
-            ResourcePackage pkg = GetPackage(m_DefaultPackageName);
+            return await LoadRawAsyncCore(GetPackage(m_DefaultPackageName), location, ct);
+        }
+
+        /// <summary>
+        /// 异步加载指定包的原始文件句柄，不自动注册包或加载清单。
+        /// 调用方持有成功返回的句柄，并负责在使用结束后 Release。
+        /// </summary>
+        /// <param name="package">精确包名，必填且不得为 null、空串或空白；不会回退默认包。</param>
+        /// <param name="location">该包内的资源地址。</param>
+        /// <param name="ct">取消令牌；显式包入口在调度前检查取消，加载中取消沿用原清理流程。</param>
+        /// <returns>由调用方持有并负责释放的资源句柄。</returns>
+        /// <exception cref="System.NotSupportedException">当前资源管理器不支持显式包加载。</exception>
+        /// <exception cref="System.ArgumentException">内置实现收到空白包名。</exception>
+        /// <exception cref="System.InvalidOperationException">内置实现中目标包未注册。</exception>
+        public override async UniTask<IRawFileHandle> LoadRawFromPackageAsync(string package, string location, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return await LoadRawAsyncCore(GetExplicitPackage(package), location, ct);
+        }
+
+        /// <summary>
+        /// 异步执行默认包与显式包共用的原始文件加载；保持原等待、失败与清理顺序。
+        /// 调用方持有成功返回的句柄，并负责在使用结束后 Release。
+        /// </summary>
+        /// <param name="pkg">已经选定的资源包。</param>
+        /// <param name="location">该包内的资源地址。</param>
+        /// <param name="ct">等待加载完成时使用的取消令牌。</param>
+        /// <returns>由调用方持有并负责释放的资源句柄。</returns>
+        private async UniTask<IRawFileHandle> LoadRawAsyncCore(ResourcePackage pkg, string location, CancellationToken ct)
+        {
             AssetHandle inner = null;
             YooAssetRawFileHandleAdapter adapter = null;
             try

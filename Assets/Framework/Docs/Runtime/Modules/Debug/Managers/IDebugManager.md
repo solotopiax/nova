@@ -11,7 +11,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Runtime/Modules/Debug/Managers/Interfaces/IDebugManager.cs` | 接口定义 |
+| [Runtime/Modules/Debug/Managers/Interfaces/IDebugManager.cs](../../../../../Scripts/Runtime/Modules/Debug/Managers/Interfaces/IDebugManager.cs) | 接口定义 |
 
 ## 公开 API
 

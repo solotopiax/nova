@@ -149,7 +149,8 @@
     "准确 GUID 域须写前不存在；完整 before/final 严格JSON、固定路径、SHA/长度、小Operation192KiB预算；文件摘要与同一编译前证书进入原compilePayloadHash；缺失/超限/链接/漂移仅partial，不重建旧材料或重放",
     "Plan完整webglGeneratePlan以nova-hybridclr-generate-plan-gzip-v1无损审阅表示运输：保留null/default，raw<=8MiB、gzip<=1MiB、DataJson<=1536KiB，规范Base64+原文length/SHA、严格单member/CRC/ISIZE与JSON。解码只供审阅，不授予Execute/恢复权限；Plan零文件写入，transport2MiB/Store256KiB不变。",
     "公开reload lease适用于本次通过各自完整准入的WebGL/Android分支；Android未闭合回调仍阻断。正常Refresh/编译/官方报告等待不改，无新增idle/reload等待；完整收尾与持久化尝试后才Unlock。final首次保存后不可变，外层失败partial不二次写或升级finalized；旧早重载Operation不重放。",
-    "当次HybridCLR真实安装状态、版本/Unity匹配及启用策略的独立证据；Generate成功不升级最终Player/设备热更运行，未安装不能靠关闭开关或伪造版本标记通过。"
+    "当次HybridCLR真实安装状态、版本/Unity匹配及启用策略的独立证据；Generate成功不升级最终Player/设备热更运行，未安装不能靠关闭开关或伪造版本标记通过。",
+    "NA-004把HybridCLR设为所有Nova项目必备项；本Operation仍仅负责已配置当前目标生成。缺安装/启用/程序集/Config DLL/link及资源前置时明确阻塞并转既有准备入口，不关闭开关、伪造标记或用普通APK代替；三平台Batch保存不代表逐平台生成或Player/运行已通过。"
   ],
   "externalCompletionPolicy": "incidental-build-telemetry"
 }

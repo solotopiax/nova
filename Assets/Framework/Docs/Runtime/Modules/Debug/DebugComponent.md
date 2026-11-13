@@ -10,24 +10,24 @@ Debug 模块当前的运行时入口非常薄：它负责决定是否初始化 R
 
 | 文件 | 作用 |
 |---|---|
-| `DebugComponent.cs` | Awake / Start 主流程 |
-| `DebugComponent.Visitors.cs` | Inspector 配置与只读属性 |
-| `DebugComponent.Methods.cs` | `IsDebuggerActive()` 环境判断 |
-| `Definitions/**` | Debug 模块原有定义与事件数据 |
-| `Managers/**` | Debug 模块原有 Manager 契约、配置和实现 |
-| `Windows/**` | `DebugComponent` 运行时入口文件 |
-| `Core/Debugger/**` | 迁入的内置 RuntimeDebugger 实现，已改为 Nova 命名 |
-| `Core/Foundation/**` | 迁入的调试器基础工具、服务注册、UI 基础组件 |
-| `Core/Options/**` | 迁入的 `DebugOptions` 运行时选项容器 |
+| [DebugComponent.cs](../../../../Scripts/Runtime/Modules/Debug/Windows/DebugComponent.cs) | Awake / Start 主流程 |
+| [DebugComponent.Visitors.cs](../../../../Scripts/Runtime/Modules/Debug/Windows/DebugComponent.Visitors.cs) | Inspector 配置与只读属性 |
+| [DebugComponent.Methods.cs](../../../../Scripts/Runtime/Modules/Debug/Windows/DebugComponent.Methods.cs) | `IsDebuggerActive()` 环境判断 |
+| [Definitions/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Definitions) | Debug 模块原有定义与事件数据 |
+| [Managers/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Managers) | Debug 模块原有 Manager 契约、配置和实现 |
+| [Windows/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Windows) | `DebugComponent` 运行时入口文件 |
+| [Core/Debugger/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Core/Debugger) | 迁入的内置 RuntimeDebugger 实现，已改为 Nova 命名 |
+| [Core/Foundation/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Core/Foundation) | 迁入的调试器基础工具、服务注册、UI 基础组件 |
+| [Core/Options/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Core/Options) | 迁入的 `DebugOptions` 运行时选项容器 |
 
-`Core/**` 下不再保留独立 Debugger/Foundation asmdef，所有运行时代码统一编译进 `NovaFramework.Runtime`。当前不再保留调试器专属 `Assets/Framework/Scripts/Editor/Debugger` 目录；Debug 模块的编辑期入口只保留框架原有 `DebugComponentInspector`。
+[Core/ 及子目录](../../../../Scripts/Runtime/Modules/Debug/Core) 下不再保留独立 Debugger/Foundation asmdef，所有运行时代码统一编译进 `NovaFramework.Runtime`。历史调试器专属 `Scripts/Editor/Debugger` 目录已移除；当前编辑期入口见 [DebugComponentInspector](../../../Editor/Inspectors/DebugComponentInspector/DebugComponentInspector.md)。
 
 ## 工作流触发规则
 
 Debug 模块触及运行时调试器、资源目录、程序集边界或旧插件拆分时，必须按 L2 处理：
 
 1. 先触发 `nova-prelookup`，最小范围查询 `Minds` 中的 Debug 图谱、程序集边界和 Docs 同步规则。
-2. 同轮更新 `Assets/Framework/Docs/Runtime/Modules/Debug/**` 与全局索引中的 Debug 入口。
+2. 同轮更新 [Debug 模块文档及子目录](./) 与全局索引中的 Debug 入口。
 3. 如果移动资源、删除 Editor 目录、归并 asmdef、改命名空间或公开 API，必须显式复核 `Docs` 中旧路径、旧术语、旧类名是否残留。
 4. 只有产生长期决策或术语口径时才写 `Minds` 正文；普通当前事实写入 `Docs`。
 

@@ -5,11 +5,11 @@ description: Use when Nova 项目组需要配置 Pipify 的 Google Play AAB 上�
 
 # Nova 上传 Google Play AAB
 
-触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
 
 ## 渐进式披露
 
-先读 `references/contract.json`，确定本次是配置、上传还是只读排障。仅在核对参数或一次性准备时读取当前包的 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`；执行 Batch 时再读 Pipify 与 AgentActions 对应文档；失败时读 [排障参考](references/troubleshooting.md)。消费项目只依赖自身事实和已安装包，不依赖 Nova 主仓的账号、凭据默认值或目录。
+先读 [references/contract.json](references/contract.json)，确定本次是配置、上传还是只读排障。仅在核对参数或一次性准备时读取当前包的 [Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)；执行 Batch 时再读 Pipify 与 AgentActions 对应文档；失败时读 [排障参考](references/troubleshooting.md)。消费项目只依赖自身事实和已安装包，不依赖 Nova 主仓的账号、凭据默认值或目录。
 
 ## 范围与输入
 
@@ -28,7 +28,7 @@ description: Use when Nova 项目组需要配置 Pipify 的 Google Play AAB 上�
 3. 提供管理员操作指引：在 **Play Console → 用户和权限** 添加凭据的 `client_email`，授权实际目标应用。内部测试核对“查看应用信息（只读）”和“将应用发布到测试轨道”；正式轨道再核对正式版发布权限。Cloud IAM 角色不替代 Play Console 应用权限。此 Skill 不代执行账号、密钥或后台权限变更。
 4. 通过 **Nova/Open Pipify** 的现有参数界面配置、保存资产；Unity 序列化资产只经当前可用的 Editor 自动化或人工操作，不手写 YAML，也不创建任意 C# runner 绕过执行层。
 
-凭据只填写相对 Unity 项目根的 JSON 路径，例如 `Docs/evidences/googleplay_upload/credentials.json`，Step 执行时转为绝对路径，允许项目内外文件。只检查必要的 `type`、`project_id`、`client_email`；不要输出整个 JSON、私钥或 token，也不把凭据复制到日志、Skill、公开产物或客户端中。
+凭据只填写相对 Unity 项目根的 JSON 路径，例如 [Docs/evidences/googleplay_upload/credentials.json（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.Setup.md)，Step 执行时转为绝对路径，允许项目内外文件。只检查必要的 `type`、`project_id`、`client_email`；不要输出整个 JSON、私钥或 token，也不把凭据复制到日志、Skill、公开产物或客户端中。
 
 已有 AAB 的 `AabPath`、`PackageName` 必须成对填写；AAB 可用绝对路径或项目根相对路径。两者同时留空时，只允许使用同一 Batch 最新明确成功的非 Development Android AAB 和构建时包名。独立上传 Batch 不能引用另一条 Batch 的上下文。`FastlanePath` 可留空自动探测，也支持绝对路径、项目根相对路径或 PATH 命令名。
 

@@ -10,7 +10,7 @@
 
 Windows 使用 py -3 -B。xlsx 读取依赖当前 Python 的 openpyxl；缺失返回 blocked，不自动安装。输出实际 Sheet、有效 Key、语言、Desc 存在性、追加行、待用列、整文件 sourceHash 和 languageSourceHash。可选 --sheet 只筛选检查输出，不缩小 Plan 对整个工作簿的语言集合检查。
 
-语言名从当前随包 Scripts/Runtime/Core/Definitions/Language.cs 的真实 NovaFramework.Runtime.Language 枚举解析，不维护第二份清单；拒绝数字、大小写近似、别名和 Unspecified。Plan 绑定该声明摘要，包更新或源码漂移后重新规划。
+语言名从当前随包 [Scripts/Runtime/Core/Definitions/Language.cs](../../Scripts/Runtime/Core/Definitions/Language.cs) 的真实 NovaFramework.Runtime.Language 枚举解析，不维护第二份清单；拒绝数字、大小写近似、别名和 Unspecified。Plan 绑定该声明摘要，包更新或源码漂移后重新规划。
 
 只接受已有 Nova 四行标记 Sheet：##comment / ##var / ##type / ##comment，已有唯一 Name、可选 Desc/#Desc 和至少一种真实 Language，类型均为 string。兼容单个 #English；多重 #、未知字段、重复语言、重复/敏感 Key、公式和异常结构拒绝。所有有效 Sheet 的原/最终语言集合一致；# 开头的非导出页不改。
 

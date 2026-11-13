@@ -10,7 +10,7 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Luban.JsonMerger.cs` | `EditorUtil.Luban.JsonMerger` | __tables__.xml 解析 + JSON 文件读取合并 + 输出写入 |
+| [EditorUtil.Luban.JsonMerger.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.JsonMerger.cs) | `EditorUtil.Luban.JsonMerger` | __tables__.xml 解析 + JSON 文件读取合并 + 输出写入 |
 
 ---
 

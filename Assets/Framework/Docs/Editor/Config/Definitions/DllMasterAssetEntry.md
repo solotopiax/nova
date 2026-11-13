@@ -11,7 +11,7 @@ DLL 主配置条目（编辑期三字段视图），供 `ConfigMasterSO` 持有�
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| `Editor/Config/Definitions/DllMasterAssetEntry.cs` | `DllMasterAssetEntry` | 结构体定义：三个 `[SerializeField]` 私有字段 + 对应只读属性 |
+| [Editor/Config/Definitions/DllMasterAssetEntry.cs](../../../../Scripts/Editor/Config/Definitions/DllMasterAssetEntry.cs) | `DllMasterAssetEntry` | 结构体定义：三个 `[SerializeField]` 私有字段 + 对应只读属性 |
 
 ---
 

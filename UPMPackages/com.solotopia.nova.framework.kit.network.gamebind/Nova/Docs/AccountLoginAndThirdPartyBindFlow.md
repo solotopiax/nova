@@ -200,4 +200,4 @@ else
 - [Bind.md](./Bind.md)
 - [BindErrorCode.md](./BindErrorCode.md)
 - [BindKitConfig.md](./BindKitConfig.md)
-- GameLogin package：`Nova/Docs/Login.md`
+- GameLogin package：[Nova/Docs/Login.md](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.kit.network.gamelogin` 包内 `Nova/Docs/Login.md`）
