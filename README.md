@@ -16,7 +16,7 @@
 
 - Unity `6000.4.x`，最低版本为 `6000.4.2f1`。
 - Built-in Render Pipeline、IL2CPP、.NET Standard 2.1、C# 9。
-- 可访问 Solotopia UPM Registry：[https://upm.solotopiax.com](https://upm.solotopiax.com)，以及 [OpenUPM](https://package.openupm.com)。
+- 可访问 Solotopia UPM Registry：[https://upm.solotopiax.com](https://upm.solotopiax.com)，以及 OpenUPM。
 - Android / iOS 构建需配置对应的平台模块、SDK 与签名环境。
 
 ## 核心依赖
