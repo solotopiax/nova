@@ -51,30 +51,34 @@
 ## 架构概览
 
 ```mermaid
-%%{init: {"flowchart": {"nodeSpacing": 18, "rankSpacing": 40, "padding": 0, "subGraphTitleMargin": {"top": 16, "bottom": 20}, "curve": "linear"}}}%%
+%%{init: {"flowchart": {"nodeSpacing": 45, "rankSpacing": 18, "padding": 0, "subGraphTitleMargin": {"top": 16, "bottom": 20}, "curve": "linear"}}}%%
 flowchart LR
+    %% 不可见连线固定栏内纵向顺序，避免不同渲染器自动改排。
     subgraph Project["<b>项目开发</b>"]
-        direction LR
+        direction TB
         Business("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>游戏业务</b><br/>玩法逻辑 · 界面交互<br/>关卡内容 · 商业化接入</span></div>")
         Delivery("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>研发交付</b><br/>资源与数据 · 项目配置<br/>测试排障 · 构建发布</span></div>")
         Methods("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>开发方式</b><br/>AI 开发 · 业务代码<br/>可视化操作</span></div>")
+        Business ~~~ Delivery ~~~ Methods
     end
 
     subgraph Suite["<b>Nova</b>"]
-        direction LR
+        direction TB
         Runtime("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>运行时框架</b><br/>资源 · 场景 · 界面<br/>网络 · 数据 · 存储<br/>流程 · 热更新 · 本地化<br/>事件 · 对象池 · 音频触觉</span></div>")
         Tools("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>开发工具</b><br/>配置管理 · 数据导出<br/>构建流水线 · 发布上传<br/>可插拔云仓库<br/>包管理 · 环境检查</span></div>")
         Extensions("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>扩展生态</b><br/>SDK · Kit · 框架扩展<br/>广告 · 支付 · 数据统计<br/>登录 · 云存档 · 内存防护</span></div>")
+        Runtime ~~~ Tools ~~~ Extensions
     end
 
     subgraph Foundation["<b>Unity 与基础依赖</b>"]
-        direction LR
+        direction TB
         Engine("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>引擎能力</b><br/>渲染 · 动画 · 物理<br/>输入 · 音频 · 平台接口</span></div>")
         Libraries("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>基础组件</b><br/>YooAsset · HybridCLR<br/>UniTask · Luban · SQLCipher</span></div>")
         Engineering("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>工程基础</b><br/>UPM · IL2CPP<br/>多平台构建</span></div>")
+        Engine ~~~ Libraries ~~~ Engineering
     end
 
-    Project --> Suite --> Foundation
+    Project ---> Suite ---> Foundation
 
     classDef capability fill:#1b3552,stroke:#60a5fa,color:#f1f5f9
     class Business,Delivery,Methods,Runtime,Tools,Extensions,Engine,Libraries,Engineering capability
