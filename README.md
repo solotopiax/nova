@@ -124,8 +124,8 @@ Nova 提供运行时框架、开发工具与扩展生态，支持 AI 开发、�
 
 ## 快速开始
 
-1. 在 Unity Package Manager 中选择 **Nova Framework**，导入 **MainDemo**。
-2. 按导入提示设置启动场景，进入 Play Mode。
+1. 在 Unity 中选择 **Nova → Open PlugPals → Nova Framework → 导入 MainDemo**。
+2. 导入完成后，按提示设置启动场景并进入 Play Mode。
 3. 参照 [演示索引](Assets/Samples/MainDemo/DEMO-INDEX.md) 体验各模块，并查看对应示例代码。
 
 接入自己的项目时，从 [接入指南](Assets/Framework/Docs/START_HERE.md) 开始。
