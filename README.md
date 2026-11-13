@@ -1,215 +1,148 @@
 # Nova
 
-![](Assets/Samples/AppIcons/Logo.png)
+![Nova](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 ![release](https://img.shields.io/badge/release-v0.7.9-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
-**Nova 是 Solotopia 基于 Unity 深度定制的一套游戏客户端通用解决方案**，把资源、UI、网络、热更、配置、存档、多语言、SDK 接入等通用底座统一收敛、持续维护，让业务团队只需聚焦玩法本身。
+**Nova 是 Solotopia 面向 Unity 游戏开发的客户端框架。**
 
-本页是源码仓的开发态入口，仓内链接均相对于本文件。消费项目安装后，先从 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按包名 `com.solotopia.nova.framework` 查找，以其 `resolvedPath` 为根打开 `Docs/START_HERE.md` 或 `Docs/INDEX.md`；SDK、Kit 和扩展包分别按自己的包名定位。Sample 以 Package Manager 的实际导入清单和目录为准，不照搬下方的源码仓目录。
+集成资源管理、界面、网络、热更新与数据存储，配套配置、构建、包管理工具与 AI 开发能力，覆盖从项目接入到构建发布的日常工作。
 
----
+[核心能力](#核心能力) · [安装](#安装) · [快速开始](#快速开始) · [文档与示例](#文档与示例)
 
 ## 系统需求
 
-- 仅支持 Unity `6000.4.x`，最低版本为 `6000.4.2f1`。更高的 Unity 次版本存在 HybridCLR 兼容问题。
+- Unity `6000.4.x`，最低版本为 `6000.4.2f1`。
 - Built-in Render Pipeline、IL2CPP、.NET Standard 2.1、C# 9。
-- 可访问 Solotopia UPM Registry；EDM 与默认 Unity MCP Provider 通过 OpenUPM 解析。
-- Android / iOS 构建仍需安装相应平台模块、SDK 与签名环境。
+- 可访问 Solotopia UPM Registry：[https://upm.solotopiax.com](https://upm.solotopiax.com)，以及 [OpenUPM](https://package.openupm.com)。
+- Android / iOS 构建需配置对应的平台模块、SDK 与签名环境。
 
 ## 核心依赖
 
-| 包名 | 版本 |
-|---|---|
-| com.unity.textmeshpro | 3.0.9 |
-| com.unity.nuget.newtonsoft-json | 3.2.2 |
-| com.unity.inputsystem | 1.20.1 |
-| com.unity.scriptablebuildpipeline | 4.0.1 |
-| com.solotopia.hybridclr | 10.1.1 |
-| com.solotopia.unitask | 10.0.6 |
-| com.solotopia.sqlcipher4unity3d | 10.0.5 |
-| com.solotopia.simplediskutils | 1.0.7 |
-| com.solotopia.excelio | 1.0.6 |
-| com.solotopia.nicevibrations | 10.0.6 |
-| com.solotopia.luban | 10.1.0 |
-| com.solotopia.yooasset | 1.2.1 |
-| com.solotopia.nova.framework.mcp | 0.1.9 |
+下表列出当前源码工程使用的主要包版本，完整依赖声明见 [Framework 包清单](Assets/Framework/package.json)。
 
-Android AAB 可通过 Pipify 上传 Google Play，默认内部测试草稿；配置与上传边界见 [Google Play 上传说明](./Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)。
+<table>
+<tr>
+<td valign="top" width="50%">
+<table>
+<tr><th align="left" width="300">包名</th><th width="60">版本</th></tr>
+<tr><td><code>com.solotopia.hybridclr</code></td><td>10.1.2</td></tr>
+<tr><td><code>com.solotopia.yooasset</code></td><td>1.2.2</td></tr>
+<tr><td><code>com.solotopia.unitask</code></td><td>10.0.7</td></tr>
+<tr><td><code>com.unity.inputsystem</code></td><td>1.20.1</td></tr>
+<tr><td><code>com.unity.textmeshpro</code></td><td>5.0.0</td></tr>
+</table>
+</td>
+<td valign="top" width="50%">
+<table>
+<tr><th align="left" width="300">包名</th><th width="60">版本</th></tr>
+<tr><td><code>com.solotopia.luban</code></td><td>10.1.1</td></tr>
+<tr><td><code>com.solotopia.sqlcipher4unity3d</code></td><td>10.0.6</td></tr>
+<tr><td><code>com.unity.nuget.newtonsoft-json</code></td><td>3.2.2</td></tr>
+<tr><td><code>com.unity.scriptablebuildpipeline</code></td><td>4.0.1</td></tr>
+<tr><td><code>com.solotopia.nova.framework.mcp</code></td><td>0.1.9</td></tr>
+</table>
+</td>
+</tr>
+</table>
 
 ## 架构概览
 
 ```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 18, "rankSpacing": 40, "padding": 0, "subGraphTitleMargin": {"top": 16, "bottom": 20}, "curve": "linear"}}}%%
 flowchart LR
-    Business[业务代码] --> Nova[Nova.* 静态门面]
-    Nova --> Components[Runtime Components]
-    Components --> Managers[Managers / 生命周期]
-    Components --> Services[资源 · 网络 · UI · 配置 · 存档]
-    Editor[Editor 工具] --> Pipeline[配置与构建流水线]
-    Pipeline --> Components
-    Packages[Kit / SDK 子包] --> Nova
+    subgraph Project["<b>项目开发</b>"]
+        direction LR
+        Business("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>游戏业务</b><br/>玩法逻辑 · 界面交互<br/>关卡内容 · 商业化接入</span></div>")
+        Delivery("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>研发交付</b><br/>资源与数据 · 项目配置<br/>测试排障 · 构建发布</span></div>")
+        Methods("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>开发方式</b><br/>AI 开发 · 业务代码<br/>可视化操作</span></div>")
+    end
+
+    subgraph Suite["<b>Nova</b>"]
+        direction LR
+        Runtime("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>运行时框架</b><br/>资源 · 场景 · 界面<br/>网络 · 数据 · 存储<br/>流程 · 热更新 · 本地化<br/>事件 · 对象池 · 音频触觉</span></div>")
+        Tools("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>开发工具</b><br/>配置管理 · 数据导出<br/>构建流水线 · 发布上传<br/>可插拔云仓库<br/>包管理 · 环境检查</span></div>")
+        Extensions("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>扩展生态</b><br/>SDK · Kit · 框架扩展<br/>广告 · 支付 · 数据统计<br/>登录 · 云存档 · 内存防护</span></div>")
+    end
+
+    subgraph Foundation["<b>Unity 与基础依赖</b>"]
+        direction LR
+        Engine("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>引擎能力</b><br/>渲染 · 动画 · 物理<br/>输入 · 音频 · 平台接口</span></div>")
+        Libraries("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>基础组件</b><br/>YooAsset · HybridCLR<br/>UniTask · Luban · SQLCipher</span></div>")
+        Engineering("<div style='width:232px;height:144px;display:flex;align-items:center;justify-content:center'><span><b>工程基础</b><br/>UPM · IL2CPP<br/>多平台构建</span></div>")
+    end
+
+    Project --> Suite --> Foundation
+
+    classDef capability fill:#1b3552,stroke:#60a5fa,color:#f1f5f9
+    class Business,Delivery,Methods,Runtime,Tools,Extensions,Engine,Libraries,Engineering capability
+    style Project fill:#152234,stroke:#64748b,color:#e2e8f0
+    style Suite fill:#101b2b,stroke:#475569,color:#dbeafe
+    style Foundation fill:#152234,stroke:#64748b,color:#e2e8f0
 ```
 
----
+Nova 提供运行时框架、开发工具与扩展生态，支持 AI 开发、代码接入和可视化操作。
 
 ## 核心能力
 
-Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.*` 静态门面暴露，调用契约一致、风格统一：
+| 能力 | 用途 |
+|---|---|
+| 启动与热更新 | 启动流程编排、版本检查、资源更新与业务代码加载。 |
+| 资源与场景 | 同步 / 异步加载、下载与缓存、场景加载及 Prefab 实例管理。 |
+| 界面与本地化 | 界面生命周期、分组与层级管理，多语言切换与字体适配。 |
+| 数据与配置 | 强类型数据表、本地与远端应用配置，以及 SDK、Kit 配置访问。 |
+| 本地存储 | PlayerPrefs、分片文件与加密 SQLite 存储。 |
+| 网络通信 | HTTP、WebSocket 与业务请求的主备域名切换。 |
+| 音频与触觉 | 音乐、音效、声音组控制与移动端振动反馈。 |
+| 应用与系统 | Android 安装包下载、通知权限、系统设置跳转与应用内评价请求。 |
+| 基础设施 | 事件、状态机、对象池、引用池、日志与运行时调试。 |
+| SDK 与 Kit | 按需接入广告、登录、支付、统计等 SDK，以及独立功能套件。 |
 
-| 子系统 | 访问 | 职责 |
-|---|---|---|
-| 入口 | `Nova` | 框架全局根节点与静态访问器门面，挂载于场景即完成全部子系统的统一注册与生命周期接线，业务侧仅通过 `Nova.*` 调用。 |
-| 事件 | `Nova.Event` | 支持泛型订阅 / 注销与按类型派发，事件参数基于引用池复用实现零 GC，跨模块通信的首选通道。 |
-| 对象池 | `Nova.ObjectPool` | 对象池与引用池双轨：纯 C# 对象走 `IReference` 栈式分配回收，GameObject 走通用容器，覆盖高频实例化与销毁场景。 |
-| 调试 | `Nova.Debug` | 运行时调试面板与诊断工具，提供运行期日志查看、性能指标监控与变量检视，便于真机与开发期问题定位。 |
-| 配置 | `Nova.Config` | 运行时配置访问层，承载 SDK 插件配置与 Kit 套件配置的注入、查询与变更通知，业务侧不直接持有配置实例。 |
-| 持久化 | `Nova.Persist` | 多种本地存储实现，统一封装 `PlayerPrefs`、分片文件 `FileFragment` 与加密 `SQLite`，按数据规模与安全要求择优落盘。 |
-| 资源管理 | `Nova.Asset` | 资源加载、下载、缓存与热更，基于 YooAsset 封装，提供同步 / 异步加载、引用计数与场景加载，释放由加载方负责；支持可选 Bundle 与清单加解密，Sample 默认不加密。 |
-| 预制体 | `Nova.Prefab` | 预制体实例化与回收，内部复用对象池，适合子弹、特效、列表项等高频生成销毁场景，避免运行期 GC 抖动。 |
-| 数据表 | `Nova.Table` | 基于 Luban 导出的表格数据查询，按类型强类型取表与取行，支持运行期按需加载与表存在性判断。 |
-| 本地化 | `Nova.Localization` | 多语言运行时切换，文本键取值、缺失检测与字体适配，支持运行期切换语言而无需重启。 |
-| 音频 | `Nova.Sound` | 音频播放与声音组管理，按组独立调节音量与静音，区分 BGM、音效与 UI 音，支持播放暂停与释放。 |
-| 触觉 | `Nova.Vibrate` | 触觉振动反馈，封装 Nice Vibrations，提供预设振动模式与自定义波形，适配 iOS / Android 差异。 |
-| 原生能力 | `Nova.Native` | 查询与请求通知权限、跳转应用或通知设置，以及请求应用内评价；平台桥接、并发协调与回调清理由 Native Manager 统一处理。 |
-| 界面 | `Nova.UI` | 界面生命周期与栈式管理，支持异步 / 同步打开关闭、界面分组与层级控制，自动复用实例池，覆盖弹窗、主界面与多层叠加场景。 |
-| 网络 | `Nova.Network` | 网络通信层，封装 HTTP / WebSocket 请求；HTTP 固定使用 UnityWebRequest 与系统 DNS，HostKey + NetCmd 业务请求支持主备域名切换。 |
-| SDK 接入 | `Nova.SDK` | 第三方 SDK 的统一装配与初始化入口；广告、登录、支付和统计等具体能力由对应的独立 SDK UPM 包按需安装。 |
-| 流程 | `Nova.Procedure` | 基于有限状态机的启动流程编排，串联闪屏、版本检查、强更 / 热更、业务 DLL 加载等节点，节点间切换受控且可观测。 |
-| 应用 | `Nova.App` | 应用入口，负责版本检查、强制更新与新安装包下载，协调各子系统按启动阶段顺序就绪，是运行期的顶层编排者。 |
-| 检查器 (Editor) | `Inspectors` | 各 Component 的自定义 Inspector，配置字段在 Unity 面板内可视化编辑与校验，配合 HelpBox 提示约束，降低误配风险。 |
-| 窗口 (Editor) | `Windows` | 配置、环境、流水线、包管理等编辑器工具面板，集中管理框架与项目级设置，提供可视化操作入口。 |
-| 数据流水线 (Editor) | `DataPipeline` | 配置与资源的数据导出 / 处理流水线，串联 Luban 导出、Excel 读取与中间产物清理，保障表格数据从源到运行时的一致性。 |
-| 构建处理 (Editor) | `BuildProcessor` | 构建预 / 后处理流程，覆盖 Android / iOS 平台、Manifest 规则、Gradle 模板与构建上下文，自动对齐发布设置。 |
-| 编辑器工具 (Editor) | `EditorUtil` | 可复用编辑器基础设施，聚合 asmdef、Asset、Build、HybridCLR、Luban、Network、Pipify、PlugPals 等工具集，支撑上层工具开发。 |
-| 工具 (Editor) | `Tools` | 更高层级的部署与一键工具入口，封装常用编辑器操作为可复用命令，便于团队定制与自动化。 |
+配套开发工具：
 
----
+| 工具 | 用途 |
+|---|---|
+| Config | 按平台、渠道与开发模式管理配置，导出运行时配置。 |
+| 数据导出 | 将表格转换为运行时数据与访问代码，覆盖业务表、界面、网络、本地化、音频和振动配置。 |
+| Pipify | 可视化编排数据导出、热更新准备、资源构建、Player 构建与发布上传。 |
+| PlugPals | 可插拔云仓库与插件管理，支持包发现、安装、升级与卸载。 |
+| AI 开发 | 通过自然语言完成项目接入、业务与界面开发、配置、构建和排障。 |
 
 ## 安装
 
-1. 下载火种脚本 [NovaSpark.cs](./NovaSpark.cs)，放入消费项目的 `Assets/Editor/`。
-2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会显式安装 Nova Framework、MemoryProtection、Nova MCP 和 EDM，补齐所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
-3. 等待包解析、编译和 AI 工具链自动安装、绑定完成。缺失工具会自动补齐，失败自动重试；Console 显示实际结果，本地复核通过后脚本才自删除。无需项目组执行补装命令。PlugPals 的手动打开入口为 `Nova/Open PlugPals`；工具链重试入口为 `Nova/Check and Setup AI Toolchain`。
+1. 下载 [NovaSpark.cs](NovaSpark.cs)，放入项目的 `Assets/Editor/`。
+2. Unity 编译完成后，在弹窗中点击 **引入框架**。
+3. 等待依赖包与 AI 开发工具自动配置完成。
 
-默认直接安装的包：
-
-- Nova Framework：`com.solotopia.nova.framework@0.7.9`。
-- Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.4`。
-- Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.9`。
-- EDM：`com.google.external-dependency-manager@1.2.190`。
-
-Nova Framework - MCP 提供 Nova 的 MCP 接入基础，`com.coplaydev.unity-mcp` 是其当前使用的 Unity MCP Provider，由包依赖经 OpenUPM 自动解析，不另写入工程的直接依赖。
-
-MemoryProtection 包默认安装，实际防篡改还需单独安装兼容的 **Anti-Cheat Toolkit**；NovaSpark 不自动安装这个付费插件。已获授权的内网项目可打开 **Nova → Open PlugPals → 内部云仓库**，安装 `com.codestage.anti.cheat.tookit`；未安装或不兼容时保留普通数值读写，不提供内存防篡改能力。
-
-NovaSpark 会修改项目配置。已有 Nova 项目重复导入时，它会先列出待矫正项并等待确认；本仓这类使用本地 `file:` Framework 的源码工程会自动跳过。
-
-确认矫正后，脚本按随脚本提供的目标值覆盖依赖版本和同名 Registry URL，并重写 PlugPals 固定配置，可能替换已有定制值；它不比较版本高低，也不提供跨文件事务回滚。脚本等待实际包图、编译以及工具链自动安装绑定通过后才删除自身。手动升级 Framework 后同样自动补齐缺项，失败继续自动重试；需要立即重试时使用 `Nova/Check and Setup AI Toolchain`。安装范围和当前聊天连接的独立验收见 [AI 工具链安装](Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
-
----
+安装与工具链说明见 [安装指南](Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)。
 
 ## 快速开始
 
-### 先运行 MainDemo
+1. 在 Unity Package Manager 中选择 **Nova Framework**，导入 **MainDemo**。
+2. 按导入提示设置启动场景，进入 Play Mode。
+3. 参照 [演示索引](Assets/Samples/MainDemo/DEMO-INDEX.md) 体验各模块，并查看对应示例代码。
 
-首次接触 Nova 时，建议先在 Unity Package Manager 中导入 `Nova Framework / MainDemo`，按提示确认旧 Sample 检测与启动场景设置，然后进入 Play Mode。MainDemo 是可运行参考，不是强制项目模板；详细步骤见 [MainDemo README](./Assets/Samples/MainDemo/README.md)。
+接入自己的项目时，从 [接入指南](Assets/Framework/Docs/START_HERE.md) 开始。
 
-自建项目应先阅读 [Nova Agent 快速入口](./Assets/Framework/Docs/START_HERE.md)，根据项目现有拓扑接入完整的 canonical `Nova.prefab`，并完成所需配置、资源与数据初始化后再调用 `Nova.*` API。
+## 文档与示例
 
-```csharp
-using NovaFramework.Runtime;
-```
+| 入口 | 内容 |
+|---|---|
+| [接入指南](Assets/Framework/Docs/START_HERE.md) | 项目接入与开发起步。 |
+| [使用手册](Assets/Framework/Docs/INDEX.md) | 运行时 API、编辑器工具与模块示例。 |
+| [架构说明](Assets/Framework/Docs/ARCHITECTURE.md) | 模块划分与职责边界。 |
+| [MainDemo](Assets/Samples/MainDemo/README.md) | 安装、运行与示例说明。 |
+| [AI 开发指南](Assets/Framework/Docs/Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) | 自然语言开发与常用任务入口。 |
+| [更新日志](CHANGELOG.md) | 版本变化与升级说明。 |
 
-### 加载资源
+## 参与贡献
 
-```csharp
-var handle = await Nova.Asset.LoadAsync<Sprite>("icons/hero");
-image.sprite = handle.Asset;
-handle.Release();
-```
-
-### 实例化 Prefab
-
-```csharp
-var instance = await Nova.Prefab.InstantiateAsync("prefabs/bullet", parent);
-Nova.Prefab.Destroy(instance);
-```
-
-### 打开 UI
-
-```csharp
-var serialId = Nova.UI.OpenUIViewAsync<MyView>();
-```
-
-### 订阅与派发事件
-
-```csharp
-void OnEnable()  => Nova.Event.Subscribe<MyEvent>(OnEvent);
-void OnDisable() => Nova.Event.Unsubscribe<MyEvent>(OnEvent);
-
-var evt = ReferencePool.Get<MyEvent>();
-Nova.Event.Fire(this, evt);
-```
-
-### 查询表格
-
-```csharp
-var row = Nova.Table.GetTable<TbItem>().Get(itemId);
-```
-
----
-
-## 源码仓目录结构（开发态）
-
-```
-Assets/Framework/Scripts/Runtime/  # 运行时核心与业务模块
-Assets/Framework/Scripts/Editor/   # 编辑器工具 / Inspector / 窗口 / 流水线
-Assets/Framework/Docs/             # 事实层文档
-Assets/Framework/Minds/            # 知识层文档（Obsidian Vault）
-Assets/Samples/                    # 示例与演示（MainDemo 等）
-UPMPackages/com.solotopia.*/       # 配套基础库 / Kit / SDK 包
-Packages/manifest.json             # 工程依赖入口
-```
-
----
-
-## 文档体系
-
-Nova 采用双层文档体系，团队多年沉淀持续累积：
-
-```
-Assets/Framework/
-├── Docs/                # 事实层：当前 API、字段、调用步骤（随代码同步）
-│   ├── INDEX.md         # 按任务类型导航
-│   ├── ARCHITECTURE.md  # 总体架构
-│   ├── Runtime/         # 运行时模块文档
-│   └── Editor/          # 编辑器扩展文档
-└── Minds/               # 知识层：架构决策、术语、模式、踩坑结论（Obsidian Vault）
-```
-
-- **Docs（事实层）回答"如何使用"** —— 日常实现任务与业务开发的优先入口。
-- **Minds（知识层）回答"为何如此设计"** —— 调整 public API / 命名 / 架构边界时查阅。
-- **冲突时以 Docs + 源码为基线**；未命中时如实说明，禁止凭印象编造。
-
-常用入口：[Start Here](./Assets/Framework/Docs/START_HERE.md) · [Docs Index](./Assets/Framework/Docs/INDEX.md) · [Architecture](./Assets/Framework/Docs/ARCHITECTURE.md) · [Nova Project Skills](./Assets/Framework/Agents/INDEX.md)
-
-源码仓维护者按上述入口查阅 Docs 与 Minds。消费项目从已安装包的 Docs 和 Agents 进入日常任务，无需拥有源码仓的 Minds 或 `.nova`。
-
----
-
-## 版本与参与
-
-- 版本变化与升级注意事项见 [CHANGELOG](./CHANGELOG.md)。
-- 贡献代码或提交问题前请阅读 [CONTRIBUTING](./CONTRIBUTING.md) 与 [Code of Conduct](./CODE_OF_CONDUCT.md)。
-- 安全漏洞请按 [SECURITY](./SECURITY.md) 提供的私密渠道报告，不要提交公开 Issue。
-
----
+提交问题或贡献代码，请参阅 [贡献指南](CONTRIBUTING.md) 与 [行为准则](CODE_OF_CONDUCT.md)。安全问题请通过 [安全报告渠道](SECURITY.md) 反馈。
 
 ## 许可证
 
-本项目基于 [MIT License](./LICENSE) 开源。
+本项目基于 [MIT License](LICENSE) 开源。
 
 Copyright © 2026 Solotopia

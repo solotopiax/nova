@@ -1,0 +1,7 @@
+
+# BEGIN NOVA UNITY MCP 0db84eb2cf71833f
+[mcp_servers.nova_unity_0db84eb2cf71833f]
+enabled = true
+startup_timeout_sec = 120
+url = "http://127.0.0.1:8080/mcp"
+# END NOVA UNITY MCP 0db84eb2cf71833f
