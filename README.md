@@ -3,7 +3,7 @@
 ![Nova](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.9-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.10-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
 
 **Nova 是 Solotopia 面向 Unity 游戏开发的客户端框架。**

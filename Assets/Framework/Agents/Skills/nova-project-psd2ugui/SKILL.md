@@ -1,6 +1,6 @@
 ---
 name: nova-project-psd2ugui
-description: 在 Nova 项目中使用已安装的 PSD2UGUI 将 PSD/PSB 制作成 uGUI，查询配置与图层来源、同步或调整编辑树、生成界面与导出图片，以及运行或应用 AI 识别时使用；业务 UIView 注册与运行接入转交现有页面 Skill。
+description: 在 Nova 项目中使用 PSD2UGUI 制作 uGUI，查询或修改插件面板参数、控件规则、编辑树及控件引用，换用设计源、生成界面、导出图片或应用 AI 识别时使用；业务 UIView 注册与运行接入转交现有页面 Skill。
 ---
 
 # 从 PSD 制作和维护 uGUI
@@ -29,14 +29,17 @@ description: 在 Nova 项目中使用已安装的 PSD2UGUI 将 PSD/PSB 制作成
 
 | 用户目标 | `run.operation` 与按需资料 |
 |---|---|
-| 建立可编辑树、同步更新设计源、改节点 | `prepare` / `sync` / `patch-nodes`；[编辑树与来源](references/edit-tree.md) |
-| 修改项目配置、复制缺少的 AI 提示模板 | `configure`；[编辑树与来源](references/edit-tree.md)，只修改明确字段 |
+| 建立可编辑树、同步更新设计源、修改节点及树设置、调整层级或控件引用槽位 | `prepare` / `sync` / `patch-nodes`；[编辑树与来源](references/edit-tree.md) |
+| 换用另一份设计源继续制作，保留原树与旧产物 | `rebind-source`；[编辑树与来源](references/edit-tree.md)，为新源建立独立树，不把旧节点身份迁移到新源 |
+| 修改配置面板、控件规则与模板、工程设置、AI 调试选项，或复制缺少的提示模板 | `configure`；[编辑树与来源](references/edit-tree.md)，先读当前值和可选项，仅修改本次目标 |
 | 生成或更新界面、导出选中图层图片、处理九宫格 | `generate` / `export-images` / `nine-slice`；[生成与图片](references/generate-and-images.md) |
 | AI 识别后应用、单独重放已确认的缓存结果 | `run-ai` / `apply-ai`；[AI 识别](references/ai.md)，应用须绑定本轮 `jobId` |
 
 读清分支后按 `describe → plan → execute → verify` 执行。Plan 必须展示实际源、目标、操作、输出及潜在覆盖/删除；已有授权覆盖时直接绑定本次计划，不重复询问。范围变化或输入漂移重新计划；重载、取消、失败后依据回执只读核验，不自动重放写入。
 
-请求中的资产与目录均为 [Assets/（项目位置）](../../../Docs/Onboarding/PROJECT_STRUCTURE.md) 下的项目相对路径；每个操作只传它允许的字段，不能把查询响应或完整配置对象原样回传。`configure` 要求准确 `configAssetPath`，`nine-slice` 要求准确 `spriteAssetPath`，其他写操作要求已发现的 `psdAssetPath`。布尔/数值及对应 `has` 标志同时提供且 `has=true`；不修改时一起省略，保留显式 `false` 与零的含义。
+请求中被修改的资产与输出目录均为 [Assets/（项目位置）](../../../Docs/Onboarding/PROJECT_STRUCTURE.md) 下的项目相对路径；每个操作只传它允许的字段，不能把查询响应或完整配置对象原样回传。`configure` 要求准确 `configAssetPath`，`nine-slice` 要求准确 `spriteAssetPath`，其他写操作要求已发现的 `psdAssetPath`。布尔/数值及对应 `has` 标志同时提供且 `has=true`；不修改时一起省略，保留显式 `false` 与零的含义。
+
+新增面板参数要求 Inspect 明确返回 `parameterContractVersion >= 2`；旧版缺少声明时说明需要升级插件，不把字段被忽略当作修改成功。模板可以只读引用当前已安装包中的 Prefab；输出和被修改的配置仍限定在项目 `Assets/`。参数、规则和节点修改后须保存、重新加载并按请求逐项读回，手动控件引用还须经自动刷新后核对保留。
 
 建立树、同步、改节点、生成、导图和 AI 是不同操作。只执行用户目标所需步骤，不把“导出图片”扩大成生成页面，也不把“重新生成”变成另存为或清理旧资源。
 

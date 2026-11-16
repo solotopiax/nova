@@ -7,6 +7,7 @@
     "com.da-assets.figma-converter": "file:../../Nova-internal/UPMPackages/com.da-assets.figma-converter",
     "com.google.external-dependency-manager": "1.2.190",
     "com.onevcat.uniwebview": "file:../../Nova-internal/UPMPackages/com.onevcat.uniwebview",
+    "com.singularitygroup.hotreload": "file:../../Nova-internal/UPMPackages/com.singularitygroup.hotreload",
     "com.solotopia.alibabacloud.oss": "file:../UPMPackages/com.solotopia.alibabacloud.oss",
     "com.solotopia.excelio": "file:../UPMPackages/com.solotopia.excelio",
     "com.solotopia.hybridclr": "file:../UPMPackages/com.solotopia.hybridclr",
@@ -100,7 +101,8 @@
         "com.onevcat",
         "com.starlus",
         "com.da-assets",
-        "cn.efunstudio"
+        "cn.efunstudio",
+        "com.singularitygroup"
       ]
     },
     {

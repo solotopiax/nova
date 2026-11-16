@@ -15,7 +15,7 @@
     {
       "kind": "agent-action",
       "entry": "nova.project.psd2ugui.run",
-      "when": "仅执行live Schema支持的prepare/sync/patch-nodes/generate/export-images/apply-ai/run-ai/configure/nine-slice固定操作；冻结精确源和写集，经Plan/Execute/Verify；run-ai只识别，成功Verify后绑定本轮jobId单独apply-ai，再检查并按目标generate"
+      "when": "仅执行live Schema支持的prepare/sync/rebind-source/patch-nodes/generate/export-images/apply-ai/run-ai/configure/nine-slice固定操作；换源冻结旧新PSD并明确建立新树保留旧产物，后续使用新源；所有写入经Plan/Execute/Verify；run-ai只识别，成功Verify后绑定本轮jobId单独apply-ai，再按目标generate"
     }
   ],
   "inputs": [
@@ -32,12 +32,12 @@
     {
       "name": "nodeChanges",
       "required": false,
-      "constraint": "patch-nodes使用inspect返回的persistentId字符串作为nodes[].id，禁止按名称模糊定位；name/uiType/referenceKind/referenceKey分别核对，不把改名当重新分配PSD来源；markToExport只有hasMarkToExport明确时修改且仅影响批量导图"
+      "constraint": "patch-nodes按inspect的persistentId修改节点、启用状态、同源层级/顺序与固定helperBindings槽位，也可独立修改根界面名称和调试显示；布尔/数值用has配对，槽位只接受同源ID、明确清空或恢复自动，保存重载并刷新后仍须一致；源身份和生成记录不任意改写"
     },
     {
       "name": "configurationChanges",
       "required": false,
-      "constraint": "configure仅当前Schema开放的项目配置字段；GUIType/AiMode按inspect和实际枚举取精确值；forceUseTMP与nineSliceBorderTolerance须相应has标志表达修改，copyPromptTemplates只复制缺失不覆盖；不可用值不猜测或调用私有字段"
+      "constraint": "configure覆盖当前配置/工程设置面板及有序控件规则；新增参数须inspect声明parameterContractVersion>=2。按inspect读取模板、实际值、精确枚举及固定Helper；hasRules明确有序替换，成员省略保留同UIType旧值，空串/空数组清除。模板可读Assets或已装Packages，写入仍限项目；开关/数值成对has，条件编译选项仅实际支持时接受；保存重载逐项核验，不猜私有字段"
     },
     {
       "name": "screenAdaptationPlan",
@@ -63,6 +63,8 @@
       "本次Plan冻结的项目自有PSD2UGUI编辑资产、配置、节点与已记录输出",
       "本次生成或导图的准确输出目录与资源及必要.meta",
       "当前configure支持且已授权的配置字段及只复制缺失的提示模板",
+      "精确目标编辑树的根显示设置、节点层级/启用状态和固定控件槽位持久覆盖",
+      "rebind-source明确新PSD的独立编辑树、文档及预览；保留原PSD/树/文档/输出，不跨源复制节点身份、AI结果或手动绑定",
       "本次nine-slice支持且已冻结的Sprite导入设置",
       "明确AI识别使用的输入、结果和本轮job；apply-ai仅该轮目标树"
     ],
@@ -72,6 +74,7 @@
       "按同名节点猜选、未经计划重建或删除PSD/编辑资产/.meta/生成记录",
       "将markToExport当作生成或显隐开关、清空uiFormGUID强制另存为",
       "未经授权的AI调用、凭据变更、提供方切换或自动重发",
+      "直接替换源Sprite、持久身份或生成关联以伪造设计源迁移；任意控件属性路径或外部Helper类型",
       "覆盖无关编辑器草稿、模板或用户人工节点修改",
       "Action未开放的清理、配置或九宫格分支；不以通用字段patch绕过"
     ]
@@ -106,6 +109,8 @@
     "当前包与桥身份、live Schema及inspect取得的配置/源/树/输出关系；未安装和不兼容分别报告",
     "Plan写集与实际持久资产/节点/产物一致，Verify只读且非目标内容受保护",
     "节点persistentId、类型/名称/引用与PSD来源分别读回；sync后新增/失效来源显式核对",
+    "配置和规则按本次请求逐项保存后重载读回；手动控件槽位经重新加载和自动刷新仍保持，恢复自动绑定另验；旧插件缺参数能力明确阻断",
+    "换源后新树和新文档属于新PSD，原源与资产保持原字节；已有新目标阻断，回执明确下一步源路径，不声称已迁移原树GUID上的人工布局",
     "生成或导图的真实路径、图片/字体引用和本次要求的视觉证据；九宫格同时核Image.Type与Sprite.Border",
     "AI本次运行状态与结果、准确jobId应用后状态，不能把CLI退出/缓存存在当应用完成；失败不自动重试",
     "需要Nova业务页面时继续既有create/update-view契约的注册/导出/编译/Play及条件设备证据，纯插件产物不冒充业务运行",

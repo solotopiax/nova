@@ -28,4 +28,20 @@
 
 保存后读回本次精确节点、类型、名称、层级、来源与引用，核对非目标节点未受影响。仅查询配置不保存；配置编辑必须由当前 Action 明确列出的配置操作承载，不将任意配置路径、私有字段或方法名塞入请求。
 
-`configure` 使用已开放的字段；`forceUseTMP` / `nineSliceBorderTolerance` 只有相应 `hasForceUseTMP` / `hasNineSliceBorderTolerance` 标志时才表示修改。`defaultTextType`、`defaultImageType`、`aiMode` 从当前精确枚举取值；`copyPromptTemplates` 仅复制缺失模板，不覆盖已有文件。共享目录、输出目录与配置资产分别冻结，不把一次节点编辑扩大成配置重写。
+## 面板参数与规则
+
+先核对 `parameterContractVersion >= 2`，再读取 Inspect 中的实际配置、规则、支持的枚举与内建 Helper。`configure` 覆盖配置说明、界面模板、默认文本和图片类型、TMP 偏好与渐变转换、中文名转拼音、共享目录、九宫格容差，以及工程输出开关、图片复用精度、自动裁剪和 AI 模式/CLI 窗口等面板参数。条件编译的选项仅在本版实际支持时修改，不把未显示的开关当成可用能力。
+
+字符串省略表示保留，允许清除的文本和模板用空字符串明确清除；开关及数值与相应 `has* = true` 成对提交，保留 `false` 和零。`defaultTextType`、`defaultImageType`、`tmpGradientConversionMode`、`imageReuseTolerance`、`aiMode` 使用当前精确枚举。Inspect 区分保存的默认文本类型和受 TMP 偏好影响的实际类型，不用后者覆盖前者。`copyPromptTemplates` 只复制缺失文件。
+
+规则是有顺序的集合。读取完整现有规则后，以 `hasRules=true` 和 `rules[]` 明确替换；数组中按 `UIType` 唯一，顺序决定本次规则顺序，空数组表示清空。每条的 `UITypeDesc`、`TypeMatches`、`UIPrefabAssetPath`、`UIHelper`、`Comment` 省略时保留同类型旧值，新规则省略时使用空值；空字符串或空数组用于清除。`UIHelper` 只选当前列出的内建类型，不接受任意类名。Prefab 模板可只读引用 `Assets/` 或当前已安装 `Packages/`，引用内容参与计划漂移核对，不写包内资产。
+
+## 编辑树设置与控件槽位
+
+`patch-nodes` 可只修改根设置，无须附带无关节点：界面名称、图层边界显示与颜色、Scene 点选偏好。节点仍按持久 ID 修改名称、类型、导图开关，并可明确调整启用状态、同源父节点与顺序。父节点和顺序修改先检查循环及有效范围；不改 PSD 中的源数据或生成记录。
+
+控件槽位从本次节点的 `helperBindings` 读取，使用固定 `slot` 与同源 `targetNodeId`；`useAutomatic=false,targetNodeId=""` 明确清空，`useAutomatic=true` 恢复自动计算且不附带目标。只修改该控件实际支持的槽位，不能传组件类型或任意属性路径。绑定以插件持久覆盖记录保存；修改后重新加载并刷新 Helper，再核对实际槽位，避免自动刷新覆盖人工修改。
+
+关联 PSD 会影响真实设计源，不能只替换 Sprite。用户要换用另一 PSD/PSB 时使用 `rebind-source`，明确旧 `psdAssetPath` 与新 `replacementPsdAssetPath`：沿当前准确配置为新源建立独立编辑树，复制界面名称与根调试偏好，保留原 PSD、原树、原文档和旧输出。新目标已有编辑树、文档或预览时先阻断，不覆盖或偷偷合并。旧节点身份、AI 结果、手动绑定与生成关联不跨源复制；后续操作使用回执返回的新源。它不迁移原树 GUID 上的人工布局，Plan 必须说明这一效果。
+
+源图层数据、持久 ID 和生成关联不是任意可写参数。配置、工程设置、编辑树和最终生成界面分别验收，修改参数不隐式运行 AI、重新生成或覆盖旧输出。

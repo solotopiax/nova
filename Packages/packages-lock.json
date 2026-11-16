@@ -289,6 +289,15 @@
       "source": "local",
       "dependencies": {}
     },
+    "com.singularitygroup.hotreload": {
+      "version": "file:../../Nova-internal/UPMPackages/com.singularitygroup.hotreload",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.unity.ugui": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0"
+      }
+    },
     "com.solotopia.alibabacloud.oss": {
       "version": "file:../UPMPackages/com.solotopia.alibabacloud.oss",
       "depth": 0,

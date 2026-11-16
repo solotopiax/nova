@@ -19173,7 +19173,7 @@
     },
     {
       "id": "psd2ugui.edit-tree",
-      "goal": "从 PSD/PSB 建立可编辑树，同步设计源并修改节点类型、名称或共享图片引用",
+      "goal": "从 PSD/PSB 建立、同步或安全换用独立编辑树，修改根设置、节点类型/名称/启用/层级及固定控件引用槽位",
       "skill": "nova-project-psd2ugui",
       "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/edit-tree.md",
       "functions": [
@@ -19207,7 +19207,7 @@
     },
     {
       "id": "psd2ugui.configure",
-      "goal": "修改 PSD2UGUI 项目配置、TMP偏好、共享目录、输出目录或只复制缺少的AI提示模板",
+      "goal": "修改 PSD2UGUI 配置面板、界面模板和控件规则、TMP渐变与名称转换、工程输出/图片设置及AI调试选项",
       "skill": "nova-project-psd2ugui",
       "reference": "Assets/Framework/Agents/Skills/nova-project-psd2ugui/references/edit-tree.md",
       "functions": [
