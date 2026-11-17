@@ -470,7 +470,7 @@ namespace NovaFramework.Runtime
             AppConfigs appConfigs = m_Runtime?.AppConfigs;
             if (!HasAppConfigRemoteRefreshSettings(appConfigs))
             {
-                Log.Warning(LogTag.Config, "Custom 配置刷新已跳过：CustomConfigCmdName 或 CustomName 未配置。");
+                Log.Warning(LogTag.Config, "应用配置刷新已跳过：后台参数或配置项未就绪，继续使用本地配置。");
                 return false;
             }
 
@@ -545,13 +545,21 @@ namespace NovaFramework.Runtime
         /// </summary>
         private void TryLoadAppConfigCache()
         {
+            TryLoadAppConfigCache(GetAppConfigCachePath());
+        }
+
+        /// <summary>
+        /// 从给定本地缓存文件恢复快照；读取缓存不依赖远端请求凭据。
+        /// </summary>
+        private void TryLoadAppConfigCache(string cachePath)
+        {
             AppConfigs appConfigs = m_Runtime?.AppConfigs;
-            if (!HasAppConfigRemoteRefreshSettings(appConfigs))
+            if (!HasAppConfigCacheSettings(appConfigs))
             {
                 return;
             }
 
-            if (!AppConfigDiskCache.TryRead(GetAppConfigCachePath(), out string json, out string readError))
+            if (!AppConfigDiskCache.TryRead(cachePath, out string json, out string readError))
             {
                 if (!string.IsNullOrEmpty(readError))
                 {
@@ -601,13 +609,21 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 仅当 NetCmd 与后台配置项名称都有效时允许读取缓存或进入远端请求链。
+        /// 保留本地缓存的既有名称配置条件，不要求远端请求凭据。
         /// </summary>
-        private static bool HasAppConfigRemoteRefreshSettings(AppConfigs appConfigs)
+        private static bool HasAppConfigCacheSettings(AppConfigs appConfigs)
         {
             return appConfigs != null &&
                    !string.IsNullOrWhiteSpace(appConfigs.CustomConfigCmdName) &&
                    !string.IsNullOrWhiteSpace(appConfigs.CustomName);
+        }
+
+        /// <summary>
+        /// 远端请求还必须具备有效 App 参数；缺配时不进入网络等待。
+        /// </summary>
+        private static bool HasAppConfigRemoteRefreshSettings(AppConfigs appConfigs)
+        {
+            return HasAppConfigCacheSettings(appConfigs) && AppConfigValidation.IsReady(appConfigs);
         }
 
         /// <summary>

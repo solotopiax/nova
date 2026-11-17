@@ -1058,13 +1058,15 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         android = contract("nova-project-resolve-android-dependencies")
         self.assertEqual(
-            ["agent-action"],
+            ["agent-action", "csharp-api"],
             [adapter["kind"] for adapter in android["actionAdapters"]],
         )
         self.assertEqual(
-            ["nova.project.android.resolve-dependencies"],
+            ["nova.project.android.resolve-dependencies", "EditorUtil.AndroidResolver.PrepareTemplates"],
             [adapter["entry"] for adapter in android["actionAdapters"]],
         )
+        self.assertIn("七项Unity官方Android模板", android["actionAdapters"][1]["when"])
+        self.assertIn("不是独立开放的Project Action", android["actionAdapters"][1]["when"])
         self.assertIn("generated-output", android["effects"])
         self.assertIn(
             "nova-project-resolve-android-dependencies",
@@ -1899,6 +1901,243 @@ class NovaSkillsToolTests(unittest.TestCase):
         )
         self.assertEqual(set(expected_ids), set(state["managed"]))
 
+    def _write_linked_skill_sources(self):
+        """给隔离包补齐真实 Docs、Tools、嵌套 reference 与同 Skill 素材链接。"""
+        tools_root = self.agents_root / "Tools"
+        tools_root.mkdir()
+        (tools_root / "helper.py").write_text("# 测试工具\n", encoding="utf-8")
+        (self.agents_root.parent / "Docs" / "Guide (UI).md").write_text("# 指南\n", encoding="utf-8")
+        materials = self.agents_root.parent / "Materials"
+        materials.mkdir()
+        (materials / "image.png").write_bytes(b"package-image")
+        for skill in (self.agents_root / "Skills").iterdir():
+            document = skill / "SKILL.md"
+            document.write_text(document.read_text(encoding="utf-8").replace(
+                "`Docs/START_HERE.md`", "[Docs/START_HERE.md](../../../Docs/START_HERE.md)"
+            ) + '\n[工具](../../Tools/helper.py "工具入口")\n[契约](references/contract.json)\n'
+              + '[文档目录](../../../Docs/?view=1#section)\n'
+              + '![包内素材](../../../Materials/image.png)\n'
+              + '`[文字示例](../../../Docs/missing.md)`\n\n```text\n[代码示例](../../../Docs/missing.md)\n```\n'
+              + '~~~text\r\n[长围栏示例](../../../Docs/missing.md)\r\n~~~~\r\n'
+              + '````text\n[未闭合代码示例](../../../Docs/missing.md)\n', encoding="utf-8")
+            (skill / "references" / "guide.md").write_bytes(
+                b'\xef\xbb\xbf' + ('[指南](<../../../../Docs/Guide%20%28UI%29.md?view=1#section> "说明")\r\n'
+                + '![素材](icon.png)\r\n[入口][quick]\r\n'
+                + '[quick]: ../../../../Docs/START_HERE.md "入口标题"\r\n').encode("utf-8")
+            )
+            (skill / "references" / "icon.png").write_bytes(b"test-image")
+
+    def test_projection_relocates_file_dependency_links_and_preserves_source_identity(self):
+        """消费副本链接可直接读取同包资料，嵌套 reference、素材和原文身份均保留。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        source = self.agents_root / "Skills" / "nova-project-router"
+        source_hash = tool._tree_hash(source)
+        source_text = (source / "SKILL.md").read_bytes()
+        tool.reconcile(self.project_root)
+        target = self.project_root / ".agents" / "skills" / source.name
+        projected = (target / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn('(../../../../Framework/Docs/START_HERE.md)', projected)
+        self.assertIn('(../../../../Framework/Agents/Tools/helper.py "工具入口")', projected)
+        self.assertIn('(../../../../Framework/Docs/?view=1#section)', projected)
+        self.assertIn('(references/contract.json)', projected)
+        self.assertIn('(../../../../Framework/Materials/image.png)', projected)
+        self.assertIn('`[文字示例](../../../Docs/missing.md)`', projected)
+        self.assertIn('[代码示例](../../../Docs/missing.md)', projected)
+        nested = (target / "references" / "guide.md").read_bytes()
+        self.assertTrue(nested.startswith(b"\xef\xbb\xbf"))
+        self.assertIn(b'<../../../../../Framework/Docs/Guide%20%28UI%29.md?view=1#section>', nested)
+        self.assertIn(b'[quick]: ../../../../../Framework/Docs/START_HERE.md', nested)
+        self.assertIn(b'![', nested)
+        self.assertIn(b'(icon.png)\r\n', nested)
+        self.assertEqual(source_text, (source / "SKILL.md").read_bytes())
+        self.assertEqual(source_hash, tool._tree_hash(source))
+        state = json.loads((self.project_root / ".agents" / tool.STATE_FILE_NAME).read_text())
+        self.assertEqual(source_hash, state["managed"][source.name]["sourceHash"])
+        self.assertEqual(tool._tree_hash(target), state["managed"][source.name]["targetHash"])
+        self.assertNotEqual(source_hash, state["managed"][source.name]["targetHash"])
+        self.assertFalse(any(tool.doctor(self.project_root).values()))
+
+    def test_development_layout_projects_links_to_the_current_assets_framework(self):
+        """开发态包位于本工程 Assets/Framework 时也从实际位置计算，无消费端固定前缀。"""
+        self._write_linked_skill_sources()
+        development_root = self.project_root / "Assets" / "Framework"
+        shutil.copytree(self.agents_root.parent, development_root)
+        self._write_consumer_manifest("file:../Assets/Framework")
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        projected = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+        self.assertIn("../../../Assets/Framework/Docs/START_HERE.md", projected.read_text())
+        self.assertIn("../../../Assets/Framework/Agents/Tools/helper.py", projected.read_text())
+        self.assertFalse(any(tool.doctor(self.project_root).values()))
+
+    def test_registry_cache_rebinding_updates_links_without_source_byte_change(self):
+        """同版本 registry 的真实缓存目录变化后不能继续使用旧目录链接。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest("0.6.9")
+        lock = self.project_root / "Packages" / "packages-lock.json"
+        lock.write_text(json.dumps({"dependencies": {"com.solotopia.nova.framework": {
+            "version": "0.6.9", "source": "registry"}}}), encoding="utf-8")
+        old_cache = self.project_root / "Library" / "PackageCache" / "com.solotopia.nova.framework@aaa"
+        shutil.copytree(self.agents_root.parent, old_cache)
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        new_cache = old_cache.with_name("com.solotopia.nova.framework@bbb")
+        old_cache.rename(new_cache)
+        report = tool.doctor(self.project_root)
+        self.assertEqual([], report["sourceChanged"])
+        self.assertEqual([], report["modified"])
+        self.assertEqual(["projection:" + entry["id"] for entry in self._read_catalog()["skills"]], report["resolutionChanged"])
+        result = tool.reconcile(self.project_root)
+        self.assertEqual(2, len(result["updated"]))
+        projected = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+        self.assertIn("com.solotopia.nova.framework%40bbb/Docs/START_HERE.md", projected.read_text())
+        self.assertNotIn("com.solotopia.nova.framework%40aaa", projected.read_text())
+        self.assertFalse(any(tool.doctor(self.project_root).values()))
+        self.assertEqual([], tool.reconcile(self.project_root)["updated"])
+
+    def test_file_dependency_rebinding_preserves_user_edit_and_updates_other_skill(self):
+        """相同字节的 file 包换位置时更新链接，同时保留被用户修改的受管副本。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        user_file = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+        user_file.write_text(user_file.read_text() + "\n用户编辑\n", encoding="utf-8")
+        replacement = self.root / "Replacement Framework"
+        shutil.copytree(self.agents_root.parent, replacement)
+        self._write_consumer_manifest(replacement.as_uri())
+        result = tool.reconcile(self.project_root)
+        self.assertEqual([{"id": "nova-project-router", "reason": "modified-managed"}], result["conflicts"])
+        self.assertEqual(["nova-project-ui-create-view"], result["updated"])
+        self.assertIn("用户编辑", user_file.read_text())
+        other = user_file.parent.parent / "nova-project-ui-create-view" / "SKILL.md"
+        self.assertIn("Replacement%20Framework/Docs/START_HERE.md", other.read_text())
+
+    def test_project_move_recomputes_links_to_unchanged_external_file_package(self):
+        """项目移动后仍按当前真实包根与最终副本位置重算，不能仅比较源摘要。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest(self.agents_root.parent.as_uri())
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        moved = self.root / "nested" / "Moved Consumer"
+        moved.parent.mkdir()
+        shutil.move(self.project_root, moved)
+        self.project_root = moved
+        self.assertEqual(2, len(tool.doctor(moved)["resolutionChanged"]))
+        self.assertEqual(2, len(tool.reconcile(moved)["updated"]))
+        projected = moved / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+        self.assertIn("../../../../../Framework/Docs/START_HERE.md", projected.read_text())
+        self.assertFalse(any(tool.doctor(moved).values()))
+
+    def test_reconcile_migrates_unmodified_legacy_byte_copy(self):
+        """旧版逐字节副本无用户修改时可自动迁移，无需改 state 格式或手工编辑副本。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        target = self.project_root / ".agents" / "skills"
+        managed = {}
+        for entry in self._read_catalog()["skills"]:
+            source = self.agents_root / entry["path"]
+            shutil.copytree(source, target / entry["id"])
+            source_hash = tool._tree_hash(source)
+            managed[entry["id"]] = {"sourceHash": source_hash, "targetHash": source_hash}
+        state = tool._managed_state_payload(json.loads((self.agents_root.parent / "package.json").read_text()),
+                                            tool._file_hash(self.agents_root / "catalog.json"), managed)
+        (target.parent / tool.STATE_FILE_NAME).write_text(json.dumps(state), encoding="utf-8")
+        self.assertEqual(2, len(tool.doctor(self.project_root)["resolutionChanged"]))
+        self.assertEqual(2, len(tool.reconcile(self.project_root)["updated"]))
+        self.assertFalse(any(tool.doctor(self.project_root).values()))
+
+    def test_interrupted_projection_rejects_changed_binding_and_keeps_recovery_material(self):
+        """中断后同一真源换位置时保留现场，不能恢复包含失效链接的冻结 staging。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        original_replace = tool.os.replace
+
+        def interrupt(source, target):
+            """在第二个 Skill 可见前中断，留下可验证的冻结事务。"""
+            if Path(target).name == "nova-project-ui-create-view":
+                raise KeyboardInterrupt("中断投影")
+            return original_replace(source, target)
+
+        with mock.patch.object(tool.os, "replace", side_effect=interrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                tool.reconcile(self.project_root)
+        journal = self.project_root / ".agents" / tool.TRANSACTION_FILE_NAME
+        frozen = journal.read_bytes()
+        replacement = self.root / "Replacement"
+        shutil.copytree(self.agents_root.parent, replacement)
+        self._write_consumer_manifest(replacement.as_uri())
+        with self.assertRaisesRegex(RuntimeError, "投影绑定已变化"):
+            tool.reconcile(self.project_root)
+        self.assertEqual(frozen, journal.read_bytes())
+        self.assertFalse((self.project_root / ".agents" / "skills" / "nova-project-ui-create-view").exists())
+
+    def test_interrupted_projection_can_recover_frozen_content_while_source_is_missing(self):
+        """包暂不可解析仍先恢复已有事务；随后准确报告新规划受阻，不删除恢复能力。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        original_replace = tool.os.replace
+
+        def interrupt(source, target):
+            """仅中断第二个 Skill 的目录替换，模拟域重载前的落盘事务。"""
+            if Path(target).name == "nova-project-ui-create-view":
+                raise KeyboardInterrupt("中断投影")
+            return original_replace(source, target)
+
+        with mock.patch.object(tool.os, "replace", side_effect=interrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                tool.reconcile(self.project_root)
+        shutil.rmtree(self.agents_root.parent)
+        with self.assertRaises(RuntimeError):
+            tool.reconcile(self.project_root)
+        self.assertTrue((self.project_root / ".agents" / "skills" / "nova-project-ui-create-view" / "SKILL.md").is_file())
+        self.assertTrue((self.project_root / ".agents" / tool.STATE_FILE_NAME).is_file())
+        self.assertFalse((self.project_root / ".agents" / tool.TRANSACTION_FILE_NAME).exists())
+
+    def test_legacy_interrupted_byte_copy_recovers_before_automatic_link_migration(self):
+        """旧版 sourceHash=targetHash 的合法中断事务仍能恢复并自动迁移，不能被新绑定门拒绝。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        transaction_id = "a" * 32
+        agents_dir = self.project_root / ".agents"
+        staging = agents_dir / tool.STAGING_DIRECTORY_NAME / transaction_id / "new"
+        pending, managed = [], {}
+        for entry in self._read_catalog()["skills"]:
+            source = self.agents_root / entry["path"]
+            shutil.copytree(source, staging / entry["id"])
+            source_hash = tool._tree_hash(source)
+            managed[entry["id"]] = {"sourceHash": source_hash, "targetHash": source_hash}
+            pending.append({"action": "add", "id": entry["id"], **managed[entry["id"]]})
+        final_state = tool._managed_state_payload(json.loads((self.agents_root.parent / "package.json").read_text()),
+                                                  tool._file_hash(self.agents_root / "catalog.json"), managed)
+        journal = agents_dir / tool.TRANSACTION_FILE_NAME
+        journal.write_text(json.dumps({"schemaVersion": 1, "transactionId": transaction_id,
+            "previousState": None, "finalState": final_state, "pending": pending}), encoding="utf-8")
+        self.assertEqual(2, len(tool.reconcile(self.project_root)["updated"]))
+        self.assertFalse(journal.exists())
+        self.assertFalse(any(tool.doctor(self.project_root).values()))
+
+    def test_doctor_reports_missing_link_target_without_rewriting_projection(self):
+        """包内资料缺失时 doctor 只报告投影不可用，不崩溃或改写已有副本。"""
+        self._write_linked_skill_sources()
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        projected = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+        original = projected.read_bytes()
+        (self.agents_root.parent / "Docs" / "Guide (UI).md").unlink()
+        report = tool.doctor(self.project_root)
+        self.assertEqual([], report["sourceChanged"])
+        self.assertEqual([], report["modified"])
+        self.assertEqual(2, len(report["resolutionChanged"]))
+        self.assertEqual(original, projected.read_bytes())
+
     def test_reconcile_rejects_unexpected_lock_field_without_rewriting_it(self):
         """受管 lock 的未知字段必须保留现场，不能据此认领消费者目录。"""
         self._write_consumer_manifest()
@@ -2731,9 +2970,17 @@ with module._projection_sync_lock(Path(sys.argv[2])):
 
         self.assertEqual(expected_skill_ids, result["added"])
         for skill_id in expected_skill_ids:
-            self.assertTrue(
-                (self.project_root / ".agents" / "skills" / skill_id / "SKILL.md").is_file()
+            projected = self.project_root / ".agents" / "skills" / skill_id
+            self.assertTrue((projected / "SKILL.md").is_file())
+            source = canonical_agents_root / "Skills" / skill_id
+            self.assertEqual(
+                {path.relative_to(source) for path in source.rglob("*") if path.is_file()},
+                {path.relative_to(projected) for path in projected.rglob("*") if path.is_file()},
+                "投影不复制整份 Docs 或同包工具，也不建立第二权威源",
             )
+            for document in projected.rglob("*.md"):
+                for target in markdown_local_targets(document, document.read_text(encoding="utf-8")):
+                    self.assertTrue(target.exists(), f"投影链接不可达：{document} → {target}")
         self.assertEqual(
             {
                 "missing": [],

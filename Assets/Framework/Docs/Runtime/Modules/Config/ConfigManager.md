@@ -13,6 +13,8 @@
 
 `LoadAsync()` 以 `m_IsLoadOver` 保证幂等。Editor 会在幂等短路前检查当前项目固定 Privacy AES 维护标记；有效未结束、损坏或无法核实的标记均先阻断，不加载配置或沿用旧默认密钥。门禁仅 `UNITY_EDITOR` 编译，Player 不读取项目维护目录。加载 ConfigRuntimeSO 后先验证 Platform 与 Channel 均为已定义的非 `None` 值；无效时释放句柄并中断启动。验证通过后使用独立 `PrivacyConfigs` 初始化 `Util.Encrypt.AES` 默认 Key/IV，再建立本地默认快照并恢复 `persistentDataPath/Config/app-custom-config.json`；之后才标记 Config 可用。配置成功提交后，通过 `ConfigManagerBase` 实现的通用 `IPrivacyConfigProvider.PrivacyConfigs` 提供快照给独立扩展；ConfigManager 不直接初始化或依赖 MemoryProtection。该可选包自行读取一次配置并管理轮询与退出，见 MemoryProtection 包文档（包 `com.solotopia.nova.framework.memory.protection`，包内 [按包定位：Nova/Docs/MemoryProtection.md](../SDK/INDEX.md#sdk--kit-包文档发现)）。`Shutdown()` 释放 ConfigRuntimeSO 句柄与内部资源；默认 AES 密钥由 `FrameworkManagersGroup` 在全部 Manager 逆序 Shutdown 完成后的 `finally` 中统一清空，避免禁用 Domain Reload 时残留上一次运行的默认凭据。
 
+未配置或格式无效的 `AppID / AppAesKey / AppAesIV` 会使启动拉取直接结束为 `false`，保留本地默认值或真实可用缓存，不等待 Network 就绪、不发出缺参请求，也不阻止本地配置加载。本地缓存仍按原有配置项名称与内容校验恢复，不以远端凭据是否齐备作为缓存读取条件。格式与设计态导出使用同一判断，见 [AppConfigs](AppConfigs.md)。
+
 远端 `PbNetAppCustomConfigResp.value` 必须是以 object 为根的完整 JSON，可以包含嵌套对象、数组以及本地未声明的路径。成功响应完整替换远端快照；磁盘使用同目录 `.tmp` 加原子替换。网络失败、未配置或自定义 NetworkManager 没有就绪信号时保留当前值；JSON/协议错误记录 Error。显式等待启动拉取的流程会等本轮结束，失败后仍可继续启动；`Config.LoadAsync()` 自身不等待远端。
 
 `LoadAsync()` 尚未完成时，并发调用共享本轮完成源和唯一资源加载；失败后的下一次调用重新加载。`Shutdown()` 或重新初始化会取消旧调用的等待，旧资源请求若随后返回，只归还它的句柄，不提交到新生命周期。成功提交的句柄由管理器持有，仍在 `Shutdown()` 唯一释放；未提交的句柄在加载流程退出前归还。Editor 隐私维护门继续在每次调用与幂等短路前执行。

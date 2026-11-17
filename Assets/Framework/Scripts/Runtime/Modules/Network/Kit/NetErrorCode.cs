@@ -87,5 +87,10 @@ namespace NovaFramework.Runtime
         /// 已有身份变更操作执行中；客户端不排队，调用方应稍后重试。
         /// </summary>
         public const int IDENTITY_OPERATION_IN_PROGRESS = -6;
+
+        /// <summary>
+        /// 应用协议参数未配置或格式无效；客户端未发出请求，本地游戏启动不依赖该结果。
+        /// </summary>
+        public const int APP_CONFIG_INVALID = -7;
     }
 }

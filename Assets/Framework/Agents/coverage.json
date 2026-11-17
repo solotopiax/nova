@@ -3202,6 +3202,7 @@
     {
       "id": "editor.tool.EditorUtil",
       "sources": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AutomaticWindowGate.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.SceneRoute.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.cs"
       ],
@@ -3212,7 +3213,9 @@
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md",
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md",
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.FontExporter.md",
-        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.FileWatcher/EditorUtil.FileWatcher.md"
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.FileWatcher/EditorUtil.FileWatcher.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md"
       ],
       "skills": [
         "nova-project-router",
@@ -3249,7 +3252,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "AutomaticWindowGate仅协调Nova自动提示窗口的展示时机；不关闭窗口、不替代人工确认，不识别全部第三方原生模态；内部共享门不新增用户Action。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.FileWatcher/EditorUtil.FileWatcher.md",
@@ -3262,7 +3266,9 @@
         "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef",
         "Assets/Framework/package.json",
         "UPMPackages/com.solotopia.nova.framework.mcp/Nova/Editor/NovaFramework.Mcp.Editor.asmdef",
-        "UPMPackages/com.solotopia.nova.framework.mcp/package.json"
+        "UPMPackages/com.solotopia.nova.framework.mcp/package.json",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md"
       ],
       "navigationInputs": [
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md",
@@ -3328,7 +3334,11 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/UIBindingsConfigureAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidGenerateProviderContract.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidHybridClrGenerateEvidenceStore.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidRefreshInitializationWitness.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidRefreshSourceIdentityContract.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveAiStoreContract.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveCodeEditorTailContract.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveDefaultPackageCallbacks.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveDependenciesAction.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolvePeripheralRefreshContracts.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveReceiptCodec.cs",
@@ -3338,6 +3348,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveSearchEmptyDatabaseProbe.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveSpeedTreeDependencyContract.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveUirObjectContract.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveUvcsRefreshContract.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveVendorRefreshContracts.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidVersionHandlerReadOnlyContract.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/ConfigExportRuntimeAction.cs",
@@ -3646,7 +3657,10 @@
     {
       "id": "editor.tool.EditorUtil.AndroidResolver",
       "sources": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.GradleEnvironment.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.JavaEnvironment.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.Methods.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.Templates.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.cs"
       ],
       "docs": [
@@ -4054,6 +4068,7 @@
     {
       "id": "editor.tool.EditorUtil.CheckUpdate",
       "sources": [
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Automatic.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Definitions.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs",
@@ -4126,6 +4141,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.PrivacyInitialization.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.References.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.cs",
@@ -4210,13 +4226,19 @@
           "entry": "nova.project.config.ensure-panel-references",
           "kind": "agent-action",
           "when": "已存在IAPPluginConfig内按已安装Store白名单补缺，不替换原Store、不创建任意类型；字段编辑仍patch-panels"
+        },
+        {
+          "entry": "nova.project.config.patch-panels",
+          "kind": "agent-action",
+          "when": "按配置Skill的普通面板字段合同编辑，或选择互斥initialize-privacy-aes首次准备分支；只保存Master，Runtime正式导出与启动另验，具体参数/锁/恢复以live describe及既有contract为准。"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "Core自动生命周期；仅授权业务源码接入，不新增模块/Component/Action，不修改真实存档、配置或商业插件。"
+        "Core自动生命周期；仅授权业务源码接入，不新增模块/Component/Action，不修改真实存档、配置或商业插件。",
+        "App协议字段缺配或格式错误为Warning，不阻断本地导出；AppConfigs结构缺失、本地Privacy等基础错误仍为Error。真实App后台/远端请求与Editor/手机启动独立验收；Privacy首次准备复用配置Skill的initialize-privacy-aes分支，保存Master不等于Runtime已导出或设备已验证。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -4394,6 +4416,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.cs"
       ],
       "docs": [
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md",
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md",
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md"
       ],
@@ -5273,7 +5296,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "local/embedded 的 file: 目录引用先校验 package.json 的包名与版本；仍须核对实际安装。local/git/embedded 来源不提供仓库升级，来源切换不属于单包最新版本操作。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md",
@@ -8736,6 +8760,7 @@
         "Assets/Framework/Scripts/Runtime/Modules/Config/Definitions/PrivacyConfigs.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Definitions/AppConfigDiskCache.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Definitions/AppConfigSnapshot.cs",
+        "Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Definitions/AppConfigValidation.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Definitions/ConfigManagerConfig.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Implements/ConfigManager.Visitors.cs",
         "Assets/Framework/Scripts/Runtime/Modules/Config/Managers/Implements/ConfigManager.cs",
@@ -8747,7 +8772,9 @@
       "docs": [
         "Assets/Framework/Docs/Runtime/Modules/Config/ConfigManager.md",
         "Assets/Framework/Docs/Runtime/Modules/Config/ConfigComponent.md",
-        "Assets/Framework/Agents/Skills/nova-project-integrate-persistence/references/memory-protection.md"
+        "Assets/Framework/Agents/Skills/nova-project-integrate-persistence/references/memory-protection.md",
+        "Assets/Framework/Docs/Runtime/Modules/Config/AppConfigs.md",
+        "Assets/Framework/Docs/Runtime/Modules/Config/PrivacyConfigs.md"
       ],
       "skills": [
         "nova-project-configure-runtime",
@@ -8808,7 +8835,8 @@
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "Core自动生命周期；仅授权业务源码接入，不新增模块/Component/Action，不修改真实存档、配置或商业插件。"
+        "Core自动生命周期；仅授权业务源码接入，不新增模块/Component/Action，不修改真实存档、配置或商业插件。",
+        "App协议字段缺配或格式错误为Warning，不阻断本地导出；AppConfigs结构缺失、本地Privacy等基础错误仍为Error。真实App后台/远端请求与Editor/手机启动独立验收；Privacy首次准备复用配置Skill的initialize-privacy-aes分支，保存Master不等于Runtime已导出或设备已验证。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -10071,7 +10099,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "App后台缺配、远端拉取或连接失败按NA-002记录并继续本地启动；这些远端等待及Editor/目标手机结果须逐项验收，SDK与Sample仍按现有初始化和就绪契约处理。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/ARCHITECTURE.md",
@@ -15021,7 +15050,8 @@
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "只建立已确认的入口和根 Prefab；业务启动与场景切换需真实 Play 证据",
           "新项目默认经Unity引入MainDemo固定Resources及完整依赖，冻结唯一键与项目LauncherSettings，保存读回并验证真实启动；不照搬整套Sample或以默认路径代替实物。",
-          "新游戏startupPreparationInventory必须覆盖MainDemo标准产品预加载八节点及其结果/依赖；场景和固定Resources仅是其中一环，缺项交既有Operation，不以局部启动代替完整基线或在此擅自省略。"
+          "新游戏startupPreparationInventory必须覆盖MainDemo标准产品预加载八节点及其结果/依赖；场景和固定Resources仅是其中一环，缺项交既有Operation，不以局部启动代替完整基线或在此擅自省略。",
+          "缺App后台物料、远端拉取或连接失败时按NA-002和VALIDATION分别核本地加载、远端真实失败及有限等待后的Editor/目标手机入口；保留八节点，SDK与Sample遵循现有初始化和就绪契约，最低证据与各Operation原权限分别满足。"
         ],
         "gaps": []
       },
@@ -15098,7 +15128,8 @@
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "已有WebGL页面先定位loader/Wasm/data→Unity实例→Nova最早失败，复用startup WebGL参考和build-player HTTP技术边界；只读当前实际browser能力，不默认serve/新标签/刷新/cache清理；缺浏览器证据保partial。",
-          "使用当前宿主实际提供的只读场景/组件/日志工具；缺少结构证据时保partial并继续日志诊断，不通过任意C#或反射补执行入口。"
+          "使用当前宿主实际提供的只读场景/组件/日志工具；缺少结构证据时保partial并继续日志诊断，不通过任意C#或反射补执行入口。",
+          "缺App后台物料、远端拉取或连接失败时核对本地入口/Loading是否真的受阻；App远端失败日志不等于启动根因，按NA-002定位App参数校验或远端无限等待，只读报告实现差距。"
         ],
         "gaps": []
       },
@@ -15215,7 +15246,7 @@
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "当前 Action 可写 Schema 为准；敏感值不回显；草稿阻断不能自动保存或丢弃",
           "已有IAPPluginConfig内启用Store缺项只复用ensure-panel-references精确白名单追加；原Mobile/ThirdPay身份、顺序、全部值保留，后续字段仍patch-panels；不初始化SDK、不验交易",
-          "patch-panels compares all final physical Privacy coordinates; original Key/IV each UTF8 16 bytes must remain exactly identical. Initial incomplete credentials/no-op/nonAES fields allowed; no credential rotation or data migration implemented; manual/shared Save behavior unchanged.",
+          "普通字段分支核对全部最终物理Privacy坐标，原有效Key/IV必须逐字保留；互斥initialize-privacy-aes首次准备按panel-editing参考只处理完整同值空/公开占位逻辑组，有效值不写入。此Action不迁移数据、不导出Runtime；旧档轮换走既有存档维护合同，手工/共享保存边界保持。",
           "当前精确验收仅本次临时MainDemo Android/Official/Debug状态及原恢复点；持久配置任务需保目标产物再验，当前原值或下一独立任务状态不继承临时ready。"
         ],
         "gaps": []
@@ -15255,7 +15286,8 @@
         ],
         "conditions": [
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
-          "当前精确验收仅本次临时MainDemo Android/Official/Debug状态及原恢复点；持久配置任务需保目标产物再验，当前原值或下一独立任务状态不继承临时ready。"
+          "当前精确验收仅本次临时MainDemo Android/Official/Debug状态及原恢复点；持久配置任务需保目标产物再验，当前原值或下一独立任务状态不继承临时ready。",
+          "AppID/AppAesKey/AppAesIV缺配或格式错误为Warning，可继续本地导出；AppConfigs结构null、本地Privacy和其它基础Error仍须修复，正式导出不代表后台或真实请求可用。"
         ],
         "gaps": []
       },
@@ -16557,7 +16589,8 @@
           "从实际消费项目冻结目标、归属和现存配置；当前宿主通过 live describe 核对入口",
           "从当前项目取实参与既有Owner；缺现成触发代码时仅在已授权项目源码新增必要业务胶水并复用声明公开API，跨绑定/配置/表/DLL复用对应Operation；真实资源/规则/协议或设备证据缺失不假成功，遵循START_HERE共同测试清场",
           "开始/结算/重开/回大厅和局/页面业务暂停复用business-flow参考；先确认实际入口/Service/Procedure/FSM、局身份、结果/奖励/重开保留范围与清理，缺Service且属授权可补正式项目胶水，不存在Nova.Game门面；全局速度/缓存暂停单独路由runtime.game-control",
-          "新游戏/预加载编写或审查按PROJECT_STRUCTURE默认完整落实MainDemo八项标准动作，冻结businessPreloadDependencyPlanAndPreparationEvidence各节点的产品来源/配置/物料/真实结果/平台分支和最小可用证据；不因体量小或单机裁减、不以await/空配置/SDK全局任务完成或100%进度当就绪，按真实缓存任务处理失败和恢复。"
+          "新游戏/预加载编写或审查按PROJECT_STRUCTURE默认完整落实MainDemo八项标准动作，冻结businessPreloadDependencyPlanAndPreparationEvidence各节点的产品来源/配置/物料/真实结果/平台分支和最小可用证据；不因体量小或单机裁减、不以await/空配置/SDK全局任务完成或100%进度当就绪，按真实缓存任务处理失败和恢复。",
+          "缺App后台物料、远端拉取或连接失败时按NA-002和VALIDATION分别核本地加载、远端真实失败及有限等待后的Editor/目标手机入口；保留八节点，SDK与Sample遵循现有初始化和就绪契约，最低证据与各Operation原权限分别满足。"
         ],
         "gaps": []
       },

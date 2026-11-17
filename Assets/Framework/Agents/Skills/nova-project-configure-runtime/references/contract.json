@@ -30,7 +30,7 @@
     {
       "kind": "agent-action",
       "entry": "nova.project.config.patch-panels",
-      "when": "冻结inspect返回的精确字段路径或维度轴后批量预演并只保存目标Master；不导出Runtime或构建；最终全部物理Privacy格的原有效UTF8各16字节Key/IV须相同，初配/no-op/其它隐私字段可用，轮换不由该Action承担，转nova-project-integrate-persistence的专用维护分支并核对其实际范围"
+      "when": "冻结inspect返回的精确字段路径或维度轴后批量预演并只保存目标Master；或互斥operation=initialize-privacy-aes，仅masterGuid与完整privacyTarget，changes省略/null且不传fields/dimensions/configType。首次准备只接受整组同值空字段/精确公开Privacy占位，整组有效pair为no-op，非占位旧值/部分有效/混合组blocked；Plan内一次生成并冻结秘密，Execute不再生成，丢失计划只读Verify并须新Plan。不导出Runtime或构建；全部物理Privacy格原有效UTF8各16字节Key/IV保持，轮换转nova-project-integrate-persistence专用维护分支。保存后独立新Plan正式导出"
     },
     {
       "kind": "agent-action",
@@ -87,12 +87,17 @@
     {
       "name": "configChangeSet",
       "required": true,
-      "constraint": "写入前按NA-014逐字段核对当前版本类型/Tooltip、所属Docs、实际消费者、用途、业务来源出处、格式/单位、坐标和掩码物理写集；区分保留/修改/合法空值/Demo临时物料/待补物料，凭据仅记录来源与hasValue。来源说明属于Skill变更集，不向Action请求添加schema未声明字段。App参数先读取AppConfigs.md；项目专有物料未定可按NA-014从Nova各Demo读取成套临时来源，核对平台/渠道及后台配套关系并记后续替换点；不从项目名/包名或随机值猜填，不把临时Demo物料当产品正式登记，两类来源都缺失时才阻断依赖分支。"
+      "constraint": "写入前按NA-014逐字段核对当前版本类型/Tooltip、所属Docs、实际消费者、用途、业务来源出处、格式/单位、坐标和掩码物理写集；区分保留/修改/合法空值/Demo临时物料/待补物料，凭据仅记录来源与hasValue。来源说明属于Skill变更集，不向Action请求添加schema未声明字段。App参数先读取AppConfigs.md；外部协议字段缺失/格式错误是Warning，不阻断基础导出，结构null仍为Error，实际请求另核参数与服务状态。Privacy首次准备复用patch-panels的initialize-privacy-aes分支及panel-editing参考，不覆盖或轮换已有有效值。外部后台/协议/厂商字段缺失保留未配置或明确占位，不从项目名/随机值猜填；真实Demo外部物料只是可选临时来源。本地正式导出与Editor/手机启动分别验收，不填假值或绕过合同。"
     },
     {
       "name": "coordinateSelectionRequest",
       "required": false,
       "constraint": "仅保存当前选择时使用同patch-coordinate Action的operation=coordinate-switch、masterGuid和完整coordinate.platform/channel/developMode；patches必须省略或null，平台匹配当前Active BuildTarget，Channel非None、枚举精确。只允许CurrentChannel/CurrentDevelopMode两真实叶子；请求外归一变化须先独立normalize-master后重Plan。"
+    },
+    {
+      "name": "privacyInitializationRequest",
+      "required": false,
+      "constraint": "同patch-panels的互斥operation=initialize-privacy-aes，只接受masterGuid及完整privacyTarget={platform,channel,developMode,panel:PrivacyConfigs}；changes省略/null，configType、fields/dimensions或密钥值不接受。同一当前掩码物理组旧pair必须一致；只有空值或精确公开YOUR_PRIVACY_AES_KEY/YOUR_PRIVACY_AES_IV占位可首次生成；整组有效pair保持no-op，非占位坏值、部分有效及混合组blocked。Plan秘密仅一次性内存，完整AES叶差异与文件/meta/语义状态冻结；Execute不生成，重载不恢复秘密或重放，保存后独立新Plan正式export-runtime。"
     },
     {
       "name": "configRuntimeTarget",
@@ -199,9 +204,9 @@
     "inspect-panel live serialized field types/current values/unknown defaults, mask and group coordinates; patch-panels complete physical differences, single-Master save and readonly Verify",
     "normalize-master explicit anchor, clone idempotency and complete redacted physical differences; file/meta/full-state freeze, single-Master save or no-op, readonly Verify, then renewed Inspect and patch Plan; static normalization does not prove Runtime export or compilation",
     "ensure-panel-references exact installed whitelist/source/assembly/MVID and all physical group additions, preserved old lists/values, sole Master receipt and readonly Verify; subsequent field patch and formal Runtime export checked independently",
-    "Privacy patch-panels full final physical-coordinate credential retention guard; guard evidence does not prove key rotation, saved-data migration or device acceptance",
+    "Privacy patch-panels full final physical-coordinate credential retention guard; initialize-privacy-aes exact whole-group eligibility, all eight masks, Plan-only generated secret redaction, sole Master save/no-op, complete source drift and single-consumption checks, readonly executed-receipt Verify after state loss; Plan/Receipt loaded Editor assembly full identity and module MVID jointly cover Handler, all PanelEditing partials, shared DesignTimeEditing save, DimensionProjector, SerializedPropertyValues and ConfigMasterSO, rechecked after preview, before Execute/commit and in initialization Verify. Missing/mismatched implementation identity blocks; only legacy ordinary-field schema1 readonly Verify permits absent new identity fields. Pre-commit failure writes nothing and post-save failure stays partial without automatic rollback/replay. Separate fresh export-runtime Plan, compile and Editor/device acceptance remain required; guard evidence does not prove key rotation, saved-data migration or device acceptance",
     "coordinate-switch current Active BuildTarget/platform, exact CurrentChannel/CurrentDevelopMode leaf writes, full file/state freeze, sole Master save or no-op and readonly Verify of actual selection; independent Runtime formal export and compilation remain required for the full configuration task",
-    "逐字段业务来源、格式/单位、实际用途及物理影响范围的脱敏核对；Demo临时来源/合法空值/未接外部服务与当前Validator导出必填分别报告；保留临时标识与后续替换点，不造值消除阻塞。",
+    "逐字段业务来源、格式/单位、实际用途及物理写集；本地Privacy首次准备与保留、可复用素材和App外部缺配分开报告。核对App字段Warning与结构Error，不以本地导出成功推定外部请求或服务可用；正式导出与Editor/手机启动另验。",
     "实际使用的Skill/contract与Adapter、原变更集/写集、保存/导出/编译及所需消费者证据分别核对；Action成功不证明GM登记或服务端匹配，后续调用不能追认前置脚本绕行合规。",
     "所有Nova项目按NA-004与三平台构建基线配置HybridCLR实际业务程序集、入口、完整AOT/启动/按需DLL三字段映射、link和资源收集；Master字段沿inspect-panel/patch-panels，自身Settings沿正式设置入口；保存/导出不替代安装、启用、正式生成或运行。"
   ]

@@ -30,17 +30,48 @@ namespace NovaFramework.Editor
         private GUIStyle m_SummaryStyle;
         private GUIStyle m_SeparatorStyle;
         private GUIStyle m_ConfirmationStyle;
+        // 关闭只释放调度占用；阅读确认仍由 Confirm -> TryAcknowledge 独立保存。
+        private Action m_OnClosed;
 
-        /// <summary>由稳定 Editor 的调度器打开模态窗口，退出模态后由本地记录决定是否继续提醒。</summary>
-        internal static void Show(EditorUtil.ImportantUpdates.Presentation presentation)
+        /// <summary>自动呈现使用非模态窗口，保持 Editor.update 和连接可用；已有窗口的阅读状态不被覆盖。</summary>
+        /// <param name="presentation">已经核验的固定声明快照；新窗口才接收此内容。</param>
+        /// <param name="onClosed">只在窗口关闭或重载时释放展示占用，不代表阅读确认。</param>
+        /// <returns>已显示或复用一个窗口时为 true；空内容或存在重复窗口时为 false。</returns>
+        internal static bool TryShowAutomatic(EditorUtil.ImportantUpdates.Presentation presentation, Action onClosed)
         {
-            if (presentation == null || presentation.Notices.Count == 0) return;
-            ImportantUpdatesWindow window = CreateInstance<ImportantUpdatesWindow>();
-            window.m_Presentation = presentation;
-            window.titleContent = new GUIContent("Nova · ImportantUpdates");
-            window.minSize = new Vector2(640, 440);
-            window.position = new Rect(150, 100, 780, 620);
-            window.ShowModal();
+            if (presentation == null || presentation.Notices.Count == 0) return false;
+            ImportantUpdatesWindow[] existing = Resources.FindObjectsOfTypeAll<ImportantUpdatesWindow>();
+            if (existing.Length > 1) return false;
+            bool created = existing.Length == 0;
+            ImportantUpdatesWindow window = created ? CreateInstance<ImportantUpdatesWindow>() : existing[0];
+            if (window.m_Presentation == null)
+            {
+                window.m_Presentation = presentation;
+                window.m_Read = false;
+            }
+            window.m_OnClosed = onClosed;
+            if (created)
+            {
+                window.titleContent = new GUIContent("Nova · ImportantUpdates");
+                window.minSize = new Vector2(640, 440);
+                window.position = new Rect(150, 100, 780, 620);
+                try { window.Show(); }
+                catch
+                {
+                    window.m_OnClosed = null;
+                    DestroyImmediate(window);
+                    throw;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>非模态关闭或重载只通知调度器；不写已读、不把原生关闭按钮当作确认。</summary>
+        private void OnDisable()
+        {
+            Action closed = m_OnClosed;
+            m_OnClosed = null;
+            closed?.Invoke();
         }
 
         /// <summary>绘制默认全部展开的声明和确认区；正文保留可复制的原始 Markdown，不折叠重要内容。</summary>
@@ -115,7 +146,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(10);
                 EditorUtil.Draw.DisabledGroup(!m_Read, () =>
                 {
-                    // 模态循环内不调用 ExitGUI；仅成功保存后关闭，原生关闭按钮不会触发此路径。
+                    // 仅成功保存后关闭；窗口非模态，原生关闭按钮仍不会触发确认路径。
                     EditorUtil.Draw.Button("我已阅读并知晓", false, false, Confirm, GUILayout.Height(30));
                 });
             });

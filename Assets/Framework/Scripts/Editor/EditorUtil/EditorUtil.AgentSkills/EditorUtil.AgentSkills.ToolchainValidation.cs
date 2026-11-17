@@ -30,10 +30,19 @@ namespace NovaFramework.Editor
             /// <summary>供独立 NovaSpark 查询的会话结果；pending/running/partial/blocked 均未完成。</summary>
             public const string ToolchainStateSessionKey = "Nova.AgentSkills.Toolchain.State.v1";
 
+            /// <summary>仅立即排队或正在运行的安装阶段为 true；延时重试和人工等待不占用自动窗口门。</summary>
+            internal const string ToolchainActiveSessionKey = "Nova.AgentSkills.Toolchain.Active.v1";
+            /// <summary>当前安装调度阶段；独立引导脚本可只读该键，无需引用 Framework 程序集。</summary>
+            internal const string ToolchainPhaseSessionKey = "Nova.AgentSkills.Toolchain.Phase.v1";
+            /// <summary>当前阶段的中文等待原因；只用于观察，不授予继续执行或确认的权限。</summary>
+            internal const string ToolchainWaitingReasonSessionKey = "Nova.AgentSkills.Toolchain.WaitingReason.v1";
+
             /// <summary>仅供当前会话去重，不能替代当前 Agent 的工具调用验收。</summary>
             private const string c_ToolchainCheckedIdentityKey = "Nova.AgentSkills.Toolchain.CheckedIdentity.v1";
             private const string c_ToolchainPendingKey = "Nova.AgentSkills.Toolchain.Pending.v1";
             private const string c_ToolchainLastMessageKey = "Nova.AgentSkills.Toolchain.LastMessage.v1";
+            // 会话内跨重载保留不可恢复错误；值同时冻结目标工程与 Framework 来源/版本。
+            private const string c_ToolchainRetryPausedIdentityKey = "Nova.AgentSkills.Toolchain.RetryPausedIdentity.v1";
             private static bool s_ToolchainValidationQueued;
             private static bool s_ForceToolchainValidation;
             private static bool s_ToolchainStopping;
@@ -46,6 +55,9 @@ namespace NovaFramework.Editor
 
             /// <summary>当前域最近一次实际结果；域重载后自动重新取得证据。</summary>
             public static ToolchainReport LastToolchainReport { get; private set; }
+
+            /// <summary>自动窗口只等待有限的当前安装阶段，不等待整个 partial 重试队列。</summary>
+            internal static bool IsToolchainInstallationActive => SessionState.GetBool(ToolchainActiveSessionKey, false);
 
             /// <summary>安排自动补齐、绑定和复核，立即显示等待状态，并确保本次结果不被相同日志去重。</summary>
             // 使用末尾独立分组，Unity 按优先级间隔自动在上方显示分隔线。
@@ -74,7 +86,7 @@ namespace NovaFramework.Editor
 
             /// <summary>
             /// 编译与包解析稳定后自动安装缺失工具、同步 Skills 并绑定本项目。
-            /// 未完成请求跨域重载接力；失败按 30、120、300 秒自动重试，不要求人工补装。
+            /// 未完成请求跨域重载接力；可恢复失败自动重试，响应协议或项目身份错误等待显式重检。
             /// </summary>
             /// <param name="force">为 true 时绕过当前会话相同 Framework 身份的成功记录。</param>
             public static void RequestToolchainSetup(bool force = true)
@@ -95,11 +107,13 @@ namespace NovaFramework.Editor
                 EditorApplication.quitting += CancelToolchainSetup;
                 EditorApplication.update -= TryStartToolchainValidation;
                 EditorApplication.update += TryStartToolchainValidation;
+                RefreshToolchainSchedulingPhase();
             }
 
             /// <summary>只在 Editor 空闲且重试间隔到达后启动，避免并发安装及包解析竞争。</summary>
             private static void TryStartToolchainValidation()
             {
+                RefreshToolchainSchedulingPhase();
                 if (!s_ToolchainValidationQueued)
                 {
                     EditorApplication.update -= TryStartToolchainValidation;
@@ -107,7 +121,7 @@ namespace NovaFramework.Editor
                 }
                 if (s_ToolchainStopping || IsToolchainSetupRunning || EditorApplication.isCompiling
                     || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode
-                    || EditorApplication.timeSinceStartup < s_ToolchainNextAttempt) return;
+                    || ImportantUpdates.IsPresentationShowing || EditorApplication.timeSinceStartup < s_ToolchainNextAttempt) return;
 
                 string identity;
                 try { identity = ResolveToolchainValidationIdentity(); }
@@ -119,15 +133,28 @@ namespace NovaFramework.Editor
                     QueueToolchainRetry();
                     return;
                 }
-                bool force = s_ForceToolchainValidation || SessionState.GetBool(c_ToolchainPendingKey, false);
+                bool explicitlyRequested = s_ForceToolchainValidation;
+                bool force = explicitlyRequested || SessionState.GetBool(c_ToolchainPendingKey, false);
                 s_ToolchainValidationQueued = false;
                 s_ForceToolchainValidation = false;
                 EditorApplication.update -= TryStartToolchainValidation;
-                if (!force && SessionState.GetString(c_ToolchainCheckedIdentityKey, string.Empty) == identity) return;
+                string retryIdentity = BuildToolchainRetryPauseIdentity(ResolveProjectRoot(), identity);
+                if (!explicitlyRequested && SessionState.GetString(c_ToolchainRetryPausedIdentityKey, string.Empty) == retryIdentity)
+                {
+                    SetToolchainSchedulingPhase("blocked", "自动重试已暂停，等待处理报告中的原因后显式重检。", false);
+                    return;
+                }
+                if (!force && SessionState.GetString(c_ToolchainCheckedIdentityKey, string.Empty) == identity)
+                {
+                    SetToolchainSchedulingPhase("complete", "本次会话已通过当前 Framework 身份的检查。", false);
+                    return;
+                }
 
+                SessionState.EraseString(c_ToolchainRetryPausedIdentityKey);
                 SessionState.SetBool(c_ToolchainPendingKey, true);
                 SessionState.SetString(ToolchainStateSessionKey, "running");
                 IsToolchainSetupRunning = true;
+                SetToolchainSchedulingPhase("running", "正在安装、绑定并核验当前项目的 AI 工具链。", true);
                 s_ToolchainCancellation = new CancellationTokenSource();
                 RunToolchainValidationAsync(identity, s_ToolchainCancellation.Token).Forget();
             }
@@ -147,6 +174,16 @@ namespace NovaFramework.Editor
                     }
                     LastToolchainReport = report;
                     bool complete = report.Status == "success";
+                    if (!complete && !report.CanAutomaticallyRetry)
+                    {
+                        SessionState.SetString(c_ToolchainRetryPausedIdentityKey, BuildToolchainRetryPauseIdentity(ResolveProjectRoot(), identity));
+                        // 运行中的显式重检请求仍有效；普通重载和自动请求不能循环执行同一协议错误。
+                        if (!s_ForceToolchainValidation)
+                        {
+                            s_ToolchainValidationQueued = false;
+                            EditorApplication.update -= TryStartToolchainValidation;
+                        }
+                    }
                     SessionState.SetString(ToolchainStateSessionKey,
                         s_ToolchainValidationQueued ? "pending" : report.Status);
                     if (complete)
@@ -154,16 +191,21 @@ namespace NovaFramework.Editor
                         SessionState.SetString(c_ToolchainCheckedIdentityKey, identity);
                         if (!s_ToolchainValidationQueued) SessionState.EraseBool(c_ToolchainPendingKey);
                         s_ToolchainRetryCount = 0;
+                        SetToolchainSchedulingPhase("complete", "自动安装、绑定与本地复核已完成。", false);
                     }
-                    else QueueToolchainRetry();
+                    else if (report.CanAutomaticallyRetry) QueueToolchainRetry();
+                    else SetToolchainSchedulingPhase("blocked", "自动重试已暂停；未完成状态保留，等待处理报告中的原因后显式重检。", false);
                     LogToolchainMessage("[Nova AI 工具链] " + report.FormatMessage()
                         + (complete ? "\n自动安装、绑定与本地复核已完成。"
-                            : "\n缺失项继续自动安装与绑定，未完成状态将自动重试；不会把补装工作交给项目组。"), complete);
+                            : report.CanAutomaticallyRetry
+                                ? "\n缺失项继续自动安装与绑定，未完成状态将自动重试；不会把补装工作交给项目组。"
+                                : "\n自动重试已暂停，未完成状态与引导接力均保留；处理所报原因后可从 Nova 菜单显式重检。"), complete);
                 }
                 catch (OperationCanceledException)
                 {
                     // 重载/退出中断安装时保留接力状态，下一域会自动恢复。
                     SessionState.SetString(ToolchainStateSessionKey, "pending");
+                    SetToolchainSchedulingPhase("waiting-editor", "本轮被重载或退出中断，保留接力状态。", false);
                 }
                 catch (Exception)
                 {
@@ -176,6 +218,7 @@ namespace NovaFramework.Editor
                     IsToolchainSetupRunning = false;
                     s_ToolchainCancellation?.Dispose();
                     s_ToolchainCancellation = null;
+                    if (s_ToolchainValidationQueued) RefreshToolchainSchedulingPhase();
                 }
             }
 
@@ -190,6 +233,7 @@ namespace NovaFramework.Editor
                 SessionState.SetBool(c_ToolchainPendingKey, true);
                 EditorApplication.update -= TryStartToolchainValidation;
                 EditorApplication.update += TryStartToolchainValidation;
+                SetToolchainSchedulingPhase("waiting-retry", $"本轮尚未完成，等待 {delay} 秒后重试；当前没有正在运行的安装。", false);
             }
 
             /// <summary>同样的失败只显示一次，持续重试不刷屏，不输出外部命令或账户原文。</summary>
@@ -206,6 +250,46 @@ namespace NovaFramework.Editor
                 s_ToolchainStopping = true;
                 s_ToolchainCancellation?.Cancel();
                 EditorApplication.update -= TryStartToolchainValidation;
+                SetToolchainSchedulingPhase("waiting-editor", "等待脚本重载或下次交互式 Editor 接续安装。", false);
+            }
+
+            /// <summary>按真实运行、排队和退避状态更新观察键，重要声明人工等待与安装活跃阶段分别表达。</summary>
+            private static void RefreshToolchainSchedulingPhase()
+            {
+                if (s_ToolchainStopping)
+                    SetToolchainSchedulingPhase("waiting-editor", "等待脚本重载或下次交互式 Editor 接续安装。", false);
+                else if (IsToolchainSetupRunning)
+                    SetToolchainSchedulingPhase("running", "正在安装、绑定并核验当前项目的 AI 工具链。", true);
+                else if (!s_ToolchainValidationQueued)
+                    SessionState.SetBool(ToolchainActiveSessionKey, false);
+                else if (ImportantUpdates.IsPresentationShowing)
+                    SetToolchainSchedulingPhase("waiting-important-updates", "等待当前重要升级说明的人工确认，尚未开始新一轮安装。", false);
+                else if (EditorApplication.timeSinceStartup < s_ToolchainNextAttempt)
+                    SetToolchainSchedulingPhase("waiting-retry", "等待自动重试间隔；当前没有正在运行的安装。", false);
+                else if (EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode)
+                    SetToolchainSchedulingPhase("waiting-editor", "安装请求已排队，等待 Unity 编译、导入或运行模式切换结束。", true);
+                else
+                    SetToolchainSchedulingPhase("queued", "本轮安装请求已排队，等待 Editor 调度。", true);
+            }
+
+            /// <summary>只写会话内观察状态，不改最终验收状态、成功身份或恢复标记。</summary>
+            /// <param name="phase">queued、running、waiting-editor、waiting-retry、waiting-important-updates、blocked 或 complete。</param>
+            /// <param name="reason">本阶段的中文说明。</param>
+            /// <param name="active">当前是否有立即排队或正在运行的安装。</param>
+            private static void SetToolchainSchedulingPhase(string phase, string reason, bool active)
+            {
+                SessionState.SetBool(ToolchainActiveSessionKey, active);
+                SessionState.SetString(ToolchainPhaseSessionKey, phase);
+                SessionState.SetString(ToolchainWaitingReasonSessionKey, reason);
+            }
+
+            /// <summary>把暂停范围同时绑定当前工程和 Framework 身份，避免共享包来源影响其他工程。</summary>
+            /// <param name="projectRoot">当前实际工程绝对路径。</param>
+            /// <param name="frameworkIdentity">已经解析的 Framework 来源及版本。</param>
+            /// <returns>仅用于会话内自动重试控制的复合身份，不代表安装通过。</returns>
+            private static string BuildToolchainRetryPauseIdentity(string projectRoot, string frameworkIdentity)
+            {
+                return Path.GetFullPath(projectRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + "|" + frameworkIdentity;
             }
 
             /// <summary>按真实来源与版本识别手动升级，不依赖安装时的旧 manifest 或缓存目录。</summary>

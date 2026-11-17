@@ -231,16 +231,16 @@ namespace NovaFramework.Runtime
             if (config == null || !config.IsLoadOver ||
                 !IsValidAppAesSecret(aesKey) || !IsValidAppAesSecret(aesIv))
             {
-                Log.Error(LogTag.Network,
+                Log.Warning(LogTag.Network,
                     "NetService.SendAsync：应用配置中的 App Aes Key / App Aes IV 未就绪或无效，name={0}。请先完成 await Nova.Config.LoadAsync()；然后在 Nova/Open Config → 通用配置 → 应用配置 → App Aes Key / App Aes IV 中，为当前 Platform × Channel × DevelopMode 配置 UTF-8 各 16 字节的值，保存后重新导出 ConfigRuntimeSO。",
                     netCmdName);
                 return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, "App AES Key/IV is not ready");
             }
 
-            int appId = 0;
-            if (!int.TryParse(appConfigs.AppID, out appId))
+            if (!AppConfigValidation.TryParseAppId(appConfigs.AppID, out int appId))
             {
-                Log.Warning(LogTag.Network, "NetService.SendAsync：Nova.Config.AppConfigs.AppID 无法解析为 int32，已回退为 0。");
+                Log.Warning(LogTag.Network, "NetService.SendAsync：应用后台编号未配置或不是有效 int32，已停止本次请求；不影响本地游戏启动。");
+                return NetResponse<TResp>.Fail(NetErrorCode.APP_CONFIG_INVALID, "App ID is not configured or invalid");
             }
 
             byte[] protoBytes = NetBuilder.SerializeBody(request);
@@ -350,7 +350,7 @@ namespace NovaFramework.Runtime
         /// <returns>非空且 UTF-8 编码长度为 16 字节时返回 true。</returns>
         private static bool IsValidAppAesSecret(string value)
         {
-            return !string.IsNullOrEmpty(value) && Encoding.UTF8.GetByteCount(value) == 16;
+            return AppConfigValidation.IsValidAesSecret(value);
         }
 
     }

@@ -81,6 +81,7 @@ public static void OpenInternalRegistry();
 - `file:` / `git:` / `http` 这类非仓库引用统一视为 `NonRegistry`：窗口允许 `卸载` / `UPM`，但不提供一键切换到仓库版的 `安装/升级`。
 - lock 版本不等于安装成功。只有 Unity 已注册包、注册信息无错误、`resolvedPath/package.json` 有效且实际版本与 lock 一致时才显示 `已安装`。
 - manifest 直接声明的 `file:` 开发包会校验真实目录及其 `package.json`；通过后按本地开发源显示，避免 Nova 主仓的 `Assets/Framework` 被误报为解析失败。
+- lock 中 `local` / `embedded` 的 `file:` 目录引用会先核对对应 `package.json` 的包名与版本，再与 Unity 实际安装版本比较。有效内嵌包显示实际版本，按非仓库来源处理；manifest 中遗留的仓库版本声明不提供升级或一键升级。目录或元数据无效时仍显示解析失败。
 - manifest 或 lock 已记录目标包、但实际注册包缺失或版本不一致时显示红色 `解析失败`；registry 包提供 `重试`，且不进入一键升级集合。
 - 任一仓库列表存在解析失败条目时，列表顶部显示包含包名的错误提示，避免只看“一键升级”按钮时误判为全部完成。
 - 点击 `安装 / 升级 / 卸载` 后先显示 `解析中`；窗口只委托 `EditorUtil.PlugPals` 写入 `manifest.json`，真正的 UPM Resolve 会排队到下一帧执行并合并重复请求。只有后续刷新核验通过才转为 `已安装`。

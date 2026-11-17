@@ -30,6 +30,7 @@ namespace NovaFramework.Editor
     /// </summary>
     internal static class AndroidVersionHandlerReadOnlyContract
     {
+        // 仅用于读取旧快照原摘要；新快照另绑定实际已审发行身份，不继承旧域执行资格。
         private const string DllSha256 = "c3a6d0419b41b0cbc7ad518b0cc2b311af043b5d71ed709ea3baa576b79862ce";
         private static readonly string SchedulerProbeDomain = Guid.NewGuid().ToString("N");
         private const string DllMvid = "57534187-1fe2-4de8-b0f0-c598228153ae";
@@ -74,6 +75,7 @@ namespace NovaFramework.Editor
             public string analyticsFieldsSha256;
             public string loggerSha256;
             public string enabledEditorDllsSha256;
+            public string implementationSha256;
             public string schedulerInvariantSha256;
             public string schedulerCursorSha256;
             public string stableSha256;
@@ -99,9 +101,8 @@ namespace NovaFramework.Editor
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 Type owner = FindLoadedType("Google.VersionHandlerImpl");
-                if (!AndroidResolveActionCommon.TryVerifyEdmType(owner, "Google.VersionHandlerImpl.dll", DllSha256,
+                if (!AndroidResolveActionCommon.TryVerifyEdmType(owner, "Google.VersionHandlerImpl.dll",
                         cancellationToken, out error)) return false;
-                Require(owner.Module.ModuleVersionId.ToString("D") == DllMvid, "Version Handler MVID 不在已审合同内。");
                 Snapshot first = CaptureOnce(owner, cancellationToken);
                 Snapshot second = CaptureOnce(owner, cancellationToken);
                 Require(first.sha256 == second.sha256, "Version Handler 输入或实际队列在只读观察期间变化，须重新捕获。");
@@ -149,10 +150,9 @@ namespace NovaFramework.Editor
                 {
                     token.ThrowIfCancellationRequested();
                     Require(domain == SchedulerProbeDomain && ReferenceEquals(owner, FindLoadedType("Google.VersionHandlerImpl")) &&
-                        ReferenceEquals(scheduler, owner.Assembly.GetType("Google.RunOnMainThread", true)) &&
-                        owner.Module.ModuleVersionId.ToString("D") == DllMvid,
+                        ReferenceEquals(scheduler, owner.Assembly.GetType("Google.RunOnMainThread", true)),
                         "Version Handler 轻量观察的域、实际类型或 MVID 已变化。");
-                    Require(AndroidResolveActionCommon.TryVerifyEdmType(owner, "Google.VersionHandlerImpl.dll", DllSha256,
+                    Require(AndroidResolveActionCommon.TryVerifyEdmType(owner, "Google.VersionHandlerImpl.dll",
                         token, out error), error);
                     Require(EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android && !EditorApplication.isCompiling &&
                         (int)Read(scheduler, "mainThreadId") == Thread.CurrentThread.ManagedThreadId &&
@@ -332,6 +332,7 @@ namespace NovaFramework.Editor
                 persistenceSha256 = persistence, analyticsFieldsSha256 = analyticsAfter,
                 loggerSha256 = LoggerHash(owner, logger),
                 enabledEditorDllsSha256 = EnabledDllsHash(owner, token),
+                implementationSha256 = CaptureImplementationIdentity(owner, token),
                 compilingNotification = (bool)Read(owner, "compiling"),
             };
             CaptureScheduler(owner, scheduler, token, result);
@@ -593,8 +594,7 @@ namespace NovaFramework.Editor
             Require((ios || firebase) && condition.Target?.GetType() == type &&
                 ReferenceEquals(Read(type, "<>9"), condition.Target), "EDM 初始化条件不在已审 Android 恒 false 集合。");
             if (ios)
-                Require(AndroidResolveActionCommon.TryVerifyEdmType(type, "Google.IOSResolver.dll",
-                    "ca00858a5f4a657e949480015124f9c783ea80c42bb6000a9c5ec0112ffa5ca5", token, out string error), error);
+                Require(AndroidResolveActionCommon.TryVerifyEdmType(type, "Google.IOSResolver.dll", token, out string error), error);
             else Require(Path.GetFileName(type.Assembly.Location) == "Firebase.Editor.dll" &&
                 GenerateActionCommon.ComputeFileHash(type.Assembly.Location, token) ==
                     "b50eefa93d23c673bc8a97266e3d36dcfba0e9d3e49f5e7cc7850d595c12f1bf", "Firebase 平台条件实际 DLL 漂移。");
@@ -668,10 +668,19 @@ namespace NovaFramework.Editor
         /// <returns>稳定输入的 SHA-256。</returns>
         private static string StableHash(Snapshot value)
         {
-            return Hash(new { DllSha256, DllMvid, value.enabled, value.globallyEnabled, value.consentRequested,
+            string legacy = Hash(new { DllSha256, DllMvid, value.enabled, value.globallyEnabled, value.consentRequested,
                 value.consentRequesting, value.analyticsEnabled, value.useProjectSettings, value.observedMarkerKeys,
                 value.objectIdentitySha256, value.assetsSha256, value.settingsSha256, value.persistenceSha256,
                 value.analyticsFieldsSha256, value.loggerSha256, value.enabledEditorDllsSha256, value.schedulerInvariantSha256 });
+            return value.implementationSha256 == null ? legacy : Hash(new { legacy, value.implementationSha256 });
+        }
+
+        /// <summary>新计划冻结已校验的真实发行文件；版本、路径或文件变化均使旧计划失效。</summary>
+        private static string CaptureImplementationIdentity(Type owner, CancellationToken token)
+        {
+            Require(AndroidEdmCompatibilityContract.TryGetIdentity(owner, "Google.VersionHandlerImpl.dll", token,
+                out string identity, out string error), error);
+            return Hash(identity);
         }
 
         /// <summary>计算完整观察摘要，排除 sha256 自身；保存 pending 变化以供异步等待和审计。</summary>

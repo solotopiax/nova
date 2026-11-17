@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -91,7 +92,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.7.10";
+        private const string c_FrameworkValue = "0.7.11";
 
         /// <summary>默认显式安装的 Nova 内存防护扩展包键；不随之安装付费 Anti-Cheat Toolkit。</summary>
         private const string c_MemoryProtectionKey = "com.solotopia.nova.framework.memory.protection";
@@ -137,7 +138,7 @@ namespace NovaBootstrap
 
         /// <summary>
         /// Android 发布设置开关规格（ProjectSettings.asset 字段名, 展示名, 目标值）。
-        /// 仅对齐开关状态；模板文件内容由 EDM Resolve 与框架构建处理器生成。
+        /// 启用前先准备实际 Unity 官方模板；已有自定义 Base 模板与其开关保持不变。
         /// </summary>
         private static readonly (string Field, string Label, bool Value)[] s_AndroidToggles =
         {
@@ -196,30 +197,47 @@ namespace NovaBootstrap
                         return;
                     }
 
-                    bool openReady = !EditorPrefs.GetBool(PendingOpenKey, false)
-                        || EditorApplication.ExecuteMenuItem(c_PlugPalsMenuPath);
-                    if (openReady)
-                    {
-                        // 窗口只打开一次，后续等待工具链自动安装绑定完成。
-                        EditorPrefs.SetBool(PendingToolchainKey, true);
-                        EditorPrefs.DeleteKey(PendingOpenKey);
-                    }
-                    if (openReady && !s_ToolchainRequested)
+                    // 工具链先行；PlugPals 和重要声明不应在安装/绑定期间抢占主线程。
+                    EditorPrefs.SetBool(PendingToolchainKey, true);
+                    string state = SessionState.GetString("Nova.AgentSkills.Toolchain.State.v1", string.Empty);
+                    string identity = SessionState.GetString("Nova.AgentSkills.Toolchain.CheckedIdentity.v1", string.Empty);
+                    bool toolchainReady = state == "success" && identity.EndsWith("|" + c_FrameworkValue, StringComparison.Ordinal);
+                    if (!toolchainReady && !s_ToolchainRequested)
                     {
                         s_ToolchainRequested = EditorApplication.ExecuteMenuItem(c_ToolchainMenuPath);
                     }
-                    if (s_ToolchainRequested)
+                    if (toolchainReady)
                     {
-                        string state = SessionState.GetString("Nova.AgentSkills.Toolchain.State.v1", string.Empty);
-                        string identity = SessionState.GetString("Nova.AgentSkills.Toolchain.CheckedIdentity.v1", string.Empty);
-                        if (state == "success" && identity.EndsWith("|" + c_FrameworkValue, StringComparison.Ordinal))
+                        if (SessionState.GetBool("Nova.ImportantUpdates.PendingPresentation.v1", false))
                         {
-                            EditorPrefs.DeleteKey(PendingOpenKey);
-                            EditorPrefs.DeleteKey(PendingToolchainKey);
-                            Debug.Log($"[{c_Name}] Nova Framework 和 AI 工具链已自动安装、绑定并通过本地复核，引导脚本自动删除。");
-                            DeleteSelf();
+                            SessionState.SetString("NovaSpark.Phase.v1", "waiting-important-updates");
+                            SessionState.SetString("NovaSpark.WaitingReason.v1", "等待重要更新检查或用户确认，尚未打开 PlugPals。");
+                            ScheduleRun();
+                            return;
                         }
-                        else ScheduleRun();
+                        bool openReady = !EditorPrefs.GetBool(PendingOpenKey, false)
+                            || EditorApplication.ExecuteMenuItem(c_PlugPalsMenuPath);
+                        if (!openReady)
+                        {
+                            SessionState.SetString("NovaSpark.Phase.v1", "waiting-plugpals");
+                            SessionState.SetString("NovaSpark.WaitingReason.v1", "工具链已就绪，等待 PlugPals 菜单注册。");
+                            ScheduleRun();
+                            return;
+                        }
+                        EditorPrefs.DeleteKey(PendingOpenKey);
+                        EditorPrefs.DeleteKey(PendingToolchainKey);
+                        SessionState.SetString("NovaSpark.Phase.v1", "complete");
+                        SessionState.EraseString("NovaSpark.WaitingReason.v1");
+                        Debug.Log($"[{c_Name}] Nova Framework 和 AI 工具链已自动安装、绑定并通过本地复核，引导脚本自动删除。");
+                        DeleteSelf();
+                    }
+                    else if (s_ToolchainRequested)
+                    {
+                        SessionState.SetString("NovaSpark.Phase.v1", "waiting-toolchain");
+                        SessionState.SetString("NovaSpark.WaitingReason.v1",
+                            SessionState.GetString("Nova.AgentSkills.Toolchain.WaitingReason.v1", "等待工具链实际检查完成。"));
+                        // 这里只观察状态，不重新发起安装或清除工具链自身的重试/暂停策略。
+                        ScheduleRun(state == "blocked" ? 30 : 1);
                     }
                     else if (s_openAttempts++ < c_MaxOpenAttempts)
                     {
@@ -473,9 +491,21 @@ namespace NovaBootstrap
                     var p = ps.FindProperty(t.Field);
                     if (p == null)
                         continue;
-                    if (p.boolValue != t.Value)
+                    if (!PreserveExistingBaseTemplate(t.Field) && p.boolValue != t.Value)
                         missing.Add($"Android 设置 {t.Label} 应为 {(t.Value ? "开" : "关")}");
                 }
+            }
+
+            foreach (var template in AndroidTemplateSources(string.Empty))
+            {
+                string path = Path.Combine(ProjectRoot, "Assets", "Plugins", "Android", template.Name);
+                try
+                {
+                    AndroidTemplateFileState state = InspectAndroidTemplate(path, template.Name);
+                    if (state != AndroidTemplateFileState.Present)
+                        missing.Add((state == AndroidTemplateFileState.Disabled ? "Android 模板待恢复：" : "Android 模板缺失：") + template.Name);
+                }
+                catch (Exception error) { missing.Add("Android 模板需检查（保留现有文件）：" + template.Name + "；" + error.Message); }
             }
 
             return missing;
@@ -486,6 +516,8 @@ namespace NovaBootstrap
         /// <param name="manifestPath">当前工程 manifest 的实际写入路径。</param>
         private static void Apply(JObj manifest, string manifestPath)
         {
+            // 模板与发布开关先作为一个准备步骤提交；缺源或冲突时不先改 manifest。
+            PrepareAndroidTemplates();
             // 1) dependencies：缺键补齐，已有值与固定目标不一致时覆盖，不比较版本高低。
             var deps = manifest.Get("dependencies") as JObj;
             if (deps == null)
@@ -549,32 +581,200 @@ namespace NovaBootstrap
                 File.WriteAllText(plugPalsPath, c_PlugPalsContent, new UTF8Encoding(false));
             }
 
-            // 4) Android 发布设置开关：按规格对齐（仅设开关，不创建模板文件，
-            //    其内容由 EDM Resolve / 框架构建处理器自动生成）。
-            var ps = LoadProjectSettings();
-            if (ps != null)
-            {
-                bool changed = false;
-                foreach (var t in s_AndroidToggles)
-                {
-                    var p = ps.FindProperty(t.Field);
-                    if (p == null)
-                        continue;
-                    if (p.boolValue != t.Value)
-                    {
-                        p.boolValue = t.Value;
-                        changed = true;
-                    }
-                }
-                if (changed)
-                {
-                    ps.ApplyModifiedPropertiesWithoutUndo();
-                    AssetDatabase.SaveAssets();
-                }
-            }
-
             AssetDatabase.Refresh();
             Client.Resolve();
+        }
+
+        /// <summary>已有 Base Gradle 是项目自有定制，不因初始默认值而禁用。</summary>
+        private static bool PreserveExistingBaseTemplate(string field)
+        {
+            return field == "useCustomBaseGradleTemplate" &&
+                   File.Exists(Path.Combine(ProjectRoot, "Assets", "Plugins", "Android", "baseProjectTemplate.gradle"));
+        }
+
+        /// <summary>与 Unity6000.4 发布设置使用同一官方来源；首次 Proguard 文件允许为空。</summary>
+        private static (string Name, string Source)[] AndroidTemplateSources(string playback)
+        {
+            string gradle = Path.Combine(playback, "Tools", "GradleTemplates");
+            return new[]
+            {
+                ("AndroidManifest.xml", Path.Combine(playback, "Apk", "UnityManifest.xml")),
+                ("LauncherManifest.xml", Path.Combine(playback, "Apk", "LauncherManifest.xml")),
+                ("mainTemplate.gradle", Path.Combine(gradle, "mainTemplate.gradle")),
+                ("launcherTemplate.gradle", Path.Combine(gradle, "launcherTemplate.gradle")),
+                ("gradleTemplate.properties", Path.Combine(gradle, "gradleTemplate.properties")),
+                ("settingsTemplate.gradle", Path.Combine(gradle, "settingsTemplate.gradle")),
+                ("proguard-user.txt", (string)null),
+            };
+        }
+
+        /// <summary>先核对所有源和冲突，再创建/恢复文件并启用开关；失败只撤回本轮拥有的变更。</summary>
+        private static void PrepareAndroidTemplates()
+        {
+            string playback = BuildPipeline.GetPlaybackEngineDirectory(BuildTarget.Android, BuildOptions.None);
+            var templates = AndroidTemplateSources(playback);
+            var prepared = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+            var disabled = new List<string>();
+            string directory = Path.Combine(ProjectRoot, "Assets", "Plugins", "Android");
+            foreach (var template in templates)
+            {
+                string path = Path.Combine(directory, template.Name);
+                AndroidTemplateFileState state = InspectAndroidTemplate(path, template.Name);
+                if (state == AndroidTemplateFileState.Present) continue;
+                if (state == AndroidTemplateFileState.Disabled)
+                {
+                    disabled.Add(path);
+                    continue;
+                }
+                if (template.Source != null) ValidateAndroidTemplate(template.Source, template.Name);
+                prepared.Add(path, template.Source == null ? Array.Empty<byte>() : File.ReadAllBytes(template.Source));
+            }
+            var ps = LoadProjectSettings();
+            if (ps == null) throw new InvalidOperationException("无法读取 Player Settings，未修改 Android 模板。");
+            if (EditorUtility.IsDirty(ps.targetObject))
+                throw new InvalidOperationException("Player Settings 有未保存编辑，请先保存；未修改 Android 模板或发布开关。");
+            var before = new Dictionary<string, bool>(StringComparer.Ordinal);
+            foreach (var toggle in s_AndroidToggles)
+            {
+                var property = ps.FindProperty(toggle.Field);
+                if (property == null || property.propertyType != SerializedPropertyType.Boolean)
+                    throw new InvalidOperationException("Android 发布设置结构未适配：" + toggle.Field);
+                before[toggle.Field] = property.boolValue;
+            }
+            var created = new List<string>();
+            var moved = new List<string>();
+            bool directoryExisted = Directory.Exists(directory);
+            bool pluginsExisted = Directory.Exists(Path.GetDirectoryName(directory));
+            bool flagsStarted = false;
+            AssetDatabase.DisallowAutoRefresh();
+            try
+            {
+                AssetDatabase.StartAssetEditing();
+                try
+                {
+                    Directory.CreateDirectory(directory);
+                    foreach (var item in prepared)
+                    {
+                        using (var output = new FileStream(item.Key, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                        {
+                            created.Add(item.Key);
+                            output.Write(item.Value, 0, item.Value.Length);
+                        }
+                    }
+                    foreach (string path in disabled)
+                    {
+                        string error = AssetDatabase.MoveAsset(ToAssetPath(path + ".DISABLED"), ToAssetPath(path));
+                        if (!string.IsNullOrEmpty(error)) throw new IOException(error);
+                        moved.Add(path);
+                    }
+                    foreach (var template in templates)
+                        if (InspectAndroidTemplate(Path.Combine(directory, template.Name), template.Name) != AndroidTemplateFileState.Present)
+                            throw new InvalidOperationException("Android 模板准备后未就绪：" + template.Name);
+                    flagsStarted = true;
+                    foreach (var t in s_AndroidToggles)
+                    {
+                        if (!PreserveExistingBaseTemplate(t.Field)) ps.FindProperty(t.Field).boolValue = t.Value;
+                    }
+                    ps.ApplyModifiedPropertiesWithoutUndo();
+                    AssetDatabase.SaveAssetIfDirty(ps.targetObject);
+                }
+                catch (Exception failure)
+                {
+                    var recovery = new List<Exception>();
+                    if (flagsStarted)
+                    {
+                        try
+                        {
+                            foreach (var item in before) ps.FindProperty(item.Key).boolValue = item.Value;
+                            ps.ApplyModifiedPropertiesWithoutUndo();
+                            AssetDatabase.SaveAssetIfDirty(ps.targetObject);
+                        }
+                        catch (Exception error) { recovery.Add(error); }
+                    }
+                    foreach (string path in moved.AsEnumerable().Reverse())
+                        try
+                        {
+                            string error = AssetDatabase.MoveAsset(ToAssetPath(path), ToAssetPath(path + ".DISABLED"));
+                            if (!string.IsNullOrEmpty(error)) throw new IOException(error);
+                        }
+                        catch (Exception error) { recovery.Add(error); }
+                    foreach (string path in created.AsEnumerable().Reverse())
+                        try
+                        {
+                            if (File.Exists(path) && !File.ReadAllBytes(path).SequenceEqual(prepared[path]))
+                                throw new IOException("新模板在准备期间被修改，保留现场：" + path);
+                            if (File.Exists(path)) File.Delete(path);
+                        }
+                        catch (Exception error) { recovery.Add(error); }
+                    try
+                    {
+                        if (!directoryExisted && Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any()) Directory.Delete(directory);
+                    }
+                    catch (Exception error) { recovery.Add(error); }
+                    string plugins = Path.GetDirectoryName(directory);
+                    try
+                    {
+                        if (!pluginsExisted && Directory.Exists(plugins) && !Directory.EnumerateFileSystemEntries(plugins).Any()) Directory.Delete(plugins);
+                    }
+                    catch (Exception error) { recovery.Add(error); }
+                    if (recovery.Count != 0) throw new AggregateException("Android 模板准备失败且恢复不完整，保留现场。", new[] { failure }.Concat(recovery));
+                    throw;
+                }
+                finally
+                {
+                    AssetDatabase.StopAssetEditing();
+                }
+            }
+            finally
+            {
+                AssetDatabase.AllowAutoRefresh();
+            }
+        }
+
+        private enum AndroidTemplateFileState { Missing, Present, Disabled }
+
+        /// <summary>Detect 与准备共用同一就绪条件；正本、停用副本和对应 meta 均不允许通过链接越出项目。</summary>
+        private static AndroidTemplateFileState InspectAndroidTemplate(string path, string name)
+        {
+            foreach (string candidate in new[] { path, path + ".meta", path + ".DISABLED", path + ".DISABLED.meta" })
+                RequireAndroidTemplatePathWithoutLinks(candidate);
+            bool present = File.Exists(path), disabled = File.Exists(path + ".DISABLED");
+            if (present && disabled)
+                throw new InvalidOperationException("Android 模板与停用副本同时存在，请先处理：" + name);
+            if (present) { ValidateAndroidTemplate(path, name); return AndroidTemplateFileState.Present; }
+            if (disabled) { ValidateAndroidTemplate(path + ".DISABLED", name); return AndroidTemplateFileState.Disabled; }
+            return AndroidTemplateFileState.Missing;
+        }
+
+        /// <summary>检查文件自身与祖先，包括悬空符号链接；真正不存在的路径留给后续模板准备。</summary>
+        private static void RequireAndroidTemplatePathWithoutLinks(string path)
+        {
+            for (string current = Path.GetFullPath(path); current != null; current = Path.GetDirectoryName(current))
+            {
+                try
+                {
+                    if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                        throw new InvalidOperationException("Android 模板路径包含链接，保留现场：" + current);
+                }
+                catch (FileNotFoundException) { }
+                catch (DirectoryNotFoundException) { }
+            }
+        }
+
+        /// <summary>不覆盖无效用户模板；XML 禁用外部实体，Gradle/Properties 必须有正文。</summary>
+        private static void ValidateAndroidTemplate(string path, string name)
+        {
+            if (!File.Exists(path)) throw new FileNotFoundException("找不到 Unity 官方 Android 模板。", path);
+            if (name == "proguard-user.txt") return;
+            if (string.IsNullOrWhiteSpace(File.ReadAllText(path))) throw new InvalidOperationException("Android 模板为空：" + path);
+            if (!name.EndsWith("Manifest.xml", StringComparison.Ordinal)) return;
+            var settings = new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null };
+            using (var reader = System.Xml.XmlReader.Create(path, settings))
+            {
+                var document = new System.Xml.XmlDocument { XmlResolver = null };
+                document.Load(reader);
+                if (document.DocumentElement?.LocalName != "manifest") throw new InvalidOperationException("Android Manifest 根节点无效：" + path);
+            }
         }
 
         /// <summary>删除引导器自身（脚本与其 .meta）。</summary>

@@ -1,6 +1,6 @@
 # ImportantUpdatesWindow
 
-`NovaFramework.Editor.ImportantUpdatesWindow` 是重要升级声明的内部模态窗口，无菜单入口。由 [EditorUtil.ImportantUpdates](../EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 在实际升级或启动补查完成后打开，标题为 `Nova · ImportantUpdates`。
+`NovaFramework.Editor.ImportantUpdatesWindow` 是重要升级声明的内部阅读确认窗口，无菜单入口。由 [EditorUtil.ImportantUpdates](../EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 在实际升级或启动补查完成后以普通非模态 `Show` 打开，标题为 `Nova · ImportantUpdates`；编辑器更新、CLI 和 MCP 在等待人工阅读时仍可响应。
 
 ## 展示与确认
 
@@ -16,12 +16,12 @@
 
 用户勾选“我已阅读上述重要升级说明”后，才能点击“我已阅读并知晓”。按钮委托工具层再次核对正文并保存，成功后关闭；失败时保留窗口并显示重试说明。确认只表示阅读知晓，不表示已执行迁移操作。
 
-原生关闭按钮、失焦和销毁均不记录已读；调度器在下个安全时机继续提醒。模态展示延后到 UPM/编译/资源更新结束，避免阻止升级流程自身完成。无“跳过”“稍后”或永久关闭开关。
+原生关闭按钮、失焦和销毁均不记录已读；`OnDisable` 只释放展示占用，调度器在下个安全时机重新核对未确认内容。自动展示延后到 UPM/编译/资源更新及当前一轮工具链安装结束，打开前重新核对；窗口仍打开时保留待人工确认状态，其他自动提示和下一轮工具链安装等待，但不冻结主线程。工具链延时重试不长期阻断本窗口。无“跳过”“稍后”或永久关闭开关。
 
 历史内容通过 PlugPals 已有更新日志入口查看，不新增 `Nova/Open Important Updates`。
 
 ## 显示失败与确认入口
 
-Show 只消费固定 Presentation，不读包或联网。正文保持原始 Markdown、可复制且不启用 richText；横线、背景等临时颜色在 finally 恢复，但整个 ScrollView 没有本层异常收尾，正文异常可中断当前帧，窄窗单行标题也可能截断。静态来源核对不等于真实主题与窗口视觉验收。
+`TryShowAutomatic` 只消费固定 Presentation，不读包或联网；已打开的窗口保留现有内容和阅读选择。正文保持原始 Markdown、可复制且不启用 richText；横线、背景等临时颜色在 finally 恢复，但整个 ScrollView 没有本层异常收尾，正文异常可中断当前帧，窄窗单行标题也可能截断。静态来源核对不等于真实主题与窗口视觉验收。
 
 空 Presentation 关闭而不写已读。只有人工勾选后的按钮进入 Confirm，失败保留窗口和错误；不得由 Agent 调用、反射、改状态或代勾选。

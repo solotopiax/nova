@@ -122,6 +122,7 @@ namespace NovaFramework.Editor
                 /// 强制重新检测（忽略 SessionState 缓存）。
                 /// </summary>
                 /// <returns>最新的 Python3 检查结果。</returns>
+                [EnvironmentCheck]
                 public static Python3CheckResult Recheck()
                 {
                     UnityEditor.SessionState.SetBool(c_SessionKeyCached, false);

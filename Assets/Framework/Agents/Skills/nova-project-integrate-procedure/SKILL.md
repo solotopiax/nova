@@ -17,7 +17,7 @@ description: Use when 项目组要在现有 Nova 消费项目中新增或调整�
 
 新建游戏或编写/重建业务预加载时，先按 [Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线) 完整落实当前 MainDemo `ProcedurePreload` 的八项标准动作；体量小、单机、离线或当前只用 UI/Sound 不构成裁减理由。冻结 `businessPreloadDependencyPlanAndPreparationEvidence`，逐项包含真实来源、配置/物料、公开调用、结果判定与最小可用探针；先准备环境、固定启动 Resources 和正式导出，再接依赖链。平台差异在保留节点内按能力处理，只有用户明确改变产品范围才记录调整。普通既有流程/Service 局改不自动迁移整套基线。资源/场景/配置写入交对应 Operation，本 Skill 不越权代办。
 
-参考标准动作和生命周期，不复制示例的完成判定：所有加载 bool 必须检查；本地化核实际语言/内容，SDK 核必需插件 Ready，不把全局任务结束或空配置当产品就绪。保留取消、进入/尝试代次、失败提示、实际可执行的恢复/重试及启动 UI 收尾；Persist/SDK 等缓存任务失败后不能靠重复 await 或虚构 Reset 重试。八项未完成不得报告标准产品预加载基线已就绪，不新增平行检查器或假进度。
+参考标准动作和生命周期，不复制示例的完成判定：所有加载 bool 必须检查；本地化核实际语言/内容，SDK 核必需插件 Ready，不把全局任务结束或空配置当产品就绪。保留取消、进入/尝试代次、失败提示、实际可执行的恢复/重试及启动 UI 收尾；Persist/SDK 等缓存任务失败后不能靠重复 await 或虚构 Reset 重试。八项未完成不得报告标准产品预加载基线已就绪，不新增平行检查器或假进度。 App 后台缺配、远端拉取或连接失败按 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 记录并继续本地启动，既有 SDK 与 Sample 处理保持。对应变更交接[Editor 与手机启动验收](../../../Docs/Onboarding/VALIDATION.md#缺外部物料的启动验收)；本 Operation 的 Play 成功不代替真机证据，设备构建与运行仍走既有独立 Operation。
 
 标准预加载的网络步骤先确认 `Nova.Network.LoadAsync()` 成功，再通过 [ConfigComponent](../../../Docs/Runtime/Modules/Config/ConfigComponent.md) 的 `WaitForStartupAppConfigAsync(CancellationToken)` 等待启动时的同一轮 GM 应用配置拉取。失败、超时或未配置返回 `false` 时沿用当前配置继续，等待后仍核对流程代际；重复等待不发送新请求。Network Inspector 的“启动时GM配置请求超时时间（秒）”默认 5 秒，限制每次物理请求，主备请求和重试分别计时，整轮总耗时可能超过该值。不要调用 `RefreshAppConfigAsync()` 代替启动等待，也不要把网络表移动到 Config 或业务 DLL 加载之前；显式刷新用于确需重新请求的独立业务操作，独立发起时使用普通业务请求超时。
 

@@ -5,7 +5,7 @@
  * filename:  ConfigWindow.Methods.cs
  * author:    taoye
  * created:   2026/4/27
- * descrip:   Nova 全局环境配置窗口总调度（OnEnable/OnDisable/OnGUI/DrawBody）
+ * descrip:   Nova 全局环境配置窗口总调度及激活时环境检测刷新
  ***************************************************************/
 
 using NovaFramework.Runtime;
@@ -60,7 +60,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 窗口启用时的初始化：从 WorkspaceActive 读取激活 Master、克隆 WorkingCopy、绑 SerializedObject、
-        /// 补 Entry 格子、扫 Plugin 类型、注入 YooAsset 配置、订阅场景切换事件、跑 Luban 检测、弹缺失引用清理对话。
+        /// 补 Entry 格子、扫 Plugin 类型、注入 YooAsset 配置、订阅场景切换事件、安排环境检测、弹缺失引用清理对话。
         /// </summary>
         private void OnEnable()
         {
@@ -77,10 +77,47 @@ namespace NovaFramework.Editor
             }
             EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh;
             EditorSceneManager.sceneOpened += OnSceneOpenedRefresh;
+            QueueEnvironmentRefresh();
+            PromptMissingRefsIfAny();
+        }
+
+        /// <summary>
+        /// 窗口每次获得焦点都重新检测全部环境；延迟到当前交互结束，不修改配置或插件列表。
+        /// </summary>
+        private void OnFocus()
+        {
+            QueueEnvironmentRefresh();
+        }
+
+        /// <summary>
+        /// 合并打开与聚焦触发的刷新请求；编译重载或退出期间不再安排新请求。
+        /// </summary>
+        private void QueueEnvironmentRefresh()
+        {
+            EditorApplication.delayCall -= RefreshEnvironmentChecks;
+            if (s_IsEditorQuitting || s_IsDomainReloading) return;
+            EditorApplication.delayCall += RefreshEnvironmentChecks;
+        }
+
+        /// <summary>
+        /// 忽略会话缓存重新检测全部环境并重绘；编译或资源更新时延后，不读取或重建配置副本。
+        /// </summary>
+        private void RefreshEnvironmentChecks()
+        {
+            EditorApplication.delayCall -= RefreshEnvironmentChecks;
+            if (this == null || s_IsEditorQuitting || s_IsDomainReloading) return;
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                QueueEnvironmentRefresh();
+                return;
+            }
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+
+            EditorUtil.Environment.RecheckAll();
             RunLubanCheck();
             RunPython3Check();
             RunHybridCLRCheck();
-            PromptMissingRefsIfAny();
+            Repaint();
         }
 
         /// <summary>
@@ -89,6 +126,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnDisable()
         {
+            EditorApplication.delayCall -= RefreshEnvironmentChecks;
             if (!s_IsEditorQuitting && !s_IsDomainReloading &&
                 !EditorApplication.isCompiling && !EditorApplication.isUpdating)
             {
@@ -218,7 +256,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 跑一次 Luban 环境检测并缓存结果。
+        /// 读取统一刷新后的 Luban 环境检测结果。
         /// </summary>
         private void RunLubanCheck()
         {
@@ -226,7 +264,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 跑一次 Python3 环境检测并缓存结果（结果来自 SessionState 缓存，不阻塞）。
+        /// 读取统一刷新后的 Python3 环境检测结果。
         /// </summary>
         private void RunPython3Check()
         {
@@ -234,7 +272,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 跑一次 HybridCLR 环境检测并缓存结果（结果来自 SessionState 缓存，不阻塞）。
+        /// 读取统一刷新后的 HybridCLR 环境检测结果。
         /// </summary>
         private void RunHybridCLRCheck()
         {

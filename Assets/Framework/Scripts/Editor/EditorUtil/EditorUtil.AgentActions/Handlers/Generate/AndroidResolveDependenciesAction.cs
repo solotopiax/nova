@@ -46,6 +46,7 @@ namespace NovaFramework.Editor
         {
             "unity-editor", "asset-database", "android-dependency-graph",
             "android-gradle-templates", "generated-local-repo",
+            "android-java-environment",
         })]
     internal sealed class AndroidResolveDependenciesAction :
         AgentActionHandler<AndroidResolveDependenciesAction.Request>
@@ -490,7 +491,7 @@ namespace NovaFramework.Editor
         internal const string LocalRepositoryPath = "Assets/GeneratedLocalRepo";
         internal const string AndroidPluginPath = "Assets/Plugins/Android";
 
-        // EDM4U 1.2.188 的 GetResolutionSettings 完整键集合，禁止把部分设置比较当成无需解析证据。
+        // EDM4U 1.2.188/1.2.190 的 GetResolutionSettings 完整键集合，禁止把部分设置比较当成无需解析证据。
         private static readonly string[] s_ResolutionSettingNames =
         {
             "installAndroidPackages", "packageDir", "explodeAars", "patchAndroidManifest",
@@ -547,6 +548,7 @@ namespace NovaFramework.Editor
             public DependencyEntry[] graph;
             public string graphSha256;
             public string sha256;
+            public string edmImplementationSha256;
             [NonSerialized] internal Type capturedResolverType;
             [NonSerialized] internal object capturedSettingsObject;
         }
@@ -873,8 +875,7 @@ namespace NovaFramework.Editor
             logging = null;
             error = null;
             Type loggerType = FindType("Google.Logger");
-            if (!TryVerifyEdmType(loggerType, "Google.VersionHandlerImpl.dll",
-                    "c3a6d0419b41b0cbc7ad518b0cc2b311af043b5d71ed709ea3baa576b79862ce", cancellationToken, out error)) return false;
+            if (!TryVerifyEdmType(loggerType, "Google.VersionHandlerImpl.dll", cancellationToken, out error)) return false;
             try
             {
                 const BindingFlags instance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
@@ -939,8 +940,7 @@ namespace NovaFramework.Editor
             scheduling = Array.Empty<SettingEntry>();
             error = null;
             Type type = FindType("Google.RunOnMainThread");
-            if (!TryVerifyEdmType(type, "Google.VersionHandlerImpl.dll",
-                    "c3a6d0419b41b0cbc7ad518b0cc2b311af043b5d71ed709ea3baa576b79862ce", cancellationToken, out error)) return false;
+            if (!TryVerifyEdmType(type, "Google.VersionHandlerImpl.dll", cancellationToken, out error)) return false;
             try
             {
                 const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
@@ -978,8 +978,7 @@ namespace NovaFramework.Editor
                         Type conditionType = condition.Method.DeclaringType;
                         if (conditionOwner == "Google.IOSResolver+<>c")
                         {
-                            if (!TryVerifyEdmType(conditionType, "Google.IOSResolver.dll",
-                                "ca00858a5f4a657e949480015124f9c783ea80c42bb6000a9c5ec0112ffa5ca5", cancellationToken, out error)) return false;
+                            if (!TryVerifyEdmType(conditionType, "Google.IOSResolver.dll", cancellationToken, out error)) return false;
                         }
                         else if (Path.GetFileName(conditionType.Assembly.Location) != "Firebase.Editor.dll" ||
                             GenerateActionCommon.ComputeFileHash(conditionType.Assembly.Location, cancellationToken) !=
@@ -1044,21 +1043,8 @@ namespace NovaFramework.Editor
                 foreach (string name in new[] { "JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS", "_JAVA_OPTIONS" })
                     if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(name)))
                     { error = "Java 环境包含额外启动参数，版本读取也可能加载外部代码：" + name; return false; }
-                string javaHome = compat.GetProperty("AndroidExternalToolsSettingsJdkRootPath", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) as string;
-                string playback = resolver.GetProperty("AndroidPlaybackEngineDirectory", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) as string;
+                string javaHome = EditorUtil.AndroidResolver.ResolveJavaHome(resolver);
                 bool embedded = EditorPrefs.GetBool("JdkUseEmbedded");
-                if (string.IsNullOrEmpty(javaHome) || embedded)
-                {
-                    string platform = UnityEngine.Application.platform.ToString().Replace("Editor", "").Replace("OSX", "MacOS");
-                    string first = string.IsNullOrEmpty(playback) ? null : Path.Combine(playback, "Tools", "OpenJDK", platform);
-                    string second = string.IsNullOrEmpty(playback) ? null : Path.Combine(playback, "OpenJDK");
-                    if (first != null && Directory.Exists(first)) javaHome = first;
-                    else if (second != null && Directory.Exists(second)) javaHome = second;
-                }
-                if (string.IsNullOrEmpty(javaHome)) javaHome = EditorPrefs.GetString("JdkPath");
-                if (string.IsNullOrEmpty(javaHome)) javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
-                if (string.IsNullOrEmpty(javaHome))
-                { error = "Java 将进入系统 PATH 查找，当前合同需要明确 JDK 根。"; return false; }
                 string java = Path.Combine(javaHome, "bin", Path.DirectorySeparatorChar == '\\' ? "java.exe" : "java");
                 string release = Path.Combine(javaHome, "release");
                 if (!File.Exists(java) || !File.Exists(release))
@@ -1083,6 +1069,7 @@ namespace NovaFramework.Editor
                     new SettingEntry { name = "jdkUseEmbedded", value = embedded.ToString() },
                     new SettingEntry { name = "jdkPathSha256", value = GenerateActionCommon.ComputeTextHash(EditorPrefs.GetString("JdkPath")) },
                     new SettingEntry { name = "environmentJavaHomeSha256", value = GenerateActionCommon.ComputeTextHash(Environment.GetEnvironmentVariable("JAVA_HOME")) },
+                    new SettingEntry { name = "environmentJavaHomeDefined", value = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process).Contains("JAVA_HOME").ToString() },
                     new SettingEntry { name = "gradleVersion", value = gradle },
                     new SettingEntry { name = "androidGradlePluginVersion", value = agp },
                     new SettingEntry { name = "targetSdk", value = sdk.ToString(System.Globalization.CultureInfo.InvariantCulture) },
@@ -1262,10 +1249,8 @@ namespace NovaFramework.Editor
             { error = "analytics 缺少已完成读取的当前解析输入。"; return false; }
             Type resolver = FindType("GooglePlayServices.PlayServicesResolver");
             Type type = FindType("Google.EditorMeasurement");
-            if (!TryVerifyEdmType(resolver, "Google.JarResolver.dll",
-                    "75283de7763a24b04bf29f75fa1f90fe6113ef8cf99cf89edc67ffe8e7b3c9d0", cancellationToken, out error) ||
-                !TryVerifyEdmType(type, "Google.VersionHandlerImpl.dll",
-                    "c3a6d0419b41b0cbc7ad518b0cc2b311af043b5d71ed709ea3baa576b79862ce", cancellationToken, out error) ||
+            if (!TryVerifyEdmType(resolver, "Google.JarResolver.dll", cancellationToken, out error) ||
+                !TryVerifyEdmType(type, "Google.VersionHandlerImpl.dll", cancellationToken, out error) ||
                 current.capturedResolverType != resolver)
             { error = error ?? "analytics 解析器类型不是当前正规读取链实例。"; return false; }
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static;
@@ -1579,13 +1564,19 @@ namespace NovaFramework.Editor
         {
             plan = null;
             error = null;
+            try { EditorUtil.AndroidResolver.RequireEnabledTemplatesReady(); }
+            catch (Exception exception)
+            { error = "Android 模板准备未完成：" + exception.Message; return false; }
             if (!TryReadCurrentXmlDependencies(cancellationToken, out LocalMavenInputs local, out error) ||
                 !TryCaptureCurrentResolutionInputs(cancellationToken, out CurrentResolutionInputs current, out error)) return false;
             var settings = current.resolutionSettings.ToDictionary(item => item.name, item => item.value, StringComparer.Ordinal);
+            string missingTemplate = current.templateSha256.FirstOrDefault(item => item.value == "absent" &&
+                item.name != AndroidPluginPath + "/AndroidManifest.xml")?.name;
+            if (missingTemplate != null)
+            { error = "解析模板缺失：" + missingTemplate + "；先完成 Android 模板准备，再重新 Plan。"; return false; }
             if (settings["gradleBuildEnabled"] != bool.TrueString || settings["gradleTemplateEnabled"] != bool.TrueString ||
-                settings["patchMainTemplateGradle"] != bool.TrueString || settings["gradlePropertiesTemplateEnabled"] != bool.TrueString ||
-                current.templateSha256.Any(item => item.value == "absent" && item.name != AndroidPluginPath + "/AndroidManifest.xml"))
-            { error = "当前配置会进入模板启用或 Gradle 下载支路，缺少该支路精确外部目标合同。"; return false; }
+                settings["patchMainTemplateGradle"] != bool.TrueString || settings["gradlePropertiesTemplateEnabled"] != bool.TrueString)
+            { error = "当前解析设置会进入模板禁用或 Gradle 下载支路；该 Action 尚未冻结该支路的精确外部目标，不会修改设置或执行下载。"; return false; }
             if (!File.ReadAllText(Path.Combine(GenerateActionCommon.ProjectRoot, AndroidPluginPath, "mainTemplate.gradle")).Contains("**DEPS**"))
             { error = "mainTemplate.gradle 缺少正规 DEPS 注入点，不能将 resolver 返回 true 当成完成。"; return false; }
             try
@@ -1605,6 +1596,7 @@ namespace NovaFramework.Editor
                 {
                     new SettingEntry { name = "vcsEnabled", value = bool.FalseString },
                     new SettingEntry { name = "vcsIsActive", value = bool.FalseString },
+                    new SettingEntry { name = "resolverProcessJavaEnvironment", value = "JAVA_HOME=UnityJdk only during synchronous Resolve; original process environment restored; PATH unchanged" },
                 }).ToArray();
                 if (!TryCaptureTemplateCopyInputs(current, local, cancellationToken, out TemplateCopyInput[] copies,
                         out string[] deletes, out SettingEntry[] deletionInputs, out error)) return false;
@@ -1614,7 +1606,7 @@ namespace NovaFramework.Editor
                 { error = "正规 Force 会删除无法由当前源重建的 gpsr 文件，必须先补齐相应依赖来源。"; return false; }
                 string[] writeSet = deletes.Concat(targets.SelectMany(path => new[] { path, path + ".meta" }))
                     .Concat(new[] { ResolutionStatePath, AndroidPluginPath + "/mainTemplate.gradle", AndroidPluginPath + "/settingsTemplate.gradle",
-                        AndroidPluginPath + "/gradleTemplate.properties", "外部只读进程：" + java + " -version" })
+                        AndroidPluginPath + "/gradleTemplate.properties", "外部只读进程：" + java + " -version", "当前 Unity 进程 JAVA_HOME（仅同步 Resolve 作用域，finally/重载恢复原值；PATH 不变）" })
                     .Distinct(StringComparer.Ordinal).OrderBy(path => path, StringComparer.Ordinal).ToArray();
                 var directoryInputs = new SortedDictionary<string, string>(StringComparer.Ordinal);
                 foreach (string target in targets)
@@ -1668,17 +1660,15 @@ namespace NovaFramework.Editor
             error = null;
             if (current?.labeledAssetPaths == null || local?.aarCandidates == null)
             { error = "模板复制输入缺少正规标签或仓库快照。"; return false; }
-            // 完整 POM 预期模型只对应此已审 DLL；不能跨版本继续使用相同 XML 写出假设。
+            // 完整 POM 模型仅用于已核源码相同的两份官方发行；未知版本不能继承此 XML 写出假设。
             Type localMaven = FindType("GooglePlayServices.LocalMavenRepository");
-            if (!TryVerifyEdmType(localMaven, "Google.JarResolver.dll",
-                    "75283de7763a24b04bf29f75fa1f90fe6113ef8cf99cf89edc67ffe8e7b3c9d0", cancellationToken, out error)) return false;
+            if (!TryVerifyEdmType(localMaven, "Google.JarResolver.dll", cancellationToken, out error)) return false;
             MethodInfo patchPom = localMaven.GetMethod("PatchPomFile", BindingFlags.Public | BindingFlags.Static,
                 null, new[] { typeof(string), typeof(string) }, null);
             if (patchPom?.DeclaringType != localMaven || patchPom.ReturnType != typeof(bool))
             { error = "已审 POM 修补入口身份变化，不能使用旧版本预期模型。"; return false; }
             Type fileUtils = FindType("Google.FileUtils");
-            if (!TryVerifyEdmType(fileUtils, "Google.VersionHandlerImpl.dll",
-                    "c3a6d0419b41b0cbc7ad518b0cc2b311af043b5d71ed709ea3baa576b79862ce", cancellationToken, out error)) return false;
+            if (!TryVerifyEdmType(fileUtils, "Google.VersionHandlerImpl.dll", cancellationToken, out error)) return false;
             MethodInfo replace = fileUtils.GetMethod("ReplaceBaseAssetsOrPackagesFolder", BindingFlags.Public | BindingFlags.Static,
                 null, new[] { typeof(string), typeof(string) }, null);
             if (replace?.ReturnType != typeof(string)) { error = "正规本地 Maven 目标路径入口变化。"; return false; }
@@ -1784,7 +1774,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 在内存中按已核 EDM4U 1.2.188 PatchPomFile 的读取、packaging 修改及写出格式计算完整预期摘要。
+        /// 在内存中按已核 EDM4U 1.2.188/1.2.190 PatchPomFile 的读取、packaging 修改及写出格式计算完整预期摘要。
         /// 生产调用必须先核严格 Google.JarResolver.dll 指纹；无 packaging 或内容已为 aar 时保留原字节。
         /// 禁止 DTD，不调用 vendor、AssetDatabase 或文件写入，不形成第二套修补执行入口。
         /// </summary>
@@ -1850,8 +1840,7 @@ namespace NovaFramework.Editor
             Type support = FindType("Google.JarResolver.PlayServicesSupport");
             Type local = FindType("GooglePlayServices.LocalMavenRepository");
             Type resolver = FindType("GooglePlayServices.PlayServicesResolver");
-            const string resolverHash = "75283de7763a24b04bf29f75fa1f90fe6113ef8cf99cf89edc67ffe8e7b3c9d0";
-            if (!TryVerifyEdmType(support, "Google.JarResolver.dll", resolverHash, cancellationToken, out error) ||
+            if (!TryVerifyEdmType(support, "Google.JarResolver.dll", cancellationToken, out error) ||
                 local?.Assembly != support.Assembly || resolver?.Assembly != support.Assembly)
             { error = error ?? "EDM 本地仓库公开实现身份不匹配。"; return false; }
             try
@@ -1975,9 +1964,8 @@ namespace NovaFramework.Editor
             error = null;
             Type dialogType = FindType("GooglePlayServices.SettingsDialog");
             Type resolverType = FindType("GooglePlayServices.PlayServicesResolver");
-            const string resolverHash = "75283de7763a24b04bf29f75fa1f90fe6113ef8cf99cf89edc67ffe8e7b3c9d0";
-            if (!TryVerifyEdmType(dialogType, "Google.JarResolver.dll", resolverHash, cancellationToken, out error) ||
-                resolverType?.Assembly != dialogType.Assembly)
+            if (!AndroidEdmCompatibilityContract.TryGetIdentity(dialogType, "Google.JarResolver.dll", cancellationToken,
+                    out string edmIdentity, out error) || resolverType?.Assembly != dialogType.Assembly)
             { error = error ?? "EDM 设置与解析器不属于同一正式实现。"; return false; }
             try
             {
@@ -2077,6 +2065,7 @@ namespace NovaFramework.Editor
                     templateSha256 = templates.ToArray(),
                     graph = graph,
                     graphSha256 = ComputeGraphSha256(graph),
+                    edmImplementationSha256 = GenerateActionCommon.ComputeTextHash(edmIdentity),
                     capturedResolverType = resolverType,
                     capturedSettingsObject = settings,
                 };
@@ -2111,11 +2100,10 @@ namespace NovaFramework.Editor
             persistenceSha256 = null;
             error = null;
             Type type = projectSettings?.GetType();
-            const string settingsAssemblyHash = "c3a6d0419b41b0cbc7ad518b0cc2b311af043b5d71ed709ea3baa576b79862ce";
             if (type?.FullName != "Google.ProjectSettings" || requests == null ||
                 requests.Any(item => string.IsNullOrWhiteSpace(item?.key)) ||
                 requests.Select(item => item.key).Distinct(StringComparer.Ordinal).Count() != requests.Length ||
-                !TryVerifyEdmType(type, "Google.VersionHandlerImpl.dll", settingsAssemblyHash, cancellationToken, out error))
+                !TryVerifyEdmType(type, "Google.VersionHandlerImpl.dll", cancellationToken, out error))
             {
                 error = error ?? "Google 设置读取规格或正式实现身份不匹配。";
                 return false;
@@ -2155,22 +2143,10 @@ namespace NovaFramework.Editor
             { error = "读取正式 Google 设置失败：" + (exception.InnerException?.GetType().Name ?? exception.GetType().Name); return false; }
         }
 
-        /// <summary>核对当前 EDM 包、加载 DLL 路径及源码摘要，未知版本不能调用正规反射读取入口。</summary>
-        internal static bool TryVerifyEdmType(Type type, string fileName, string sha256,
+        /// <summary>只接受已审官方 UPM 发行的完整 DLL/MVID 和唯一实际加载身份。</summary>
+        internal static bool TryVerifyEdmType(Type type, string fileName,
             CancellationToken cancellationToken, out string error)
-        {
-            error = null;
-            if (type == null) { error = "EDM 类型不存在。"; return false; }
-            UnityEditor.PackageManager.PackageInfo package =
-                UnityEditor.PackageManager.PackageInfo.FindForAssembly(type.Assembly);
-            string path = package == null ? null : Path.GetFullPath(Path.Combine(package.resolvedPath,
-                "ExternalDependencyManager/Editor/1.2.188", fileName));
-            if (package?.name != "com.google.external-dependency-manager" || package.version != "1.2.188" ||
-                string.IsNullOrEmpty(path) || Path.GetFullPath(type.Assembly.Location) != path || !File.Exists(path) ||
-                !string.Equals(GenerateActionCommon.ComputeFileHash(path, cancellationToken), sha256, StringComparison.OrdinalIgnoreCase))
-            { error = "EDM 当前包、加载路径或 DLL 摘要不在已审契约内。"; return false; }
-            return true;
-        }
+            => AndroidEdmCompatibilityContract.TryVerifyType(type, fileName, cancellationToken, out error);
 
         /// <summary>
         /// 通过 EDM4U 的公开 PlayServicesSupport.GetAllDependencies 冻结当前完整依赖图。

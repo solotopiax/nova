@@ -23,10 +23,14 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 触发一次同步 Android 依赖解析（等价于 EDM4U 菜单 Assets → External Dependency Manager → Android → Force Resolve）。
             /// 内部通过反射调用 GooglePlayServices.PlayServicesResolver.ResolveSync(true)，
-            /// 强制重建 Assets/GeneratedLocalRepo/** 目录。
+            /// 等待当前模板注入或直接下载分支结束；返回成功不代替实际下载、产物及后续构建验收。
             /// 找不到 EDM4U 类型/方法或反射调用抛异常时，本方法直接抛 InvalidOperationException，
             /// 由调用方（Pipify Runner）捕获并标记 Step 失败；禁止静默跳过，避免下游 BuildPlayer
             /// 在 GeneratedLocalRepo 缺失时才崩。
+            /// 当前只接纳已审官方 UPM EDM4U 1.2.188/1.2.190；同步生命周期内将 Unity 当前 JDK
+            /// 传给继承环境的 Gradle 子进程，finally 或编辑器域重载时恢复原进程 JAVA_HOME，PATH 不变。
+            /// 真实下载分支另以已审 JDK17/Gradle8.13 作用域临时准备并恢复生成配置，不修改原厂包。
+            /// 已启用但缺失的模板会在解析前明确失败；维护代码先用 PrepareTemplates 准备，不隐式扩写 Action 写集。
             /// </summary>
             public static void Resolve()
             {

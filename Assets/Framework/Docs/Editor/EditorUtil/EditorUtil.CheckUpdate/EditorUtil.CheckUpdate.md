@@ -14,8 +14,9 @@ UPM 包版本检查工具，提供启动自动检查与手动触发两种入口�
 |------|----|------|
 | [EditorUtil.CheckUpdate.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.cs) | `partial EditorUtil.CheckUpdate` | 公有接口：`[InitializeOnLoad]` 启动钩子 `Initializer` 嵌套类 |
 | [EditorUtil.CheckUpdate.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs) | `partial EditorUtil.CheckUpdate` | 常量声明：`c_ConfigPath`、`c_MenuPath`、`c_RegistryUrl`、`c_InternalRegistryUrl`、`c_ApiPath`；菜单入口 `OpenWindow` |
-| [EditorUtil.CheckUpdate.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs) | `partial EditorUtil.CheckUpdate` | 全部方法实现：`CheckAsync`、`CheckOnStartupAsync`、`MarkSkip`、`ClearSkip`、`CheckExternalAsync`、`CheckInternalAsync`、`CompareSemVer` 及私有辅助方法 |
+| [EditorUtil.CheckUpdate.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs) | `partial EditorUtil.CheckUpdate` | 查询与跳过实现：`CheckAsync`、`CheckOnStartupAsync`、`MarkSkip`、`ClearSkip`、`CheckExternalAsync`、`CheckInternalAsync` 及私有辅助方法 |
 | [EditorUtil.CheckUpdate.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Definitions.cs) | `partial EditorUtil.CheckUpdate` | 嵌套类型：`UpdateInfo`（public）、`SkipConfig`（private） |
+| [EditorUtil.CheckUpdate.Automatic.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Automatic.cs) | `partial EditorUtil.CheckUpdate` | 自动检查排队、待展示结果恢复、当前安装版本复核及等待原因 |
 
 ---
 
@@ -102,16 +103,20 @@ public sealed class UpdateInfo
       │  [InitializeOnLoad] Initializer 静态构造器
       ▼
 [EditorApplication.delayCall += OnDelayedStart]
-      │  下一帧 Editor 就绪
+      │  注册 update 调度
       ▼
-OnDelayedStart()
-      │  fire-and-forget
+QueueAutomaticStartupCheck()
+      ├─ 有 SessionState 待展示列表 → 恢复，不重复联网
+      └─ 无待展示列表 → 等待 Editor、当前安装及重要声明处理结束
       ▼
 CheckOnStartupAsync()
       ├─ CheckExternalAsync() + CheckInternalAsync() → 分别拉取两侧仓库并比对本地版本
-      ├─ LoadConfig() → 读取 Library/Nova/CheckUpdate.json
-      ├─ 按仓库维度过滤 SkipVersions 中记录的已跳过版本
-      └─ 任一侧 filtered.Count > 0 → CheckUpdateWindow.Open(filteredExternal, filteredInternal)
+      └─ 保存两来源的待展示列表，重新进入 update 队列
+      ▼
+TryRunAutomaticStartupCheck()
+      ├─ 再读当前已安装版本和 SkipVersions，移除等待期间已升级、已卸载或已跳过的条目
+      ├─ 真正展示前重新读取窗口门禁；忙碌时保留列表等待，不重新联网
+      └─ 安全时才 TryOpenAutomatic(filteredExternal, filteredInternal)，实际非模态展示后清除列表；已有窗口则保留队列
 
 [CheckUpdateWindow 关闭，m_DontShowAgain == true]
       └─ EditorUtil.CheckUpdate.MarkSkip(items) → SaveConfig()
@@ -123,7 +128,7 @@ CheckOnStartupAsync()
 
 - `CheckAsync` 和 `CheckOnStartupAsync` 均为 `async Task`，在 Unity Editor 主线程的 async 上下文中执行。
 - 内部通过 `PlugPals.FetchRemotePackagesAsync` 发起网络请求（`HttpClient` + `await`）；返回后回到主线程。
-- `CheckOnStartupAsync` 以 fire-and-forget（`_ = CheckOnStartupAsync()`）方式调用，异常全部在方法内部 `catch` 静默处理，不向外传播。
+- `CheckOnStartupAsync` 以 fire-and-forget（`_ = CheckOnStartupAsync()`）方式调用，异常在方法内部记录 Warning，不向外传播；异步完成回调只排队，不直接打开窗口。
 - `LoadConfig` 和 `SaveConfig` 为同步文件操作，调用时必须在主线程。
 
 ---
@@ -134,9 +139,9 @@ CheckOnStartupAsync()
 [InitializeOnLoad] Initializer 静态构造器（Editor 加载时）
   └─ EditorApplication.delayCall += OnDelayedStart（注册延迟回调）
 
-OnDelayedStart()（下一帧 Editor 就绪后）
+OnDelayedStart()（初始化钩子注册后）
   ├─ 注销自身：delayCall -= OnDelayedStart
-  └─ _ = CheckOnStartupAsync()（fire-and-forget）
+  └─ QueueAutomaticStartupCheck()：恢复待展示结果，或在安全时机查询
 
 CheckOnStartupAsync()
   ├─ CheckExternalAsync()
@@ -145,9 +150,7 @@ CheckOnStartupAsync()
   ├─ CheckInternalAsync()
   │    ├─ PlugPals.FetchRemotePackagesAsync(c_InternalRegistryUrl, c_ApiPath, CancellationToken.None)
   │    └─ PlugPals.ReadInstalledVersions()
-  ├─ LoadConfig()：读取 Library/Nova/CheckUpdate.json → SkipConfig
-  ├─ 过滤 SkipVersions（key 含仓库前缀）
-  └─ CheckUpdateWindow.Open(filteredExternal, filteredInternal)（仅当任一列表非空）
+  └─ QueueAutomaticPresentation()：缓存结果，按 §6 的展示队列重新检查时机、当前版本和跳过记录
 ```
 
 ---
@@ -156,7 +159,7 @@ CheckOnStartupAsync()
 
 ### SemVer 比较（CompareSemVer）
 
-`internal static int CompareSemVer(string a, string b)`
+查询及延后展示均复用 `EditorUtil.PlugPals.CompareSemVer(string a, string b)`，不另建比较实现。
 
 比较两个语义版本号，返回正数（a > b）、0（相等）、负数（a < b）：
 
@@ -239,4 +242,8 @@ EditorUtil.CheckUpdate.ClearSkip();
 
 外网与内部仓依次查询，各侧异常只 Warning 并投影为空列表；空列表同时可能代表禁用、失败或无升级，不是明确的检查成功收据。UpdateInfo 只保存包名、当前和最新版本，不携 registry URL；合并不去重，同属性的两个来源仍保留。列表显示排序中的版本是文本排序，不等同 ImportantUpdates 使用的完整 SemVer。
 
-手动检查不应用 skip；启动检查按 external/internal 分类键过滤。单列表 MarkSkip 默认外网，两来源应分开传，分类键不绑定 URL，换仓后可能继续使用旧 skip。ClearSkip 清全部来源/包。存档同步直接写，失败仅日志无成功值；显式 JSON SkipVersions:null 不自动修复，后续过滤/写入可抛。启动 delayCall 没有 batchmode、编译/Play 或请求取消门，只负责查询和提示，不升级包。
+手动检查不应用 skip；启动检查按 external/internal 分类键过滤，并在真正展示前重新读取跳过记录。单列表 MarkSkip 默认外网，两来源应分开传，分类键不绑定 URL，换仓后可能继续使用旧 skip。ClearSkip 清全部来源/包。存档同步直接写，失败仅日志无成功值；显式 JSON SkipVersions:null 不自动修复，后续过滤/写入可抛。
+
+自动检查在 batchmode 不启动；编译、导入、Play 切换、当前一轮工具链安装及重要声明检查/人工确认期间延后。工具链的延时重试间隔不占用展示门，不因 `partial` 状态永久等待。已完成查询的两来源列表保存在 SessionState 的 `Nova.CheckUpdate.Automatic.PendingSnapshot.v1`，通过普通非模态 `Show` 实际展示或确定无需提示后即删除；已有更新窗口时保留队列，不覆盖其阅读或跳过选择。跨域重载复用该列表，不重复网络请求。若网络请求尚未完成就重载，下一域可重新进行这次只读查询。手动 `Open()` 与带结果的 `Open(...)` 仍立即遵循各自原有入口，不受自动队列接管。
+
+只读 `Nova.CheckUpdate.Automatic.Phase.v1` 可看到 `queued / waiting / querying / blocked / waiting-editor / complete`，`Nova.CheckUpdate.Automatic.WaitingReason.v1` 提供中文原因。这些字段只说明自动提示阶段，不代表仓库请求全部成功、包已升级或用户已跳过。展示失败保留待展示结果，重载可恢复；不自动写入跳过记录。

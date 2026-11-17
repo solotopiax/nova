@@ -75,7 +75,7 @@
     "Unity无响应/弹窗先按共同入口分清窗口、编译/导入进度与进程故障，Router只读不点击或重启；新项目/UI布局在实施前将适配方案及验收要求传给既有页面Operation，不新增重复适配实现。",
     "新游戏优先路由check-readiness、setup-entry-scene固定资源、configure-runtime及正式导出/资源/Procedure步骤，按PROJECT_STRUCTURE完整落实MainDemo标准产品预加载基线；不因体量小/单机/离线裁减八节点。依赖缺项逐项报告并转对应Operation，Router保持只读，已有工程局改不自动迁移或强套Demo业务。",
     "PSD2UGUI按设计源/编辑树/生成物与Nova业务页面分层路由；inspect先发现真实目标和来源，nodes[].id来自persistentId，AI意图和许可证/CLI状态准确传给所选Skill，Router不plan或执行。",
-    "从零建项/整套交付按PROJECT_STRUCTURE划分依赖阶段并匹配既有Skill/contract、真实Adapter、输入来源/缺项及最低证据；专有物料暂缺可按NA-014从Nova各Demo复用临时配套物料并记录替换点；创建和首次初始化不豁免，Router保持只读，不把未路由阶段交给通用Setup脚本；按需只读即将执行阶段文档。",
+    "从零建项按PROJECT_STRUCTURE与NA-002分别规划本地启动和外部服务，保留八节点；NA-014下复用本地素材、首次准备项目本地值，App后台Demo物料可选，缺App后台物料不得让Editor/目标手机启动受阻。交接VALIDATION的缺外部物料启动验收与当前实现差距，创建/首次导出仍走已有Skill/contract和真实Adapter，Router保持只读、不运行测试。",
     "所有Nova项目须配置并实际使用Config（ConfigMaster）、Pipify、PlugPals；按NA-002和PROJECT_STRUCTURE三工具基线，把配置/配对、导出/消费、适用Batch保存/授权运行及仓库查询/依赖证据传递给就绪检查和既有Operation，不能把Pipify/PlugPals标可选。首次Settings创建/绑定、仓库地址保存使用既有窗口，不伪称批次/安装Action已覆盖；已有有效事实可复用，局部任务不扩大为整项目整改，Router不写入、不运行Batch、不为满足必用强装无关包。",
     "新项目/完整打包/HybridCLR修正按NA-004必备基线分层路由配置、正式设置、Generate、DLL部署、Bundle/Player及Pipify；不因离线或单机自行省略，不将单项Operation的not_applicable当整个项目豁免；Router保持只读。"
   ]

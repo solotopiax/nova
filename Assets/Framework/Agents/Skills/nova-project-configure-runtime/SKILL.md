@@ -28,9 +28,9 @@ description: Use when 项目组要在已确认的 Platform、Channel、DevelopMo
 
 ### 写入前的参数核对
 
-按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行)，在当前变更集中逐字段说明用途、来源出处、格式/单位、坐标及掩码展开范围，区分保留、修改、合法空值、Demo 临时物料与缺少物料；不向 Action 请求添加其 schema 未声明的来源字段，不输出凭据值。项目专有物料未定时，沿同条规则从 Nova 各 Demo 查找配套临时值并记后续替换位置；现有资产或声明默认不自动证明该值是产品正式物料。
+按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行)，逐字段说明用途、来源、格式/单位、坐标及掩码展开，区分保留、修改、合法空值、Demo 本地素材、首次生成的项目本地值与外部缺配；不向 Action 添加 schema 未声明字段，不输出凭据值。真实 Demo 外部物料可选用并注明替换点，但不能作为无物料项目开工的前提。
 
-字段语义或有效状态不明时先用现有只读 `inspect-panel`；固定字段继续由 `patch-coordinate` 保存，面板字段由 `patch-panels` 保存。App 协议凭据与 Privacy 本地密钥分别按所属文档处理；前者的后台登记不能由随机生成代替，Demo 临时应用参数仍核对原 Demo 的配套后台；后者的生成/轮换走专用维护入口及原授权。专有和 Demo 临时来源均缺失，或当前导出仍拒绝所选合法状态时，保留该依赖分支的阻塞，不以填假值、切换宽泛面板或自写初始化脚本绕过。新建 Master/Runtime 同样遵守本 Skill 的创建边界，不能用一键 Setup 重做已有字段编辑。
+字段语义或有效状态不明先用 `inspect-panel`；固定字段由 `patch-coordinate` 保存，面板由 `patch-panels` 保存。App 协议凭据缺失时保留未配置/占位，不随机生成或冒充后台登记；当前 Validator 对这些字段给出 Warning，允许继续本地正式导出，实际请求仍检查参数是否就绪，见 [App 参数与缺配行为](../../../Docs/Runtime/Modules/Config/AppConfigs.md#取值来源与格式)。`AppConfigs` 结构缺失、本地 Privacy 或资源等基础错误仍须修复。Privacy 本地密钥首次准备使用下方[既有受控分支](references/panel-editing.md#首次准备-privacy-本地密钥)，有效值保持不变，旧档轮换走专用维护入口。新建 Master/Runtime 同样遵守本 Skill 创建边界，不用一键 Setup 重做已有字段编辑。
 
 ## 保存当前渠道与开发模式
 
@@ -59,6 +59,8 @@ Verify 只读核对完整状态与保存文件摘要；写入开始后失败返�
 面板写入为1至64个 `changes[{target,fields?,dimensions?}]`。`fields[{path,valueJson}]` 使用live inspect返回的可写相对路径及严格JSON值文本；`dimensions[{axis,enabled}]` 使用明确的 `Platform / Channel / DevelopMode` 轴。维度先执行既有分裂/合并，然后按最终逻辑组广播字段；关闭轴时target提供保留来源，不能偷偷选邻格。同一逻辑组字段冲突拒绝，完整物理差异以Plan为准。
 
 Privacy 初始 Key/IV 可逐步填写；原 Key/IV 按 UTF-8 各为16字节时，`patch-panels` 会在完整字段广播和归一后逐物理坐标检查，两值必须保持相同。更换、清空、维度合并或从其它格初始化覆盖原有效凭据均阻断；同值及其它隐私字段可编辑。此保护只作用于 `PanelEditing.BuildPreview` / `patch-panels`，手工窗口和共享保存保持现行为。需要保留旧数据的 Key/IV 轮换路由同一 `nova-project-integrate-persistence` 的独立 Privacy 分支，按当前macOS Editor三存储、当前Privacy逻辑组、正规配置保存/导出与独立恢复范围执行，不能改用普通配置入口绕过。
+
+Privacy 尚未配置时，按[首次准备参考](references/panel-editing.md#首次准备-privacy-本地密钥)复用 `patch-panels(operation="initialize-privacy-aes", privacyTarget=完整Privacy坐标)`；省略 changes，不传 fields/dimensions/configType 或密钥。只允许整组同值的空字段/精确公开占位，整组有效 pair 无写入；非占位旧值、部分有效或混合组阻断。秘密只在一次性 Plan 内生成并冻结，Execute 不再生成；源漂移或重载须新 Plan，恢复只读 Verify。只保存 Master 后，再以新 Plan 正式导出 Runtime 并编译，Editor/手机启动另验，不在导出器或 Runtime 叶子配置中生成。
 
 只编辑已有序列化结构和live editable字段，支持值转换的数组/对象以实际Schema为准，不承诺全部复杂类型。SDK/Kit缺实例先用ensure-plugin-instances；不由通用字段入口创建新管理引用类型、不绕过UnityEvent或只读限制。非规范结构或请求外归一变化走下方独立整理分支；脏资产或窗口草稿不能自动丢弃，先保留并解决冲突，不能手写YAML。
 
@@ -93,6 +95,7 @@ Plan/Execute复核完整资产和精确物理写集，只保存Master；Verify�
 | 批量编辑固定字段并保存 | `nova.project.config.patch-coordinate` | `masterGuid/patches[]`；字段使用 `{value}` 包装 |
 | 查阅已有配置面板 | `nova.project.config.inspect-panel` | `masterGuid/target` |
 | 编辑面板字段与维度 | `nova.project.config.patch-panels` | `masterGuid/changes[]` |
+| 首次准备 Privacy 本地密钥 | `nova.project.config.patch-panels` | `masterGuid/operation=initialize-privacy-aes/privacyTarget`；省略 changes |
 | 补齐已登记 IAP Store | `nova.project.config.ensure-panel-references` | `masterGuid/target/collectionPath/typeFullNames[]`；真实列表及已安装白名单 |
 | 独立整理非规范 Master | `nova.project.config.normalize-master` | `masterGuid/platform/channel/developMode`；明确存量分支锚点 |
 | 扫描 SDK/Kit Config 类型 | `nova.project.config.inspect-plugin-types` | `kind=sdk|kit|all` |

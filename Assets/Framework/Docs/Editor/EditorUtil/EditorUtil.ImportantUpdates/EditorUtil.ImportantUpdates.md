@@ -24,7 +24,7 @@
 
 ## 自动提示与操作范围
 
-- Editor 启动和包注册后安排检查，等待包解析、编译、资源更新及 Play Mode 切换结束。
+- Editor 启动和包注册后安排检查，等待包解析、编译、资源更新、Play Mode 切换及当前一轮 AI 工具链安装结束。工具链的延时重试间隔和不可恢复错误不占用展示门，避免 `partial` 队列长期压住声明。
 - 单包操作由 `PlugPals.InstallPackage` 在写 manifest 前持久化一个目标；批量操作由 `PlugPalsWindow.UpgradeAll` 在工具层批次范围内提交，窗口只负责命令转发。
 - 单包窗口只包含该包；批量窗口只包含本批次实际到达目标版本的包。自动带动的依赖与其他包的旧声明留到下次真正启动补查。
 - 无显式批次的 Git 同步、原生 Package Manager 或外部宿主升级按同步升级处理，汇总当前已安装包的未确认声明；不会猜测外部用户点击的次数。
@@ -45,9 +45,16 @@
 
 - 解析忽略 fenced code 和 HTML 注释内的伪标题，保留正文。重复 Important、错误大小写/层级、无版本归属、重要版本的非法 SemVer/日期或含 Important 的重复版本节均明确报错；没有重要声明的旧格式继续兼容。
 - 本地状态损坏会在 Console 明确报告，保留原文件，不静默重置成已读。修复后继续检查。
-- 模态窗口只在 Editor 稳定后打开；未确认关闭后会在安全时机恢复。batchmode 不弹窗、不确认，留给后续交互式 Editor。
+- 自动声明窗口只在 Editor 稳定后以普通非模态窗口打开，保持 Editor.update、CLI 和 MCP 可响应；未确认关闭后会在安全时机恢复。batchmode 不弹窗、不确认，留给后续交互式 Editor。
 - 提示工具随 Framework 分发。旧 Framework 不会自动具备本能力；工具因编译错误无法加载时，待恢复后再补查。本机制不替用户执行迁移，也不证明用户已完成声明中的操作。
 - 不提供手动菜单。回查历史沿用 PlugPals 更新日志入口；Agent 不得通过反射、脚本、修改状态文件或自动勾选代替人的阅读确认。
+- 真正展示前再次核对 Editor 和工具链状态；重要声明待人工确认期间不启动下一轮工具链安装，普通自动更新提示也须等待。串行调度依靠只读状态，不阻断编辑器消息循环。这里只协调 Nova 自有入口；Unity 6000.4 下不能自动识别全部第三方原生模态，超时仍须按[窗口处理与恢复顺序](../../../Onboarding/VALIDATION.md#unity-窗口处理与恢复顺序)查看真实窗口。
+
+## 只读等待状态
+
+SessionState 的 `Nova.ImportantUpdates.PendingPresentation.v1` 在检查已排队、待展示或正在人工确认时为 true，检查无内容或确认结束后才为 false；`Nova.ImportantUpdates.Showing.v1` 从实际显示一直保留到窗口关闭通知，不能因为非模态 Show 已返回就清除。`Nova.ImportantUpdates.Phase.v1` 提供 `queued / waiting / checking / awaiting-confirmation / blocked / complete`，`Nova.ImportantUpdates.WaitingReason.v1` 提供中文原因。独立引导脚本可读取这些键安排后续窗口，不能把它们当作阅读确认或包安装成功。
+
+域重载重新核对尚未完成的检查；待核验批次仍来自既有 State.json。上述观察键不会修改 `Acknowledged`、`Observed` 或 `Pending` 的持久化语义，关闭模态也不会清除待确认要求。
 
 ## 关联
 

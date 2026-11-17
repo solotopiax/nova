@@ -32,7 +32,7 @@ description: Use when 处理 Unity 项目的开发、界面、资源、配置、
 
 | 用户词 | 必须确认 |
 |---|---|
-| 新建 Nova 项目 / 开始做游戏 / 开工准备 | 按 PROJECT_STRUCTURE 的[三工具基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#configpipifyplugpals-基线) 配置并实际使用 Config（ConfigMaster）、Pipify、PlugPals；就绪检查发现缺项后转配置/流水线/包管理既有入口，不能把工具标可选。按标准产品预加载基线完整落实 MainDemo 八项动作，先准备环境、固定 Resources、配置/导出，再验证并开展依赖业务；不以体量小、单机或当前只用部分模块裁减。已有项目局改按影响面核对，不自动迁移。HybridCLR 包、安装、启用、产物和运行分别判断 |
+| 新建 Nova 项目 / 开始做游戏 / 开工准备 | 按 PROJECT_STRUCTURE 的[三工具基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#configpipifyplugpals-基线) 配置并实际使用 Config（ConfigMaster）、Pipify、PlugPals；缺项转既有入口。完整落实 MainDemo 八项动作，先准备本地环境、固定 Resources、配置/导出，再验证并开展依赖业务；不以体量小或单机裁减。缺外部物料按 NA-002 的启动底线准备，服务失败不得卡住本地游戏；交接 Editor 与目标手机的启动验收。已有项目局改不自动迁移，HybridCLR 包、安装、启用、产物和运行分别判断 |
 | PSD / PSB / PSD2UGUI / AI 转界面 | 查询、设计源同步、树编辑、生成或导图、AI识别/应用分别定位；先读取包与配置来源、persistentId和输出记录，普通生成不默认运行AI；业务UIView接入继续既有页面Skill |
 | 新游戏 / 页面 / 界面 | 只建 View，还是还需 Prefab、UI 注册、入口与运行验证；布局实施前按 UIComponent 文档发现并冻结屏幕适配方案，不能直接套用 Demo |
 | Unity 无响应 / 工具超时 / 启动弹窗 | 先按共同入口检查真实窗口、编译/导入进度和进程归属；只读路由仅报告，已授权开发由后续执行步骤及时处理窗口，不以反复重启替代诊断 |
@@ -108,7 +108,7 @@ description: Use when 处理 Unity 项目的开发、界面、资源、配置、
    - 配置 Google Play AAB 上传、执行已授权的上传 Batch，或排查 fastlane supply 权限/版本号/提交失败：`nova-project-upload-google-play`；诊断不重试，仅验证仍有远端上传副作用，不能当作本地构建或 UPM 发布。
    - 单一确定的 Operation 不强制经过 Workflow；多个写入操作仅在读写集无冲突时并行。
 5. 读取所选 Skill 的 [references/contract.json](references/contract.json) 后，按真实 Adapter 状态标记执行方式：引用 `nova_project_action` 的分支只通过 live `describe(action_id)` 判断为“当前 MCP 可执行”；Tool 缺失或 `describe` 未返回目标 ID 时标记“传输未就绪 / 当前未开放”，不得根据静态文档猜测可用，也不得退化为任意 C#。不依赖 Project Action 的分支标记其实际 Adapter（只读检查、受控 Unity 编辑、CLI 或人工判断）。通用 Unity Skill 只补充所选路径的引擎操作，不改写 Nova 的业务职责、配置、生命周期与导出链；没有可用 Nova 入口时报告具体缺口。Router 只报告可用性，不调用 `plan` 或制造写入。
-6. 明确不可做的事：不扫描主仓私有规则或其他工程补资料；需要设计依据时按[共同知识入口](../../../Docs/START_HERE.md#设计依据与历史知识)只读当前包的 Minds 索引和命中条目，不展开全库、不将历史命令当作当前合同。不把 Sample 整体当产品模板；Demo 临时物料按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 核对配套后复用。不猜 UIGroup / 表字段 / 资源地址，不手写 Prefab 或 Scene YAML，不把 Pipify 顺序 Batch 当作可并行 DAG。
+6. 明确不可做的事：不扫描主仓私有规则或其他工程补资料；需要设计依据时按[共同知识入口](../../../Docs/START_HERE.md#设计依据与历史知识)只读当前包的 Minds 索引和命中条目，不展开全库、不将历史命令当作当前合同。不把 Sample 整体当产品模板；素材复用、本地值首次准备及外部缺配按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 交接对应 Operation，不把取得 Demo 的 App 后台协议物料作为本地导出前提。当前导出或初始化不能满足启动底线时报告具体实现差距，不靠填假外部物料绕过。不猜 UIGroup / 表字段 / 资源地址，不手写 Prefab 或 Scene YAML，不把 Pipify 顺序 Batch 当作可并行 DAG。
 
 ## 共享查询入口
 

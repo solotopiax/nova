@@ -5,7 +5,7 @@
  * filename:  AndroidResolveCodeEditorTailContract.cs
  * author:    taoye
  * created:   2026/10/16
- * descrip:   当前 Cursor 工程同步尾部的自然无生成支路与既有 usage 效果合同
+ * descrip:   已初始化默认编辑器及既有Cursor同步尾部的有限自然无生成合同
  ***************************************************************/
 
 using System;
@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 namespace NovaFramework.Editor
 {
-    /// <summary>只覆盖根已实核的现存 Cursor 实例；不调用 CodeEditor getter、发现、生成、同步、注册或打开方法。</summary>
+    /// <summary>只覆盖已有完成见证的Core默认实例或既有Cursor固定点；不调用getter、发现、生成、同步、注册或打开方法。</summary>
     internal static class AndroidResolveCodeEditorTailContract
     {
         private const string CoreSha256 = "14a25302095cb3c648b4b83b9936ba2df10454ae254da6440a1a968395f2d581";
@@ -64,13 +64,13 @@ namespace NovaFramework.Editor
             internal readonly string value = Guid.NewGuid().ToString("N");
         }
 
-        /// <summary>双读当前已初始化实例与精确模板路径角色，冻结当前正规 Cursor 自然无生成支路。</summary>
+        /// <summary>双读当前已初始化实例与精确模板路径角色，冻结已审正规同步尾部的自然无生成支路。</summary>
         /// <param name="exactWritePaths">主刷新合同已经审查的精确写集；本方法不授予路径写权限。</param>
         /// <param name="token">只读取消标记。</param>
         /// <param name="snapshot">成功时返回仅含摘要和布尔的稳定快照。</param>
         /// <param name="error">未知实现、偏好、发现状态、扩展或文件条件的具体阻断原因。</param>
         /// <returns>当前同域对象、设置、已审配置文件和路径排除条件均稳定时为 true。</returns>
-        internal static bool TryCapture(string[] exactWritePaths, CancellationToken token, out Snapshot snapshot, out string error)
+        internal static bool TryCapture(string[] exactWritePaths, CancellationToken token, out Snapshot snapshot, out string error, bool independentTailWitness = false)
         {
             snapshot = null;
             error = null;
@@ -78,8 +78,8 @@ namespace NovaFramework.Editor
             {
                 if (!TryGetPotentialDispatchPaths(exactWritePaths, out string[] potential, out error)) return false;
                 token.ThrowIfCancellationRequested();
-                Snapshot first = CaptureOnce(potential, token);
-                Snapshot second = CaptureOnce(potential, token);
+                Snapshot first = CaptureOnce(potential, token, independentTailWitness);
+                Snapshot second = CaptureOnce(potential, token, independentTailWitness);
                 Require(first.sha256 == second.sha256, "工程同步尾部的只读输入在读取期间漂移。");
                 snapshot = second;
                 return true;
@@ -162,23 +162,28 @@ namespace NovaFramework.Editor
             return true;
         }
 
-        /// <summary>只读一次当前 Cursor 的实际选择、已完成安装缓存、既有生成器和本机已审配置字节。</summary>
+        /// <summary>先以真实派发完成证明CodeEditor及其尾部已执行，再只读已有实例；不以静态字段读取探测冷域初始化。</summary>
         /// <param name="potential">已角色化的精确潜在派发路径。</param>
         /// <param name="token">读取取消标记。</param>
         /// <returns>稳定、脱敏快照；不包含普通缓存替换的对象身份。</returns>
-        private static Snapshot CaptureOnce(string[] potential, CancellationToken token)
+        private static Snapshot CaptureOnce(string[] potential, CancellationToken token, bool independentTailWitness)
         {
             token.ThrowIfCancellationRequested();
             Assembly core = typeof(AssetDatabase).Assembly;
             Require(core.ManifestModule.ModuleVersionId.ToString("D") == CoreMvid &&
                 GenerateActionCommon.ComputeFileHash(core.Location, token) == CoreSha256, "工程同步尾部 CoreModule 身份漂移。");
+            string initialization, initializationError;
+            bool witnessed = independentTailWitness
+                ? AndroidRefreshInitializationWitness.TryGetCodeEditorTailProof(out initialization, out initializationError)
+                : AndroidRefreshInitializationWitness.TryGetProof(typeof(AndroidResolveRefreshObserver), out initialization, out initializationError);
+            Require(witnessed, initializationError);
             Type codeEditor = core.GetType("Unity.CodeEditor.CodeEditor", true);
-            // 根在当前会话已实核该类型与实例完成初始化；不得将本方法用作尚未初始化类型的初始化探针。
+            // 已审Core在所有post-all回调之后无条件进入CodeEditorProjectSync，以上完成帧同时见证该尾部已退出。
             object editor = Read(codeEditor, "<Editor>k__BackingField");
             object current = Read(codeEditor, "m_CurrentEditor", editor);
             object fallback = Read(codeEditor, "m_DefaultEditor", editor);
-            Require(editor?.GetType() == codeEditor && current != null && !ReferenceEquals(current, fallback),
-                "当前 CodeEditor 为默认/空实例，可能进入自动选择与初始化，当前 Cursor 合同不接纳。");
+            Require(editor?.GetType() == codeEditor && current != null, "当前CodeEditor没有已初始化的实际实例。");
+            if (ReferenceEquals(current, fallback)) return CaptureDefaultEditor(core, codeEditor, editor, current, fallback, potential, initialization);
             Type currentType = current.GetType();
             Assembly cursor = currentType.Assembly;
             Require(currentType.FullName == CursorPrefix + "VisualStudioEditor" && cursor.GetName().Name == "Unity.Cursor.Editor" &&
@@ -252,6 +257,46 @@ namespace NovaFramework.Editor
             snapshot.sha256 = SnapshotHash(snapshot);
             return snapshot;
         }
+
+        /// <summary>Core默认实现的SyncIfNeeded仅ret；显式偏好使CurrentCodeEditor跳过自动发现，冻结已有字段且不读取配置文件。</summary>
+        private static Snapshot CaptureDefaultEditor(Assembly core, Type codeEditor, object editor, object current, object fallback,
+            string[] potential, string initialization)
+        {
+            bool explicitPath = EditorPrefs.HasKey("kScriptsDefaultApp");
+            Type expected = core.GetType("UnityEditor.DefaultExternalCodeEditor", true);
+            Require(IsExplicitDefaultBranch(explicitPath, current, fallback, expected),
+                "默认外部编辑器缺显式偏好或实际Core实例不符；正规getter可能发现/选择并初始化其他编辑器，不主动设置偏好放行。");
+            string preference = EditorPrefs.GetString("kScriptsDefaultApp", "");
+            object binding = Read(codeEditor, "m_CurrentInstallation", editor);
+            Require(binding != null && binding.GetType() == core.GetType("Unity.CodeEditor.CodeEditor+Installation", true), "默认编辑器安装backing类型漂移。");
+            string bindingPath = Read(binding.GetType(), "Path", binding) as string;
+            string bindingName = Read(binding.GetType(), "Name", binding) as string;
+            object chosen = Read(expected, "m_ChosenInstallation", current);
+            Require(chosen == null || chosen is string, "默认编辑器已有选择字段类型漂移。");
+            object providers = Read(codeEditor, "m_ExternalCodeEditors", editor);
+            Type providerList = typeof(List<>).MakeGenericType(core.GetType("Unity.CodeEditor.IExternalCodeEditor", true));
+            Require(providers?.GetType() == providerList && ((IList)providers).Count <= 64, "默认编辑器已注册provider集合结构或容量漂移。");
+            var identities = new List<string> { initialization, Identity(editor), Identity(current), Identity(fallback), Identity(providers) };
+            foreach (object provider in (IList)providers)
+            {
+                Require(provider != null && !provider.GetType().Assembly.IsDynamic, "默认编辑器注册表含空或动态provider。");
+                identities.Add(provider.GetType().AssemblyQualifiedName + "|" + provider.GetType().Module.ModuleVersionId + "|" + Identity(provider));
+            }
+            var snapshot = new Snapshot
+            {
+                editorAnalyticsEnabled = EditorAnalytics.enabled,
+                objectIdentitySha256 = Hash(identities),
+                selectionSha256 = Hash(new { mode = "core-default-explicit-no-sync", explicitPath, preference, bindingPath, bindingName, chosen }),
+                extensionsSha256 = Hash("Core.DefaultExternalCodeEditor.SyncIfNeeded:void-ret"),
+                potentialDispatchPathsSha256 = Hash(potential), vscodeFilesSha256 = Hash("core-default-does-not-access-editor-config"),
+            };
+            snapshot.sha256 = SnapshotHash(snapshot);
+            return snapshot;
+        }
+
+        /// <summary>显式空偏好同样会跳过自动发现；不以应用路径存在、包已安装或名称相似代替实际同一Core实例。</summary>
+        internal static bool IsExplicitDefaultBranch(bool explicitPreference, object current, object fallback, Type expectedType) =>
+            explicitPreference && current != null && ReferenceEquals(current, fallback) && current.GetType() == expectedType;
 
         /// <summary>只接纳本机已逐分支审查的现存 .vscode 三份原字节，无需复制 vendor JSON 修补算法。</summary>
         /// <param name="token">文件读取取消标记。</param>

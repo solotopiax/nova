@@ -517,7 +517,7 @@
 | [EditorUtil.CsvExporter.md](Editor/EditorUtil/EditorUtil.CsvExporter/EditorUtil.CsvExporter.md) | CSV 导出工具 |
 | [EditorUtil.Asmdef.md](Editor/EditorUtil/EditorUtil.Asmdef/EditorUtil.Asmdef.md) | Assembly Definition 命名空间解析（向上查找 .asmdef） |
 | [EditorUtil.Excel.md](Editor/EditorUtil/EditorUtil.Excel/EditorUtil.Excel.md) | ExcelDataReader 读取工作簿与派生 CSV 写入；不编辑权威 xlsx 源表 |
-| [EditorUtil.Environment.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) | 编辑器运行时环境数据工具（EnvironmentData / ColumnIndices / GetEnvironmentData，Channel 来自 RuntimeProvider） |
+| [EditorUtil.Environment.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) | 编辑器环境检测与统一刷新；新增检测通过标记自动接入 Config 激活刷新 |
 | [EditorUtil.Environment.Python3.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md) | Python3 运行环境多路径探测检查器（5 策略：ExplicitPath/PATH/PyLauncher/Where/PythonFallback；SessionState 缓存；33 候选路径） |
 | [EditorUtil.Environment.LubanChecker.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md) | Luban 运行环境检查器（dotnet-sdk 路径/版本≥8.0/Luban.dll 检测，SessionState 缓存；由 Pipeline 和 ConfigWindow 调用） |
 | [EditorUtil.Luban.Pipeline.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) | 非 Table 专用模块的 Unit/SchemaManifest Luban 导出流水线 |
@@ -534,7 +534,7 @@
 | [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动自动检查 + `MarkSkip`/`ClearSkip` 持久化，复用 PlugPals 网络层） |
 | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) | 已安装包 CHANGELOG Important 提取、本地确认、单包/批量范围与重载补查 |
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate、严格 DLL 拷贝及 Sample Editor 自动同步；由 Pipify Steps 编排流水线） |
-| [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
+| [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 模板准备与依赖解析（官方模板/开关原子准备；EDM4U 1.2.188/1.2.190 同步 JDK 交接及受控 Resolve 验证） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
 | [EditorUtil.SpriteAtlasGeneration.md](Editor/EditorUtil/EditorUtil.SpriteAtlasGeneration.md) | 可选的目录图集预演、增量生成和恢复；原流程不自动启用 |
 | [EditorUtil.UIBindings.md](Editor/EditorUtil/EditorUtil.UIBindings.md) | 既有普通 Prefab 精确字段绑定与可选 partial 生成 |
@@ -546,7 +546,7 @@
 | [EditorUtil.FileSystem.OutputApplier.md](Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md) | Editor 内部批量文件替换、删除、备份与失败回滚基础设施 |
 | [EditorUtil.Config.StructureGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.md) | Platform×Channel 枚举网格补齐与缺失引用清理 |
 | [EditorUtil.Config.SDKPluginScanner.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) | 全程序集扫描 ISDKPluginConfig 实现类型 + 实例补全/移除（EnsureInstance/RemoveInstance 按 DevelopMode 分组） |
-| [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | AppConfigs/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
+| [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | 三维配置结构与字段校验（App 协议参数缺配为 Warning，结构与本地基础配置错误仍为 Error） |
 | [EditorUtil.Config.ActivePlatform.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.md) | Unity Active BuildTarget 到 Nova 编辑期执行 PlatformType 的实时唯一映射与生产操作门禁入口 |
 | [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) | 将 ConfigMasterSO 三维组合导出为指定路径的 ConfigRuntimeSO 快照 |
 | [EditorUtil.Config.SchemaGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaGuard.md) | 检查 ConfigMasterSO 结构版本，只接受当前版本且不自动迁移 |

@@ -22,7 +22,7 @@ bool refreshed = await Nova.Config.WaitForStartupAppConfigAsync(cancellationToke
 // true 表示本次启动取得的新远端配置已应用到内存；false 时继续使用当前配置。
 ```
 
-启动结果在本次加载期间保留到 `Shutdown()`，不因成功、失败、后续手动刷新或预加载重试而清空。等待入口不会启动、重试请求；尚未加载 Config、未配置远端名称或自定义 Manager 不支持该能力时返回 `false`。不要用 `RefreshAppConfigAsync()` 代替这个等待：显式刷新在上一轮结束后会再次请求。
+启动结果在本次加载期间保留到 `Shutdown()`，不因成功、失败、后续手动刷新或预加载重试而清空。等待入口不会启动、重试请求；尚未加载 Config、未配置远端名称、应用协议参数缺失/格式无效，或自定义 Manager 不支持该能力时返回 `false`。缺外部物料时无需等待网络来补参数，本地 Config 加载与游戏启动照常继续。不要用 `RefreshAppConfigAsync()` 代替这个等待：显式刷新在上一轮结束后会再次请求。
 
 启动自动拉取使用 Network Inspector「Http 管理 → 启动时GM配置请求超时时间（秒）」，默认每次请求 5 秒。主地址、备用地址及重试的每次请求分别计时，单次超时后继续执行既有主备和重试策略；整轮全部失败才返回 `false`。它不限制整轮总等待时间，总耗时会随候选数量和重试次数增加。重复等待复用本轮最终结果，不会重发。设置来源及合法范围见 [HttpSettings](../Network/Definitions/HttpSettings.md)。
 

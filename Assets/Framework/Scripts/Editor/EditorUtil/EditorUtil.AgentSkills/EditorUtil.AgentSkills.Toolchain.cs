@@ -42,13 +42,15 @@ namespace NovaFramework.Editor
                 /// <param name="status">success、partial 或 blocked。</param>
                 /// <param name="detail">本次已经取得的证据及限制。</param>
                 /// <param name="remediation">尚需执行的操作；已通过时可为空。</param>
-                internal ToolchainItem(string id, string name, string status, string detail, string remediation = "")
+                /// <param name="canAutomaticallyRetry">为 false 时保留未完成状态，等待显式重检或 Framework 身份变化。</param>
+                internal ToolchainItem(string id, string name, string status, string detail, string remediation = "", bool canAutomaticallyRetry = true)
                 {
                     Id = id;
                     Name = name;
                     Status = status;
                     Detail = detail;
                     Remediation = remediation;
+                    CanAutomaticallyRetry = canAutomaticallyRetry;
                 }
 
                 /// <summary>固定检查标识。</summary>
@@ -61,6 +63,8 @@ namespace NovaFramework.Editor
                 public string Detail { get; }
                 /// <summary>补齐本项所需的操作。</summary>
                 public string Remediation { get; }
+                /// <summary>本项是否可随当前自动安装请求重试；不改变公开状态与结果字段。</summary>
+                internal bool CanAutomaticallyRetry { get; }
             }
 
             /// <summary>本地工具链只读报告；外部 Agent 的当前连接必须另行现场验证。</summary>
@@ -87,6 +91,8 @@ namespace NovaFramework.Editor
                 public string Summary { get; }
                 /// <summary>本次冻结的逐项结果。</summary>
                 public IReadOnlyList<ToolchainItem> Items { get; }
+                /// <summary>出现不可自动修复的协议或项目身份错误时，停止当前身份的自动重试。</summary>
+                internal bool CanAutomaticallyRetry => Items.All(item => item.Status == "success" || item.CanAutomaticallyRetry);
 
                 /// <summary>生成可直接用于日志或提示窗口的中文说明，不包含原始进程输出。</summary>
                 /// <returns>摘要、逐项状态与必要操作。</returns>

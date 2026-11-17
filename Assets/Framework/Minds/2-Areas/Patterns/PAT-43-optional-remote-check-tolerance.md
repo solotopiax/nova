@@ -33,6 +33,8 @@ related: []
 
 **不适用**：阻断性远端依赖（必须成功才能继续，如 OAuth 登录、必需配置下发）。
 
+这里的“必须成功”指对应远端服务操作本身。新项目早期缺 App 后台物料时，不把 App 配置拉取或服务器连接设为本地游戏启动硬门；当前开工要求以 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 的启动底线及 [[ADR-092-main-demo-product-preload-baseline|ADR-092]] 的适用边界为准。
+
 ## 核心做法（What & How）
 
 ### 第 1 步：约定降级返回值

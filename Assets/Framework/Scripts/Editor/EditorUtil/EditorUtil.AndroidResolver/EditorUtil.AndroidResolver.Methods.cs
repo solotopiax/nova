@@ -10,6 +10,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading;
 using NovaFramework.Runtime;
 
 namespace NovaFramework.Editor
@@ -45,15 +46,28 @@ namespace NovaFramework.Editor
                     throw new InvalidOperationException($"[AndroidResolver] 在类型 {typeName} 上未找到方法 {methodName}(bool)，请确认 EDM4U 版本（已知签名为 ResolveSync(bool forceResolution)）。");
                 }
 
+                if (method.ReturnType != typeof(bool))
+                    throw new InvalidOperationException("[AndroidResolver] ResolveSync(bool) 未提供明确布尔完成结果。");
+                if (!AndroidEdmCompatibilityContract.TryVerifyType(resolverType, "Google.JarResolver.dll",
+                        CancellationToken.None, out string identityError))
+                    throw new InvalidOperationException("[AndroidResolver] 当前 EDM4U 不支持同步环境交接：" + identityError);
+                RequireEnabledTemplatesReady();
+
                 try
                 {
-                    Log.Debug(LogTag.Editor, "[AndroidResolver] 开始执行 Android 依赖解析（forceResolution=true）...");
-                    object invocationResult = method.Invoke(null, new object[] { true });
-                    if (!(invocationResult is bool succeeded) || !succeeded)
+                    // 仅已审同步入口拥有此作用域。EDM 的 CommandLine.Run 等待子进程退出后才通知 ResolveSync 完成。
+                    // 不能把该环境作用域套给异步 Resolve；升级 EDM 时须重新核对完成链和 Gradle wrapper 的 JAVA_HOME 语义。
+                    string javaHome = ResolveJavaHome(resolverType);
+                    using (AndroidResolverJavaEnvironment.Begin(javaHome))
+                    // 模板注入分支返回空作用域；仅真实下载支路临时选择已审官方 Gradle 分发并完整恢复生成配置。
+                    using (AndroidResolverGradleEnvironment.Begin(resolverType, javaHome))
                     {
-                        throw new InvalidOperationException("[AndroidResolver] ResolveSync 已返回失败，依赖状态和生成目录不能视为有效结果。");
+                        Log.Debug(LogTag.Editor, "[AndroidResolver] 开始执行 Android 依赖解析（forceResolution=true）...");
+                        object invocationResult = method.Invoke(null, new object[] { true });
+                        if (!(invocationResult is bool succeeded) || !succeeded)
+                            throw new InvalidOperationException("[AndroidResolver] ResolveSync 已返回失败，依赖状态和生成目录不能视为有效结果。");
+                        Log.Debug(LogTag.Editor, "[AndroidResolver] Android 依赖解析完成。");
                     }
-                    Log.Debug(LogTag.Editor, "[AndroidResolver] Android 依赖解析完成。");
                 }
                 catch (TargetInvocationException tie)
                 {

@@ -65,7 +65,7 @@ public static string BuildDimensionInvariantMessage(IReadOnlyList<ValidationIssu
 
 1. `master` 空值检查（Error）
 2. Platform / Channel 必须是已定义的非 `None` 值（Error）
-3. `DimensionalResolver.ResolveNamespace(master, platform, channel, mode)` 非空；`master.GetAppConfigs(platform, channel, mode)` 的 AppID / AppAesKey / AppAesIV 三个字段非空（Error）
+3. `DimensionalResolver.ResolveNamespace(master, platform, channel, mode)` 非空，AppConfigs 实例不能为 null（Error）；AppID 须可解析为 int32，AppAesKey / AppAesIV 须各为 16 个 UTF-8 字节，空白及 `YOUR_` 占位视为未配置。这些外部字段的缺配或格式错误均为 Warning，不阻断本地导出，真实请求仍按 [App 参数与缺配行为](../../../Runtime/Modules/Config/AppConfigs.md#取值来源与格式) 检查前置
 4. `master.GetPrivacyConfigs(platform, channel, mode)` 的 AESKey / AESIV 均需为 16 个 UTF-8 字节；iOS 下解析 PrivacyInfoConfig / InfoPlistUsageDescriptions，检查 JSON 结构（空文本由各解析器作为默认空配置接受；非法内容为 Error）
 5. 目标 Platform×Channel 矩阵行存在性；SDK / Kit 启用名单中的类型必须有实例（Error）
 6. SDK / Kit null 占位：能唯一恢复类型且该类型未启用的残留为 Warning；类型无法确定或属于已启用类型时为 Error（已报告缺实例的问题不重复报告）

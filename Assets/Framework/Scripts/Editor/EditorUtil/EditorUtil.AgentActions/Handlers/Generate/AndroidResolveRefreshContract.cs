@@ -40,6 +40,8 @@ namespace NovaFramework.Editor
             public string editorObjectsSha256;
             public string[] editorObjectRows;
             public AndroidResolveUirObjectContract.Snapshot uir;
+            public AndroidResolveAiStoreContract.Snapshot aiStores;
+            public AndroidResolveUvcsRefreshContract.Snapshot uvcs;
             public AndroidResolveVendorRefreshContracts.Inputs vendorInputs;
             public string vendorSha256;
             public string speedTreeSha256;
@@ -48,6 +50,7 @@ namespace NovaFramework.Editor
             public AndroidResolvePeripheralRefreshContracts.StableSnapshot peripheral;
             public string[] graphUiHandlerKeys;
             public AndroidResolveCodeEditorTailContract.Snapshot codeEditor;
+            public string hostCompilationSha256;
             public string[] allowedPaths;
             public string sha256;
         }
@@ -69,6 +72,8 @@ namespace NovaFramework.Editor
             public AndroidVersionHandlerReadOnlyContract.Snapshot versionAfter;
             public string[] graphUiHandlerKeysAfter;
             public AndroidResolveUirObjectContract.Snapshot uirAfter;
+            public AndroidResolveAiStoreContract.Snapshot aiStoresAfter;
+            public bool aiStoresObservedImportedAssets;
             public string sha256;
         }
 
@@ -80,7 +85,7 @@ namespace NovaFramework.Editor
             "Library/Search/propertyAliases.db", "Library/Search/propertyAliases.db.st", "Library/Search/transactions.db（仅实际四数组对应的28字节有序事务追加）",
             "Library/Search/propertyDatabase.db_<32位N格式GUID>_temp（引擎空缓存merge临时文件，随后删除）",
             "Library/Search/propertyAliases.db_<32位N格式GUID>_temp（引擎空缓存merge临时文件，随后删除）",
-            "Unity 派生依赖登记前缀 SpeedTree9Importer_MaterialSettings（当前无属性方法/输入或现有artifact依赖）",
+            "Unity 派生依赖前缀 SpeedTree9Importer_MaterialSettings（空方法集或唯一已审URP版本1方法；无st9/spm输入及现有artifact依赖，同域模板刷新不调用方法或变更登记；不宣称回读原生登记值）",
             "Unity Editor Analytics:assetPostProcessorsUsage v2（既有enabled状态下的importActionId、methodName、duration_sec、invocationCount；不证明外部送达）",
             "已审固定内存/UI派生缓存：Version Handler空可写集通知、Firebase assetsChanged、Facebook currentAsset、Sprite工厂、Grid空单例、Graph固定Console处理器、AssetEvents breadcrumb、UPM timestamp[64]",
             "Unity UI Toolkit：仅冻结面板实际持有的默认材质、默认浮点Shader信息纹理、Shader信息存储纹理及动态Atlas页（含该页直接持有的复制材质）的正常重建；不允许项目资产、输入纹理或其它对象变化",
@@ -96,6 +101,8 @@ namespace NovaFramework.Editor
                 .Where(effect => effect.Contains("|idempotent-SetString|"))
                 .Select(effect => "Unity EditorPrefs:" + effect))
                 .Concat((snapshot.peripheral.LightingExpectedEffects ?? Array.Empty<string>()).Select(effect => "Unity Editor UI派生状态:" + effect))
+                .Concat(snapshot.aiStores == null ? Array.Empty<string>() : AndroidResolveAiStoreContract.GetDeclaredEffects(snapshot.aiStores))
+                .Concat(snapshot.uvcs == null ? Array.Empty<string>() : AndroidResolveUvcsRefreshContract.GetDeclaredEffects(snapshot.uvcs))
                 .Concat(new[] { "Unity Handles.SetSceneViewModeGIContributorsReceiversColors 固定三色 setter（仅已审 Lighting 消费者自然通知分支；无回读 API，不宣称原生值回读）" }).ToArray();
         }
 
@@ -145,10 +152,10 @@ namespace NovaFramework.Editor
             if (assembly.GetName().Name != name || method.IsStatic || method.GetParameters().Length != 0 ||
                 !(method is MethodInfo info) || info.ReturnType != typeof(void) ||
                 !CustomAttributeData.GetCustomAttributes(method.DeclaringType).Any(item =>
-                    item.AttributeType == typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute)) ||
-                assembly.ManifestModule.ModuleVersionId.ToString() != "0c769c7e-f120-4b03-8207-2f4fa9e20d11" ||
-                GenerateActionCommon.ComputeFileHash(assembly.Location, CancellationToken.None) != "8e04ff323a0e9cb1eac26d3203646e2f0f6a40f7bab3edc46505a51009e4f2a1")
+                    item.AttributeType == typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute)))
                 return "当前 Action update 闭包不属于已审完整编译模块。";
+            if (!AndroidRefreshSourceIdentityContract.TryVerifySourceAssembly(method.DeclaringType,
+                    CancellationToken.None, out _, out string identityError)) return identityError;
             var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
             if (package?.name != "com.solotopia.nova.framework.mcp") return "当前 Action update 闭包缺真实 MCP 包归属。";
             string root = GenerateActionCommon.ProjectRoot;
@@ -258,23 +265,31 @@ namespace NovaFramework.Editor
         private static bool TryCaptureBoundPaths(string[] paths, AndroidResolveVendorRefreshContracts.Inputs vendorInputs, string callbacks, string scheduler, CancellationToken token, out Snapshot snapshot, out string error)
         {
             snapshot = null;
-            if (!AndroidResolveRefreshCallbacks.TryCaptureNaturalBranches(paths, token, out string naturalBranches, out error)) return false;
+            // 已正常初始化的UVCS复用原路径；冷态日志条件不能成为既有项目的新前置。
+            if (!AndroidResolveUvcsRefreshContract.TryCaptureForPlan(token, out var uvcs, out error) ||
+                !AndroidResolveRefreshCallbacks.TryCaptureNaturalBranches(paths, token, out string naturalBranches, out error,
+                    independentAiStores: true, independentUvcs: uvcs != null)) return false;
             try
             {
                 if (!AndroidResolveVendorRefreshContracts.TryCapture(vendorInputs, token, out string vendor, out error) ||
                     !AndroidResolveSpeedTreeDependencyContract.TryCapture(paths, token, out string speedTree, out error) ||
                     !AndroidResolveSearchCacheContract.TryCapture(token, true, out var search, out error) ||
                     !AndroidVersionHandlerReadOnlyContract.TryCapture(token, out var version, out error) ||
-                    !AndroidResolveCodeEditorTailContract.TryCapture(paths, token, out var codeEditor, out error)) return false;
+                    !AndroidResolveCodeEditorTailContract.TryCapture(paths, token, out var codeEditor, out error, true) ||
+                    !AndroidResolveAiStoreContract.TryCapture(token, out var aiStores, out error)) return false;
                 if (!version.naturallyComplete) { error = "Version Handler 尚有正常待处理工作，等待自然收尾后重新 Plan。"; return false; }
-                if (!AndroidResolveUirObjectContract.TryCapture(token, out var uir, out error)) return false;
+                if (!AndroidResolveRefreshCallbacks.HasCompleteAiStoreCoverage(aiStores))
+                { error = "AI Store独立快照没有完整覆盖当前五项实际派发集合。"; return false; }
+                if (!AndroidResolveUirObjectContract.TryCapture(token, out var uir, out error) ||
+                    !TryCaptureHostCompilation(token, out string hostCompilation, out error)) return false;
                 string[] objects = CaptureEditorObjectRows(paths);
                 snapshot = new Snapshot { domain = s_Domain, callbackSha256 = callbacks,
                     schedulerSha256 = scheduler, naturalBranchesSha256 = naturalBranches, allowedPaths = paths,
                     vendorInputs = vendorInputs, vendorSha256 = vendor, speedTreeSha256 = speedTree, search = search, version = version, codeEditor = codeEditor,
-                    peripheral = AndroidResolveRefreshCallbacks.CapturePeripheralSnapshot(token),
+                    peripheral = AndroidResolveRefreshCallbacks.CapturePeripheralSnapshot(token, true, uvcs != null), aiStores = aiStores, uvcs = uvcs,
                     graphUiHandlerKeys = AndroidResolvePeripheralRefreshContracts.CaptureGraphUiHandlerKeys(token),
                     protectedFilesSha256 = CaptureProtectedFiles(paths, token), editorObjectRows = objects, uir = uir,
+                    hostCompilationSha256 = hostCompilation,
                     editorObjectsSha256 = GenerateActionCommon.ComputeTextHash(string.Join("\n", objects)) };
                 snapshot.sha256 = ComputeSnapshotHash(snapshot);
                 // 只改变完整观察材料的有界表示；逻辑字段、原始行和摘要仍保持原值。
@@ -350,8 +365,24 @@ namespace NovaFramework.Editor
                 snapshot.vendorInputs, snapshot.vendorSha256, snapshot.speedTreeSha256, snapshot.search, snapshot.version,
                 snapshot.peripheral, snapshot.graphUiHandlerKeys, snapshot.codeEditor }));
             // 无新字段的历史快照保持原摘要与原严格对象规则，不能事后补造引擎对象许可。
-            return snapshot.uir == null ? legacyHash : GenerateActionCommon.ComputeTextHash(
+            string currentHash = snapshot.uir == null ? legacyHash : GenerateActionCommon.ComputeTextHash(
                 legacyHash + "\nUIR-v1\n" + Util.Json.Serialize(snapshot.uir));
+            currentHash = snapshot.hostCompilationSha256 == null ? currentHash : GenerateActionCommon.ComputeTextHash(
+                currentHash + "\nActionHost-v1\n" + snapshot.hostCompilationSha256);
+            currentHash = snapshot.aiStores == null ? currentHash : GenerateActionCommon.ComputeTextHash(
+                currentHash + "\nAiStores-v1\n" + Util.Json.Serialize(snapshot.aiStores));
+            return snapshot.uvcs == null ? currentHash : GenerateActionCommon.ComputeTextHash(
+                currentHash + "\nUvcs-v1\n" + Util.Json.Serialize(snapshot.uvcs));
+        }
+
+        /// <summary>冻结实际 MCP 宿主编译来源及当前产物；跨项目信任来自已审源码，执行漂移仍按当次 DLL/MVID 拒绝。</summary>
+        private static bool TryCaptureHostCompilation(CancellationToken token, out string digest, out string error)
+        {
+            digest = null;
+            if (!AndroidRefreshSourceIdentityContract.TryVerifySourceAssembly(
+                    typeof(NovaFramework.Mcp.Editor.NovaProjectActionGateway), token, out string identity, out error)) return false;
+            digest = GenerateActionCommon.ComputeTextHash(identity);
+            return true;
         }
 
         /// <summary>写前逐项重核同域完整冻结状态；写后事务增加不能继承为一次新的执行授权。</summary>
@@ -363,7 +394,7 @@ namespace NovaFramework.Editor
         {
             error = null;
             if (!IsSnapshotForDomain(snapshot, s_Domain, out error) ||
-                !TryCaptureStableAfter(snapshot, token, false, true, out _, out _, out error)) return false;
+                !TryCaptureStableAfter(snapshot, token, false, true, false, out _, out _, out _, out error)) return false;
             if (!AndroidResolveSearchCacheContract.TryCapture(token, true, out var search, out error) ||
                 !AndroidResolveSearchCacheContract.SameBefore(snapshot.search, search))
             { error = error ?? "Search 事务输入在 Plan 后变化，须重新 Plan。"; return false; }
@@ -375,32 +406,44 @@ namespace NovaFramework.Editor
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
         /// <param name="after">是否属于执行后阶段；写前不接受声明的自然物化。</param>
         /// <param name="inheritHostWitness">仅原 Plan State/执行观察器为真；Verify 的反序列化回执不继承宿主见证。</param>
+        /// <param name="observedImportedAssets">只由真实执行观察窗记录；没有非空imported数组不能授予Store创建许可。</param>
         /// <param name="version">本次完整校验实际捕获的版本处理器快照；供回执复用，不重复遍历全部资产。</param>
         /// <param name="uirAfter">实际捕获的有限引擎角色后态；历史无角色合同的快照始终为空。</param>
+        /// <param name="aiStoresAfter">实际捕获的Store角色后态；旧快照不补造该字段。</param>
         /// <param name="error">失败时的精确原因；成功时为 null。</param>
         /// <returns>满足上述精确条件时为 true，否则为 false；不会为通过检查而改变环境。</returns>
-        private static bool TryCaptureStableAfter(Snapshot snapshot, CancellationToken token, bool after, bool inheritHostWitness,
-            out AndroidVersionHandlerReadOnlyContract.Snapshot version, out AndroidResolveUirObjectContract.Snapshot uirAfter, out string error)
+        private static bool TryCaptureStableAfter(Snapshot snapshot, CancellationToken token, bool after, bool inheritHostWitness, bool observedImportedAssets,
+            out AndroidVersionHandlerReadOnlyContract.Snapshot version, out AndroidResolveUirObjectContract.Snapshot uirAfter,
+            out AndroidResolveAiStoreContract.Snapshot aiStoresAfter, out string error)
         {
             version = null;
             uirAfter = null;
+            aiStoresAfter = null;
             error = null;
             if (!TryCapturePreflight(token, out string callbacks, out string scheduler, out error)) return false;
             // 只有原 Plan State/执行观察器持有的快照可继承；反序列化回执的自一致 SHA 不能证明其来源。
             if (!IsSnapshotForDomain(snapshot, s_Domain, out error)) return false;
+            if (string.IsNullOrEmpty(snapshot.hostCompilationSha256) ||
+                !TryCaptureHostCompilation(token, out string hostCompilation, out error) ||
+                snapshot.hostCompilationSha256 != hostCompilation)
+            { error = error ?? "Action 宿主编译来源或当前 DLL/MVID 已变化；旧回执不能补造宿主证据。"; return false; }
             if (snapshot.callbackSha256 != callbacks || snapshot.schedulerSha256 != scheduler)
             { error = "实际回调或调度身份已变化，不能继承原正常 update 见证。"; return false; }
-            if (!AndroidResolveRefreshCallbacks.TryCaptureNaturalBranches(snapshot.allowedPaths, token, out string natural, out error, inheritHostWitness ? snapshot.domain : null) ||
+            if (snapshot.uvcs != null &&
+                (!AndroidResolveUvcsRefreshContract.TryCapture(token, false, out var currentUvcs, out error) ||
+                 !AndroidResolveUvcsRefreshContract.TryValidateTransition(snapshot.uvcs, currentUvcs, out error))) return false;
+            if (!AndroidResolveRefreshCallbacks.TryCaptureNaturalBranches(snapshot.allowedPaths, token, out string natural, out error,
+                    inheritHostWitness ? snapshot.domain : null, snapshot.aiStores != null, snapshot.uvcs != null) ||
                 !AndroidResolveVendorRefreshContracts.TryCapture(snapshot.vendorInputs, token, out string vendor, out error) ||
                 !AndroidResolveSpeedTreeDependencyContract.TryCapture(snapshot.allowedPaths, token, out string speedTree, out error) ||
                 !AndroidVersionHandlerReadOnlyContract.TryCapture(token, out version, out error) ||
-                !AndroidResolveCodeEditorTailContract.TryCapture(snapshot.allowedPaths, token, out var codeEditor, out error)) return false;
+                !AndroidResolveCodeEditorTailContract.TryCapture(snapshot.allowedPaths, token, out var codeEditor, out error, snapshot.aiStores != null)) return false;
             if (snapshot.callbackSha256 != callbacks || snapshot.schedulerSha256 != scheduler || snapshot.naturalBranchesSha256 != natural ||
                 snapshot.vendorSha256 != vendor || snapshot.speedTreeSha256 != speedTree ||
                 !AndroidVersionHandlerReadOnlyContract.Matches(snapshot.version, version) || !version.naturallyComplete ||
                 !AndroidResolveCodeEditorTailContract.Matches(snapshot.codeEditor, codeEditor))
             { error = "实际回调、自然状态、固定输入或自然完成状态变化，不能证明当前合同。"; return false; }
-            var peripheral = AndroidResolveRefreshCallbacks.CapturePeripheralSnapshot(token);
+            var peripheral = AndroidResolveRefreshCallbacks.CapturePeripheralSnapshot(token, snapshot.aiStores != null, snapshot.uvcs != null);
             string peripheralError = after ? AndroidResolvePeripheralRefreshContracts.VerifyStableSnapshot(snapshot.peripheral, peripheral) :
                 AndroidResolvePeripheralRefreshContracts.VerifyStableSnapshotInputs(snapshot.peripheral, peripheral);
             string graphError = after ? AndroidResolvePeripheralRefreshContracts.VerifyGraphUiHandlerKeys(snapshot.graphUiHandlerKeys, token) :
@@ -411,10 +454,14 @@ namespace NovaFramework.Editor
             string[] objects = CaptureEditorObjectRows(snapshot.allowedPaths);
             string[] beforeComparable = snapshot.editorObjectRows;
             string[] afterComparable = objects;
+            if (snapshot.aiStores != null &&
+                (!AndroidResolveAiStoreContract.TryCapture(token, out aiStoresAfter, out error) ||
+                 !AndroidResolveAiStoreContract.TryGetComparableRows(snapshot.aiStores, aiStoresAfter, snapshot.editorObjectRows, objects,
+                     after, observedImportedAssets, out afterComparable, out error))) return false;
             if (snapshot.uir != null &&
                 (!AndroidResolveUirObjectContract.TryCapture(token, out uirAfter, out error) ||
                  !AndroidResolveUirObjectContract.TryGetComparableRows(snapshot.uir, uirAfter,
-                     snapshot.editorObjectRows, objects, after, out beforeComparable, out afterComparable, out error))) return false;
+                     snapshot.editorObjectRows, afterComparable, after, out beforeComparable, out afterComparable, out error))) return false;
             if (!EditorObjectsMatch(beforeComparable, afterComparable, after))
             {
                 // 只展示身份/脏状态行的有界差异，不序列化用户对象，也不把诊断当作允许变化的白名单。
@@ -447,6 +494,9 @@ namespace NovaFramework.Editor
                 snapshot.search.sha256 != AndroidResolveSearchCacheContract.ComputeHash(snapshot.search) ||
                 !AndroidVersionHandlerReadOnlyContract.IsSelfConsistent(snapshot.version) ||
                 !AndroidResolveCodeEditorTailContract.IsSelfConsistent(snapshot.codeEditor) || snapshot.peripheral == null ||
+                snapshot.aiStores != null && (!AndroidResolveAiStoreContract.IsValid(snapshot.aiStores) ||
+                    !AndroidResolveRefreshCallbacks.HasCompleteAiStoreCoverage(snapshot.aiStores)) ||
+                snapshot.uvcs != null && !AndroidResolveUvcsRefreshContract.IsValid(snapshot.uvcs) ||
                 snapshot.allowedPaths.Distinct(StringComparer.Ordinal).Count() != snapshot.allowedPaths.Length ||
                 snapshot.sha256 != ComputeSnapshotHash(snapshot))
             { error = "资源导入/刷新回执缺完整同域合同、域已重载或摘要被改动；不会重放解析。"; return false; }
@@ -550,6 +600,7 @@ namespace NovaFramework.Editor
             private readonly long m_StartedUtcTicks = DateTime.UtcNow.Ticks;
             private string m_Failure;
             private bool m_Closed;
+            private bool m_ObservedImportedAssets;
 
             /// <summary>保存已冻结 DTO 和自然窗口开始时间；不执行解析或引擎写操作。</summary>
             /// <param name="snapshot">同域完整刷新合同快照。</param>
@@ -580,6 +631,7 @@ namespace NovaFramework.Editor
                         throw new InvalidOperationException("实际累计事务超出观察容量。");
                     m_ExpectedTransactions.AddRange(expected);
                     m_Dispatches.Add(GenerateActionCommon.ComputeTextHash(Util.Json.Serialize(new { imported, deleted, moved, movedFrom })));
+                    m_ObservedImportedAssets |= imported.Length != 0;
                 }
                 catch (Exception exception) { m_Failure = exception is InvalidOperationException ? exception.Message : "刷新观察失败：" + exception.GetType().Name; }
             }
@@ -594,6 +646,7 @@ namespace NovaFramework.Editor
                 AndroidResolveSearchCacheContract.Snapshot search = null;
                 AndroidVersionHandlerReadOnlyContract.Snapshot version = null;
                 AndroidResolveUirObjectContract.Snapshot uirAfter = null;
+                AndroidResolveAiStoreContract.Snapshot aiStoresAfter = null;
                 bool completed = false;
                 string pending = null;
                 try
@@ -621,7 +674,7 @@ namespace NovaFramework.Editor
                         if (ready)
                         {
                             // 完整快照仍核对全部稳定输入、自然完成和非目标保护，直接复用其版本证据写入回执。
-                            completed = TryCaptureStableAfter(m_Snapshot, token, true, true, out version, out uirAfter, out pending);
+                            completed = TryCaptureStableAfter(m_Snapshot, token, true, true, m_ObservedImportedAssets, out version, out uirAfter, out aiStoresAfter, out pending);
                             if (!completed) m_Failure = pending;
                         }
                         else if (m_Failure == null && Thread.CurrentThread.ManagedThreadId == s_MainThread && s_Domain == m_Snapshot.domain)
@@ -646,7 +699,8 @@ namespace NovaFramework.Editor
                     dispatchSha256 = GenerateActionCommon.ComputeTextHash(string.Join("\n", m_Dispatches)), failure = m_Failure,
                     startedUtcTicks = m_StartedUtcTicks, closedUtcTicks = DateTime.UtcNow.Ticks,
                     expectedTransactions = m_ExpectedTransactions.ToArray(), searchAfter = search, versionAfter = version,
-                    graphUiHandlerKeysAfter = graphAfter, uirAfter = uirAfter };
+                    graphUiHandlerKeysAfter = graphAfter, uirAfter = uirAfter, aiStoresAfter = aiStoresAfter,
+                    aiStoresObservedImportedAssets = m_ObservedImportedAssets };
                 receipt.sha256 = ComputeReceiptHash(receipt);
                 return receipt;
             }
@@ -687,7 +741,10 @@ namespace NovaFramework.Editor
             { error = error ?? "刷新回执不完整、域已失效或摘要变化；不会重放。"; return false; }
             if (snapshot.uir != null &&
                 !AndroidResolveUirObjectContract.TryValidateTransition(snapshot.uir, receipt.uirAfter, true, out error)) return false;
-            if (!TryCaptureStableAfter(snapshot, token, true, false, out _, out _, out error) ||
+            if (snapshot.aiStores != null && !AndroidResolveAiStoreContract.TryValidateTransition(snapshot.aiStores, receipt.aiStoresAfter,
+                    true, receipt.aiStoresObservedImportedAssets, out error)) return false;
+            if (!TryCaptureStableAfter(snapshot, token, true, false, receipt.aiStoresObservedImportedAssets, out _, out _, out var currentAiStores, out error) ||
+                snapshot.aiStores != null && !AndroidResolveAiStoreContract.SameAfter(receipt.aiStoresAfter, currentAiStores) ||
                 !receipt.graphUiHandlerKeysAfter.SequenceEqual(AndroidResolvePeripheralRefreshContracts.CaptureGraphUiHandlerKeys(token)) ||
                 !AndroidResolveSearchCacheContract.TryCapture(token, true, out var search, out error) ||
                 !AndroidResolveSearchCacheContract.SameBefore(receipt.searchAfter, search))
@@ -707,8 +764,10 @@ namespace NovaFramework.Editor
                 receipt.failure, receipt.startedUtcTicks, receipt.closedUtcTicks, receipt.expectedTransactions, receipt.searchAfter,
                 receipt.versionAfter, receipt.graphUiHandlerKeysAfter }));
             // 旧回执沿用原摘要；新增的有限真实后态单独绑定，不改写任何历史partial。
-            return receipt.uirAfter == null ? legacyHash : GenerateActionCommon.ComputeTextHash(
+            string currentHash = receipt.uirAfter == null ? legacyHash : GenerateActionCommon.ComputeTextHash(
                 legacyHash + "\nUIR-v1\n" + Util.Json.Serialize(receipt.uirAfter));
+            return receipt.aiStoresAfter == null ? currentHash : GenerateActionCommon.ComputeTextHash(
+                currentHash + "\nAiStores-v1\n" + Util.Json.Serialize(new { receipt.aiStoresAfter, receipt.aiStoresObservedImportedAssets }));
         }
 
     }
@@ -716,13 +775,14 @@ namespace NovaFramework.Editor
     /// <summary>只记录正常 AssetDatabase 派发的四数组；不发起刷新、不改变其他回调与输入。</summary>
     internal sealed class AndroidResolveRefreshObserver : AssetPostprocessor
     {
-        /// <summary>无观察窗口时无操作；有窗口时转入 Nova 自有的有界记录，不持有原数组。</summary>
+        /// <summary>始终记录正常初始化见证；有执行窗口时再转入 Nova 自有的有界四数组记录，不持有原数组。</summary>
         /// <param name="imported">正常 Unity 派发的实际导入数组，保持输入顺序。</param>
         /// <param name="deleted">正常 Unity 派发的实际删除数组，保持输入顺序。</param>
         /// <param name="moved">正常 Unity 派发的实际移动目标数组，与 movedFrom 成对。</param>
         /// <param name="movedFrom">正常 Unity 派发的实际移动来源数组，与 moved 成对。</param>
         private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
+            AndroidRefreshInitializationWitness.ObserveNormalDispatch();
             AndroidResolveRefreshContract.Observe(imported, deleted, moved, movedFrom);
             AndroidGenerateAppsFlyerScope.ObserveImports(imported, deleted, moved, movedFrom);
         }

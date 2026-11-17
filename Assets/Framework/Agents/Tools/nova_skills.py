@@ -17,7 +17,7 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 try:
     import fcntl
@@ -263,6 +263,78 @@ def _tree_hash(directory: Path) -> str:
 def _file_hash(path: Path) -> str:
     """计算单个受管元数据文件的内容哈希，供状态识别当前 Catalog 版本。"""
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _project_markdown(data: bytes, source_file: Path, target_file: Path, agents_root: Path) -> bytes:
+    """按最终投影位置重定位同包链接，保留 Skill 内引用、代码示例、标题和 URL 后缀。"""
+    if source_file.suffix.lower() not in {".md", ".markdown"}:
+        return data
+    content = data.decode("utf-8")
+    # 代码块和行内代码只是示例，不是 Markdown 导航；它们必须逐字节保留。
+    code_pattern = re.compile(
+        r"(?ms:^[ ]{0,3}(?P<fence>(?P<marker>`|~)(?P=marker){2,})[^\r\n]*(?:\r?\n|\Z)"
+        r".*?(?:^[ ]{0,3}(?P=fence)(?P=marker)*[ \t]*\r?$|\Z))"
+        r"|(?s:(?P<ticks>`+)(?!`).*?(?<!`)(?P=ticks)(?!`))"
+    )
+    protected = [(match.start(), match.end()) for match in code_pattern.finditer(content)]
+    destination_pattern = re.compile(
+        r"(?:\]\([ \t]*|^[ ]{0,3}\[[^\]\r\n]+\]:[ \t]*)"
+        r"(?P<destination><[^>\r\n]+>|(?:\\[^\r\n]|[^\s()<>\\]|\([^()\r\n]*\))+)",
+        re.MULTILINE,
+    )
+    framework_root = agents_root.parent
+    skills_root = agents_root / "Skills"
+
+    def relocate(match: re.Match[str]) -> str:
+        """只替换实际链接的目标 token，不改链接显示文字、引用 id 或可选标题。"""
+        if any(start <= match.start() < end for start, end in protected):
+            return match.group(0)
+        token = match.group("destination")
+        destination = token[1:-1] if token.startswith("<") else token
+        if (not destination or destination.startswith(("#", "?", "/", "\\"))
+                or re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", destination)):
+            return match.group(0)
+        path_text = re.split(r"[?#]", destination, maxsplit=1)[0]
+        suffix = destination[len(path_text):]
+        path_text = re.sub(r"\\([!\"#$%&'()*+,\-./:;<=>?@\[\]^_`{|}~\\])", r"\1", path_text)
+        decoded_path = unquote(path_text)
+        resolved = Path(os.path.abspath(source_file.parent / decoded_path))
+        if not resolved.is_relative_to(framework_root):
+            raise NovaSkillsError(f"Skill 投影链接越出 Framework 包：{source_file}：{destination}")
+        if not resolved.exists():
+            raise NovaSkillsError(f"Skill 投影链接目标不存在：{source_file}：{destination}")
+        if resolved.is_relative_to(skills_root):
+            return match.group(0)
+        try:
+            relative = os.path.relpath(resolved, target_file.parent).replace(os.sep, "/")
+        except ValueError as exc:
+            raise NovaSkillsError("Framework 与 Skill 投影必须位于可用相对路径互达的位置") from exc
+        # Path 会去掉目录尾分隔符；显式保留原链接的目录形式，与 C# 的最终字节保持一致。
+        if decoded_path.endswith(("/", os.sep)) and not relative.endswith("/"):
+            relative += "/"
+        replacement = quote(relative, safe="/-._~") + suffix
+        if token.startswith("<"):
+            replacement = "<" + replacement + ">"
+        offset = match.start("destination") - match.start()
+        return match.group(0)[:offset] + replacement
+
+    return destination_pattern.sub(relocate, content).encode("utf-8")
+
+
+def _projected_tree_hash(source_dir: Path, target_dir: Path, agents_root: Path) -> str:
+    """计算最终位置的确定性投影摘要；真源摘要仍独立保存，不与转换产物混同。"""
+    symlink = _find_descendant_symlink(source_dir)
+    if symlink is not None:
+        raise NovaSkillsError(f"目录包含不允许的软链：{symlink}")
+    digest = hashlib.sha256()
+    files = [(path.relative_to(source_dir).as_posix().encode("utf-8"), path)
+             for path in source_dir.rglob("*") if path.is_file()]
+    for relative, source in sorted(files, key=lambda item: item[0]):
+        digest.update(relative)
+        digest.update(b"\0")
+        digest.update(_project_markdown(source.read_bytes(), source, target_dir / source.relative_to(source_dir), agents_root))
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def _safe_child(root: Path, relative_path: str) -> Path | None:
@@ -2027,12 +2099,25 @@ def _begin_transaction(
                 source_hash = action["sourceHash"]
                 staged_skill = staged_new_root / skill_id
                 shutil.copytree(source_dir, staged_skill)
-                target_hash = _tree_hash(staged_skill)
+                copied_hash = _tree_hash(staged_skill)
                 source_hash_after_copy = _tree_hash(source_dir)
-                if source_hash != target_hash or source_hash_after_copy != source_hash:
+                if source_hash != copied_hash or source_hash_after_copy != source_hash:
                     raise NovaSkillsError(
                         f"复制 {skill_id} 时 Framework 真源发生变化，拒绝登记混合版本投影"
                     )
+                for staged_file in staged_skill.rglob("*"):
+                    if staged_file.is_file():
+                        relative = staged_file.relative_to(staged_skill)
+                        original = staged_file.read_bytes()
+                        projected = _project_markdown(
+                            original, source_dir / relative, target_root / skill_id / relative, action["agentsRoot"]
+                        )
+                        if projected != original:
+                            staged_file.write_bytes(projected)
+                target_hash = _tree_hash(staged_skill)
+                if (target_hash != action["targetHash"] or _tree_hash(source_dir) != source_hash
+                        or _projected_tree_hash(source_dir, target_root / skill_id, action["agentsRoot"]) != target_hash):
+                    raise NovaSkillsError(f"重定位 {skill_id} 时 Framework 真源或投影绑定发生变化")
                 pending_item["sourceHash"] = source_hash
                 pending_item["targetHash"] = target_hash
             if action_name in {"update", "remove"}:
@@ -2059,12 +2144,37 @@ def _begin_transaction(
         raise
 
 
-def _resume_transaction(project_root: Path, target_root: Path, state_path: Path) -> bool:
-    """续传新增、更新或删除事务；最终目标一致后才原子写入最终 state。"""
+def _verify_transaction_projection_binding(
+    project_root: Path, target_root: Path, transaction: dict[str, Any], agents_root: Path | None,
+) -> None:
+    """同一来源字节不得恢复到失效的位置绑定；来源已变或暂不可用时保留原冻结事务恢复语义。"""
+    try:
+        current_root = resolve_agents_root(project_root) if agents_root is None else Path(agents_root).resolve()
+        if not current_root.is_dir():
+            return
+        entries = {entry["id"]: entry for entry in _catalog_entries(load_catalog(current_root))}
+    except NovaSkillsError:
+        return
+    for item in transaction["pending"]:
+        entry = entries.get(item["id"])
+        if (item["action"] not in {"add", "update"} or entry is None
+                or item["sourceHash"] == item["targetHash"]):
+            # 旧版逐字节事务尚未声明链接绑定，先沿原合同恢复，再由新计划自动迁移。
+            continue
+        source = _safe_child(current_root, entry["path"])
+        if source is None or not source.is_dir() or _tree_hash(source) != item["sourceHash"]:
+            continue
+        if _projected_tree_hash(source, target_root / item["id"], current_root) != item["targetHash"]:
+            raise NovaSkillsError("中断事务的 Skill 投影绑定已变化，拒绝恢复失效链接并保留事务现场")
+
+
+def _resume_transaction(project_root: Path, target_root: Path, state_path: Path, agents_root: Path | None = None) -> bool:
+    """续传冻结事务；可解析的同一真源须核对当前链接绑定，包暂缺时仍可恢复旧快照。"""
     transaction_path, staging_root = _transaction_paths(state_path)
     if not transaction_path.is_file():
         return False
     transaction = _read_transaction(transaction_path)
+    _verify_transaction_projection_binding(project_root, target_root, transaction, agents_root)
     transaction_id = transaction["transactionId"]
     staging_dir = staging_root / transaction_id
     if _is_link_or_junction(staging_dir) or not staging_dir.is_dir():
@@ -2209,6 +2319,7 @@ def _plan_reconcile(
             raise NovaSkillsError(f"Skill 路径不安全：{skill_id}")
         target_dir = target_root / skill_id
         source_hash = _tree_hash(source_dir)
+        expected_target_hash = _projected_tree_hash(source_dir, target_dir, agents_root)
         existing = managed.get(skill_id)
         if _is_link_or_junction(target_dir):
             conflicts.append({"id": skill_id, "reason": "unsafe-link"})
@@ -2235,7 +2346,7 @@ def _plan_reconcile(
             if target_hash != existing["targetHash"]:
                 conflicts.append({"id": skill_id, "reason": "modified-managed"})
                 continue
-            if source_hash == existing["sourceHash"]:
+            if source_hash == existing["sourceHash"] and expected_target_hash == existing["targetHash"]:
                 unchanged.append(skill_id)
                 continue
             actions.append(
@@ -2244,10 +2355,12 @@ def _plan_reconcile(
                     "id": skill_id,
                     "sourceDir": source_dir,
                     "sourceHash": source_hash,
+                    "targetHash": expected_target_hash,
+                    "agentsRoot": agents_root,
                     "previousTargetHash": existing["targetHash"],
                 }
             )
-            final_managed[skill_id] = {"sourceHash": source_hash, "targetHash": source_hash}
+            final_managed[skill_id] = {"sourceHash": source_hash, "targetHash": expected_target_hash}
             updated.append(skill_id)
             continue
         if isinstance(existing, dict):
@@ -2259,9 +2372,11 @@ def _plan_reconcile(
                 "id": skill_id,
                 "sourceDir": source_dir,
                 "sourceHash": source_hash,
+                "targetHash": expected_target_hash,
+                "agentsRoot": agents_root,
             }
         )
-        final_managed[skill_id] = {"sourceHash": source_hash, "targetHash": source_hash}
+        final_managed[skill_id] = {"sourceHash": source_hash, "targetHash": expected_target_hash}
         added.append(skill_id)
 
     for skill_id in sorted(skill_id for skill_id in managed if skill_id not in catalog_id_set):
@@ -2333,7 +2448,7 @@ def reconcile(
     if not dry_run and transaction_path.is_file():
         with _projection_sync_lock(project_root):
             target_root, current_state_path = _managed_paths(project_root)
-            _resume_transaction(project_root, target_root, current_state_path)
+            _resume_transaction(project_root, target_root, current_state_path, agents_root)
 
     resolved_agents_root = (
         resolve_agents_root(project_root) if agents_root is None else Path(agents_root)
@@ -2344,7 +2459,7 @@ def reconcile(
 
     with _projection_sync_lock(project_root):
         target_root, current_state_path = _managed_paths(project_root)
-        _resume_transaction(project_root, target_root, current_state_path)
+        _resume_transaction(project_root, target_root, current_state_path, resolved_agents_root)
         (
             target_root,
             current_state_path,
@@ -2371,7 +2486,7 @@ def reconcile(
             final_state,
             planned_actions,
         )
-        _resume_transaction(project_root, target_root, current_state_path)
+        _resume_transaction(project_root, target_root, current_state_path, resolved_agents_root)
         return result
 
 
@@ -2450,6 +2565,13 @@ def doctor(project_root: Path) -> dict[str, list[str]]:
             continue
         if _tree_hash(source_dir) != entry["sourceHash"]:
             report["sourceChanged"].append(skill_id)
+        else:
+            try:
+                projection_current = _projected_tree_hash(source_dir, target, current_agents_root) == entry["targetHash"]
+            except (NovaSkillsError, UnicodeDecodeError, OSError):
+                projection_current = False
+            if not projection_current:
+                report["resolutionChanged"].append("projection:" + skill_id)
     for key, values in report.items():
         report[key] = sorted(set(values))
     return report

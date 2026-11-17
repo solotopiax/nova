@@ -8,6 +8,10 @@
 
 Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集中管理 ConfigMasterSO 的 Platform×Channel 矩阵编辑、SDK Plugin 配置、AppConfigs 与 Custom 参数填写、HybridCLR DLL 配置、CDN 内容部署及 Luban/Python3 环境检查。Platform、Channel 与 DevelopMode 均可在窗口内切换；编辑平台是窗口本地状态，不写入 ConfigMasterSO。编辑平台与 Unity Active BuildTarget 一致时才允许导出 ConfigRuntimeSO 并使对应 YooAsset 配置生效。
 
+每次打开或切回 Config 窗口，都会在当前交互结束后通过统一入口重新执行全部已接入的环境检测，忽略之前的会话缓存。当前包括 Luban、Python3 和 HybridCLR；以后新增检测按[环境检测扩展约定](../EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md#统一刷新与新增检测项)登记后自动参与，窗口不维护固定的重检名单。HybridCLR 安装完成后切回窗口即可更新状态，无需重启 Unity；“重新检测”按钮仍可手动使用。检测只说明对应工具环境状态，不代表 HybridCLR 已启用、产物已生成或游戏热更已验证。
+
+聚焦刷新仅更新环境检测，不重读 ConfigMaster、不重建配置副本、不刷新插件列表，也不保存或导出配置。打开和聚焦请求合并为一次，关闭或程序集重载时取消排队刷新，编译及资源更新期间延后执行，Play Mode 中不执行。
+
 “通用配置 → 隐私配置”负责 AES 全局密钥、独立包扩展区、iOS 隐私清单和 Info.plist 用途说明，沿用三维掩码与 WorkingCopy 保存路径。主框架通过通用 `PrivacyPanelExtensions` 接受包内 Editor 注册，在 AES 区后绘制已安装扩展；扩展数据保存在 `PrivacyConfigs.ExtensionConfigsJson`，随原链保存、深拷贝和导出。未安装包时隐藏对应扩展面板并保留数据。两个 iOS 区域继续随平台整体灰显。
 
 安装可选包 `com.solotopia.nova.framework.memory.protection` 后，其 Editor 注册“内存数据防护”，提供检测、定期换钥和 ACTk 状态检查；开关及旧配置迁移、购买导入说明均归该包维护。详见 [PrivacyConfigs](../../Runtime/Modules/Config/PrivacyConfigs.md) 和 MemoryProtection 包文档（包 `com.solotopia.nova.framework.memory.protection`，包内 [按包定位：Nova/Docs/MemoryProtection.md](../../Runtime/Modules/SDK/INDEX.md#sdk--kit-包文档发现)）。
@@ -22,7 +26,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 |------|----|------|
 | [Editor/Windows/ConfigWindow/ConfigWindow.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.cs) | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与五个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、隐私、名字空间、SDK、Kit 面板 |
 | [Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs) | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；窗口本地编辑平台 `m_EditingPlatform`；延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
-| [Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs) | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
+| [Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs) | `ConfigWindow` | 总调度：`OnEnable`、`OnFocus`、`OnDisable`、`QueueEnvironmentRefresh`、`RefreshEnvironmentChecks`（通过统一入口重检全部环境）、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`RunHybridCLRCheck`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
 | [Editor/Windows/ConfigWindow/ConfigWindow.AgentEditing.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.AgentEditing.cs) | `ConfigWindow` | 注册共享保存的草稿检测和保存后刷新；检查实际窗口的 dirty、未提交属性与待执行请求，不覆盖草稿，当前保存窗口保留是否重建副本的原调用参数。 |
 | [Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs) | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatform` / `TryApplyChannel` / `TryApplyDevelopMode`（延迟切换坐标，见 PAT-22 升级）、`OnClickExport` / `TryExport`（先校验编辑平台与 Active BuildTarget 一致；Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后清除待导出状态并追加场景 `DevelopMode` 快照回写） |
 | [Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs](../../../Scripts/Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs) | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
@@ -173,12 +177,18 @@ OnEnable()
   │    ├─ m_LastKnownChannel = m_Master.CurrentChannel
   │    └─ YooAssetInjector.Inject(m_Master)    注入 YooAssetConfiguration
   ├─ EditorSceneManager.sceneOpened += OnSceneOpenedRefresh
-  ├─ RunLubanCheck()    跑 Luban 环境检测
-  ├─ RunPython3Check()  跑 Python3 环境检测（可命中 SessionState；首次同步探测会阻塞）
-  ├─ RunHybridCLRCheck() 读取 HybridCLR 环境检查结果
+  ├─ QueueEnvironmentRefresh() → 与随后的 OnFocus 合并为一次环境检测
   └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位；确认后只清理 WorkingCopy 并标记待保存
 
+OnFocus()
+  └─ QueueEnvironmentRefresh() → delayCall → RefreshEnvironmentChecks()
+       ├─ 编译/资源更新时延后；退出/程序集重载/Play Mode 中不执行
+       ├─ EditorUtil.Environment.RecheckAll() → 自动发现全部 EnvironmentCheckAttribute 入口并重检
+       ├─ RunLubanCheck() / RunPython3Check() / RunHybridCLRCheck() → Check()，读取本轮结果供现有面板展示
+       └─ Repaint()
+
 OnDisable()
+  ├─ 取消排队的 RefreshEnvironmentChecks
   ├─ 正常关窗：HandleCloseReminder() → 按未保存 / 已保存未导出状态提醒
   ├─ Editor 退出 / 程序集重载 / 资源刷新：跳过交互与写入
   ├─ DestroyWorkingCopy()
@@ -410,7 +420,7 @@ OnClickExport()
 |------|---------|
 | Play Mode 下编辑 | 窗口整体 DisabledScope，顶部 HelpBox 提示"请退出 Play Mode 后编辑" |
 | 直接切换 Master 丢失改动 | `RebindMaster` 调 `ConfirmDiscardDirty` 弹三选一对话框（保存/取消/丢弃） |
-| 导出前未填 Common 字段 | `Validator.Validate` 检查 AppConfigs 必填字段，有 Error 时阻断导出 |
+| 导出前未填应用后台参数 | AppID / AppAesKey / AppAesIV 缺配或格式错误只给出 Warning，不阻断本地导出；AppConfigs 结构为 null、本地 Privacy 等基础错误仍以 Error 阻断，后台与实际请求另行验收 |
 | 导出目标 SO 重启后丢失 | 导出目标改由 `ConfigMasterSO.ExportTarget`（`[SerializeField]`）持久化，SO 保存后跨会话自动恢复；无需 EditorPrefs |
 | `m_SelectedItem` 默认值 | 默认为 `LeftTreeItem.LubanEnv`，不是 `Environment` |
 | "保存"按钮灰色点不了 | `m_IsDirty == false` 时 DisabledScope 禁用按钮；在右侧面板编辑任意字段后 ChangeCheck 自动置 `true` |

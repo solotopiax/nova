@@ -393,18 +393,24 @@ namespace NovaFramework.Editor
                 /// <param name="sourceDirectory">新增/更新时的真源目录；删除时为 null。</param>
                 /// <param name="sourceHash">新增/更新时的真源 hash；删除时为 null。</param>
                 /// <param name="previousTargetHash">更新/删除前的受管目标 hash；新增时为 null。</param>
+                /// <param name="targetHash">新增/更新时最终位置的投影 hash。</param>
+                /// <param name="agentsRoot">新增/更新时当前解析的 Agents 根。</param>
                 public PlannedAction(
                     string action,
                     string skillId,
                     string sourceDirectory,
                     string sourceHash,
-                    string previousTargetHash)
+                    string previousTargetHash,
+                    string targetHash = null,
+                    string agentsRoot = null)
                 {
                     Action = action;
                     SkillId = skillId;
                     SourceDirectory = sourceDirectory;
                     SourceHash = sourceHash;
                     PreviousTargetHash = previousTargetHash;
+                    TargetHash = targetHash;
+                    AgentsRoot = agentsRoot;
                 }
 
                 /// <summary>
@@ -431,6 +437,16 @@ namespace NovaFramework.Editor
                 /// 获取更新/删除前的目标 hash；新增时为 null。
                 /// </summary>
                 public string PreviousTargetHash { get; }
+
+                /// <summary>
+                /// 获取最终位置的确定性投影 hash。
+                /// </summary>
+                public string TargetHash { get; }
+
+                /// <summary>
+                /// 获取本轮解析的 Agents 根，不写入持久状态。
+                /// </summary>
+                public string AgentsRoot { get; }
             }
 
             /// <summary>
@@ -625,11 +641,11 @@ namespace NovaFramework.Editor
                 {
                     using (AcquireProjectionLock(paths))
                     {
-                        ResumeTransaction(normalizedProjectRoot, paths);
+                        ResumeTransaction(normalizedProjectRoot, paths, agentsRoot);
                     }
                 }
 
-                // 已登记事务的续传不依赖本轮 Framework 真源，必须先完成它；
+                // 已登记事务不以本轮真源可用为前提；真源可用时仅核对同一内容的投影绑定。
                 // 随后才允许包解析或 Catalog 校验失败阻断新的规划。
                 string normalizedAgentsRoot = NormalizeDirectory(agentsRoot, "Agents 真源目录");
 
@@ -641,7 +657,7 @@ namespace NovaFramework.Editor
                 using (AcquireProjectionLock(paths))
                 {
                     paths = GetManagedPaths(normalizedProjectRoot);
-                    ResumeTransaction(normalizedProjectRoot, paths);
+                    ResumeTransaction(normalizedProjectRoot, paths, normalizedAgentsRoot);
                     ReconcilePlan plan = BuildPlan(normalizedProjectRoot, normalizedAgentsRoot, false);
                     if (plan.Actions.Count == 0)
                     {
@@ -656,7 +672,7 @@ namespace NovaFramework.Editor
                     }
 
                     BeginTransaction(normalizedProjectRoot, plan);
-                    ResumeTransaction(normalizedProjectRoot, GetManagedPaths(normalizedProjectRoot));
+                    ResumeTransaction(normalizedProjectRoot, GetManagedPaths(normalizedProjectRoot), normalizedAgentsRoot);
                     return plan.Result;
                 }
             }
@@ -812,6 +828,7 @@ namespace NovaFramework.Editor
                     string sourceDirectory = GetSafeChild(agentsRoot, skill.RelativePath, skill.Id);
                     string targetDirectory = Path.Combine(paths.TargetRoot, skill.Id);
                     string sourceHash = ComputeTreeHash(sourceDirectory);
+                    string expectedTargetHash = ComputeProjectedTreeHash(sourceDirectory, targetDirectory, agentsRoot);
                     JToken managedEntry = managed[skill.Id];
 
                     if (IsReparsePoint(targetDirectory))
@@ -853,14 +870,15 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        if (string.Equals(sourceHash, previousSourceHash, StringComparison.Ordinal))
+                        if (string.Equals(sourceHash, previousSourceHash, StringComparison.Ordinal)
+                            && string.Equals(expectedTargetHash, previousTargetHash, StringComparison.Ordinal))
                         {
                             unchanged.Add(skill.Id);
                             continue;
                         }
 
-                        actions.Add(new PlannedAction("update", skill.Id, sourceDirectory, sourceHash, previousTargetHash));
-                        finalManaged[skill.Id] = CreateManagedEntry(sourceHash, sourceHash);
+                        actions.Add(new PlannedAction("update", skill.Id, sourceDirectory, sourceHash, previousTargetHash, expectedTargetHash, agentsRoot));
+                        finalManaged[skill.Id] = CreateManagedEntry(sourceHash, expectedTargetHash);
                         updated.Add(skill.Id);
                         continue;
                     }
@@ -873,8 +891,8 @@ namespace NovaFramework.Editor
                         continue;
                     }
 
-                    actions.Add(new PlannedAction("add", skill.Id, sourceDirectory, sourceHash, null));
-                    finalManaged[skill.Id] = CreateManagedEntry(sourceHash, sourceHash);
+                    actions.Add(new PlannedAction("add", skill.Id, sourceDirectory, sourceHash, null, expectedTargetHash, agentsRoot));
+                    finalManaged[skill.Id] = CreateManagedEntry(sourceHash, expectedTargetHash);
                     added.Add(skill.Id);
                 }
 
@@ -2024,12 +2042,22 @@ namespace NovaFramework.Editor
                         {
                             string stagedSkill = Path.Combine(newRoot, action.SkillId);
                             CopyDirectory(action.SourceDirectory, stagedSkill);
-                            string targetHash = ComputeTreeHash(stagedSkill);
+                            string copiedHash = ComputeTreeHash(stagedSkill);
                             string sourceHashAfterCopy = ComputeTreeHash(action.SourceDirectory);
-                            if (!string.Equals(action.SourceHash, targetHash, StringComparison.Ordinal)
+                            if (!string.Equals(action.SourceHash, copiedHash, StringComparison.Ordinal)
                                 || !string.Equals(action.SourceHash, sourceHashAfterCopy, StringComparison.Ordinal))
                             {
                                 throw new InvalidOperationException($"复制 {action.SkillId} 时 Framework 真源发生变化，拒绝登记混合版本投影。");
+                            }
+
+                            string targetDirectory = Path.Combine(paths.TargetRoot, action.SkillId);
+                            ProjectStagedMarkdown(stagedSkill, action.SourceDirectory, targetDirectory, action.AgentsRoot);
+                            string targetHash = ComputeTreeHash(stagedSkill);
+                            if (!string.Equals(targetHash, action.TargetHash, StringComparison.Ordinal)
+                                || !string.Equals(ComputeTreeHash(action.SourceDirectory), action.SourceHash, StringComparison.Ordinal)
+                                || !string.Equals(ComputeProjectedTreeHash(action.SourceDirectory, targetDirectory, action.AgentsRoot), targetHash, StringComparison.Ordinal))
+                            {
+                                throw new InvalidOperationException($"重定位 {action.SkillId} 时 Framework 真源或投影绑定发生变化。");
                             }
 
                             pendingItem["sourceHash"] = action.SourceHash;
@@ -2067,12 +2095,13 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 续传已有事务；所有目标完成并重新校验后才写入最终 state。
+            /// 续传已有事务；同一来源先核对链接绑定，所有目标完成并校验后才写入最终 state。
             /// </summary>
             /// <param name="projectRoot">消费项目根目录。</param>
             /// <param name="paths">当前已验证的受管路径。</param>
+            /// <param name="agentsRoot">可用的当前真源；为空时尝试 Editor 解析结果，缺失不阻断旧快照恢复。</param>
             /// <returns>存在并完成事务时返回 true；没有事务时返回 false。</returns>
-            private static bool ResumeTransaction(string projectRoot, ManagedPaths paths)
+            private static bool ResumeTransaction(string projectRoot, ManagedPaths paths, string agentsRoot = null)
             {
                 if (!File.Exists(paths.TransactionPath))
                 {
@@ -2098,6 +2127,8 @@ namespace NovaFramework.Editor
                     out finalState,
                     out finalManaged,
                     out pending);
+
+                VerifyTransactionProjectionBinding(projectRoot, paths.TargetRoot, pending, agentsRoot);
 
                 string stagingDirectory = Path.Combine(paths.StagingRoot, transactionId);
                 EnsureNormalDirectory(stagingDirectory, "受管事务 staging");
@@ -2556,6 +2587,209 @@ namespace NovaFramework.Editor
                 if (string.IsNullOrEmpty(value) || !s_Sha256Pattern.IsMatch(value))
                 {
                     throw new InvalidOperationException($"{label} 不是合法 SHA-256 哈希。");
+                }
+            }
+
+            /// <summary>
+            /// 同一来源字节恢复前核对当前投影绑定；来源已变或暂缺时仍按原冻结快照恢复。
+            /// </summary>
+            /// <param name="projectRoot">当前消费项目根。</param>
+            /// <param name="targetRoot">当前项目的 Skill 投影根。</param>
+            /// <param name="pending">已通过事务形状校验的动作。</param>
+            /// <param name="agentsRoot">本轮 Agents 真源；为空时尝试当前 Editor 解析结果。</param>
+            private static void VerifyTransactionProjectionBinding(string projectRoot, string targetRoot, JArray pending, string agentsRoot)
+            {
+                List<CatalogSkill> skills;
+                string currentRoot;
+                try
+                {
+                    currentRoot = NormalizeDirectory(agentsRoot ?? ResolveAgentsRoot(), "Agents 真源目录");
+                    JObject catalog;
+                    JObject package;
+                    skills = LoadAndValidateCatalog(currentRoot, out catalog, out package);
+                }
+                catch (InvalidOperationException)
+                {
+                    // 升级窗口中包真源暂不可解析，不能使已有受管事务失去离线恢复能力。
+                    return;
+                }
+
+                foreach (JObject item in pending.OfType<JObject>())
+                {
+                    string action = (string)item["action"];
+                    string skillId = (string)item["id"];
+                    CatalogSkill skill = skills.Find(candidate => candidate.Id == skillId);
+                    if ((action != "add" && action != "update") || skill == null
+                        || string.Equals((string)item["sourceHash"], (string)item["targetHash"], StringComparison.Ordinal))
+                    {
+                        // 旧版逐字节事务没有链接绑定，仍先恢复，再由当前计划安全迁移。
+                        continue;
+                    }
+
+                    string source = GetSafeChild(currentRoot, skill.RelativePath, skillId);
+                    if (!Directory.Exists(source)
+                        || !string.Equals(ComputeTreeHash(source), (string)item["sourceHash"], StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    string expected = ComputeProjectedTreeHash(source, Path.Combine(targetRoot, skillId), currentRoot);
+                    if (!string.Equals(expected, (string)item["targetHash"], StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException("中断事务的 Skill 投影绑定已变化，拒绝恢复失效链接并保留事务现场。");
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 按最终文件位置重定位 Markdown 的同包链接，保留代码示例、Skill 内引用及 URL 后缀。
+            /// </summary>
+            /// <param name="data">原始文件字节；UTF-8 的 BOM 和换行保持原样。</param>
+            /// <param name="sourceFile">包内原始文件的物理位置。</param>
+            /// <param name="targetFile">投影完成后的文件位置，不能传 staging 路径。</param>
+            /// <param name="agentsRoot">当前已解析的 Agents 真源根。</param>
+            /// <returns>确定性转换后的文件字节，非 Markdown 文件原样返回。</returns>
+            private static byte[] ProjectMarkdown(byte[] data, string sourceFile, string targetFile, string agentsRoot)
+            {
+                string extension = Path.GetExtension(sourceFile);
+                if (!string.Equals(extension, ".md", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(extension, ".markdown", StringComparison.OrdinalIgnoreCase))
+                {
+                    return data;
+                }
+
+                var utf8 = new UTF8Encoding(false, true);
+                string content = utf8.GetString(data);
+                MatchCollection protectedRanges = Regex.Matches(content,
+                    @"(?ms:^[ ]{0,3}(?<fence>(?<marker>`|~)\k<marker>{2,})[^\r\n]*(?:\r?\n|\z).*?(?:^[ ]{0,3}\k<fence>\k<marker>*[ \t]*\r?$|\z))|(?s:(?<ticks>`+)(?!`).*?(?<!`)\k<ticks>(?!`))");
+                var destinations = new Regex(
+                    @"(?:\]\([ \t]*|^[ ]{0,3}\[[^\]\r\n]+\]:[ \t]*)(?<destination><[^>\r\n]+>|(?:\\[^\r\n]|[^\s()<>\\]|\([^()\r\n]*\))+)",
+                    RegexOptions.Multiline);
+                string frameworkRoot = Directory.GetParent(agentsRoot).FullName;
+                string skillsRoot = Path.Combine(agentsRoot, "Skills");
+                string projected = destinations.Replace(content, match =>
+                {
+                    foreach (Match range in protectedRanges)
+                    {
+                        if (range.Index <= match.Index && match.Index < range.Index + range.Length)
+                        {
+                            return match.Value;
+                        }
+                    }
+
+                    Group group = match.Groups["destination"];
+                    string token = group.Value;
+                    bool angle = token.StartsWith("<", StringComparison.Ordinal);
+                    string destination = angle ? token.Substring(1, token.Length - 2) : token;
+                    if (destination.Length == 0 || "#?/\\".IndexOf(destination[0]) >= 0
+                        || Regex.IsMatch(destination, @"^[A-Za-z][A-Za-z0-9+.-]*:"))
+                    {
+                        return match.Value;
+                    }
+
+                    int suffixIndex = destination.IndexOfAny(new[] { '?', '#' });
+                    string pathText = suffixIndex < 0 ? destination : destination.Substring(0, suffixIndex);
+                    string suffix = suffixIndex < 0 ? string.Empty : destination.Substring(suffixIndex);
+                    pathText = Regex.Replace(pathText, @"\\([!""#$%&'()*+,\-./:;<=>?@\[\]^_`{|}~\\])", "$1");
+                    string resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(sourceFile), Uri.UnescapeDataString(pathText)));
+                    if (!IsProjectionPathWithin(resolved, frameworkRoot))
+                    {
+                        throw new InvalidOperationException($"Skill 投影链接越出 Framework 包：{sourceFile}：{destination}。");
+                    }
+
+                    if (!File.Exists(resolved) && !Directory.Exists(resolved))
+                    {
+                        throw new InvalidOperationException($"Skill 投影链接目标不存在：{sourceFile}：{destination}。");
+                    }
+
+                    if (IsProjectionPathWithin(resolved, skillsRoot))
+                    {
+                        return match.Value;
+                    }
+
+                    string relative = Path.GetRelativePath(Path.GetDirectoryName(targetFile), resolved).Replace('\\', '/');
+                    if (Path.IsPathRooted(relative))
+                    {
+                        throw new InvalidOperationException("Framework 与 Skill 投影必须位于可用相对路径互达的位置。");
+                    }
+
+                    string replacement = Uri.EscapeDataString(relative).Replace("%2F", "/") + suffix;
+                    if (angle)
+                    {
+                        replacement = "<" + replacement + ">";
+                    }
+
+                    return match.Value.Substring(0, group.Index - match.Index) + replacement;
+                });
+                return utf8.GetBytes(projected);
+            }
+
+            /// <summary>
+            /// 按当前平台的路径大小写规则判断链接仍属于同一包或 Skills 目录。
+            /// </summary>
+            /// <param name="path">已规范化的目标文件或目录。</param>
+            /// <param name="root">所属根目录。</param>
+            /// <returns>目标是否为根本身或其后代。</returns>
+            private static bool IsProjectionPathWithin(string path, string root)
+            {
+                StringComparison comparison = Path.DirectorySeparatorChar == '\\'
+                    ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                return string.Equals(path, root, comparison)
+                    || path.StartsWith(AppendDirectorySeparator(root), comparison);
+            }
+
+            /// <summary>
+            /// 计算最终位置的投影摘要，保留与真源摘要不同的内容身份。
+            /// </summary>
+            /// <param name="sourceDirectory">包内真源 Skill 目录。</param>
+            /// <param name="targetDirectory">最终 Skill 目录。</param>
+            /// <param name="agentsRoot">当前解析的 Agents 根。</param>
+            /// <returns>与 Python 相同的投影 SHA-256 摘要。</returns>
+            private static string ComputeProjectedTreeHash(string sourceDirectory, string targetDirectory, string agentsRoot)
+            {
+                EnsureNormalDirectory(sourceDirectory, "投影真源目录");
+                EnsureNoReparsePoints(sourceDirectory);
+                string root = AppendDirectorySeparator(Path.GetFullPath(sourceDirectory));
+                var files = new List<string>();
+                CollectFiles(sourceDirectory, files);
+                files.Sort((left, right) => CompareUtf8Paths(GetRelativePath(root, left).Replace('\\', '/'), GetRelativePath(root, right).Replace('\\', '/')));
+                using (SHA256 sha256 = SHA256.Create())
+                {
+                    foreach (string file in files)
+                    {
+                        string relative = GetRelativePath(root, file);
+                        AppendHashBytes(sha256, Encoding.UTF8.GetBytes(relative.Replace('\\', '/')));
+                        AppendHashBytes(sha256, new byte[] { 0 });
+                        AppendHashBytes(sha256, ProjectMarkdown(File.ReadAllBytes(file), file, Path.Combine(targetDirectory, relative), agentsRoot));
+                        AppendHashBytes(sha256, new byte[] { 0 });
+                    }
+
+                    sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                    return BytesToLowerHex(sha256.Hash);
+                }
+            }
+
+            /// <summary>
+            /// 在已校验的原始 staging 副本内转换 Markdown，目标坐标始终使用最终投影目录。
+            /// </summary>
+            /// <param name="stagedDirectory">尚不可见的普通 staging 目录。</param>
+            /// <param name="sourceDirectory">对应的包内真源目录。</param>
+            /// <param name="targetDirectory">最终投影目录。</param>
+            /// <param name="agentsRoot">当前解析的 Agents 根。</param>
+            private static void ProjectStagedMarkdown(string stagedDirectory, string sourceDirectory, string targetDirectory, string agentsRoot)
+            {
+                string root = AppendDirectorySeparator(Path.GetFullPath(stagedDirectory));
+                var files = new List<string>();
+                CollectFiles(stagedDirectory, files);
+                foreach (string file in files)
+                {
+                    string relative = GetRelativePath(root, file);
+                    byte[] original = File.ReadAllBytes(file);
+                    byte[] projected = ProjectMarkdown(original, Path.Combine(sourceDirectory, relative), Path.Combine(targetDirectory, relative), agentsRoot);
+                    if (!original.SequenceEqual(projected))
+                    {
+                        File.WriteAllBytes(file, projected);
+                    }
                 }
             }
 

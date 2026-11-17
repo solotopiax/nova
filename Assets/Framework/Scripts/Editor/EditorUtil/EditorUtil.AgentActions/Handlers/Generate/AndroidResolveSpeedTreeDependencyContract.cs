@@ -5,7 +5,7 @@
  * filename:  AndroidResolveSpeedTreeDependencyContract.cs
  * author:    taoye
  * created:   2026/10/16
- * descrip:   SpeedTree 空属性方法支路的精确派生依赖效果及现有 artifact 观察
+ * descrip:   SpeedTree 已审属性方法登记与同域自然支路的精确 artifact 保护
  ***************************************************************/
 using System;
 using System.Collections;
@@ -25,7 +25,7 @@ namespace NovaFramework.Editor
         internal const string Prefix = "SpeedTree9Importer_MaterialSettings";
         private const BindingFlags Methods = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        /// <summary>空方法集合必须与已注册输入/现有 artifact 无相关依赖同时成立，才能接纳正规前缀清理效果。</summary>
+        /// <summary>只接纳空方法集或唯一已审URP方法；同域模板刷新不调用属性方法或改登记，仍保护全部现有artifact依赖。</summary>
         /// <param name="controlledPaths">正规解析自身的精确路径，用于稳定非目标 artifact 范围。</param>
         /// <param name="token">取消有界只读扫描；不会取消原生导入。</param>
         /// <param name="digest">当前非目标 artifact 与依赖 key 的稳定摘要。</param>
@@ -39,8 +39,8 @@ namespace NovaFramework.Editor
             {
                 Type database = typeof(AssetDatabase);
                 Type attribute = database.Assembly.GetType("UnityEditor.SpeedTree.Importer.MaterialSettingsCallbackAttribute", true);
-                if (TypeCache.GetMethodsWithAttribute(attribute).Any(method => method.IsStatic))
-                    throw new InvalidOperationException("SpeedTree 存在 MaterialSettings 属性方法，当前只接纳自然空方法支路。");
+                var rows = new List<string>();
+                CaptureReviewedMaterialMethods(attribute, rows, token);
                 string[] paths = AssetDatabase.GetAllAssetPaths().OrderBy(path => path, StringComparer.Ordinal).ToArray();
                 if (paths.Length > 131072 || paths.Any(path => path.EndsWith(".st9", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".spm", StringComparison.OrdinalIgnoreCase)))
                     throw new InvalidOperationException("SpeedTree 存在 st9/spm 输入，或注册资产超出有界扫描容量。");
@@ -57,7 +57,6 @@ namespace NovaFramework.Editor
                     current?.PropertyType != typeof(bool) || dependencies == null || count?.PropertyType != typeof(int) || rawValue?.FieldType != typeof(object))
                     throw new InvalidOperationException("SpeedTree artifact 只读查询 API 与已绑定 CoreModule 结构不符。");
                 var controlled = new HashSet<string>(controlledPaths ?? Array.Empty<string>(), StringComparer.Ordinal);
-                var rows = new List<string>();
                 int observed = 0;
                 long queried = 0;
                 foreach (string path in paths)
@@ -112,6 +111,36 @@ namespace NovaFramework.Editor
             }
             catch (Exception exception) when (!(exception is OperationCanceledException))
             { error = exception is InvalidOperationException ? exception.Message : "SpeedTree artifact 依赖只读扫描失败：" + (exception.InnerException?.GetType().Name ?? exception.GetType().Name); return false; }
+        }
+
+        /// <summary>已审Core只在didDomainReload为true时按方法元数据登记hash，不调用方法；本合同冻结完整已审roster，不伪称可回读原生登记值。</summary>
+        private static void CaptureReviewedMaterialMethods(Type attribute, ICollection<string> rows, CancellationToken token)
+        {
+            MethodInfo[] methods = TypeCache.GetMethodsWithAttribute(attribute).Where(method => method.IsStatic).ToArray();
+            if (methods.Length == 0) { rows.Add("material-methods=empty"); return; }
+            if (methods.Length != 1) throw new InvalidOperationException("SpeedTree MaterialSettings方法集合不等于唯一已审URP方法。");
+            MethodInfo method = methods[0];
+            Type owner = method.DeclaringType;
+            if (owner?.FullName != "UnityEditor.Rendering.Universal.UniversalSpeedTree9Upgrader" ||
+                owner.Assembly.GetName().Name != "Unity.RenderPipelines.Universal.Editor" || !HasMaterialCallbackShape(method, owner, attribute))
+                throw new InvalidOperationException("SpeedTree MaterialSettings含未知方法、版本或签名。");
+            if (!AndroidRefreshSourceIdentityContract.TryVerifySourceAssembly(owner, token, out string source, out string sourceError))
+                throw new InvalidOperationException(sourceError);
+            rows.Add("material-method=" + owner.AssemblyQualifiedName + "|" + method.MetadataToken + "|version=1|" + source);
+            rows.Add("material-dependency-input=" + method.Name + "-" + owner.AssemblyQualifiedName + "-1|same-domain-no-registration");
+        }
+
+        /// <summary>仅读取方法及attribute元数据；未知参数、返回类型、实例方法、版本或命名字段一律拒绝，不实例化attribute。</summary>
+        internal static bool HasMaterialCallbackShape(MethodInfo method, Type owner, Type attribute)
+        {
+            if (method == null || method.DeclaringType != owner || !method.IsStatic || !method.IsPrivate ||
+                method.Name != "OnAssetPostProcessDelegate" || method.ReturnType != typeof(void) || method.ContainsGenericParameters)
+                return false;
+            ParameterInfo[] parameters = method.GetParameters();
+            if (parameters.Length != 1 || parameters[0].ParameterType != typeof(GameObject)) return false;
+            CustomAttributeData[] attributes = CustomAttributeData.GetCustomAttributes(method).Where(value => value.AttributeType == attribute).ToArray();
+            return attributes.Length == 1 && attributes[0].ConstructorArguments.Count == 1 && attributes[0].NamedArguments.Count == 0 &&
+                attributes[0].ConstructorArguments[0].ArgumentType == typeof(int) && (int)attributes[0].ConstructorArguments[0].Value == 1;
         }
 
         /// <summary>检查原生公开的依赖名称及字符串值；Ordinal 子串保守覆盖完整前缀，不能以零 Hash 假定没有登记。</summary>

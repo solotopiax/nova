@@ -265,36 +265,20 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 根据 packages-lock.json 条目的来源类型解析实际版本号。
+            /// 根据 packages-lock.json 条目的来源类型解析版本号；local/embedded 的 file: 引用校验对应包的名称与版本。
             /// </summary>
             /// <param name="packageName">包名。</param>
             /// <param name="entry">lock 文件条目。</param>
             /// <returns>实际版本号字符串，无法解析返回 null。</returns>
             private static string ResolveEntryVersion(string packageName, PackagesLockEntry entry)
             {
-                if (entry.source == "local" && entry.version.StartsWith("file:"))
+                if ((entry.source == "local" || entry.source == "embedded") &&
+                    entry.version.StartsWith("file:", StringComparison.Ordinal))
                 {
                     string relativePath = entry.version.Substring(5);
                     string packagesDir = Util.SysIO.Path.Combine(Application.dataPath, "../", "Packages");
-                    string packageJsonPath = Util.SysIO.Path.Combine(packagesDir, relativePath, "package.json");
-                    string fullPath = Util.SysIO.Path.GetFullPath(packageJsonPath);
-
-                    if (Util.SysIO.File.Exists(fullPath))
-                    {
-                        try
-                        {
-                            string json = Util.SysIO.File.ReadAllTextSync(fullPath);
-                            LocalPackageJson pkgJson = Util.Json.Deserialize<LocalPackageJson>(json);
-                            return pkgJson?.version;
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Warning(LogTag.Editor, "PlugPals.ResolveEntryVersion 读取 file: 引用包版本失败: {0}", e.Message);
-                            return null;
-                        }
-                    }
-
-                    return null;
+                    string resolvedPath = Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(packagesDir, relativePath));
+                    return TryReadResolvedPackageVersion(packageName, resolvedPath, out string version) ? version : null;
                 }
 
                 if (entry.source == "git")
@@ -302,7 +286,7 @@ namespace NovaFramework.Editor
                     return GetCachedPackageVersion(packageName);
                 }
 
-                // registry / builtin / embedded 等直接使用版本号
+                // registry / builtin 等已记录版本号的来源直接返回。
                 return entry.version;
             }
 
@@ -346,13 +330,20 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 判断指定包在 manifest.json 中是否为非仓库引用（git/http/file:）。
+            /// 联合 lock 来源与 manifest 引用判断非仓库包；内嵌包即使覆盖了仓库版本声明也不能作为仓库包升级。
             /// </summary>
             /// <param name="packageName">包名。</param>
             /// <param name="manifest">manifest 数据。</param>
-            /// <returns>若为 git/http/file: 引用返回 true。</returns>
-            private static bool IsNonRegistryReference(string packageName, ManifestData manifest)
+            /// <param name="lockEntry">当前包的 lock 条目，可为空。</param>
+            /// <returns>若为 local/git/embedded 来源或 git/http/file: 引用返回 true。</returns>
+            private static bool IsNonRegistryReference(string packageName, ManifestData manifest, PackagesLockEntry lockEntry)
             {
+                if (lockEntry != null &&
+                    (lockEntry.source == "local" || lockEntry.source == "git" || lockEntry.source == "embedded"))
+                {
+                    return true;
+                }
+
                 if (manifest?.dependencies == null || !manifest.dependencies.TryGetValue(packageName, out string value))
                 {
                     return false;

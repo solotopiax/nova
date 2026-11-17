@@ -69,7 +69,7 @@ namespace NovaFramework.Editor
                 Upgradeable,
 
                 /// <summary>
-                /// 已安装但来源为非仓库引用（git/file:），仅可清除卸载。
+                /// 已安装但来源为非仓库引用（local/git/embedded），不提供仓库升级。
                 /// </summary>
                 NonRegistry,
 
@@ -171,7 +171,7 @@ namespace NovaFramework.Editor
                 public string LocalVersion;
 
                 /// <summary>
-                /// packages-lock.json 中记录的期望解析版本；它不代表包已成功安装。
+                /// packages-lock.json 中的期望版本；目录引用先读取包版本，读取失败时保留原引用，它不代表安装成功。
                 /// </summary>
                 public string LockedVersion;
 
@@ -181,7 +181,7 @@ namespace NovaFramework.Editor
                 public bool IsDirectDependency;
 
                 /// <summary>
-                /// 当前条目是否使用 git/file/http 等非 registry 来源。
+                /// 当前条目是否使用 git/file/http/embedded 等非 registry 来源。
                 /// </summary>
                 public bool IsNonRegistry;
 

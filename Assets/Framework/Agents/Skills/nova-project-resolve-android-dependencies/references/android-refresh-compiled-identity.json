@@ -1,4 +1,305 @@
 {
-  "assemblySha256": "1f6823515eac7493d6f8d8407b3c29c7348ab5a64d1001ffb7d6b5341762ae6e",
-  "mvid": "3fcb2e02-c29e-44c2-bd76-c0f45a6678d6"
+  "schemaVersion": 1,
+  "assemblies": [
+    {
+      "package": "com.solotopia.nova.framework.mcp",
+      "version": "0.1.9",
+      "assembly": "NovaFramework.Mcp.Editor",
+      "definition": "Nova/Editor/NovaFramework.Mcp.Editor.asmdef",
+      "definitionSha256": "74203ba6943670def9ce91156d31a76f4ac7ad17ae367268b773dfe0e2732501",
+      "manifestSha256": "11746babb4c342baab26246f4b7f6d5fc5a64b00fc820c6a8ff9b7df841a9a47",
+      "sourceCount": 6,
+      "sourcesSha256": "cc2f00c9df3c5ec41a3e64bc1544fbcee822636cda42430a07e5663f86d3ca43"
+    },
+    {
+      "package": "com.solotopia.nova.framework.memory.protection",
+      "version": "0.1.4",
+      "assembly": "NovaFramework.MemoryProtection.Editor",
+      "definition": "Nova/Editor/NovaFramework.MemoryProtection.Editor.asmdef",
+      "definitionSha256": "33fb988a3294c96d4309c2b59e8bb420abfbb904eabbf71384638d547794bebd",
+      "manifestSha256": "5ce2d5425b7b0b878029c22f9a709b6684e46ad615e7296e4f2d9db7716d4c92",
+      "sourceCount": 4,
+      "sourcesSha256": "063fb46149f417c8abfbb4fc59a215c826117d7ea6056a1980dacb2beff336a9"
+    },
+    {
+      "package": "com.unity.2d.animation",
+      "version": "14.0.3",
+      "assembly": "Unity.2D.Animation.Editor",
+      "definition": "Editor/Unity.2D.Animation.Editor.asmdef",
+      "definitionSha256": "be1d0b12881ec55cb9a926384593853c756903f966ee4b5f249b0b6394557355",
+      "manifestSha256": "5c06f2ad4dca2c704fbf187272a08b79c89c1e8ab3e20e157e5541c0df925f6a",
+      "sourceCount": 188,
+      "sourcesSha256": "2f22a241412b1b97d3f21769e2b4fb528f763c985ffcdc3b0341c1df56d7bd59"
+    },
+    {
+      "package": "com.unity.2d.animation",
+      "version": "14.0.4",
+      "assembly": "Unity.2D.Animation.Editor",
+      "definition": "Editor/Unity.2D.Animation.Editor.asmdef",
+      "definitionSha256": "be1d0b12881ec55cb9a926384593853c756903f966ee4b5f249b0b6394557355",
+      "manifestSha256": "38b6cbc1de95f297f7026fe9ba78539ff69c699ec9ec2e4ababcdfd4ef7aa7e4",
+      "sourceCount": 188,
+      "sourcesSha256": "fb3e77cdea1744d97ac8084c963b5bc5a365588850008e7e81c8f9ed5fc95229"
+    },
+    {
+      "package": "com.unity.2d.psdimporter",
+      "version": "13.0.2",
+      "assembly": "Unity.2D.Psdimporter.Editor",
+      "definition": "Editor/Unity.2D.Psdimporter.Editor.asmdef",
+      "definitionSha256": "f5e92c01281e5dfbae6b6ac74715eb8c7c17d0da9c90d16f1824fbaf16097cd9",
+      "manifestSha256": "ec62bbddb7de62f9087642ac0d79b711ee59d4bcd1c62789e28b678e8dfc6543",
+      "sourceCount": 27,
+      "sourcesSha256": "1e216b2e5a1304a875053fc10d3b1fddcf8e6044c8938e2f2bb9fec8a54d6e27"
+    },
+    {
+      "package": "com.unity.2d.psdimporter",
+      "version": "13.0.3",
+      "assembly": "Unity.2D.Psdimporter.Editor",
+      "definition": "Editor/Unity.2D.Psdimporter.Editor.asmdef",
+      "definitionSha256": "f5e92c01281e5dfbae6b6ac74715eb8c7c17d0da9c90d16f1824fbaf16097cd9",
+      "manifestSha256": "49460c6e6cfc68b977233d4a364556aac17b7458b3456a30351133f2c965e1f7",
+      "sourceCount": 27,
+      "sourcesSha256": "f0917f2de6e6f7de9e32a81f09705ca5bca047690a1b0b469ff77a06ffcc0259"
+    },
+    {
+      "package": "com.unity.2d.sprite",
+      "version": "1.0.0",
+      "assembly": "Unity.2D.Sprite.Editor",
+      "definition": "Editor/Unity.2D.Sprite.Editor.asmdef",
+      "definitionSha256": "357045511141c4042f764a3dc3d1ebcf13e3b82aa2da616505210327f5776dd0",
+      "manifestSha256": "c977a5d602bda23897973250130a5026819539edfc89e7244db4c4920fc0a960",
+      "sourceCount": 53,
+      "sourcesSha256": "03d830ced6107cb95e02192b21bb6860084ad33e1bff794076d34bfc1bfdf26d"
+    },
+    {
+      "package": "com.unity.2d.spriteshape",
+      "version": "14.0.1",
+      "assembly": "Unity.2D.SpriteShape.Editor",
+      "definition": "Editor/Unity.2D.SpriteShape.Editor.asmdef",
+      "definitionSha256": "5e303f4f64cd97d78d02006f342c5690caa42436d79a7086b601afc98d9d6d04",
+      "manifestSha256": "5fea5e723946e5d8dc0c2441f80eadf295f8c186c139f4b99dcd34283f639e21",
+      "sourceCount": 19,
+      "sourcesSha256": "7b80a085f440a58b9bade85604c1fda0f7e214c54eb11a12d6ff5b5596aa04ff"
+    },
+    {
+      "package": "com.unity.2d.spriteshape",
+      "version": "14.0.1",
+      "assembly": "Unity.2D.SpriteShape.Runtime",
+      "definition": "Runtime/Unity.2D.SpriteShape.Runtime.asmdef",
+      "definitionSha256": "78bbb7eb3aeaca92fc777c5d5353652e0f1143393ff2701fe106e67817ff92ec",
+      "manifestSha256": "5fea5e723946e5d8dc0c2441f80eadf295f8c186c139f4b99dcd34283f639e21",
+      "sourceCount": 20,
+      "sourcesSha256": "d035ff5962b8f18e4f103402b1e9d9ef2245888531d8fafb50873135b3ea6fe5"
+    },
+    {
+      "package": "com.unity.2d.tilemap",
+      "version": "1.0.0",
+      "assembly": "Unity.2D.Tilemap.Editor",
+      "definition": "Editor/Unity.2D.Tilemap.Editor.asmdef",
+      "definitionSha256": "8850d880cbf4e0590dd128e84b212b9c50cc28a34d7274809707799ffd88507b",
+      "manifestSha256": "d65974d725dd7ee179a5bbcab0dd0992b0aa150459ded4dad002c6c429a6aa60",
+      "sourceCount": 115,
+      "sourcesSha256": "11c69eb040e7e1d814a8107849a3ab057d48805bde2cd811ed14e9c9b14c76b4"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Animate",
+      "definition": "Modules/Unity.AI.Animate/Unity.AI.Animate.asmdef",
+      "definitionSha256": "64db99b76aa5c8df2fad0f97969cf808b4217db2b44fbba599c75ffd0341f31d",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 81,
+      "sourcesSha256": "e81953ff3a37d225de5b1f9dd3f8122590a620ef1268c7d0430619fa0aa20c31"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Assistant.Editor",
+      "definition": "Editor/Assistant/Unity.AI.Assistant.Editor.asmdef",
+      "definitionSha256": "6b3e6142117af4fecddf1ce010d19b8f29a8bf8085fec1ed34d21f384d58e3da",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 280,
+      "sourcesSha256": "548206dc2968dc5c13313c32b958f57b159933a71939751be067c854529f534d"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Generators.Redux",
+      "definition": "Modules/Unity.AI.Generators.Redux/Unity.AI.Generators.Redux.asmdef",
+      "definitionSha256": "f802a1344ebcca0fa21a84d459d4dab68dffb398ad1fa940b81434b29ea5c1b4",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 85,
+      "sourcesSha256": "9f97860c3066d919484e1d3e479dbc05df0604c4c6d0c4eef3c56b390703ef2c"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Generators.UI",
+      "definition": "Modules/Unity.AI.Generators.UI/Unity.AI.Generators.UI.asmdef",
+      "definitionSha256": "93e57111dbcf62171ab169298390df7b69f79c196798b244a20aea0e5f044469",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 62,
+      "sourcesSha256": "ad0e77b4dc173d0f5a7957fe1106a40930eb2c6e7b782dde6c2740d2bc8d1b28"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Image",
+      "definition": "Modules/Unity.AI.Image/Unity.AI.Image.asmdef",
+      "definitionSha256": "d2353e6201014f3491fdf6927b40f6c341e1a331392c947493ec9be1868008bb",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 137,
+      "sourcesSha256": "e372d5f133191d26856c5a3b56e4ca5386c0edb586f653251a1f31af5e249835"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Mesh",
+      "definition": "Modules/Unity.AI.Mesh/Unity.AI.Mesh.asmdef",
+      "definitionSha256": "2c2d672d6d27857248eca96ba3ee7944c1edc30cbe540fc5ad5278b912717351",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 98,
+      "sourcesSha256": "1fcf45b5e88035b6926af8749aac89efbb23d9fe3e2eaa31b33b3c6992a0279f"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.ModelSelector",
+      "definition": "Modules/Unity.AI.ModelSelector/Unity.AI.ModelSelector.asmdef",
+      "definitionSha256": "1caa91b7e0292223d720c0450672d50609564530bdcb7b579350c86f43ec006d",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 33,
+      "sourcesSha256": "c6652a249b4e91a4372a014635ed4f85cab2d8e9c2e3247acef26f93e51693e2"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Pbr",
+      "definition": "Modules/Unity.AI.Pbr/Unity.AI.Pbr.asmdef",
+      "definitionSha256": "73ef184f3cdc47d2c20c62c9d9826a06d4b7757f14538e138ecac0e31a937de9",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 87,
+      "sourcesSha256": "828a8583fa319187891bf94e578efb8ae4488095a889f75c95729650bf4e262e"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Search.Editor",
+      "definition": "Editor/Unity.AI.Search.Editor/Unity.AI.Search.Editor.asmdef",
+      "definitionSha256": "b3b6e8395bcd4e312f9bdac3907f60915ada11a88a9929a910d3afe574cdc357",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 55,
+      "sourcesSha256": "52dc85d255d72eff81ddb1c0194046898989ac023e815f79f3931b95852a2b46"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Sound",
+      "definition": "Modules/Unity.AI.Sound/Unity.AI.Sound.asmdef",
+      "definitionSha256": "c05a8dfbf5b014d73bb64064d090afa4b135e152493249c8a8a3f94633079021",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 89,
+      "sourcesSha256": "ae01fd6ea24f591503c8e3063f8c33aad4c8732ab9041298219ea3f290b11a45"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Toolkit.Asset",
+      "definition": "Modules/Unity.AI.Toolkit.Asset/Unity.AI.Toolkit.Asset.asmdef",
+      "definitionSha256": "341d3f9f5409d24a00efbb89040a6097d2fb8e5756e3fdd7e4132d004c05777f",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 9,
+      "sourcesSha256": "f783b0b84d6293ee65047b855aa1a0eb17575f80c6e878eda38cae2ca44e254c"
+    },
+    {
+      "package": "com.unity.ai.assistant",
+      "version": "2.21.0-pre.2",
+      "assembly": "Unity.AI.Toolkit.Utility",
+      "definition": "Modules/Unity.AI.Toolkit.Utility/Unity.AI.Toolkit.Utility.asmdef",
+      "definitionSha256": "470f984bc5c9c7d9b365d63e027d2189b941c1d5af54d16b5dd8f454498d815c",
+      "manifestSha256": "f0266451a414a5e7c2cc4b53cb99be0870e70025f549e409b9e5a26a363b733c",
+      "sourceCount": 6,
+      "sourcesSha256": "280da768f594e8c387895cced06089cff19892498534107873ab347dbb05b420"
+    },
+    {
+      "package": "com.unity.ai.inference",
+      "version": "2.6.1",
+      "assembly": "Unity.InferenceEngine.Editor.Visualizer",
+      "definition": "Editor/Visualizer/Unity.InferenceEngine.Editor.Visualizer.asmdef",
+      "definitionSha256": "5f57a1255d2cb37500b6e88f7dea6bb129032d1a7501405fcbbae9230012f615",
+      "manifestSha256": "c01e2ecc9e8c3e24e4d7eb01ae0c0c610fbf370086d93e8635d29dc301950be1",
+      "sourceCount": 47,
+      "sourcesSha256": "bb30e261418a33aebeb93271c22c5b6331788b28167efc769c7f15668d02813b"
+    },
+    {
+      "package": "com.unity.inputsystem",
+      "version": "1.20.1",
+      "assembly": "Unity.InputSystem",
+      "definition": "InputSystem/Unity.InputSystem.asmdef",
+      "definitionSha256": "64246e353589cd00531638659c64b83107e50d6dc43321f9d07b22e63a363d59",
+      "manifestSha256": "14477da2e4e8e13a584e221b458aabb931bfb3d8f63512f57edd49f133edc574",
+      "sourceCount": 428,
+      "sourcesSha256": "4595a37b1d22471794e162f6645525a20829fb9792fd4ff84278b7cda8cf43e2"
+    },
+    {
+      "package": "com.unity.collab-proxy",
+      "version": "2.12.4",
+      "assembly": "Unity.PlasticSCM.Editor",
+      "definition": "Editor/Unity.PlasticSCM.Editor.asmdef",
+      "definitionSha256": "cace4b007ef59a215b6b60821b277c3594bb02cb76732939482a53f4cda914be",
+      "manifestSha256": "9fa3cb760a3810dd979c5d0c79e6be2164be96a1a89396c9ce363e447c0c3e6d",
+      "sourceCount": 731,
+      "sourcesSha256": "43220e7d40020f5af89870cd89b3ab5cc0c0a1626566cf43a8bed667907ba059"
+    },
+    {
+      "package": "com.unity.render-pipelines.universal",
+      "version": "17.4.0",
+      "assembly": "Unity.RenderPipelines.Universal.Editor",
+      "definition": "Editor/Unity.RenderPipelines.Universal.Editor.asmdef",
+      "definitionSha256": "48420d05ca8aa298e6bd389d25a5dcd177ab08a572997d5c5043d30f5e04e8b1",
+      "manifestSha256": "ef8904380dd27327f9f19c6ff00bccec17f4545713aa9690962f25beadecc882",
+      "sourceCount": 218,
+      "sourcesSha256": "3bc5f329f5d8abe870951e1b7167a333e8414a549f0587c90333565e0ca3affe"
+    },
+    {
+      "package": "com.unity.render-pipelines.universal",
+      "version": "17.4.0",
+      "assembly": "Unity.RenderPipelines.Universal.Runtime",
+      "definition": "Runtime/Unity.RenderPipelines.Universal.Runtime.asmdef",
+      "definitionSha256": "ec54bba476ad0b6075614a4badcd9dfb6fa6aab4e15284dbe08e98fa56cf41cd",
+      "manifestSha256": "ef8904380dd27327f9f19c6ff00bccec17f4545713aa9690962f25beadecc882",
+      "sourceCount": 196,
+      "sourcesSha256": "5d806c0c146e7a7317e31a5da61b530c611e082de300b3fd0a16f7490c2491e0"
+    },
+    {
+      "package": "com.unity.shadergraph",
+      "version": "17.4.0",
+      "assembly": "Unity.ShaderGraph.Editor",
+      "definition": "Editor/Unity.ShaderGraph.Editor.asmdef",
+      "definitionSha256": "f8f9eded976b98014c0e5f078a725218de293bbdaab3001ed90247aff7cefad7",
+      "manifestSha256": "b7e7be76fc48847076cfd6771c8e49d3d1844c2d9466dc2c5003ae12f8166095",
+      "sourceCount": 715,
+      "sourcesSha256": "c13e538315d156b6f993aef4ffefe7aaed2fde137122a3e3d721a289505218ee"
+    },
+    {
+      "package": "com.unity.ugui",
+      "version": "2.0.0",
+      "assembly": "Unity.TextMeshPro.Editor",
+      "definition": "Editor/TMP/Unity.TextMeshPro.Editor.asmdef",
+      "definitionSha256": "9f1c1226bb8b9639969683c27e1e2a9d6fdb58976bc3d07c1b48422ba2d86010",
+      "manifestSha256": "715a4bac6d14df32b2cf8a9dd2621bbdc7e9ed4cd61b9ff8706cad9c67b2fd4f",
+      "sourceCount": 55,
+      "sourcesSha256": "8418a993e39d3b8da9ca547af69129e1ac99558a76db9ef2278288f4b04103b4"
+    },
+    {
+      "package": "com.unity.timeline",
+      "version": "1.8.12",
+      "assembly": "Unity.Timeline.Editor",
+      "definition": "Editor/Unity.Timeline.Editor.asmdef",
+      "definitionSha256": "0ed73f5669c51ef8799b38469d5ee88aba2c1297daef44451d5de088fbc8ef0d",
+      "manifestSha256": "1c25962555f0362d0720db550d1c11f058ae1ee620773932e58fef07ce42ae49",
+      "sourceCount": 275,
+      "sourcesSha256": "bd2faeb1b2d789c8a3f9bbc044c4f1519d3166671e5f64287b72c0937b8fa316"
+    }
+  ]
 }

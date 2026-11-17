@@ -53,6 +53,31 @@ Plan 在独立副本上仅补当前掩码逻辑组的缺项，保留所有旧 St
 
 Privacy 初始 Key/IV 可逐步填写；原 Key/IV 按 UTF-8 各为16字节时，最终 clone 的同一物理坐标与 DevelopMode 必须保留两值。`patch-panels` 阻断更换、清空、维度合并及字段广播覆盖任何原有效凭据，包含从尚未初配的格广播到已有格。原同值请求和其它隐私字段可编辑；错误只显示固定 `privacy-key-rotation` 阶段，不回显凭据。保护限定 `PanelEditing.BuildPreview` 与该 Action；ConfigWindow 手工编辑和共享 `SaveWorkingCopy` 现行为保持。旧数据须保留时，路由同一存档 Skill 的[日常维护参考](../../nova-project-integrate-persistence/references/maintenance.md)中独立 Privacy 分支；限定当前macOS Editor三存储/当前Privacy逻辑组与正规保存/导出/独立恢复，不能用普通配置patch代替迁移。
 
+## 首次准备 Privacy 本地密钥
+
+项目自有本地密钥无需等待后台。先 inspect 当前 Privacy 掩码与同组范围，再对 `patch-panels` 使用互斥分支；示例坐标替换为真实已确认坐标：
+
+```json
+{
+  "masterGuid": "实际Master资产GUID",
+  "operation": "initialize-privacy-aes",
+  "privacyTarget": {
+    "platform": "Android",
+    "channel": "Official",
+    "developMode": "Release",
+    "panel": "PrivacyConfigs"
+  }
+}
+```
+
+`changes` 必须省略或 null，不能附加 fields、dimensions、configType、密钥值或外部凭据。只处理当前掩码下完整同组，全部物理槽必须存在且旧 pair 一致。整组已有 UTF-8 各 16 字节的有效 pair 时无写入；空值及精确公开占位 `YOUR_PRIVACY_AES_KEY / YOUR_PRIVACY_AES_IV` 才允许首次生成。非占位的 15/17 字节旧值、仅一项有效、未知 YOUR_ 文本及任意混合组均 blocked，不能借首次准备覆盖可能已有数据的配置；来源不清先核对，不用通用字段请求绕过。
+
+Plan 在内存生成并冻结 pair，公开计划仅含全状态摘要与全部实际 AES 叶写集；只保存该 Master。Execute 使用原值复核，不随机重算；源/掩码/文件/meta/草稿漂移均需新 Plan。执行前失败没有正式写入；开始保存后失败返回 partial 与 Receipt，只读 Verify，不回滚或重放。重载丢失内存计划后不能根据脱敏载荷重建秘密。已有有效值不得轮换，App 协议字段不参与本分支。
+
+Plan/Receipt 还冻结实际已加载 Editor 程序集完整名称与模块 MVID，覆盖新增首次准备 helper、既有面板预演和统一保存；预演结束、执行前、提交回调与新首建 Verify 均核对同一身份。身份缺失或变化会阻断，不从旧计划重算秘密或重放；旧普通字段 Receipt 的只读兼容不适用于首次准备。
+
+保存后用独立的新 `export-runtime` Plan 正式导出；继续编译及任务需要的 Editor/手机启动验证。首次准备成功不代表 Runtime、旧档迁移或设备已验收。
+
 ## 保存与验收
 
 预演只在独立Master副本；实际文件/全序列化状态/完整物理写集及窗口草稿反复核对。只保存目标Master，不改活动BuildTarget，不导出Runtime，不构建。相同目标保持文件不变；写后失败为partial，使用Receipt只读Verify，不回滚重放。

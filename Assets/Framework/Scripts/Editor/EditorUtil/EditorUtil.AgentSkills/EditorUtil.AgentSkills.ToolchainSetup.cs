@@ -90,7 +90,7 @@ namespace NovaFramework.Editor
                     }
                     else
                     {
-                        items.Add(new ToolchainItem(item.Id, item.Name, item.Status, item.Detail));
+                        items.Add(new ToolchainItem(item.Id, item.Name, item.Status, item.Detail, item.Remediation, item.CanAutomaticallyRetry));
                     }
                 }
 

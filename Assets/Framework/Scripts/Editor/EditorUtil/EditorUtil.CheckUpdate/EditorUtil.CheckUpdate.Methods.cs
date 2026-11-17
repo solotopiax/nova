@@ -33,31 +33,34 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// Editor 启动时异步检查更新，过滤已跳过的版本后弹窗通知。
-            /// 所有异常均静默处理，不影响 Editor 正常启动。
+            /// Editor 启动时只查询一次更新，把结果交给安全展示队列；不从异步回调直接打开窗口。
+            /// 等待展示及域重载复用已取得的列表，跳过配置和本地安装版本在真正展示前重新读取。
             /// </summary>
             internal static async Task CheckOnStartupAsync()
             {
+                if (Application.isBatchMode || s_AutomaticStopping || s_AutomaticQueryRunning) return;
+                s_AutomaticQueryRunning = true;
+                SetAutomaticCheckState("querying", "正在查询可用更新；查询完成后仍需等待安全展示时机。");
                 try
                 {
                     List<UpdateInfo> externalUpdates = await CheckExternalAsync();
                     List<UpdateInfo> internalUpdates = await CheckInternalAsync();
+                    if (s_AutomaticStopping) return;
                     if ((externalUpdates == null || externalUpdates.Count == 0) && (internalUpdates == null || internalUpdates.Count == 0))
                     {
+                        CompleteAutomaticPresentation();
                         return;
                     }
-
-                    SkipConfig config = LoadConfig();
-                    List<UpdateInfo> filteredExternal = FilterSkippedUpdates(externalUpdates, false, config);
-                    List<UpdateInfo> filteredInternal = FilterSkippedUpdates(internalUpdates, true, config);
-                    if (filteredExternal.Count > 0 || filteredInternal.Count > 0)
-                    {
-                        CheckUpdateWindow.Open(filteredExternal, filteredInternal);
-                    }
+                    QueueAutomaticPresentation(externalUpdates, internalUpdates);
                 }
                 catch (Exception e)
                 {
+                    SetAutomaticCheckState("blocked", "本轮自动更新查询未完成；保留已有跳过记录，可从菜单手动检查。");
                     Log.Warning(LogTag.Editor, "CheckUpdate.CheckOnStartupAsync 检查更新失败: {0}", e.Message);
+                }
+                finally
+                {
+                    s_AutomaticQueryRunning = false;
                 }
             }
 

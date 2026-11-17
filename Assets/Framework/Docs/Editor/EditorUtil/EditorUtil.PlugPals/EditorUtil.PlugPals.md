@@ -91,6 +91,8 @@ public static Dictionary<string, string> ReadInstalledVersions()
 
 `packages-lock.json` 只表示 UPM 期望解析图，不再作为“已安装”证据。PlugPals 会联合核对 `manifest.json`、lock、Unity Registered Packages、`resolvedPath` 与实际 `package.json`：声明或锁定版本未形成有效注册包、注册包带解析错误、路径或元数据缺失、实际版本与 lock 不一致时，条目标记为 `ResolutionFailed`，不会显示成“已安装”。开发仓通过 manifest 直接声明的 `file:` 包是明确例外：只有引用目录真实存在且 `package.json` 包名、版本有效时才视为已安装，以兼容 `file:../Assets/Framework` 这类源码开发形态。
 
+lock 中 `local` / `embedded` 来源的 `file:` 值是目录引用，比较前会读取该目录的 `package.json` 并核对包名与版本。读取失败时保留原引用作为失败依据，不把有锁定记录的包当成未安装。有效内嵌包显示实际版本，并按 `NonRegistry` 处理；即使 manifest 仍声明仓库版本，也不提供仓库升级或加入一键升级。lock 中的 `local` / `git` 来源同样保留非仓库身份；真正的缺包、无效元数据与版本不一致仍显示解析失败。
+
 ### manifest 操作
 
 ```csharp

@@ -4,7 +4,7 @@
 
 ## 新项目开工准备
 
-新建项目先准备基础环境、固定启动资源和配置，跑通最小启动闭环，再开展依赖这些前置的业务制作。准备工作本身可以创建必要配置、预加载代码和占位资源；尚未开发的业务内容先明确来源与接入阶段，在开始消费它们前补齐，不能伪称已存在。已有工程仅核对本次相关项，不自动迁移启动架构。
+新建项目先准备基础环境、固定启动资源和本地配置，跑通最小启动闭环，再开展依赖这些前置的业务制作。前期没有 App 后台或服务器物料也必须遵守 [NA-002：先核对当前能力，再选择接口或提出补充](DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 的启动底线；App 远端服务可以未配置或失败，本地游戏仍须能启动。准备工作本身可以创建必要配置、预加载代码和真实可加载的占位资源；尚未开发的业务内容先明确来源与接入阶段，在消费前补齐。已有工程仅核对本次相关项，不自动迁移启动架构。
 
 ### Config、Pipify、PlugPals 基线
 
@@ -60,18 +60,18 @@ Android、iOS、WebGL 的完整本地打包 Batch 以当前 MainDemo 的全量�
 | --- | --- | --- |
 | 1 | `Nova.Persist.LoadAsync()` | 按目标平台准备受支持的持久化后端；任务完成不等于所有后端可读写，不把不支持的后端警告当成功。后续存取继续遵守 Component 消费边界，缺门面时准确报告缺口。 |
 | 2 | `Nova.Localization.LoadAsync()`，随后 `InitCurrentLanguageAsync()` | 准备产品文本、支持语言与字体，核对实际生效语言和必需文本/字体；启动面板自用的语言 JSON 不替代业务本地化。 |
-| 3 | `Nova.Network.LoadAsync()`，成功后等待 `Nova.Config.WaitForStartupAppConfigAsync(CancellationToken)` | 准备产品实际所需的 HostKey/NetCmd 并检查加载结果，再等待本次启动的唯一一轮 GM 拉取。GM 未配置、失败或超时沿用缓存/本地默认值继续；重复等待不重拉。网络表加载成功不证明服务器可用；离线玩法不能据此删除节点。启动拉取的超时、共享结果及取消边界见 [ConfigComponent](../Runtime/Modules/Config/ConfigComponent.md)。 |
+| 3 | `Nova.Network.LoadAsync()`，成功后等待 `Nova.Config.WaitForStartupAppConfigAsync(CancellationToken)` | 准备并正式加载本地网络配置，缺外部物料时不伪造 HostKey/NetCmd 或后台参数。GM 未配置、信息拉取/服务器连接失败或超时，按有限等待结束后沿用缓存/本地默认值继续；首次启动须有本地默认值，重复等待不重拉。网络表加载成功与服务器可用分别判断，离线不能删除节点。当前超时、共享结果及取消边界见 [ConfigComponent](../Runtime/Modules/Config/ConfigComponent.md)。 |
 | 4 | 等待 `Nova.SDK.InitializeTask` | 按公司产品及目标渠道要求确认启用清单和配置；全局任务完成、`IsInitialized` 均不代表所有插件成功。必需插件通过现有状态查询/等待接口核实为 `Ready`，服务及厂商行为另验。 |
 | 5 | `Nova.Table.LoadAsync()` | 准备产品权威表、正式数据/代码和加载映射；检查结果及必需表类型可查询，不能只看计数或流程完成。 |
 | 6 | `Nova.UI.LoadAsync()` | 准备注册表、UIGroup、Prefab、字体和绑定；核目标入口已注册且实际可打开，空注册表加载成功不能代替。 |
 | 7 | `Nova.Sound.LoadAsync()` | 准备声音表、音频、声音组和地址；核实际播放、停止与释放，不以空配置或请求编号当播放成功。 |
 | 8 | `Nova.Vibrate.LoadAsync()` | 保留振动数据初始化与平台能力判断。设备不支持时按 `IsSupported` 等真实能力分支处理并说明边界；不能删除整个节点或声称已有真实体感。 |
 
-标准动作、基础初始化成功、具体业务可用和上架/厂商验收分别判断。SDK 按已确认的公司产品与渠道清单接入，不照搬 MainDemo 全部演示插件；物料暂缺时按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 从各 Demo 复用所需临时物料，不将示例账号/密钥称为产品专有物料或正式上架通过。缺少产品清单、可用的专有/临时凭据或隐私前置时列为待准备，不擅自填空清单、关开关或假报完成。平台确无具体能力时，保留节点及其支持判断；只有用户明确改变产品范围才调整标准动作并记录影响，Agent 不自行以“单机/小游戏”裁减。
+标准动作、基础初始化成功、具体业务可用和上架/厂商验收分别判断。SDK 按已确认的公司产品与渠道清单接入，不照搬 MainDemo 全部演示插件；物料暂缺时按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 从各 Demo 复用所需临时物料，不将示例账号/密钥称为产品专有物料或正式上架通过。缺少产品清单、可用的专有/临时凭据或隐私前置时列为待准备，不擅自填空清单、关开关或假报完成。平台确无具体能力时，保留节点及其支持判断；只有用户明确改变产品范围才调整标准动作并记录影响，Agent 不自行以“单机/小游戏”裁减。 App 后台协议参数缺配按 NA-002 记录远端状态，不阻断本地启动；本地隐私密钥按 NA-014 首次准备并保留。
 
 业务预加载必须包含以下执行保护：
 
-1. **逐项检查结果**：检查实际版本所有 `UniTask<bool>` 返回值，`false` 进入失败分支；对无 bool 的任务、语言选择及 SDK 初始化，按该模块真实契约核结果。MainDemo 和其余 Demo 均检查六项 bool 与本地化实际生效语言；合法空配置或插件调度完成仍不代表产品实际所需内容及厂商服务可用。
+1. **逐项检查并分类结果**：检查实际版本所有 `UniTask<bool>` 和异常，不丢弃结果。必需本地加载失败进入对应故障处理；App 远端拉取、连接失败按 NA-002 记录并继续启动。对语言选择及 SDK 初始化，按该模块现有契约核结果；MainDemo 与各 Demo 专用的 SDK 就绪判断保留。合法空配置或调度完成不能证明具体服务可用。
 2. **真实输入与最小可用验证**：冻结八节点的配置/物料来源、公开调用和成功条件。具体内容探针放在对应模块或专项验收，不为通过检查把示例文本键、表名和字体标记变成通用启动门禁。按每个模块具体需求验证可用性；没有公开就绪属性时不编造，有依赖入口缺口时不通过 Manager、反射或假进度绕过。空配置合法与否按领域契约判断，合法空结果也不能证明产品所需能力已接入。
 3. **异步与失败收尾**：绑定本次进入的取消令牌和进入/尝试代次，关键等待后、失败回调、重试与 finally 均检查身份；禁止重复并发初始化和旧任务写回。进度只累计实际通过的步骤，全部通过才转入业务；失败、取消不得设全部完成。
 4. **按实际语义重试**：提供失败提示、可执行的恢复/重试和退出处理，收尾启动 UI。Persist、SDK 等共享任务可能缓存首次失败，再 await 不代表重新初始化；不存在安全重试入口时保留阻塞项，不发明 Reset API、死循环重试或跳过该项。
@@ -88,19 +88,19 @@ Android、iOS、WebGL 的完整本地打包 Batch 以当前 MainDemo 的全量�
 | 平台构建环境 | Android 的 SDK/NDK/JDK、IL2CPP 与 ABI，或本次目标的对应工具；实际使用的原生依赖解析和必要签名配置，不用另一平台的成功代替 | `nova-project-preflight-build`、`nova-project-resolve-android-dependencies`、构建 Skill |
 | 场景与显示 | canonical connected instance、唯一运行拓扑、启用场景和 Content 所有者；方向、设计分辨率、支持比例和安全区方案已确定 | `nova-project-setup-entry-scene`；[屏幕适配](../Runtime/Modules/UI/UIComponent.md#屏幕适配与安全区) |
 | 固定启动资源 | 三面板、字体/材质、闪屏贴图、所需启动语言 JSON 已导入并绑定；Resources 键唯一，启动前可读，无业务 DLL/Bundle 反依赖 | 启动场景 Skill 的固定资源分支；[资源工作流](RESOURCE_WORKFLOW.md) |
-| 权威配置 | 项目自有 ConfigMaster、正确 Platform × Channel × DevelopMode、正式导出的 ConfigRuntime、激活绑定和场景快照一致；App/Privacy/SDK 等参数逐项核对业务来源、格式及共享范围，不能把包名、游戏名或随机值当后台物料 | `nova-project-configure-runtime`、所选 SDK/Kit Skill；[App 参数来源](../Runtime/Modules/Config/AppConfigs.md#取值来源与格式) |
+| 权威配置 | 项目自有 ConfigMaster、正确 Platform × Channel × DevelopMode、正式导出的 ConfigRuntime、激活绑定和场景快照一致；本地隐私密钥按 NA-014 首次准备并保留，App 后台参数缺项如实保留，不猜造后台物料；这些 App 字段的缺配或格式问题不阻断本地导出与启动，SDK 参数按已选包现有契约核对 | `nova-project-configure-runtime`、所选 SDK/Kit Skill；[App 参数来源与当前限制](../Runtime/Modules/Config/AppConfigs.md#取值来源与格式) |
 | 表与业务物料 | 本阶段所需的权威表源、正式数据/代码导出、加载映射、UIGroup、Prefab、字体/图片/声音等已准备并绑定；配表沿用[官方或项目既有样式](RESOURCE_WORKFLOW.md#配表模板与样式)，占位物料也须实际可加载 | 对应表/UI/本地化/声音/振动 Operation，不手改生成物 |
-| 资源加载 | 实际 YooAsset Settings、Collector、Package、地址与所选运行模式相符；本地包/首包或远端内容满足该模式，不把 Editor 模拟当设备资源可用 | `nova-project-integrate-resource`、`nova-project-build-bundles` |
+| 资源加载 | 实际 YooAsset Settings、Collector、Package、地址与运行模式相符；前期没有服务器/CDN 时，为手机准备真正可用的随包/本地启动资源和 DLL，使首次启动不依赖下载，不把 Editor 模拟或旧缓存当设备资源可用 | `nova-project-integrate-resource`、`nova-project-build-bundles` |
 | 日常流水线（Pipify，必需） | 按[三工具基线](#configpipifyplugpals-基线) 完成工作区配对、项目 Batch 保存与授权范围内的实际运行；创建前只读参考当前 MainDemo 的相关 Batch，按目标适配步骤、顺序、参数和前置，不能把示例名称或顺序视为完整交付证明 | `nova-project-configure-pipeline`；[新项目的 Batch 参考](../Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.ConfigurationEditing.md#新项目的-batch-参考) |
 | 包管理（PlugPals，必需） | 按[三工具基线](#configpipifyplugpals-基线) 核实仓库配置、实际包查询与依赖解析；按任务需要自主选包，不照搬 Demo 全部依赖 | `nova-project-manage-upm-package`；安装授权按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) |
 | 业务入口与程序集 | asmdef、命名空间、生成 DLL、入口类型、Config 与加载地址分别匹配当前 `ProcedureLoadDll`；预加载有明确顺序、结果判定、取消及失败路径 | `nova-project-integrate-procedure`；配置/导出物由相应 Operation 承担 |
 | HybridCLR（必需） | 按[三平台构建与 HybridCLR 基线](#三平台构建与-hybridclr-基线)核对包、本地安装/版本、启用、业务程序集、完整 DLL/link 配置、资源映射及当前目标正式生成；不能以非热更方案或普通 APK 成功代替 | [HybridCLR 安装与验收](../Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md#hybridclr-安装与验收)；配置、Generate、DLL 刷新、Bundle/Player 各自 Operation |
 
-Agent 从工程读取可确定的路径、字段和值，在本轮说明中列出每项的 `已就绪 / 待准备 / 阻塞`、依据、负责 Skill/真实 Adapter、参数来源及依赖关系；具体平台能力限制单独记录，不把标准预加载模块整体标成“不适用”。项目专有物料暂缺时，按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 从 Nova 各 Demo 查找可用的临时配套物料，记录临时来源和后续替换位置，不因尚无专有物料直接停工。其他确实与目标无关的工程层级可以说明不适用。不要求用户逐字段填写，也不强制新增长期清单文件；产品及渠道清单之外的演示 SDK 不自动安装。临时来源也不能满足必需物料，或缺权限/安全执行通道时，停住依赖该项的阶段，继续独立准备工作，不能先绕过再补。
+Agent 从工程读取可确定的事实，分别列出本地启动项与外部服务项的 `已就绪 / 待准备 / 阻塞`、依据、负责 Skill/Adapter 和输入来源；App 后台待准备不能合并成整个项目启动阻塞。按 NA-014 复用可加载 Demo 素材、首次准备项目本地值，Demo 外部凭据按实际领域契约核对，注明临时用途和替换点。平台限制保留在节点内，不把整个预加载模块标为不适用；产品及渠道清单之外的演示 SDK 不自动安装。App 后台物料缺失只在相应远端操作上保留缺项；确缺本地启动资源、构建环境或安全执行通道时准确定位待修复/受阻步骤，不填假值或绕过合同。准备入口、Validator 或当前框架仍不能支持缺 App 后台物料启动时，交对应维护范围修复，不能把“必须先找真实后台物料”当成唯一方案。
 
 ### 开工放行与验收
 
-经 Unity 保存并读回配置、资源引用及正式导出结果，沿真实入口确认固定启动 UI 可加载/显示，按标准产品预加载基线逐项取得加载结果及必要可用性证据，再开展依赖业务。测试预加载时可以使用项目自有最小落点；它不代替后来正式业务入口和完整内容验收。只验证 UI/Sound、初始化请求已返回、安装按钮已点、进度条完成、目录存在或单独 APK 构建成功，都不能作为整套前置就绪的证明。
+经 Unity 保存并读回配置、资源引用及正式导出结果，沿真实入口确认固定启动 UI 可加载/显示，按标准产品预加载基线取得本地加载与服务状态证据，再开展依赖业务。新项目或启动容错变更按[缺外部物料的启动验收](VALIDATION.md#缺外部物料的启动验收) 分别验证 Editor 与目标手机：缺 App 后台物料、远端拉取或连接失败时仍完成本地加载，关闭 Loading 并进入可交互入口。测试预加载可使用项目自有最小落点，不替代后续正式业务及完整服务验收。仅 UI/Sound、初始化请求返回、进度完成或 APK 构建成功不能证明整套启动已通过。
 
 Editor 启动、目标 Player、真机、热更与外部服务分层报告；只有任务所需层级完整时才能称对应范围成功。必要预置内容仍缺失时，不得报告“环境全部准备完成”。新项目基础准备采用上述既有 Operation 组合，不另造一套注册、配置或资源管理器。
 
@@ -166,7 +166,7 @@ MainDemo 实际导入根下的 `PSD2UGUI/` 是随公开 MainDemo 提供的可选
 
 目录准备仅限当前清单所属的 `Assets/Samples/` 根下，拒绝越界、符号链接、非法相对路径及同名文件，通过 `AssetDatabase` 注册并核验目录，不覆盖已有文件，不修改工作区绑定。该限制只约束新目录准备，不扩展为旧字符串重写器的通用安全保证。单个失效清单只报告自身问题，不阻断其他有效 Sample。目录存在仅证明 Editor 模拟采集可访问该路径；缺少普通源资产仍是错误，必需 DLL 的生成、复制、正式资源构建与 Player/设备验收仍须独立完成。
 
-公开 Sample 的隐私密钥和厂商物料为脱敏占位值。开始 Play 前，需在当前 Platform × Channel × DevelopMode 的隐私配置填写自己的 AES-Key / AES-IV（UTF-8 各 16 字节），保存并导出运行时配置；目录恢复不豁免该初始化前提。隔离验收可以使用只属于临时工程的测试配置，但不能把测试密钥写回开发真源或随包发布，也不能把厂商占位值视为真实服务可用的证据。
+公开 Sample 资产中的隐私密钥和厂商字段可能为脱敏占位值；其他已声明 Demo 来源仍须按字段 Tooltip 和所属文档核对。Play 前在当前 Platform × Channel × DevelopMode 准备项目自有本地 AES-Key / AES-IV（UTF-8 各 16 字节），通过配置 Skill 的 `initialize-privacy-aes` 首次保存，再独立正式导出；不能要求先取得后台协议密钥，不能直接使用隐私占位值。隔离测试密钥不得写回开发真源或随包发布，项目已有有效密钥不得随意替换。外部 App 参数在本地导出时为非阻断字段提示，SDK Demo 保留现有初始化与就绪处理；目录、规范或静态检查仍不代替实际运行证据。
 
 `SampleVersionGuard` 的版本比较使用前三段数字，不是完整 SemVer 或 UPM lock 判断。某些实现按整个旧版本目录调用 `DeleteAsset`，其中可能包含同版其他 Sample 及用户改动，范围大于弹窗中提到的单个 Demo；确认前核对完整目标，失败不提供事务恢复。旧版删除询问与启动场景询问是两个独立动作，拒绝删除不表示后续不会再询问场景；场景文件存在也不证明其可运行。专用 PrefabBuilder、配置补齐或诊断桥同样只服务自己的固定 Sample，不是可泛化的任意反射/任意资产写入口。
 

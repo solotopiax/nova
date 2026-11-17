@@ -18,6 +18,18 @@ Custom 是全局键值列表，拒绝 dimensions，不做矩阵广播。Resource
 
 Privacy 初始 Key/IV 仍可逐步填写；原配置尚未同时具有 UTF-8 各 16 字节的有效凭据时，允许补齐，正式导出继续按现 Validator 校验。已有有效 Key/IV 的任一更换或清空通过 `patch-panels` 阻断，要求显式存档迁移契约。检查比较预演完成后的全部物理坐标，因此字段广播、合并维度和从空格初始化也不能覆盖其它坐标的既有有效凭据。相同 Key/IV、`PrivacyInfoConfig`、`InfoPlistUsageDescriptions` 等其它隐私字段保持可编辑；错误只报告固定 `privacy-key-rotation` 阶段，不回显凭据。
 
+### Privacy 本地密钥首次准备
+
+同一 `nova.project.config.patch-panels` 使用互斥 `operation="initialize-privacy-aes"`，只提供 `masterGuid` 与完整的 `privacyTarget={platform,channel,developMode,panel:"PrivacyConfigs"}`；`changes` 必须省略或 null，`configType` 及 fields/dimensions 均不接受。普通字段请求继续省略 operation/Privacy 目标；未知或空 operation 不回落普通分支。
+
+`CreatePrivacyInitializationChanges(master,target)` 只读核对当前 `PrivacyConfigsMask` 的完整物理同组，不补结构、不改掩码。所有组员必须有唯一槽且旧 pair 一致；UTF-8 各 16 字节的有效同组 pair 返回同值请求，最终无写入。未配置只接受空值及公开发布的精确占位 `YOUR_PRIVACY_AES_KEY / YOUR_PRIVACY_AES_IV`，逐字段核对；任意非占位旧值（包括 15/17 字节、仅一项有效）、未知 YOUR_ 文本或混合组均阻断，不能推定它们从未使用。
+
+Plan 只在一次性内存执行态生成 UTF-8 各 16 字节的无偏密码学随机可打印 ASCII，再复用普通 `BuildPreview` 冻结全部 AES 叶差异和完整 Master 文件/meta/语义摘要。现有锁、草稿保护、统一单资产保存和有效旧值保护全部保留。Execute 只使用原内存值重新预演，不再生成；提交前失败不写，开始保存后的失败沿原边界返回 partial 与脱敏 Receipt，不自动回滚或重放。重载丢失内存秘密后旧计划失效；Verify 仅核已执行 Receipt，不重建秘密、不写配置。CLR 字符串不能保证原地清零，执行后释放首次准备的内部字段请求引用。
+
+Plan 与 Receipt 同时冻结实际加载的 Editor 程序集完整名称和模块 MVID，并核对 `ConfigPatchPanelsAction`、`PanelEditing`（包含首次准备 partial）、`DesignTimeEditing`、`DimensionProjector`、`SerializedPropertyValues` 与 `ConfigMasterSO` 都来自该模块。预演结束、Execute 开始及保存前回调均重新核对；新首建 Receipt 的 Verify 也要求身份完整一致，变化或缺失会阻断且不写资产。既有普通字段 schema1 Receipt 没有新增身份字段时保留只读兼容；任何新 Execute 均须完整身份。这里冻结的是实际已加载代码，源码文件磁盘状态和真正编译重载的完成证据分别判断。
+
+首次准备不读取应用协议密钥、不读写玩家存档，也不要求后台物料。成功仅保存项目自有 Master；随后必须使用新 Plan 正式 `export-runtime` 并完成编译与所需 Editor/手机启动验收。导出器和 Runtime 均不隐式生成、轮换或回写密钥。
+
 该保护限定 `PanelEditing.BuildPreview` 与 `nova.project.config.patch-panels`；ConfigWindow 手动编辑及共享 `SaveWorkingCopy` 的现有行为保持。需要保留旧数据的 Key/IV 轮换使用同一存档 Skill 的独立[Privacy协调分支](../EditorUtil.AgentActions/EditorUtil.AgentActions.PersistenceMaintenance.md)，限定当前macOS Editor标准三存储与当前Privacy组、正规Master保存/Runtime导出及独立恢复，不使用普通配置入口替代迁移。通用 settings Action 已拒绝整个 ConfigMasterSO/ConfigRuntimeSO，不能旁路编辑 Runtime Privacy。
 
 ## 已登记内嵌 Store 引用
@@ -32,4 +44,4 @@ Plan 冻结文件、meta、完整序列化状态及精确物理写集，输入�
 
 Verify 只读核对目标文件/meta 与完整语义状态；不归一、保存或导出。Master 保存成功仅证明设计态状态，运行快照、编译、实际业务、平台及厂商结果分别验收。Config 导出依当前 Active BuildTarget，面板设计态编辑可指向其它真实平台坐标。
 
-源码：[PanelEditing](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.cs)、[Inspect Handler](../../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/ConfigInspectPanelAction.cs)、[Patch Handler](../../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/ConfigPatchPanelsAction.cs)。
+源码：[PanelEditing](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.cs)、[Privacy 首次准备](../../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.PanelEditing.PrivacyInitialization.cs)、[Inspect Handler](../../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Inspect/ConfigInspectPanelAction.cs)、[Patch Handler](../../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Ensure/ConfigPatchPanelsAction.cs)。

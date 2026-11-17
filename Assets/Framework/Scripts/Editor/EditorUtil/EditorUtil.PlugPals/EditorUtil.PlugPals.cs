@@ -126,9 +126,11 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 从 packages-lock.json 读取期望解析版本；该结果只用于识别解析图与实际注册状态不一致。
             /// </summary>
-            /// <returns>包名到锁定版本的字典，读取失败返回 null。</returns>
-            private static Dictionary<string, string> ReadLockedVersions()
+            /// <param name="lockData">同次读取的来源与依赖信息，供展示链核对内嵌等非仓库来源。</param>
+            /// <returns>包名到锁定版本的字典；目录引用无法读取时保留原引用用于报错，锁文件读取失败返回 null。</returns>
+            private static Dictionary<string, string> ReadLockedVersions(out PackagesLockData lockData)
             {
+                lockData = null;
                 string lockPath = Util.SysIO.Path.Combine(Application.dataPath, "../", "Packages/packages-lock.json");
                 string fullLockPath = Util.SysIO.Path.GetFullPath(lockPath);
 
@@ -137,7 +139,6 @@ namespace NovaFramework.Editor
                     return null;
                 }
 
-                PackagesLockData lockData;
                 try
                 {
                     string json = Util.SysIO.File.ReadAllTextSync(fullLockPath);
@@ -165,10 +166,7 @@ namespace NovaFramework.Editor
                     }
 
                     string version = ResolveEntryVersion(packageName, entry);
-                    if (!string.IsNullOrEmpty(version))
-                    {
-                        versions[packageName] = version;
-                    }
+                    versions[packageName] = string.IsNullOrEmpty(version) ? entry.version : version;
                 }
 
                 return versions;
@@ -183,7 +181,7 @@ namespace NovaFramework.Editor
             public static List<PackageDisplayEntry> BuildDisplayEntries(VerdaccioPackageInfo[] remotePackages, string registryUrl)
             {
                 Dictionary<string, string> installedVersions = ReadInstalledVersions();
-                Dictionary<string, string> lockedVersions = ReadLockedVersions();
+                Dictionary<string, string> lockedVersions = ReadLockedVersions(out PackagesLockData lockData);
                 ManifestData manifest = ReadManifest(Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(Application.dataPath, "../", c_ManifestRelativePath)));
                 if (installedVersions == null || lockedVersions == null || manifest == null)
                 {
@@ -204,7 +202,8 @@ namespace NovaFramework.Editor
                     string lockedVersion = null;
                     lockedVersions.TryGetValue(remote.Name, out lockedVersion);
                     bool isDirectDependency = manifest.dependencies?.ContainsKey(remote.Name) == true;
-                    bool isNonRegistry = IsNonRegistryReference(remote.Name, manifest);
+                    lockData.dependencies.TryGetValue(remote.Name, out PackagesLockEntry lockEntry);
+                    bool isNonRegistry = IsNonRegistryReference(remote.Name, manifest, lockEntry);
                     PackageStatus status = ResolvePackageStatus(localVersion, lockedVersion, isDirectDependency, remote.Version, isNonRegistry);
 
                     entries.Add(new PackageDisplayEntry
@@ -263,7 +262,7 @@ namespace NovaFramework.Editor
             /// </summary>
             /// <param name="local">本地版本（null 表示未安装）。</param>
             /// <param name="remote">远程最新版本。</param>
-            /// <param name="isNonRegistry">是否为非仓库引用（git/file:）。</param>
+            /// <param name="isNonRegistry">是否为非仓库来源（含 local/git/embedded）。</param>
             /// <returns>包安装状态。</returns>
             public static PackageStatus CompareVersions(string local, string remote, bool isNonRegistry)
             {

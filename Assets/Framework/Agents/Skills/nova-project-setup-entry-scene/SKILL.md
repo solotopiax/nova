@@ -28,7 +28,7 @@ description: Use when 项目组要检查或配置 Nova 项目的启动场景、B
 
 固定启动 Resources 的 Splash/Progress/Dialog 使用独立 CanvasScaler，须按产品声明的横屏或竖屏核对与调整；玩法 UIComponent 不自动适配启动面板。按[逐页适配](../../../Docs/Runtime/Modules/UI/UIComponent.md#从启动到玩法的逐页适配)覆盖启动实际显示，背景和关键内容分别布局；完整产品验收交接玩法、暂停/结算等后续页面，不默认要求另一方向，不把固定资源存在或单页截图当作全流程适配完成。
 
-新游戏同时按 [Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线) 冻结并落实 MainDemo 八项标准动作；场景和三启动面板就绪不等于产品基线就绪。检查 `startupPreparationInventory` 中八节点的来源、配置与物料、成功条件和验证状态；不因单机或体量小只保留直接使用的模块，平台限制在节点内按真实能力处理。业务预加载代码交 integrate-procedure，缺项交对应 Operation，不能在场景步骤擅自省略或将未完成项标成不适用。
+新游戏同时按 [Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#标准产品预加载基线) 落实 MainDemo 八项动作；场景和三面板存在不等于基线就绪。`startupPreparationInventory` 区分本地启动配置/资源、外部物料状态与各自验证，不因单机省略模块，也不因缺 App 后台参数阻断本地入口。按[缺外部物料的启动验收](../../../Docs/Onboarding/VALIDATION.md#缺外部物料的启动验收) 核 Editor 并交接目标手机：没服务器时准备真正随包/本地可用的启动资源与 DLL，不能依赖 Editor 模拟或旧缓存。业务预加载交 integrate-procedure，其余缺项交对应 Operation，不在本场景步骤修改框架或扩大设备操作权限。
 
 来源未正式导入时，先独立冻结 `sampleImportWriteSetAndEffects`：官方 MainDemo 来源、准确导入目录/文件、编译和自动导入辅助工具的已知写入及弹窗范围。按实际授权执行并读回，再进入资源复制；不能用“三面板复制”授权暗含整套 Sample 导入。无法冻结副作用时保持该来源缺口，不修改缓存或用 Sample 专用自动配置覆盖工程。
 

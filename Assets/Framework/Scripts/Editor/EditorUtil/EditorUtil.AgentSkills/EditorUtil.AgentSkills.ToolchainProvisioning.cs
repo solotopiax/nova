@@ -238,7 +238,7 @@ namespace NovaFramework.Editor
                 }
             }
 
-            /// <summary>通过已核验的 Unity CLI 安装当前工程缺失的 Pipeline，不替换 Coplay 或其他依赖。</summary>
+            /// <summary>补齐当前工程缺失的 Pipeline，并通过带项目身份的只读 Editor 状态确认 CLI 连接。</summary>
             /// <param name="context">包含实际注册状态的工程快照。</param>
             /// <param name="unity">通过版本核验的 CLI；缺失时不执行。</param>
             /// <param name="items">接收安装声明和待重载结果。</param>
@@ -252,23 +252,11 @@ namespace NovaFramework.Editor
                     if (!string.IsNullOrEmpty(unity))
                     {
                         HostProvisioningProcessResult connection = RunHostProvisioningProcess(context, unity,
-                            new[] { "command", "--project-path", context.ProjectRoot, "--limit", "1", "--timeout", "10", "--non-interactive", "--format", "json" },
+                            new[] { "command", "editor", "status", "--project-path", context.ProjectRoot, "--result-only", "--timeout", "10", "--non-interactive", "--format", "json" },
                             15000, cancellationToken);
-                        bool connected = false;
-                        try
-                        {
-                            JToken response = JToken.Parse(connection.Stdout);
-                            connected = connection.Success && !connection.OutputTruncated && response is JObject document
-                                && (bool?)document["success"] == true && document["error"] == null
-                                && string.Equals(Path.GetFullPath((string)document["data"]?["target"]?["projectPath"] ?? "")
-                                        .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                                    Path.GetFullPath(context.ProjectRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                                    context.Windows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
-                        }
-                        catch (Exception) { }
-                        items.Add(new ToolchainItem("unity-cli-binding", "Unity CLI 与当前项目连接", connected ? "success" : "partial",
-                            connected ? "已限定当前工程路径，通过只读命令清单实际连接 Editor。"
-                                : "项目连接包已注册，正在等待 Unity CLI 与本 Editor 建立连接；将自动重试。"));
+                        // 命令清单可能在未连接 Editor 时也成功，不能把清单或退出码当作项目连接证据。
+                        items.Add(InspectHostUnityCliBinding(context.ProjectRoot, context.Windows, connection.ExitCode,
+                            connection.TimedOut, connection.OutputTruncated, connection.Stdout));
                     }
                     return;
                 }

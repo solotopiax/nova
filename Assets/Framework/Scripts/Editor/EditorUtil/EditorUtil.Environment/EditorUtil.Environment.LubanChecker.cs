@@ -222,6 +222,7 @@ namespace NovaFramework.Editor
                 /// 强制重新检查（忽略缓存）。
                 /// </summary>
                 /// <returns>最新的环境检查结果。</returns>
+                [EnvironmentCheck]
                 public static EnvironmentCheckResult Recheck()
                 {
                     SessionState.SetBool(c_SessionKeyReady + "_cached", false);

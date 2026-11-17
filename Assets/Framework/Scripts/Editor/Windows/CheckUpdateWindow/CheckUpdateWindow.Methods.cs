@@ -58,6 +58,32 @@ namespace NovaFramework.Editor
             s_Instance.Repaint();
         }
 
+        /// <summary>自动结果只创建普通非模态窗口；不进入手动 utility 入口，也不覆盖用户已有窗口的选择。</summary>
+        /// <param name="externalItems">已完成查询并按当前状态筛选的公网结果。</param>
+        /// <param name="internalItems">已完成查询并按当前状态筛选的内部结果。</param>
+        /// <returns>本轮实际显示时为 true；已有窗口仍在使用时为 false，调用方保留队列等待。</returns>
+        internal static bool TryOpenAutomatic(List<EditorUtil.CheckUpdate.UpdateInfo> externalItems, List<EditorUtil.CheckUpdate.UpdateInfo> internalItems)
+        {
+            if (Resources.FindObjectsOfTypeAll<CheckUpdateWindow>().Length != 0) return false;
+            CheckUpdateWindow window = CreateInstance<CheckUpdateWindow>();
+            window.titleContent = new GUIContent(c_WindowTitle);
+            window.minSize = new Vector2(c_MinWidth, c_MinHeight);
+            window.m_ExternalItems = externalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
+            window.m_InternalItems = internalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
+            window.m_Items = MergeItems(window.m_ExternalItems, window.m_InternalItems);
+            window.m_IsChecking = false;
+            window.m_DontShowAgain = false;
+            s_Instance = window;
+            try { window.Show(); }
+            catch
+            {
+                s_Instance = null;
+                DestroyImmediate(window);
+                throw;
+            }
+            return true;
+        }
+
         /// <summary>
         /// 异步执行版本检查并在主线程刷新窗口。
         /// </summary>

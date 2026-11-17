@@ -1,5 +1,7 @@
 # CheckUpdateWindow
 
+启动时的自动提示由[更新检查工具](../EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md)排队：编译、导入、当前工具链安装及重要声明人工确认期间等待，已查询结果跨重载恢复，真正显示前再读取当前版本和跳过记录。自动入口 `TryOpenAutomatic` 只创建普通非模态 `Show` 窗口；已有更新窗口时继续等待，不覆盖用户选择。手动 `Open()` 与带结果的 `Open(...)` 保持原有语义，窗口关闭时才保存用户明确勾选的跳过选择。
+
 **类签名**：`public sealed partial class CheckUpdateWindow : EditorWindow`
 **命名空间**：`NovaFramework.Editor`
 **菜单入口**：`Nova/Open Check Update`

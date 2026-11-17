@@ -102,6 +102,7 @@
     "文件、场景对象路径或日志位置",
     "已验证事实、推断与未验证项的分级",
     "WebGL current page/build identity and earliest loader→Wasm/data→Unity→Nova failure; existing Console/Network/response MIME/encoding/thread-isolation evidence and missing host browser capability separate",
-    "Editor分支分别记录模态阻塞、普通设置窗口、正常忙碌、编译失败和进程故障的直接证据或未知项；窗口处置/关闭提示不代表底层错误已修复，不能无证据将重启归因弹窗。"
+    "Editor分支分别记录模态阻塞、普通设置窗口、正常忙碌、编译失败和进程故障的直接证据或未知项；窗口处置/关闭提示不代表底层错误已修复，不能无证据将重启归因弹窗。",
+    "按NA-002区分App远端失败日志与真正启动阻塞，定位App后台缺配下的校验或远端无限等待；分别报告Editor/目标手机实际证据、缺口与本地配置/资源/DLL故障，不在只读诊断中修复、填假凭据或关闭模块。"
   ]
 }

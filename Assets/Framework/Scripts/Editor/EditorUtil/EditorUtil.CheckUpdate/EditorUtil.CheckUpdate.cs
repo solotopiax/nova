@@ -21,22 +21,22 @@ namespace NovaFramework.Editor
         public static partial class CheckUpdate
         {
             /// <summary>
-            /// Editor 启动钩子：延迟一帧后 fire-and-forget 执行启动时版本检查。
+            /// Editor 启动钩子：重载后恢复待展示结果，再安排安全时机的启动检查。
             /// </summary>
             [InitializeOnLoad]
             private static class Initializer
             {
                 static Initializer()
                 {
-                    // 延迟一帧等待 Editor 完全就绪后再触发检查，避免阻塞域重载
+                    // 等初始化钩子注册完毕，再由 update 核对安装和重要声明状态。
                     EditorApplication.delayCall += OnDelayedStart;
                 }
 
+                /// <summary>只安排自动检查；已查询的待展示结果跨重载复用，不直接打开窗口。</summary>
                 private static void OnDelayedStart()
                 {
                     EditorApplication.delayCall -= OnDelayedStart;
-                    // fire-and-forget：异常已在 CheckOnStartupAsync 内部静默处理
-                    _ = CheckOnStartupAsync();
+                    QueueAutomaticStartupCheck();
                 }
             }
         }

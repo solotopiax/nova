@@ -70,19 +70,26 @@ namespace NovaFramework.Editor
             { 50, "UnityEditor.PackageManager.UI.Internal.AssetDatabaseProxy+AssetPostprocessor" },
             { 51, "UnityEditor.Experimental.EditorResources+StyleCatalogPostProcessor" },
             { 52, "UnityEditor.SpeedTreePostProcessor" },
+            { 54, "Unity.AI.Assistant.Editor.GraphRefreshPostprocessor" },
+            { 55, "Unity.AI.Assistant.Editor.SkillsProjectAssetPostprocessor" },
+            { 56, "UnityEditor.Rendering.Universal.MaterialPostprocessor" },
+            { 57, "UnityEditor.Rendering.Universal.UniversalRenderPipelineGlobalSettingsPostprocessor" },
+            { 58, "Unity.AI.Animate.Components.AnimateLoop+AssetReferenceReimportMonitor" },
+            { 59, "Unity.AI.Animate.Services.Stores.Actions.AssetReferenceReimportMonitor" },
+            { 60, "Unity.AI.Assistant.Editor.TrackSelectedAssetsProcessor" },
+            { 61, "Unity.AI.Generators.UI.ScaleToFitObjectFieldImage+AssetReferenceReimportMonitor" },
+            { 62, "Unity.AI.Image.Services.Stores.Actions.AssetReferenceReimportMonitor" },
+            { 63, "Unity.AI.Mesh.Services.Stores.Actions.AssetReferenceReimportMonitor" },
+            { 64, "Unity.AI.Pbr.Services.Stores.Actions.AssetReferenceReimportMonitor" },
+            { 65, "Unity.AI.Search.Editor.Knowledge.AssetChangeDetector" },
+            { 66, "Unity.AI.Sound.Components.SoundEnvelope+AssetReferenceReimportMonitor" },
+            { 67, "Unity.AI.Sound.Services.Stores.Actions.AssetReferenceReimportMonitor" },
+            { 68, "Unity.InferenceEngine.Editor.Visualizer.Editor.ModelAssetProcessor" },
+            { 69, "Unity.PlasticSCM.Editor.AssetUtils.Processor.UVCSAssetPostprocessor" },
         };
         private static readonly Dictionary<string, string[]> s_Modules = new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
-            { "Unity.Timeline.Editor.dll", new[] { "06207e491fde41d6348bf400dbfecc889fd48d6d7dd7ab0cbbb623af92219ffc", "5fcf00c2-be8c-4b4a-9e7d-45bdcbac5861" } },
-            { "Unity.TextMeshPro.Editor.dll", new[] { "25384482a1f8c12f38ca475d59c9b0eb7eef8d7d48b2d8a51f0e3c63d6c6f3c9", "6cc3a159-b8f4-44bd-a27b-1abb18b89c13" } },
-            { "Unity.ShaderGraph.Editor.dll", new[] { "0ae624838ae217a0a8cf24e88273c070d9c67c63cc55f2a8b5beb3e079096448", "4cf747a4-8249-4b1a-ab13-0e353d8e2706" } },
-            { "Unity.InputSystem.dll", new[] { "7f255bd4a489c9188dcc11b3089efd084fed86e4aa77f1c2a6f0bb9652aa6817", "3d4dabe8-0d94-486c-be32-6c4cdbcf664b" } },
             { "Unity.Cinemachine.Editor.dll", new[] { "1c542cfc4c5e4606d914c9477ec7d92538724e3acdb18441f223de7ce1e2477e", "24c33adf-41d7-41de-8efb-ee04c90b791c" } },
-            { "Unity.2D.Tilemap.Editor.dll", new[] { "fa153a745d260c6ad2ee51dfc7e8de0db3a522037576cb210ea44d0b71920741", "0463dda6-b969-4326-9533-be27a1a86375" } },
-            { "Unity.2D.SpriteShape.Editor.dll", new[] { "7bb139ef38e254a9c723eeb31468407d5ad36b09d1bfc11ad52ac4e08937d9f3", "a2e981e0-e622-416b-9b00-2fafc115be7b" } },
-            { "Unity.2D.Sprite.Editor.dll", new[] { "454461173bc76dabc86e5e080d62b5ec09354766d4f9bbdf358be20fc56dfa73", "fa0aab0e-90a0-4fde-a3bb-17b84de8cc6f" } },
-            { "Unity.2D.Psdimporter.Editor.dll", new[] { "01868ff68015d822b4a85091cc5f901a05987e7ebc6e08fa241bb5d2a745c7ae", "6c8f3c84-5a7f-4493-8341-153aff5f36b4" } },
-            { "Unity.2D.Animation.Editor.dll", new[] { "e13301a8f8e89c401657147e4093c497637f5ed9db38aab60d73b1a44ec1dc60", "4ee3f94f-93e0-40dc-a96a-1a39bb6e26f2" } },
             { "DA_Assets.DM.dll", new[] { "c845543e1f8ce98854671ed57a61c4b693198240c7a517ed72b5ad6e5db9af8a", "12c350c2-9bf8-4673-b1e4-0ab28cff2db8" } },
             { "UnityEditor.UIElementsModule.dll", new[] { "9bb68962a197695dc9cf12c37c38b3f5679304c6496e4655d6287319bd8b8b10", "d572b22f-1d90-4477-9407-b36592117da9" } },
             { "UnityEditor.UIBuilderModule.dll", new[] { "e0217163f769359511b9e738e055a6d0634d8f62859233f36355b81f71abce13", "81f60ad4-dc3c-4e56-8651-c0c682addd9d" } },
@@ -92,7 +99,6 @@ namespace NovaFramework.Editor
             { "UnityEditor.MultiplayerModule.dll", new[] { "d88ea26d238062106c0afc145109c0f42ff291dc931ce28cb95f7f6def7914fe", "fe5e1b6f-1d28-4908-9514-1197f4df0b92" } },
             { "UnityEditor.GraphToolkitModule.dll", new[] { "a6ab78cb6935564242fedc8c32e97ca301678594283684b00d659a766a1c42d6", "278bf535-ccd3-4fe5-a5d5-3d10d1431c76" } },
             { "UnityEditor.CoreModule.dll", new[] { "14a25302095cb3c648b4b83b9936ba2df10454ae254da6440a1a968395f2d581", "11f76f7e-1291-4a87-8174-9af3fa5b621a" } },
-            { "Unity.2D.SpriteShape.Runtime.dll", new[] { "3f5a9b0cfd5bd4a9de99e5f91dcba02dd7c4d2cfbe8df90ddb206cc41995d09e", "5ad586ac-e82a-4f83-8098-0619e0ca8f32" } },
             { "UnityEngine.CoreModule.dll", new[] { "25281ab07e11130a45ede1e02cf3003666f9616cca68ae8ab9637f0ccffa33ad", "e816434e-022e-42a6-bec8-8f93bd4bf5e5" } },
             { "UnityEditor.SceneViewModule.dll", new[] { "2d040f01b4c99da98e80664f10178c90bbe8613857a3671ff3ce428f977943bd", "21baec1f-5f0c-448b-ae43-a99daca1271f" } },
         };
@@ -125,7 +131,7 @@ namespace NovaFramework.Editor
         {
             "Trail Renderer/Bounds", "Trail Renderer/Shape Gizmos", "Cloth/Brush Color 2",
             "Cloth/Self or Inter Collision Particle Color 2", "Cloth/Unselected Self or Inter Collision Particle Color 2",
-            "Cloth/Selected Self or Inter Collision Particle Color 2"
+            "Cloth/Selected Self or Inter Collision Particle Color 2", "Scene/Grid Component"
         };
         private static readonly string[] s_ColorMaterializationKeys = s_ClipboardColorKeys.Concat(s_ApprovedPendingColorKeys).ToArray();
         private static readonly string[] s_LightingColorKeys =
@@ -142,7 +148,7 @@ namespace NovaFramework.Editor
         };
 
         /// <summary>
-        /// 父合同已绑定该回调整个DLL、MVID与原始源码，并保证同域、无脚本变更的精确模板刷新后调用。
+        /// 父合同已绑定该回调真实来源、完整编译输入与当前DLL/MVID，并保证同域、无脚本变更的精确模板刷新后调用。
         /// exactPaths须包含导入、删除、移动两端、父目录、meta与新增路径；null表示已证明自然支路，字符串说明真实阻断。
         /// 允许的派生内存及编辑器UI初始化须与DeclaredEffects一起冻结；不得将null解释成所有内存逐字节不变。
         /// </summary>
@@ -150,8 +156,9 @@ namespace NovaFramework.Editor
         /// <param name="type">已加载且需要核对的实际类型元数据。</param>
         /// <param name="exactPaths">本轮完整精确路径域，包含主资产、meta 和可能触及的父目录。</param>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
+        /// <param name="provenHostDomain">仅父合同已核回调摘要相等时复用正常初始化宿主见证。</param>
         /// <returns>自然分支已证明时返回 null；否则返回精确阻断原因。</returns>
-        internal static string Check(int id, Type type, string[] exactPaths, CancellationToken token)
+        internal static string Check(int id, Type type, string[] exactPaths, CancellationToken token, string provenHostDomain = null, bool independentAiStores = false, bool independentUvcs = false)
         {
             token.ThrowIfCancellationRequested();
             if (!s_Names.TryGetValue(id, out string name) || type == null || type.FullName != name)
@@ -241,9 +248,10 @@ namespace NovaFramework.Editor
                         VerifyModule(typeof(UnityEngine.Rendering.SplashScreen), token);
                         return UnityEngine.Rendering.SplashScreen.isFinished ? null : "SplashScreen尚未完成，Stop不是幂等支路";
                     case 44:
-                        VerifyModule(typeof(UnityEngine.Rendering.GraphicsSettings), token);
-                        return UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline == null ? null :
-                            "当前RenderPipeline非null，可能重建GlobalSettings";
+                        if (!AndroidResolveUrpRefreshContract.TryCapture(token, out var pipelineState, out string pipelineError)) return pipelineError;
+                        return pipelineState.Pipeline == null || !AndroidResolveUrpRefreshContract.WouldRecreateGlobalSettings(exactPaths,
+                            pipelineState.GlobalSettingsRegistered, pipelineState.GlobalSettingsPath) ? null :
+                            "当前模板路径会触发RenderPipeline全局配置重建；不在受管模板写集内。";
                     case 45:
                         return HasSuffix(exactPaths, ".mixer") ? "AudioMixer回调命中mixer路径" : null;
                     case 46:
@@ -264,6 +272,19 @@ namespace NovaFramework.Editor
                     case 52:
                         // 整Core DLL中该老SpeedTree回调只遍历imported并判.st，再读取SpeedTreeImporter；本域不含此后缀。
                         return HasSuffix(exactPaths, ".st") ? "旧SpeedTree回调命中st输入，可能修补纹理sRGB" : null;
+                    case 54:
+                        return CheckAssistantGraph(GenerateActionCommon.ProjectRoot);
+                    case 55:
+                        return CheckAssistantSkills(exactPaths, token, provenHostDomain);
+                    case 56:
+                        object pendingSave = ReadStatic(type, "s_NeedsSavingAssets");
+                        if (!(pendingSave is bool needsSave)) return "URP Material待保存字段身份未知。";
+                        return CheckUrpMaterialState(exactPaths, needsSave);
+                    case 57:
+                        return exactPaths.Contains("ProjectSettings/GraphicsSettings.asset", StringComparer.Ordinal) ?
+                            "URP GlobalSettings回调命中图形设置；可能创建或迁移配置" : null;
+                    case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69:
+                        return AndroidResolveDefaultPackageCallbacks.TryCapture(id, type, token, out _, out string defaultError, independentAiStores, independentUvcs) ? null : defaultError;
                     default:
                         return "该回调没有本外围合同";
                 }
@@ -283,17 +304,28 @@ namespace NovaFramework.Editor
                 case 16: return "首次InputActionAssetPostprocessor初始化三个空路径List";
                 case 19: return "首次CinemachineSettings初始化Logo/滚动坐标及固定绘制委托；同域回调不注册Hierarchy处理器";
                 case 20: return "GridPaletteBrushes.s_RefreshCache=true；可创建无FilePath的空Brush/State单例；空brush列表清空并置State刷新flag；State首次OnEnable只注册四个固定UI事件";
-                case 21: return "可初始化L10n字符串缓存、空clipboard List及三个PrefColor注册（callback自身不调用Load）；后续自然Load仅复制现有cache或对固定九key（本三key+当前六个已审pending）执行已冻结同字节SetString；RectTransform与Overlay订阅由实际key过滤返回；现存Lighting内容仅以七个已加载PrefColor刷新四个固定Shader全局色、Handles GI三色与m_LastKnownColorSpace，不命中色块UI；完整已审pending可物化/清空；无现存clipboard，不触其后续预览重置";
+                case 21: return "可初始化L10n字符串缓存、空clipboard List及三个PrefColor注册（callback自身不调用Load）；后续自然Load仅复制现有cache或对固定已审key（本三key及当前实际已审pending）执行已冻结同字节SetString；RectTransform与Overlay订阅由实际key过滤返回；现存Lighting内容仅以七个已加载PrefColor刷新四个固定Shader全局色、Handles GI三色与m_LastKnownColorSpace，不命中色块UI；完整已审pending可物化/清空；无现存clipboard，不触其后续预览重置";
                 case 22: return "GridPalettes派生缓存=null；可创建无FilePath的空单例；不发palettesChanged事件";
                 case 28: return "工厂缓存可在主域或ImportWorker从null自然初始化；唯一无cctor/空ctor工厂生成四项表并缓存两类attribute方法元数据，绝不调用provider方法";
                 case 30: case 31: return "首次编译器lambda/Builder初始化只创建空集合或固定委托缓存";
                 case 36: return "PlayMode s_AllConfigs=null；AssetsChanged无订阅";
                 case 39: return "GraphViewEditorWindow首次cctor创建空窗口List/反射UI缓存，并注册唯一固定Console双击闭包；不自动触发双击委托";
                 case 40: return "每个精确SceneViewStageHandling.AssetsChangedOnHDD只将自身m_BreadcrumbInitialized=false，保持SceneView/StateCache/BreadcrumbBar/Stage对象与事件身份不变";
+                case 44: return "空管线或已审URP的纯pipelineType及原生全局配置路径未命中时自然返回；管线/全局配置/材质升级设置与当前编译身份保持不变，不重建管线";
                 case 45: return "首次AudioMixerWindow仅缓存两个常量key，相关lambda仅缓存固定委托";
                 case 47: return "MPE首次初始化false标记与空字符串数组；不安排EmitRefresh";
                 case 49: return "ImportActivity首次仅初始化静态UI常量；无窗口时不安排delayCall";
                 case 50: return "PageRefreshHandler只更新RefreshOptions[64]的内存timestamp；AssetStore imported cache与packages保持不变，不执行全量RefreshImportedAssets";
+                case 54: return "仅Library/AI.CoreGraph不存在时自然返回；已存在会派发异步pending写入，继续阻断";
+                case 55: return "仅不命中SKILL.md和已登记项目Skill目录的两层路径时自然返回，不触发扫描";
+                case 56: return "非mat输入且无pending保存时不进入材质升级；首次类型初始化仅创建路径集合与固定升级委托数组，两个路径集合保持不变";
+                case 57: return "同域且不命中GraphicsSettings.asset时不调用GlobalSettings.Ensure";
+                case 58: case 61: case 66: return "已自然初始化的AI组件集合为空，不重载引用或预览";
+                case 59: case 62: case 63: case 64: case 67: return "AI Store由独立角色合同核缺省冷态或已有空状态；只有真实导入可自然创建已冻结角色，不授予设置保存、生成或网络任务";
+                case 60: return "AI Assistant删除事件无订阅，不修改跟踪资产";
+                case 65: return "已有AI Search配置未启用，不进入异步知识队列/依赖扫描";
+                case 68: return "无Inference模型可视化窗口，不重建模型图";
+                case 69: return "UVCS回调已自然初始化且未启用/无工作区处理器，不消费保存队列或发起版本控制操作";
                 default: return "已审路径/类型/空事件自然支路，无持久资产或设置写入";
             }
         }
@@ -326,7 +358,7 @@ namespace NovaFramework.Editor
         /// <param name="checkedIds">已实际参与且对应 Check 通过的外围回调编号。</param>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
         /// <returns>包含稳定语义和同域弱身份的可序列化快照。</returns>
-        internal static StableSnapshot CaptureStableSnapshot(int[] checkedIds, CancellationToken token)
+        internal static StableSnapshot CaptureStableSnapshot(int[] checkedIds, CancellationToken token, bool independentAiStores = false, bool independentUvcs = false)
         {
             if (checkedIds == null) throw new ArgumentNullException(nameof(checkedIds));
             var rows = new List<string>();
@@ -402,6 +434,13 @@ namespace NovaFramework.Editor
                         }
                         break;
                     case 46: add("clips:event", ReadStatic(type, "ReferencedClipsChanged")); break;
+                    case 44:
+                        if (!AndroidResolveUrpRefreshContract.TryCapture(token, out var pipelineState, out string pipelineError))
+                            throw new InvalidOperationException(pipelineError);
+                        add("pipeline:asset", pipelineState.Pipeline);
+                        add("pipeline:materialSettings", pipelineState.MaterialSettings);
+                        add("pipeline:stableInputs", pipelineState.Fingerprint);
+                        break;
                     case 50:
                         object container = Singleton(Owner("UnityEditor.PackageManager.UI.Internal.ServicesContainer", token), token);
                         add("upm:container", container);
@@ -434,6 +473,31 @@ namespace NovaFramework.Editor
                                     foreach (string field in new[] { "productId", "packageVersion", "packageName", "assetPath", "uploadId" })
                                         add(prefix + field, ReadInstance(origin, field));
                             }
+                        }
+                        break;
+                    case 54:
+                        add("assistant:graphExists", Directory.Exists(Path.Combine(GenerateActionCommon.ProjectRoot, "Library", "AI.CoreGraph")));
+                        break;
+                    case 55:
+                        string[] skillPaths = ReadAssistantSkillPaths(token);
+                        foreach (string path in skillPaths.OrderBy(value => value, StringComparer.Ordinal)) add("assistant:skill", path);
+                        break;
+                    case 58: case 59: case 60: case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69:
+                        if (!AndroidResolveDefaultPackageCallbacks.TryCapture(id, type, token, out var defaultState, out string defaultError, independentAiStores, independentUvcs))
+                            throw new InvalidOperationException(defaultError);
+                        add("default:" + id + ":state", defaultState.Digest);
+                        for (int index = 0; index < defaultState.References.Length; index++) add("default:" + id + ":ref:" + index, defaultState.References[index]);
+                        break;
+                    case 56:
+                        add("urp:pendingSave", ReadStatic(type, "s_NeedsSavingAssets"));
+                        foreach (string fieldName in new[] { "s_CreatedAssets", "s_ImportedAssetThatNeedSaving" })
+                        {
+                            object value = ReadStatic(type, fieldName);
+                            if (value?.GetType() != typeof(List<string>) || ((List<string>)value).Count > 4096)
+                                throw new InvalidOperationException("URP Material路径缓存身份或容量未知。");
+                            add("urp:" + fieldName, value);
+                            var list = (List<string>)value;
+                            for (int index = 0; index < list.Count; index++) add("urp:" + fieldName + ":" + index, list[index]);
                         }
                         break;
                 }
@@ -494,7 +558,7 @@ namespace NovaFramework.Editor
                 (planned.ClipboardPreferenceEffects ?? Array.Empty<string>()).SequenceEqual(current.ClipboardPreferenceEffects ?? Array.Empty<string>()) &&
                 (planned.LightingExpectedEffects ?? Array.Empty<string>()).SequenceEqual(current.LightingExpectedEffects ?? Array.Empty<string>()) &&
                 (planned.LightingObservedEffects ?? Array.Empty<string>()).SequenceEqual(current.LightingObservedEffects ?? Array.Empty<string>()) ? null :
-                "PrefSettings完整pending队列、九key精确原/预期值或消费者身份在执行前改变";
+                "PrefSettings完整pending队列、已审key精确原/预期值或消费者身份在执行前改变";
         }
 
         /// <summary>仅枚举精确BCL映射；UPM可跳过已声明timestamp64，其余键和值逐项稳定捕获。</summary>
@@ -719,7 +783,7 @@ namespace NovaFramework.Editor
                 "空Brush列表仍会FlushCache并销毁现存绘图Editor";
         }
 
-        /// <summary>只在完整pending队列均为已审PrefColor时接纳cache或九key原字符串精确同值支路；不调用Load/Set。</summary>
+        /// <summary>只在完整pending队列均为已审PrefColor时接纳cache或已审key原字符串精确同值支路；不调用Load/Set。</summary>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
         /// <returns>已审自然分支满足时为 null，否则为精确阻断原因。</returns>
         private static string CheckClipboard(CancellationToken token)
@@ -739,18 +803,19 @@ namespace NovaFramework.Editor
                 if (!(ReadInstance(value, "m_Loaded") is bool loaded) || !(ReadInstance(value, "m_Name") is string key))
                     return "PrefColor pending字段shape漂移";
                 if (loaded) continue;
-                if (!s_ColorMaterializationKeys.Contains(key, StringComparer.Ordinal)) return "pending含本九key外未加载颜色：" + key;
+                if (!s_ColorMaterializationKeys.Contains(key, StringComparer.Ordinal)) return "pending含已审key外未加载颜色：" + key;
                 string reason = CheckClipboardPreferenceKey(values, key, colorType, token, out bool writes);
                 if (reason != null) return reason;
                 maySetSameValue |= writes;
             }
-            foreach (string key in s_ColorMaterializationKeys)
+            string[] activeKeys = CaptureActiveColorKeys(values);
+            foreach (string key in activeKeys)
             {
                 string reason = CheckClipboardPreferenceKey(values, key, colorType, token, out bool writes);
                 if (reason != null) return reason;
                 maySetSameValue |= writes;
             }
-            return maySetSameValue ? CheckPreferenceConsumers(prefs, s_ColorMaterializationKeys.Where(key =>
+            return maySetSameValue ? CheckPreferenceConsumers(prefs, activeKeys.Where(key =>
                 FindOrdinalValue(values, key) == null).ToArray(), token) : null;
         }
 
@@ -814,7 +879,8 @@ namespace NovaFramework.Editor
             object value = ReadStatic(prefs, "settingChanged");
             if (!(value is Delegate handlers)) return;
             IDictionary prefValues = SortedList(ReadStatic(prefs, "m_Prefs"));
-            bool willNotify = s_ColorMaterializationKeys.Any(key => FindOrdinalValue(prefValues, key) == null);
+            string[] activeKeys = CaptureActiveColorKeys(prefValues);
+            bool willNotify = activeKeys.Any(key => FindOrdinalValue(prefValues, key) == null);
             foreach (Delegate handler in handlers.GetInvocationList())
             {
                 token.ThrowIfCancellationRequested();
@@ -828,7 +894,7 @@ namespace NovaFramework.Editor
                         rows.Add(prefix + field + "=" + SnapshotScalar(ReadInstance(target, field), references));
                     if (ReadInstance(target, "m_ContentRoot") != null)
                     {
-                        string reason = ReadLightingColors(target, s_ColorMaterializationKeys, token, out Color[] colors);
+                        string reason = ReadLightingColors(target, activeKeys, token, out Color[] colors);
                         if (reason != null) throw new InvalidOperationException(reason);
                         CaptureMap(rows, prefix + "swatches", ReadInstance(target, "m_PrefColorSwatches"), references, -1);
                         ColorSpace colorSpace = PlayerSettings.colorSpace;
@@ -927,7 +993,7 @@ namespace NovaFramework.Editor
         {
             expected = null; error = null;
             if (!s_ColorMaterializationKeys.Contains(key, StringComparer.Ordinal) || string.IsNullOrEmpty(original))
-            { error = "颜色偏好key或原字符串为空/不在固定九key内"; return false; }
+            { error = "颜色偏好key或原字符串为空/不在固定已审key内"; return false; }
             string[] parts = original.Split(';');
             if ((parts.Length != 5 && parts.Length != 9) || parts[0] != key)
             { error = "颜色偏好原字符串不符合固定key的5/9段格式：" + key; return false; }
@@ -943,13 +1009,13 @@ namespace NovaFramework.Editor
             return true;
         }
 
-        /// <summary>对九项颜色的稳定语义统一成现cache或原字符串预期通道，使正常首次cache物化前后可比。</summary>
+        /// <summary>对已审颜色的稳定语义统一成现cache或原字符串预期通道，使正常首次cache物化前后可比。</summary>
         /// <param name="rows">当前捕获生成的规范化元数据行。</param>
         /// <param name="values">已核具体 BCL 集合或当前字典，不调用自定义容器。</param>
         /// <param name="references">当前遍历中用于建立不透明身份的对象序列。</param>
         private static void CaptureClipboardSemanticRows(List<string> rows, IDictionary values, List<object> references)
         {
-            foreach (string key in s_ColorMaterializationKeys)
+            foreach (string key in CaptureActiveColorKeys(values))
             {
                 string prefix = "prefs:clipboard:" + SnapshotScalar(key, references) + ":";
                 bool exists = EditorPrefs.HasKey(key);
@@ -975,15 +1041,15 @@ namespace NovaFramework.Editor
             }
         }
 
-        /// <summary>为Plan与Receipt列出固定九key的精确原/预期同值与cache-only分支，不写偏好或构造目标对象。</summary>
+        /// <summary>为Plan与Receipt列出固定已审key的精确原/预期同值与cache-only分支，不写偏好或构造目标对象。</summary>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
-        /// <returns>固定九键的原值、预期同值与 cache-only 效果列表。</returns>
+        /// <returns>本次实际已审颜色键的原值、预期同值与 cache-only 效果列表。</returns>
         internal static string[] CaptureClipboardPreferenceEffects(CancellationToken token)
         {
             Type prefs = Owner("UnityEditor.PrefSettings", token);
             IDictionary values = SortedList(ReadStatic(prefs, "m_Prefs"));
             var rows = new List<string>();
-            foreach (string key in s_ColorMaterializationKeys)
+            foreach (string key in CaptureActiveColorKeys(values))
             {
                 bool exists = EditorPrefs.HasKey(key);
                 string original = exists ? EditorPrefs.GetString(key) : null;
@@ -1113,13 +1179,19 @@ namespace NovaFramework.Editor
                 "Multiplayer初始化/禁用表达式未满足";
         }
 
-        /// <summary>使用实际已有原生importer的公开PresetType(Object)，不构造Importer、不使用internal Type构造器。</summary>
+        /// <summary>先核全局默认Preset；没有默认类型时不要求Importer样本，否则使用已有原生Importer的公开PresetType(Object)。</summary>
         /// <param name="paths">本次冻结的精确路径集合，不授予递归写权限。</param>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
         /// <returns>已审自然分支满足时为 null，否则为精确阻断原因。</returns>
         private static string CheckPresets(string[] paths, CancellationToken token)
         {
             VerifyModule(typeof(Preset), token);
+            token.ThrowIfCancellationRequested();
+            PresetType[] defaultTypes = Preset.GetAllDefaultTypes();
+            if (defaultTypes == null) return "无法读取当前全局默认Preset类型集合。";
+            // 新项目可以尚未导入任何原生插件；全局无默认Preset时，本次Importer不可能应用默认值。
+            // 不为取得样本构造Importer、加载无关资产或调用internal PresetType(Type)。
+            if (defaultTypes.Length == 0) return null;
             var representatives = new List<AssetImporter>();
             foreach (string path in paths)
             {
@@ -1276,15 +1348,80 @@ namespace NovaFramework.Editor
             return matches[0];
         }
 
-        /// <summary>额外owner一律冻结整个DLL及实际MVID；不能仅凭与某回调同名/同程序集名称接纳实现。</summary>
+        /// <summary>源码 owner 复用完整编译来源合同；引擎及其它预编译 owner 仍核已审发布 DLL/MVID。</summary>
         /// <param name="type">已加载且需要核对的实际类型元数据。</param>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
-        private static void VerifyModule(Type type, CancellationToken token)
+        internal static void VerifyModule(Type type, CancellationToken token)
         {
+            if (AndroidRefreshSourceIdentityContract.SupportsAssembly(type.Assembly.GetName().Name))
+            {
+                if (!AndroidRefreshSourceIdentityContract.TryVerifySourceAssembly(type, token, out _, out string error))
+                    throw new InvalidOperationException(error);
+                return;
+            }
             string filename = Path.GetFileName(type.Assembly.Location);
             if (!s_Modules.TryGetValue(filename, out string[] expected) ||
                 type.Module.ModuleVersionId.ToString() != expected[1] || FileHash(type.Assembly.Location, token) != expected[0])
                 throw new InvalidOperationException("owner DLL/MVID未绑定或已漂移：" + type.FullName);
+        }
+
+        /// <summary>AI Graph 会为所有 Assets 路径异步写 pending；只有图目录不存在时才能证明本次回调自然返回。</summary>
+        internal static string CheckAssistantGraph(string projectRoot)
+        {
+            string graph = Path.Combine(projectRoot, "Library", "AI.CoreGraph");
+            if (File.Exists(graph) || Directory.Exists(graph))
+                return "Unity AI Assistant已存在项目Graph，模板刷新会异步写入Library/AI.CoreGraph/.pending_changes.json；当前Action尚未支持该写入支路，需维护方补充受管写集和异步完成验收后再执行。";
+            return null;
+        }
+
+        /// <summary>非材质模板不能消费已有待保存工作；不清空URP列表或调用保存以制造可执行状态。</summary>
+        internal static string CheckUrpMaterialState(string[] paths, bool pendingSave)
+        {
+            if (pendingSave) return "URP Material已有待保存工作；等待其正常升级/保存完成后重新Plan，不主动重导入或清空队列。";
+            return HasSuffix(paths, ".mat") ? "URP Material回调会升级材质并安排保存。" : null;
+        }
+
+        /// <summary>只读取正常初始化已完成的 AI 项目技能缓存；不调用 getter、Rescan 或 SkillsRegistryInitializer。</summary>
+        private static string CheckAssistantSkills(string[] paths, CancellationToken token, string provenHostDomain)
+        {
+            Type initializer = Owner("Unity.AI.Assistant.Editor.SkillsRegistryInitializer", token);
+            if (!CustomAttributeData.GetCustomAttributes(initializer).Any(item => item.AttributeType == typeof(InitializeOnLoadAttribute)))
+                return "AI Skills正常初始化身份已变化。";
+            string host = AndroidResolveRefreshContract.CheckLegacyMigrationHost(initializer, provenHostDomain);
+            if (host != null) return "AI Skills缓存尚无正常初始化宿主见证：" + host;
+            string[] known = ReadAssistantSkillPaths(token);
+            return AssistantSkillPathsIntersect(paths, known) ? "本次模板路径与AI Assistant已登记项目技能相交，会启动异步扫描。" : null;
+        }
+
+        /// <summary>按已审字段准确复制主线程维护的项目技能目录集合，不触发计算型属性或扫描。</summary>
+        private static string[] ReadAssistantSkillPaths(CancellationToken token)
+        {
+            Type scanner = Owner("Unity.AI.Assistant.Editor.SkillsScanner", token);
+            FieldInfo field = scanner.GetField("s_LastProjectSkillPaths", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            if (field == null || field.FieldType != typeof(HashSet<string>) || !field.IsInitOnly ||
+                !(field.GetValue(null) is HashSet<string> known) || known.Count > 4096 || !ReferenceEquals(known.Comparer, StringComparer.OrdinalIgnoreCase) ||
+                known.Any(value => string.IsNullOrEmpty(value) || !value.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException("AI Skills项目目录缓存身份或容量未知。");
+            return known.ToArray();
+        }
+
+        /// <summary>复现已审 Skills 路径过滤的纯判断，保留SKILL.md、目录本身及其一层子目录的命中范围。</summary>
+        internal static bool AssistantSkillPathsIntersect(string[] paths, string[] knownFolders)
+        {
+            if (paths == null || knownFolders == null) return true;
+            var known = new HashSet<string>(knownFolders, StringComparer.OrdinalIgnoreCase);
+            foreach (string path in paths)
+            {
+                if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase)) continue;
+                if (path.EndsWith("/SKILL.md", StringComparison.OrdinalIgnoreCase) || known.Contains(path)) return true;
+                int slash = path.LastIndexOf('/');
+                if (slash < 0) continue;
+                string parent = path.Substring(0, slash);
+                if (known.Contains(parent)) return true;
+                int ancestor = parent.LastIndexOf('/');
+                if (ancestor >= 0 && known.Contains(parent.Substring(0, ancestor))) return true;
+            }
+            return false;
         }
 
         /// <summary>新增下游源独立冻结PackageInfo实际解析位置与完整源摘要，不修改包或使用猜测PackageCache路径。</summary>
@@ -1318,7 +1455,7 @@ namespace NovaFramework.Editor
             }
         }
 
-        /// <summary>静态字段只有无cctor、已InitializeOnLoad或已逐条精读的纯常量/集合初始化才准读取。</summary>
+        /// <summary>静态字段只有无cctor、已InitializeOnLoad、正常派发完成见证或已审纯常量/集合初始化才准读取。</summary>
         /// <param name="owner">字段或单例 backing 的已核声明类型。</param>
         /// <param name="name">固定完整类型名或已审字段名，不接受业务输入作为反射指令。</param>
         /// <returns>固定静态字段当前值；缺失时拒绝。</returns>
@@ -1330,11 +1467,71 @@ namespace NovaFramework.Editor
                 owner.GetGenericTypeDefinition().FullName == "UnityEditor.ScriptableSingleton`1" ||
                 owner.FullName == "UnityEditor.PrefSettings" || owner.FullName == "UnityEditor.MPE.DataService" ||
                 owner.FullName == "UnityEditor.ConsoleWindow";
-            if (owner.TypeInitializer != null && !initializedOnLoad && !auditedCacheInitializer)
+            FieldInfo inputFlag = owner.FullName == "UnityEngine.InputSystem.InputSystem" && owner.Assembly.GetName().Name == "Unity.InputSystem" ?
+                owner.GetField("s_PluginsInitialized", DeclaredFields) : null;
+            bool inputEditorInitializer = inputFlag?.FieldType == typeof(bool) && inputFlag.IsStatic &&
+                IsBooleanZeroInitializer(owner.TypeInitializer?.GetMethodBody()?.GetILAsByteArray(), inputFlag.MetadataToken);
+            bool observedPostprocessor = typeof(AssetPostprocessor).IsAssignableFrom(owner) &&
+                AndroidRefreshInitializationWitness.TryGetProof(owner, out _, out _);
+            bool observedUrpMaterial = IsUrpMaterialInitializedByNormalUpdate(owner);
+            if (owner.TypeInitializer != null && !initializedOnLoad && !auditedCacheInitializer && !inputEditorInitializer && !observedPostprocessor && !observedUrpMaterial)
                 throw new InvalidOperationException("禁止Plan触发未证明的cctor：" + owner.FullName);
             FieldInfo field = owner.GetField(name, DeclaredFields);
             if (field == null || !field.IsStatic) throw new MissingFieldException(owner.FullName, name);
             return field.GetValue(null);
+        }
+
+        /// <summary>Input System 1.20.1的Editor构造器只将自身s_PluginsInitialized置false；拒绝调用、其它字段或非零赋值。</summary>
+        internal static bool IsBooleanZeroInitializer(byte[] il, int fieldToken) => il != null && il.Length >= 7 &&
+            il[0] == 0x16 && il[1] == 0x80 && BitConverter.ToInt32(il, 2) == fieldToken && il[il.Length - 1] == 0x2a &&
+            il.Skip(6).Take(il.Length - 7).All(value => value == 0x00);
+
+        /// <summary>只接纳准确字段的true初值，不运行初始化器；URP首次检查标记只有正常检查后才会变为false。</summary>
+        internal static bool IsBooleanOneInitializer(byte[] il, int fieldToken) => il != null && il.Length >= 7 &&
+            il[0] == 0x17 && il[1] == 0x80 && BitConverter.ToInt32(il, 2) == fieldToken && il[il.Length - 1] == 0x2a &&
+            il.Skip(6).Take(il.Length - 7).All(value => value == 0x00);
+
+        /// <summary>已审URP首次检查已在正常update返回且本域无后续错误时，其升级表已被访问；不在Plan首次执行Shader.Find。</summary>
+        private static bool IsUrpMaterialInitializedByNormalUpdate(Type owner)
+        {
+            if (owner.FullName != "UnityEditor.Rendering.Universal.MaterialPostprocessor" ||
+                owner.Assembly.GetName().Name != "Unity.RenderPipelines.Universal.Editor" ||
+                !AndroidRefreshInitializationWitness.HasNoObservedDomainErrors ||
+                !AndroidRefreshInitializationWitness.TryGetCodeEditorTailProof(out _, out _)) return false;
+            Type reimporter = owner.Assembly.GetType("UnityEditor.Rendering.Universal.MaterialReimporter", false);
+            FieldInfo first = reimporter?.GetField("s_NeedToCheckProjSettingExistence", DeclaredFields);
+            if (first == null || !first.IsStatic || first.FieldType != typeof(bool) ||
+                !IsBooleanOneInitializer(reimporter.TypeInitializer?.GetMethodBody()?.GetILAsByteArray(), first.MetadataToken)) return false;
+            // 首次标记赋false到读取升级表之间没有异步让出；排除该回调重入，避免把半程标记当完成。
+            MethodBase[] frames = new System.Diagnostics.StackTrace(false).GetFrames()?.Select(frame => frame.GetMethod()).ToArray();
+            if (frames == null || frames.Any(method =>
+                method?.DeclaringType == reimporter || method?.DeclaringType?.DeclaringType == reimporter)) return false;
+            return first.GetValue(null) is bool pending && !pending;
+        }
+
+        /// <summary>固定三项Clipboard角色始终冻结，其余已审颜色只在当前cache或完整pending中真实存在时纳入。</summary>
+        internal static string[] SelectColorMaterializationKeys(IEnumerable<string> cached, IEnumerable<string> pending)
+        {
+            var present = new HashSet<string>((cached ?? Array.Empty<string>()).Concat(pending ?? Array.Empty<string>()), StringComparer.Ordinal);
+            return s_ClipboardColorKeys.Concat(s_ApprovedPendingColorKeys.Where(present.Contains)).ToArray();
+        }
+
+        /// <summary>只读取已审Core的既有颜色注册列表；不创建缺失偏好，也不把未注册的历史键变为本次必需输入。</summary>
+        private static string[] CaptureActiveColorKeys(IDictionary values)
+        {
+            var core = typeof(AssetDatabase).Assembly;
+            Type prefs = core.GetType("UnityEditor.PrefSettings", true), color = core.GetType("UnityEditor.PrefColor", true);
+            object pending = ReadStatic(prefs, "m_AddedPrefs");
+            if (pending == null || !pending.GetType().IsGenericType || pending.GetType().GetGenericTypeDefinition() != typeof(List<>))
+                throw new InvalidOperationException("颜色pending不是精确BCL List。");
+            var names = new List<string>();
+            foreach (object value in (IEnumerable)pending)
+            {
+                if (value?.GetType() != color || !(ReadInstance(value, "m_Name") is string key))
+                    throw new InvalidOperationException("颜色pending含未知类型或字段。");
+                names.Add(key);
+            }
+            return SelectColorMaterializationKeys(values.Keys.Cast<object>().OfType<string>(), names);
         }
 
         /// <summary>只读取实例的声明字段，不调用属性、虚方法或构造器；需先由调用点确认实例精确类型。</summary>

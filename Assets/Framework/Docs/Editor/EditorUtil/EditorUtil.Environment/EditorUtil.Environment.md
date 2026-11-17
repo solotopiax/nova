@@ -1,10 +1,16 @@
 # EditorUtil.Environment
 
-`NovaFramework.Editor.EditorUtil.Environment` 是 Python3、Luban 和 HybridCLR 的编辑器环境检查器集合。当前 [EditorUtil.Environment.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.cs) 只保留 partial 容器，旧 EnvironmentData、ColumnIndices、GetEnvironmentData 和 GetColumnIndices 已移除；过滤器使用各自显式导出上下文，不应恢复旧的场景默认值回退。
+`NovaFramework.Editor.EditorUtil.Environment` 是可扩展的编辑器环境检查器集合，当前包含 Python3、Luban 和 HybridCLR。[EditorUtil.Environment.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.cs) 提供统一重新检测入口及检测项标记；旧 EnvironmentData、ColumnIndices、GetEnvironmentData 和 GetColumnIndices 已移除，过滤器使用各自显式导出上下文。
 
 ## 探测与缓存
 
-Check 优先返回 Unity SessionState 缓存；Recheck 先清 cached 标记再重新探测，环境安装或 PATH 变化不会自动刷新。SessionState 跨程序集域重载保留，到编辑器会话结束才清空。Luban 另用 cacheVersion=2 淘汰旧结构。DTO 构造只保存字段，不探测、不验证 Ready/Issue/版本互相一致；缓存还原的枚举整数也不校范围。
+Check 优先返回 Unity SessionState 缓存；Recheck 先清 cached 标记再重新探测。Config 每次打开或获得焦点时统一重新检测全部已接入项，面板随后读取更新后的缓存；普通 Check 调用仍保留缓存语义。SessionState 跨程序集域重载保留，到编辑器会话结束才清空。Luban 另用 cacheVersion=2 淘汰旧结构。DTO 构造只保存字段，不探测、不验证 Ready/Issue/版本互相一致；缓存还原的枚举整数也不校范围。
+
+## 统一刷新与新增检测项
+
+新检测器必须在其无参数、非泛型的静态重新检测方法上添加 `[EditorUtil.Environment.EnvironmentCheck]`。方法执行真实探测并更新自身缓存，只做环境检查，不安装工具、不修改项目配置。返回类型可沿用检测器自己的结果类型。
+
+内部 `RecheckAll()` 使用 Unity `TypeCache` 发现所有带 `EnvironmentCheckAttribute` 的方法，逐项调用；不按名称猜测，也不维护固定名单。无效签名或单项异常会告警，其余检测继续。该入口由 Config 窗口在编辑器就绪后的延迟回调调用，不是新的 Project Action。未来新增检测只需遵循此约定并接入自己的结果展示，无需修改窗口的统一重检调用。
 
 HybridCLRChecker 检查固定 `Packages/com.solotopia.hybridclr/package.json` 和 `HybridCLRData/LocalIl2CppData-{Application.platform}/il2cpp/libil2cpp/hybridclr` 目录；版本读取失败可仍就绪。它不核 LocalIl2Cpp 版本、文件完整性或实际构建，固定 Packages 路径也可能漏 registry 的 PackageCache 布局。Ready 只表示这一轮存在性检查通过。
 

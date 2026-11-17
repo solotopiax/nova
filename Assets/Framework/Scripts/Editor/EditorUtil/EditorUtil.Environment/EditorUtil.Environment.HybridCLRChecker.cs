@@ -143,6 +143,7 @@ namespace NovaFramework.Editor
                 /// 强制重新检测（忽略 SessionState 缓存）。
                 /// </summary>
                 /// <returns>最新的 HybridCLR 环境检查结果。</returns>
+                [EnvironmentCheck]
                 public static HybridCLRCheckResult Recheck()
                 {
                     SessionState.SetBool(c_SessionKeyCached, false);

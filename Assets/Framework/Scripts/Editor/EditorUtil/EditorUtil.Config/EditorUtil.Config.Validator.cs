@@ -613,7 +613,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 校验 AppConfigs 全部必填字段；问题追加至 issues 列表。
+                /// 提示外部应用协议参数的配置状态与格式；缺配或格式错误只影响对应服务，不阻断本地导出。
                 /// </summary>
                 /// <param name="common">待校验的 AppConfigs 实例；为 null 时追加 Error 后直接返回。</param>
                 /// <param name="issues">问题收集列表；校验发现的所有条目追加至此。</param>
@@ -625,9 +625,27 @@ namespace NovaFramework.Editor
                         return;
                     }
 
-                    RequireNotEmpty(issues, "AppConfigs.AppID", common.AppID);
-                    RequireNotEmpty(issues, "AppConfigs.AppAesKey", common.AppAesKey);
-                    RequireNotEmpty(issues, "AppConfigs.AppAesIV", common.AppAesIV);
+                    if (!AppConfigValidation.TryParseAppId(common.AppID, out _))
+                    {
+                        issues.Add(new ValidationIssue("AppConfigs.AppID",
+                            AppConfigValidation.IsUnconfigured(common.AppID)
+                                ? "应用后台尚未配置；不影响本地导出和游戏启动，对应服务暂不可用。"
+                                : "应用后台编号必须能解析为 int32；对应请求不会发送，不影响本地导出和游戏启动。",
+                            Severity.Warning));
+                    }
+                    ValidateAppAesSecret("AppConfigs.AppAesKey", common.AppAesKey, issues);
+                    ValidateAppAesSecret("AppConfigs.AppAesIV", common.AppAesIV, issues);
+                }
+
+                /// <summary>与 Runtime 请求入口共用应用 AES 格式判定；不输出参数值。</summary>
+                private static void ValidateAppAesSecret(string path, string value, List<ValidationIssue> issues)
+                {
+                    if (AppConfigValidation.IsValidAesSecret(value)) return;
+                    issues.Add(new ValidationIssue(path,
+                        AppConfigValidation.IsUnconfigured(value)
+                            ? "应用协议参数尚未配置；不影响本地导出和游戏启动，对应服务暂不可用。"
+                            : "应用协议参数按 UTF-8 编码必须为 16 字节；对应请求不会发送，不影响本地导出和游戏启动。",
+                        Severity.Warning));
                 }
 
                 /// <summary>
