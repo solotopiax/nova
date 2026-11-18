@@ -6,7 +6,6 @@
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.3.0",
     "com.da-assets.figma-converter": "file:../../Nova-internal/UPMPackages/com.da-assets.figma-converter",
     "com.google.external-dependency-manager": "1.2.190",
-    "com.onevcat.uniwebview": "file:../../Nova-internal/UPMPackages/com.onevcat.uniwebview",
     "com.singularitygroup.hotreload": "file:../../Nova-internal/UPMPackages/com.singularitygroup.hotreload",
     "com.solotopia.alibabacloud.oss": "file:../UPMPackages/com.solotopia.alibabacloud.oss",
     "com.solotopia.excelio": "file:../UPMPackages/com.solotopia.excelio",
@@ -98,7 +97,6 @@
       "name": "Solotopia Internal",
       "url": "http://172.16.22.175:4874",
       "scopes": [
-        "com.onevcat",
         "com.starlus",
         "com.da-assets",
         "cn.efunstudio",

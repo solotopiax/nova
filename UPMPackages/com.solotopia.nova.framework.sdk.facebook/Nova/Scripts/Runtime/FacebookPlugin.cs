@@ -30,6 +30,7 @@ namespace NovaFramework.SDK.Facebook
         {
             if (m_AuthService == null)
             {
+                Log.Warning(LogTag.Facebook, "登录未执行：Facebook SDK 未初始化。");
                 return BuildFailedAuthResult(provider, "Facebook SDK 未初始化。");
             }
 
@@ -40,11 +41,13 @@ namespace NovaFramework.SDK.Facebook
             }
 
             SetLoginState(new FacebookUserData(result.UserId, result.Token), result.Provider);
+            Log.Debug(LogTag.Facebook, $"登录态已更新：自动下载头像={m_RuntimeConfig == null || m_RuntimeConfig.AutoDownloadAvatarOnLogin}。");
             if (m_RuntimeConfig == null || m_RuntimeConfig.AutoDownloadAvatarOnLogin)
             {
                 await TryDownloadCurrentAvatarAsync(ct);
             }
 
+            Log.Debug(LogTag.Facebook, $"登录流程完成：头像缓存可用={!string.IsNullOrEmpty(m_CurrentUserData?.AvatarPath)}。");
             return result;
         }
 
@@ -57,6 +60,7 @@ namespace NovaFramework.SDK.Facebook
         {
             m_AuthService?.Logout();
             SetLoginState(null);
+            Log.Debug(LogTag.Facebook, "本地 Facebook 登录态已清除。");
             return UniTask.CompletedTask;
         }
 
@@ -69,6 +73,7 @@ namespace NovaFramework.SDK.Facebook
         {
             if (m_AuthService == null)
             {
+                Log.Warning(LogTag.Facebook, "好友授权未执行：Facebook SDK 未初始化。");
                 return BuildFailedAuthResult(ProviderName, "Facebook SDK 未初始化。");
             }
 

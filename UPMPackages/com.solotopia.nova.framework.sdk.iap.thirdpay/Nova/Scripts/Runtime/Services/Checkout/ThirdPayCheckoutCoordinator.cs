@@ -45,6 +45,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             m_Hub.Store.MarkUserInteracted();
 
+#if UNITY_EDITOR
+            // 模拟支付已由 Store.PayAsync 提前返回；真实设备页面在 Editor 不可用，禁止先建单再悬挂等待。
+            const string editorReason = "Editor 不支持真实第三方支付，请开启模拟支付或在 iOS/Android 测试设备验证。";
+            m_Hub.Store.TrackCreateOrderFailInternal(request, ThirdPayCreateOrderFailureReason.PaymentPageServiceUnavailable, nativeErrorMessage: editorReason);
+            return CreateFailure(request, IAPThirdPayErrorCode.StoreNotAvailable, editorReason, ThirdPayPaymentFailureReason.PaymentPageOpenFailed);
+#else
             bool useExternalBrowser = false;
             if (m_Hub.WebViewService == null && m_Hub.ExternalBrowserService == null)
             {
@@ -92,6 +98,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 if (paymentConfig == null || !paymentConfig.Enabled)
                 {
                     string disabledReason = $"第三方支付服务器返回当前不可用：服务器错误码 {paymentConfig?.DisabledReason.ToString() ?? "Unknown"}。";
+                    if (!string.IsNullOrEmpty(paymentConfig?.DisabledMessage))
+                    {
+                        disabledReason += $" 禁用消息：{paymentConfig.DisabledMessage}";
+                    }
+                    LogWarning(disabledReason);
                     m_Hub.Store.TrackCreateOrderFailInternal(request, ThirdPayCreateOrderFailureReason.PaymentDisabledByServer, nativeErrorMessage: disabledReason);
                     return CreateFailure(request, IAPThirdPayErrorCode.StoreNotAvailable, disabledReason, ThirdPayPaymentFailureReason.PaymentDisabledByServer);
                 }
@@ -235,6 +246,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 m_Hub.Store.SubWaitingRef();
             }
+#endif
         }
 
         /// <summary>

@@ -1,0 +1,19 @@
+{
+  "name": "NovaFramework.SDK.IAP.ThirdPay.Editor",
+  "rootNamespace": "NovaFramework.SDK.IAP.ThirdPay.Editor",
+  "references": [
+    "NovaFramework.Runtime",
+    "NovaFramework.Editor",
+    "NovaFramework.SDK.IAP.Runtime",
+    "NovaFramework.SDK.IAP.ThirdPay.Runtime"
+  ],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

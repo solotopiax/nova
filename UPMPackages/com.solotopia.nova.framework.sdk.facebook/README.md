@@ -1,12 +1,16 @@
 # Nova Framework - SDK - Facebook
 
-> 当前版本：`0.2.0`
+> 当前版本：`0.2.1`
 
 Package name: `com.solotopia.nova.framework.sdk.facebook`
 
 This package wraps the official Facebook Unity SDK `18.0.0` in Nova's UPM package layout and exposes `FacebookPlugin`.
 
 完整文档入口见 [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)。
+
+## 安装
+
+在 Unity 中打开 `Nova → Open PlugPals`，从外网仓库安装 `com.solotopia.nova.framework.sdk.facebook`。该包要求 Nova Framework `0.7.13` 或更高版本，以支持 Facebook 专用日志标签。
 
 ## What This Package Contains
 
@@ -31,8 +35,16 @@ The official examples were intentionally excluded because they are not part of t
 - `email` is not requested by default.
 - Friend data requires an additional `user_friends` permission flow through `EnsureFriendsPermissionAsync`.
 - Link sharing is handled through the Facebook SDK share dialog wrapper.
-- Nova `SDKEventData.UserLogin` is subscribed during initialization; business user login syncs `UserId` to `FB.Mobile.UserID`.
+- Nova delivers business user login through `ISDKLoginReceiver.OnSDKLogin`; the plugin syncs `UserId` to `FB.Mobile.UserID` without subscribing to `SDKEventData.UserLogin` itself.
 - Acquisition events are sent through `FB.LogAppEvent`; this package does not expose `SetUserProperty` for Facebook.
+
+## 登录、头像昵称与日志排查
+
+打开运行时 Debug 的 Console，选择 `SDK → Facebook` 标签，并启用 Debug / Warning 等级。登录、权限、Graph 接口、头像、好友、分享和 App Events 的关键行为使用统一的 `Log.Debug/Warning`；长路径、错误文本和事件名在调用处截断至 240 字符。Player 的日志是否保留仍由框架现有日志开关控制。
+
+登录已申请 `public_profile`；没有再次弹出权限框不等于没有申请。自动头像下载由 `AutoDownloadAvatarOnLogin` 控制，昵称通过 `Profile.GetCurrentProfileAsync()` 读取，登录成功不保证资料和图片均可用。
+
+具体开启方式、日志含义和常见问题见 [调试登录与接口调用](Nova/Doc/FacebookPlugin.md#调试登录与接口调用)。
 
 ## iOS ATT And Limited Profile Data
 

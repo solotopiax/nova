@@ -20,9 +20,9 @@ Android 行为配置在本地和线上使用相同字段名。`SetSkipPaymentInf
 
 `PaymentConfigCmdName` 为空时仍回落为 `ThirdGetPaymentConfig`，与另外两条命令不同。命令名只用于查找当前 Network 配置，不是已部署服务地址；须完成 Host/NetCmd 的正式导出及当前平台 Runtime 引用。修改持久配置后保存 ConfigMaster 并重新导出，在重新初始化 Store 后核对生效；直接改编辑器工作副本不会更新已运行的 Store。
 
-国家码不从 `ThirdPayStoreConfig` 读取。Store 初始化时并发查询 Billing、iOS Storefront 和 AD 国家码，但登录前不会锁定结果或发送用户态配置协议；登录后首次有效自动解析结果会写入 Lock，并在当前 Store 生命周期及重新登录后持续复用。运行时可通过 `SetDebugCountryCode` 显式覆盖当前读取结果，但不会重写既有 Lock。全部来源均无有效值时 `ThirdGetPaymentConfig` 不会发送，网络协议层也会返回 `PARAM_ERROR`。服务端负责白名单、黑名单和国家策略判断，客户端只消费 `enabled` 与整数 `disabled_reason`，不保存策略明细。
+国家码不从 `ThirdPayStoreConfig` 读取。Store 初始化时并发查询 Billing、iOS Storefront 和 AD 国家码，但登录前不会锁定结果或发送用户态配置协议；登录后首次有效自动解析结果会写入 Lock，并在当前 Store 生命周期及重新登录后持续复用。运行时可通过 `SetDebugCountryCode` 显式覆盖当前读取结果，但不会重写既有 Lock。全部来源均无有效值时 `ThirdGetPaymentConfig` 不会发送，网络协议层也会返回 `PARAM_ERROR`。服务端负责白名单、黑名单和国家策略判断，客户端消费 `enabled`、整数 `disabled_reason` 和字符串 `disabled_message`，不保存策略明细。禁用原因码当前为 `0` 无、`1` 未命中任何白名单规则、`2` 用户黑名单；说明缺省为空，非空时随配置诊断日志、购买禁用 Warning 和返回失败说明输出。说明不替代 `enabled` 判断，也不新增公开配置能力属性。
 
-支付页打开方式由平台固定决定：Android 使用外部浏览器链，iOS 使用 UniWebView Safe Browsing，Editor 使用嵌入式 UniWebView。
+支付页打开方式由平台固定决定：Android 使用外部浏览器链，iOS 使用包内系统浏览器桥，Editor 仅支持模拟支付。iOS Safe Browsing 底层为 `SFSafariViewController`，通过系统 `SafariServices.framework` 提供；包内构建处理器只链接 framework，不注册回跳 scheme。回跳使用项目实际配置，标题和关闭文案方法仅为源码兼容保留，不改变系统界面。升级与验收见 [自有系统浏览器与升级说明](ThirdPayStore.md#自有系统浏览器与升级说明)。
 
 `Enabled` 是 Store 配置开关；`IsPaymentConfigReady`、`IsPaymentAvailable` 和 `PaymentDisabledReason` 是运行时公开配置能力，分别表示统一配置是否就绪、服务端是否允许当前上下文支付及服务端关闭原因。读取原因码前先检查就绪状态；统一配置的 `client_config` 当前仅供包内快照使用，没有对应的公开配置能力。
 

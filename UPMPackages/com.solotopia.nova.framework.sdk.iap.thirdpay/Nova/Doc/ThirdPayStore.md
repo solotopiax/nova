@@ -10,7 +10,7 @@
 2. 在 Network 配置中为 `ThirdGetPaymentConfig`、`ThirdQueryPendingOrder`、`ThirdVerifyIap` 配好实际 Host/Path，并核对服务端的统一配置、待补单查询和批量验单协议。默认 Cmd 名只是路由键，不能代表服务已部署；服务端统一配置还须为当前账号与国家返回 `enabled`、目标 `product_id` 和 HTTPS `payment_page_url`。`ThirdProductID` 用于匹配该 `product_id`。
 3. 后端登录后通过 Nova 的 SDK 登录链同步 UID，等待有效自动国家码或仅在调试时使用 `SetDebugCountryCode`。业务先看 `IsPaymentConfigReady`，再看 `IsPaymentAvailable`；配置未就绪时 `PaymentDisabledReason == 0` 不能解释为服务端允许或拒绝支付。
 4. 通过 `IAPPlugin.PayAsync<IAPResult>(new IAPThirdPayRequest { ... }, ct)` 发起支付；按 `IAPResult` 和 `PaySuccess` / `PayFailed` 处理业务反馈，发货以服务端验单和幂等履约结果为准。支付页成功回调与服务端验单属于不同阶段；关闭页面、返回 App 或取消等待都不等于撤销已建立的订单。
-5. 分别验收 Editor 展示与模拟、Android Auth Tab / Custom Tabs / 系统浏览器回退、iOS Safe Browsing、Deep Link、真实商户资格、服务端验单与补单、重复回调和幂等发货。Editor 或静态检查不能证明真机支付与后台履约成功。
+5. 分别验收 Editor 模拟与关闭模拟后的明确失败、Android Auth Tab / Custom Tabs / 系统浏览器回退、iOS Safe Browsing、Deep Link、真实商户资格、服务端验单与补单、重复回调和幂等发货。Editor 或静态检查不能证明真机支付与后台履约成功。
 
 `IAPDemo` 的可选 ThirdPay 模块及示例配置见 [IAPDemo README](../../README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap` 包内 `Sample IAPDemo / README.md`）；示例商品和服务端地址需按目标环境替换，不能作为生产商户配置。
 
@@ -32,7 +32,7 @@ Hub 在 Store 构造时即创建国家码、账号存档和外部浏览器会话
 
 Store 初始化阶段会独立启动 iOS Storefront、Android Billing 和 AD 三路国家码查询，三者互不等待且不阻塞初始化；其中 AD 查询会在后台等待 SDK 统一初始化完成，再持续等待广告插件首次发布国家码，不受业务层 `GetCountryCodeAsync` 默认超时限制。国家码在当前 Store 生命周期内只查询一次并持续复用，此阶段不请求用户态支付配置，也不会提前锁定国家。登录 UID 就绪后，首次通过 `GetCountryCode()` 取得的有效自动解析结果会写入锁定值；已有结果时立即预取，否则首个有效来源返回后锁定并触发 `ThirdGetPaymentConfig`。后续更高优先级来源异步返回不会改变已锁定的业务国家，重新登录也只切换账号数据并刷新支付配置。配置协议在国家码为空或无效时禁止发送；请求使用标准 Header，并额外发送锁定的 ISO 3166-1 alpha-2 国家码。一次响应集中返回：
 
-- `availability.enabled` 与整数 `disabled_reason`
+- `availability.enabled`、整数 `disabled_reason` 与字符串 `disabled_message`（字段号 3；缺省为空）
 - 当前国家的 `product_config.product_list`
 - 可选的 `channel_config.payment_customer_ids`
 - `payment_page_config.payment_page_url`
@@ -155,9 +155,9 @@ if (iapPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recover
 
 ## ThirdPay 链路打点
 
-`pay_callback` 的 `status=1`（成功）或 `status=3`（成功但渠道信息尚未同步）是唯一会发送 `nova_iap_local_pay_success` 的支付页终态；随后立即按 `DirectPay` 或 `ExternalBrowserCallback` 验单。Android 外部浏览器、iOS Safe Browsing 和嵌入式 WebView 都由 Unity 的 `Application.deepLinkActivated` 或 UniWebView message 进入同一回调解析，不需要 Java 层重复转发。`pay_callback` 的 `orderid` 必须匹配当前支付会话；参数不完整或订单不匹配的全局 Deep Link 只记录诊断日志，不会结束或推进当前会话。
+`pay_callback` 的 `status=1`（成功）或 `status=3`（成功但渠道信息尚未同步）是唯一会发送 `nova_iap_local_pay_success` 的支付页终态；随后立即按 `DirectPay` 或 `ExternalBrowserCallback` 验单。Android 外部浏览器和 iOS 系统浏览器均由 Unity 的 `Application.deepLinkActivated` 经包内 URL 消息解析器进入同一回调解析，不需要 Java 层重复转发。`pay_callback` 的 `orderid` 必须匹配当前支付会话；参数不完整或订单不匹配的全局 Deep Link 只记录诊断日志，不会结束或推进当前会话。
 
-已经建立支付会话、但没有收到成功 `pay_callback` 的关闭、失败、未知回调或异常会发送 `nova_iap_third_pay_close_order`。关闭事件通过 `nova_third_pay_close_reason` 区分 `close_callback`、嵌入式 WebView 关闭、Safe Browsing 关闭、失败/未知/非法 `pay_callback`、外部浏览器返回无成功回调、订单不匹配、验单开始后的迟到回调、页面加载失败、内容进程终止、取消、会话替换和 Store 释放。`nova_reason_detail` 是该关闭原因的稳定中文说明。
+已经建立支付会话、但没有收到成功 `pay_callback` 的关闭、失败、未知回调或异常会发送 `nova_iap_third_pay_close_order`。关闭事件通过 `nova_third_pay_close_reason` 区分 `close_callback`、嵌入式 WebView 关闭、Safe Browsing 关闭、失败/未知/非法 `pay_callback`、外部浏览器返回无成功回调、订单不匹配、验单开始后的迟到回调、页面加载失败、内容进程终止、取消、会话替换和 Store 释放。`nova_reason_detail` 是该关闭原因的稳定中文说明。嵌入式页面关闭、加载错误和内容进程终止等枚举保留用于历史数据，不代表当前系统浏览器暴露这些事件。
 
 `nova_iap_local_pay_fail` 只在 `PayAsync` 返回边界兜住 Store 前置校验、创建/授权失败和支付页未建立等本地支付失败。支付页已经产生 `nova_iap_local_pay_success` 或 `nova_iap_third_pay_close_order` 后，后续验单失败只发送验单事件，不再补报 `nova_iap_local_pay_fail`。既有 `nova_reason` 保持 `IAPThirdPayErrorCode` 的粗粒度数值，细分原因写入 `nova_third_pay_failure_reason`，其中文说明写入 `nova_reason_detail`。`nova_iap_create_order_fail` 同样保持既有粗粒度 `nova_reason`，并用 `nova_third_pay_create_failure_reason` 区分 UID、统一配置、服务端关闭、商品缺失、支付页服务、Google 授权、URL 构建和授权返回空 URL 等创建阶段失败。
 
@@ -165,7 +165,7 @@ if (iapPlugin.TryGetCapability<IIAPThirdPayOrderRecoveryCapable>(out var recover
 
 | 字段 | 含义 |
 |---|---|
-| `nova_third_pay_open_mode` | 实际打开方式：Auth Tab、Custom Tabs、系统浏览器回退、嵌入式 WebView 或 iOS Safe Browsing。 |
+| `nova_third_pay_open_mode` | 实际打开方式：Auth Tab、Custom Tabs、系统浏览器回退或 iOS Safe Browsing；嵌入式 WebView 值仅为历史兼容保留。 |
 | `nova_third_pay_callback_status` | `pay_callback` 的归一化状态；未收到回调为 `0`。 |
 | `nova_third_pay_close_reason` | 仅关闭订单事件使用的细分关闭原因。 |
 | `nova_third_pay_failure_reason` | 支付或验单的细分失败原因；成功时为 `0`。 |
@@ -263,7 +263,7 @@ var request = new IAPThirdPayRequest
 IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 ```
 
-`PaymentDisabledReason` 直接返回统一配置中的整数关闭原因码。配置尚未就绪时该属性返回 `0`，调用方必须先检查 `IsPaymentConfigReady`；只有配置已就绪且 `IsPaymentAvailable` 为 `false` 时，原因码才表示服务端关闭原因。
+`PaymentDisabledReason` 直接返回统一配置中的整数关闭原因码。 `disabled_reason` 当前约定为 `0` 无、`1` 未命中任何白名单规则、`2` 用户黑名单；客户端保留服务端原始整数，不将未知原因码改写为已知值。`disabled_message` 保存服务端禁用说明，例如“未命中任何白名单规则”或“用户黑名单”；旧服务端未返回时为空。配置诊断日志同时打印启用状态、原因码和说明，购买被服务端禁用时，Warning 与返回失败说明也附带非空消息。日志受现有 IAP 日志开关控制，消息不参与支付可用性判断，也没有新增公开配置能力属性。配置尚未就绪时该属性返回 `0`，调用方必须先检查 `IsPaymentConfigReady`；只有配置已就绪且 `IsPaymentAvailable` 为 `false` 时，原因码才表示服务端关闭原因。
 
 ## 支付 URL
 
@@ -307,7 +307,7 @@ URL 构造还要求公共 Header 的 `AppId > 0`、本地商品 `Name` 及服务
 
 ## 平台行为
 
-Android 真机使用 Auth Tab → Custom Tabs → `Application.OpenURL` 的外部浏览器链；iOS 使用 UniWebView Safe Browsing；Editor 使用嵌入式 UniWebView。Android 外部支付会话直接订阅 Unity `Application.deepLinkActivated`，三种外部打开方式收到 `uniwebview://pay_callback?orderid=...&status=...` 后，都会先核对活动会话订单号，再取消返回倒计时并按 `ExternalBrowserCallback` 立即验单；没有收到成功回调时，App 返回后的倒计时继续按 `ExternalBrowserReturn` 兜底验单。具体请求次数和订单处置遵循“验单策略”。
+Android 真机使用 Auth Tab → Custom Tabs → `Application.OpenURL` 的外部浏览器链；iOS 使用包内桥接的 `SFSafariViewController`；Editor 仅支持模拟支付，关闭模拟后真实购买在建单前明确返回不可用。Android 外部支付会话直接订阅 Unity `Application.deepLinkActivated`，三种外部打开方式收到 `uniwebview://pay_callback?orderid=...&status=...` 后，都会先核对活动会话订单号，再取消返回倒计时并按 `ExternalBrowserCallback` 立即验单；没有收到成功回调时，App 返回后的倒计时继续按 `ExternalBrowserReturn` 兜底验单。具体请求次数和订单处置遵循“验单策略”。
 
 ## 运行时失败与回调边界
 
@@ -327,21 +327,35 @@ Google 连接或外部结算资格返回 `Unavailable` 时，现实现使用空 
 
 Google 网络类方法使用配置的超时令牌限制托管等待，用户信息页没有该默认超时。令牌取消不终止已经发出的 Billing 原生操作，部分客户端入口在注册取消前已调用原生 API；预取消不保证零原生派发。连接所有者的 `Dispose` 会结束连接，不等待所有回调完成；本次授权使用的超时视图不关闭共享连接。
 
-浏览器打开成功只代表打开请求被提交，不证明页面已显示、用户付款或验单完成。正式 Checkout 传入期望订单号；不带订单号的 WebView `OpenAsync` 重载不提供同等匹配约束。解析器精确区分 `pay_callback` / `close_callback`，路径和订单号按 `Ordinal` 比较，订单号不自动裁剪；`status=1/3` 是成功、`2` 是失败，其他整数是未知状态。关闭回调本身不含订单号。解析与活动订单匹配不验证 scheme/host/发送者身份，也不替代签名或服务端验单。
+Android 浏览器打开成功只代表打开请求被提交；iOS 包内浏览器等待系统展示完成后才建立页面会话。两者均不证明网页加载、用户付款或验单完成。正式 Checkout 传入期望订单号；不带订单号的 WebView `OpenAsync` 重载不提供同等匹配约束。解析器精确区分 `pay_callback` / `close_callback`，路径和订单号按 `Ordinal` 比较，订单号不自动裁剪；`status=1/3` 是成功、`2` 是失败，其他整数是未知状态。关闭回调本身不含订单号。解析与活动订单匹配不验证 scheme/host/发送者身份，也不替代签名或服务端验单。
 
-非法全局 Deep Link 被忽略；活动嵌入页面收到非法支付参数则可结束本次页面，同订单未知状态按失败处理。完成源只接受首次终态，会话 ID 与版本避免旧会话清掉新会话，但不等价于所有状态线程安全或账号代际隔离。关闭按钮文案等设置在下一次会话创建时生效，空文案回落默认值；iOS Safe Browsing 不支持时直接失败，不自动放宽为其他页面。页面等待没有统一默认超时；取消与打开交错时不保证原生页面从未打开。关闭托管外部浏览器会话也不能关闭系统浏览器，Unity 对象销毁可能延后到帧末。
+非法全局 Deep Link 被忽略，同订单未知状态按失败处理。iOS 页面会话在 Unity 主线程先确定唯一终态，再主动关闭原生页；取消发生在展示动画期间时登记关闭请求，展示完成后收尾，不能据此保证原生页从未短暂出现。会话 ID 隔离旧页面迟到事件，但不等价于账号代际隔离。iOS 不支持或存在模态冲突时明确失败，不自动回退其他页面，等待没有统一默认超时。Android 结束托管浏览器会话不能关闭外部浏览器。
 
-标题/关闭文案在 WebView 服务绑定前设置会被忽略；Google 跳页开关虽可提前写入 Hub，初始化又会用序列化配置覆盖。商品查询只读当前表和已保存配置，不隐式 Ensure。底层 DTO/结果构造器多数原样保存 enum、bool、订单号与错误字段，不保证不同字段互相一致；调用者不能把 `0`、空消息或内部 `Authorized` 当作成功证明。
+标题/关闭文案方法仅为源码兼容保留，系统浏览器使用系统界面，不应用任意文案；Google 跳页开关虽可提前写入 Hub，初始化又会用序列化配置覆盖。商品查询只读当前表和已保存配置，不隐式 Ensure。底层 DTO/结果构造器多数原样保存 enum、bool、订单号与错误字段，不保证不同字段互相一致；调用者不能把 `0`、空消息或内部 `Authorized` 当作成功证明。
 
 打点的“一次”由本地会话标记和部分 `Interlocked` 门禁实现，标记可能早于实际发送；发送异常或网络失败后不能推导远端已经收到，也没有端到端 exactly-once 保证。
 
 返回失败的细分打点上下文按 `IAPResult` 对象身份保存在运行期弱表，返回边界消费后不再保留；缺失时只能从粗错误域有损推导。只接收粗粒度错误码的重载不能还原精确场景、状态或细分原因。`TrackValidateSuccessInternal` 的五参重载使用 `orderId`，带 `ThirdPayValidationTrackContext` 的六参重载当前忽略该形参而使用 `context.ServerOrderId`；显式失败协议码/正文会覆盖 context 同字段。打点函数本身不推进验单、删除订单或履约，批量逐项派发也不提供事务和去重。
 
+### 自有系统浏览器与升级说明
+
+此处 Safe Browsing 指包内的系统浏览器薄封装。iOS 底层是 `SafariServices.framework` 中的 `SFSafariViewController`，不是 Google Safe Browsing 服务，也不要求安装 UniWebView。浏览器模块只负责支持性检查、展示、用户关闭和主动释放；`ThirdPayBrowserMessage` 只解析 URL，支付状态、订单匹配、验单与打点仍由 ThirdPay 负责。
+
+安装 ThirdPay 后无需安装 UniWebView。升级前若项目手工添加过 `com.onevcat.uniwebview`，先确认没有其他业务使用，再从 Package Manager 或 PlugPals 卸载；其他业务仍依赖时保留插件，不因 ThirdPay 升级擅自删除。
+
+iOS 页面实现位于 [系统浏览器模块](../Scripts/Runtime/Services/Browser/ThirdPayIosSafeBrowsing.cs) 与 [原生桥](../Plugins/iOS/NovaThirdPaySafeBrowsing.mm)。构建由 [ThirdPay 构建处理器](../Scripts/Editor/BuildProcessor/ThirdPayPluginBuildProcessor.cs) 接入 Nova 统一流程，只链接 `SafariServices.framework`，不向应用 plist 写入 `uniwebview` 或其他回跳协议；回跳按项目实际配置接入。原生回调只报告页面事件，不转发支付 Deep Link。业务购买入口保持不变。
+
+`uniwebview://` 是兼容解析的 scheme，不是域名；保留它不等于插件依赖，也不代表 iOS 已注册或能够自动回跳。项目须按实际网页与 App 的回跳方式验证 `Application.deepLinkActivated` 确实收到回调，并覆盖正确订单、错单、重复及迟到回调。
+
+维护 `ThirdPayPluginBuildProcessor` 的源码时，还须同步受控 WebGL 构建的精确回调合同；源码指纹仅用于构建预检，不参与支付。具体维护规则见 [框架构建回调校验](../../README.md#跨包文档定位)（`com.solotopia.nova.framework` 包内 `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md#sdk-构建处理器与源码指纹`）。
+
+Editor 通过 IAP 配置的“始终支付成功”开关模拟；关闭后真实第三方支付明确失败，不打开桌面网页、不创建支付订单，也不提供原内嵌页调试。Android 的购买前查询需要在测试设备与测试服务端验证；定向 Editor 测试可验证内部决策，但不能通过正常真实购买入口启动完整设备支付链。
+
 ### URL 与原生输入
 
 动态 AES 的 Base64 数据布局是 `[16 字节 key][16 字节 IV][密文]`；key 随 payload 一起发送，不能将这层编码当作对 URL 持有者保密或身份签名。URL 构造器依赖上层支付配置的 HTTPS 校验，不自行验证商户域或请求主体。IAP Debug 可能输出加密前参数、完整支付 URL、`client_config` 及原生回调信息；启用日志前应按真实字段检查敏感信息，日志总开关不会自动脱敏。
 
-嵌入页只额外注册 `alipayconnect` scheme。`ThirdPayUrlRewriteRules` 用不区分大小写的精确地址前缀匹配 `alipayconnect://platformapi/alipayconnectcode.htm`，后面只允许结束或 `?`，重写为 `https://psp.ac.alipay.com/page/simulation-wallet/acwallet/alipayconnectcode.html` 并原样保留 query；不是任意 scheme 转 HTTPS，也不验证 query 的业务内容。
+系统浏览器不接管网页导航，也不执行原内嵌页的 `alipayconnect` URL 重写；支付渠道跳转依赖真实网页与系统能力，须逐渠道验收。包内 `ThirdPayBrowserMessage` 解析 `scheme://回调名?参数`，路径、键和值执行单次百分号解码，query 中 `+` 表示空格、重复键按逗号合并、片段不进入参数；空参数值允许保留，非法百分号转义直接拒绝。现有 `uniwebview://` 只是兼容回调协议，不要求安装同名插件。
 
 Android 扩展依赖 `androidx.browser:browser:1.10.0` 与 `androidx.activity:activity:1.9.0`；EDM4U 描述与 `.androidlib/build.gradle` 分别参与 Unity 依赖解析和原生库构建。原生库当前 `minSdkVersion=23`、`compileSdkVersion=36`、`targetSdkVersion=36`。Manifest 的 package visibility query 只有 `android.support.customtabs.action.CustomTabsService`；代理 Activity 为 `com.solotopia.nova.thirdpay.NovaThirdPayAuthTabActivity`，`exported=false`、不显示在最近任务、使用透明主题，且由 `consumer-rules.pro` 保留类名。当前清单没有 `AuthTabService` query 或 `configChanges` 声明；构建时须核对最终合并清单。C# 通过全限定类名/JNI 调用桥接，枚举转换接受已定义值不等于某平台确实返回了每一种模式；Gradle 依赖不证明 Google 商户政策已生效。
 

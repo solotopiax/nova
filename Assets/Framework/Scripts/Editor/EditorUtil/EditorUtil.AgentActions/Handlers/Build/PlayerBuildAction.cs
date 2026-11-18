@@ -1750,6 +1750,7 @@ namespace NovaFramework.Editor
                     case "NovaFramework.SDK.FirebasePlugin.Editor.FirebasePluginBuildProcessor":
                     case "NovaFramework.SDK.GoogleSignIn.Editor.GoogleSignInPluginBuildProcessor":
                     case "NovaFramework.SDK.MaxAdPlugin.Editor.MaxAdPluginBuildProcessor":
+                    case "NovaFramework.SDK.IAP.ThirdPay.Editor.ThirdPayPluginBuildProcessor":
                         CaptureSdkNoWebglHooks(type, inputs, token);
                         return;
                     case "TMPro.TMP_PreBuildProcessor":
@@ -2236,10 +2237,13 @@ namespace NovaFramework.Editor
                     module = "googlesignin"; file = "GoogleSignInPluginBuildProcessor.cs"; expected = "0ccdcd9877faed9a5d04cadcd4fd6889a997855a692ae136809100646b1e22db"; break;
                 case "NovaFramework.SDK.MaxAdPlugin.Editor.MaxAdPluginBuildProcessor":
                     module = "max"; file = "MaxAdPluginBuildProcessor.cs"; expected = "3cef928bd4342b5590fbfed242390af089a900ea12750138b0744f332bf4bee7"; break;
-                default: throw new InvalidOperationException("Nova SDK 不属于已审七个具体实现。");
+                case "NovaFramework.SDK.IAP.ThirdPay.Editor.ThirdPayPluginBuildProcessor":
+                    // ThirdPay 只覆盖 iOS 后处理，WebGL 沿用基类空钩子；仍冻结精确源码与程序集身份。
+                    module = "iap.thirdpay"; file = "ThirdPayPluginBuildProcessor.cs"; expected = "58549ce5698050e9c450dce30772b91e94e4bcf42fd8f171cfa47bfbf2679069"; break;
+                default: throw new InvalidOperationException("Nova SDK 不属于已审具体实现。");
             }
-            RequirePackageSource(typeof(NovaSDKBuildProcessor), "com.solotopia.nova.framework", "Scripts/Editor/BuildProcessor/Core/NovaSDKBuildProcessor.cs", "a1a8c442997b86e38b541245a815aa491b9282de92913d8fdc478e798ac3441a", inputs, token);
-            RequirePackageSource(type, module == null ? "com.solotopia.nova.framework" : "com.solotopia.nova.framework.sdk." + module,
+            RequireSdkPackageSource(typeof(NovaSDKBuildProcessor), "com.solotopia.nova.framework", "Scripts/Editor/BuildProcessor/Core/NovaSDKBuildProcessor.cs", "a1a8c442997b86e38b541245a815aa491b9282de92913d8fdc478e798ac3441a", inputs, token);
+            RequireSdkPackageSource(type, module == null ? "com.solotopia.nova.framework" : "com.solotopia.nova.framework.sdk." + module,
                 module == null ? file : "Nova/Scripts/Editor/BuildProcessor/" + file, expected, inputs, token);
             string[] methods = { "OnPreprocessBuildOnWebGL", "OnAfterNovaPreprocessBuildOnWebGL", "OnPostprocessBuildOnWebGL", "OnAfterNovaPostprocessBuildOnWebGL" };
             foreach (string name in methods)
@@ -2296,6 +2300,16 @@ namespace NovaFramework.Editor
         /// <summary>精确验证本轮精读的缓存包源码指纹，版本改变后旧合同失效。</summary>
         private static void RequirePackageSource(Type type, string packageName, string relative, string expected,
             ICollection<string> inputs, CancellationToken token)
+            => RequirePackageSourceCore(type, packageName, relative, expected, inputs, token, false);
+
+        /// <summary>已审 Nova SDK 的 C# 源码按 Git 的 LF 文本计算指纹，兼容 Windows CRLF 检出；身份及其他字符仍精确核对。</summary>
+        private static void RequireSdkPackageSource(Type type, string packageName, string relative, string expected,
+            ICollection<string> inputs, CancellationToken token)
+            => RequirePackageSourceCore(type, packageName, relative, expected, inputs, token, true);
+
+        /// <summary>复用包与程序集身份校验；仅由已审 SDK 调用启用 CRLF 归一化，原厂源码与二进制仍按原始字节校验。</summary>
+        private static void RequirePackageSourceCore(Type type, string packageName, string relative, string expected,
+            ICollection<string> inputs, CancellationToken token, bool normalizeSdkLineEndings)
         {
             UnityEditor.PackageManager.PackageInfo package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(type.Assembly);
             string path = package == null ? null : Path.Combine(package.resolvedPath, relative);
@@ -2310,7 +2324,13 @@ namespace NovaFramework.Editor
                 path = Path.Combine(root, relative);
                 inputs.Add("CallbackFrameworkManifest=" + GenerateActionCommon.ComputeFileHash(manifest, token));
             }
-            if (!identityMatches || !File.Exists(path) || GenerateActionCommon.ComputeFileHash(path, token) != expected)
+            if (!identityMatches || !File.Exists(path))
+                throw new InvalidOperationException("回调精确包源码与已审指纹不匹配：" + packageName + "/" + relative);
+            token.ThrowIfCancellationRequested();
+            string actual = normalizeSdkLineEndings
+                ? GenerateActionCommon.ComputeTextHash(System.Text.Encoding.UTF8.GetString(File.ReadAllBytes(path)).Replace("\r\n", "\n"))
+                : GenerateActionCommon.ComputeFileHash(path, token);
+            if (actual != expected)
                 throw new InvalidOperationException("回调精确包源码与已审指纹不匹配：" + packageName + "/" + relative);
             CapturePackageIdentity(type, inputs, token);
             inputs.Add("CallbackSource=" + packageName + "/" + relative + "|" + expected);

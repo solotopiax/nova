@@ -7,17 +7,20 @@
 
 Unity Editor 中的全部日志等级始终保留调用，不受运行时日志宏控制；Player 构建继续按照 `ENABLE_LOG`、精确等级宏及 `ENABLE_*_AND_ABOVE_LOG` 宏裁剪调用。
 
+日常技术诊断和接口调用过程统一使用 `Log.Debug`；`Log.Info` 留给业务日志。可恢复失败、缺失数据和异常提示使用 `Log.Warning`，不为日常诊断触发 Crash。
+
 ---
 
-## 文件
+## 日常使用示例
 
 ```csharp
 Log.Debug(LogTag.Component, "msg");
 Log.Warning(LogTag.Asset, "msg");
-Log.Error(LogTag.Table, "msg");
-Log.Fatal(LogTag.Network, "msg");
-Log.Fatal(LogTag.Network, exception);   // 默认实现文本化后创建新的 Exception，不保留原异常实例堆栈
+Log.Debug(LogTag.Facebook, "登录开始。");
+Log.Warning(LogTag.Facebook, "头像未取得图片，请查看接口返回。");
 ```
+
+这些日志沿用现有框架开关与 Console 筛选；不为单个 SDK 增设日志开关或诊断包装层。较长的接口路径、错误和事件名可在调用处简单截断，原始调用参数与返回结果不随日志截断而改变。完整等级和宏管理入口见 [EnableLogsMenuItems.md](../../../Editor/Menus/EnableLogsMenuItems.md)。
 
 底层委托给可替换的 `ILogHelper`，默认实现 `LogHelper` 转发至 `UnityEngine.Debug`。
 

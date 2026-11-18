@@ -7,9 +7,11 @@ ThirdPay 实现支付订单、网页打开、回调和服务端验单。**支付
 ## 当前包的实际能力
 
 - Android 使用 `com.unity.purchasing` 5.4.4 的 `ExternalBillingProgramClient` 查询其外部结算计划可用性、创建上报 token、显示信息页，随后用 Auth Tab / Custom Tabs / 系统浏览器打开支付页。`AndroidSkipPaymentInformationScreen` 可以跳过信息页；计划不可用或 Billing 服务不可用时，当前实现还可能用空 token 继续打开页面。以上结果均不证明商户已获准上线。
-- iOS 使用 UniWebView Safe Browsing 打开支付页，并读取 Storefront 国家码；包内没有 StoreKit External Purchase Entitlement 配置、`ExternalPurchaseCustomLink`/披露页或外部交易上报实现。
+- iOS 通过包内 Safe Browsing 封装使用系统 `SFSafariViewController` 打开支付页，链接 `SafariServices.framework`，并读取 Storefront 国家码；包内没有 StoreKit External Purchase Entitlement 配置、`ExternalPurchaseCustomLink`/披露页或外部交易上报实现。
 - 包内 `ThirdGetPaymentConfig` 的 `enabled` 是业务服务端开关，不验证 Play Console / App Store Connect 的资格、商品类别、地区计划、外部链接目的地或交易上报。客户端国家码只用于配置上下文，不能替代平台资格判断。
 - ThirdPay 的 `pay_callback` 只是页面信号；实际发货依赖服务端验单和幂等履约。Google / Apple 所要求的平台交易上报是另一条独立链路，不能用 ThirdPay 验单事件代替。
+
+系统浏览器展示能力、项目回跳配置和商店支付资格分别验收。包内 iOS 构建处理器不注册 `uniwebview` 或其他回跳协议；链接系统 framework 也不代表回跳已接通或平台支付计划已完成。接入说明见 [自有系统浏览器与升级说明](ThirdPayStore.md#自有系统浏览器与升级说明)。
 
 ## Google Play 发布前核对
 
@@ -29,7 +31,7 @@ ThirdPay 实现支付订单、网页打开、回调和服务端验单。**支付
 | 商店地区 | 官方要求摘要 | 当前包边界 |
 |---|---|---|
 | 美国 | App Review Guidelines 3.1.1(a) 允许面向美国 storefront 的应用提供指向其他购买方式的按钮或链接而无需该条款所述 Entitlement；应用仍须满足其他审核、支付和消费者要求。 | Safe Browsing 能打开网页，不证明具体商品、嵌入式结算方式、链接文案或应用已通过审核；须按实际呈现方式核对 Apple 要求。 |
-| 欧盟 | 提供替代支付或应用外优惠须使用 StoreKit External Purchases or Offers Entitlement；可操作外链或应用内替代支付还须调用 StoreKit External Purchase API 和系统披露页，并满足儿童保护与交易报告要求。官方当前 Entitlement Profile 有最低系统版本条件。 | 当前包没有 Entitlement、StoreKit 外部购买 API 和系统披露页；不能仅靠 UniWebView Safe Browsing 在欧盟销售应用内数字商品。 |
+| 欧盟 | 提供替代支付或应用外优惠须使用 StoreKit External Purchases or Offers Entitlement；可操作外链或应用内替代支付还须调用 StoreKit External Purchase API 和系统披露页，并满足儿童保护与交易报告要求。官方当前 Entitlement Profile 有最低系统版本条件。 | 当前包没有 Entitlement、StoreKit 外部购买 API 和系统披露页；不能仅靠 包内系统浏览器 在欧盟销售应用内数字商品。 |
 | 其他 storefront | 仅在 Apple 对该地区、平台、应用类别和目的地开放的 Entitlement 条件下提供外链；未适用时遵循 3.1.1 的应用内购买规则。 | 不能用国家码、后端 `enabled` 或网页可访问性替代 Apple 批准。 |
 
 官方依据：[App Review Guidelines 3.1.1 与 3.1.1(a)](https://developer.apple.com/app-store/review/guidelines/)、[欧盟 App Store 替代支付选项](https://developer.apple.com/support/payment-options-on-the-app-store-in-the-eu/)。

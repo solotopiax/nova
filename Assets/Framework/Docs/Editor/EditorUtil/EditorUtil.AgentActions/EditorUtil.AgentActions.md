@@ -101,6 +101,16 @@ Config 的有效执行坐标要求平台和渠道为非 `None` 的精确枚举�
 
 Android 刷新合同另保存有限 UI Toolkit 角色的真实字段归属，识别既存面板持有的四类引擎渲染资源（含动态 Atlas 页直接持有的复制材质）正常重建；原始对象行完整保留，其余对象、输入纹理、资产、dirty、场景与选择仍严格保护。旧 Snapshot/Receipt 没有角色字段时保持原摘要和原严格比较，不事后升级旧 partial；具体维护边界见 [AndroidResolver](../EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md)。
 
+## SDK 构建处理器与源码指纹
+
+受控 WebGL 构建会发现当前域中的 Nova SDK 构建处理器，并逐个核对已审源码、包身份、程序集和 WebGL 钩子。ThirdPay 的处理器也必须纳入校验：它只覆盖 iOS framework 链接，WebGL 继续使用基类空钩子。缺少该具体登记会作为未知回调阻断预检；登记通过仅说明这个回调分支可接纳，不证明整个 Player 构建或 iOS 浏览器已运行成功。
+
+维护入口是 [PlayerBuildAction.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/PlayerBuildAction.cs) 中的 `AddPlayerCallbackCore` 与 `CaptureSdkNoWebglHooks`。后者用 `module` 和 `file` 定位具体 SDK 源码，用 `expected` 保存已审版本的 SHA-256 指纹；它不是支付地址、密钥或运行时配置。处理器源码发生变化，即使只改注释，也应重新核对行为并更新对应指纹；不能沿用不匹配的旧值或移除校验来放行。
+
+已审 Nova SDK 的 C# 源码校验只把 CRLF 归一化为 LF，保留 UTF-8 BOM 与其他字符后计算 SHA-256，兼容 Windows 检出；实际包与程序集身份、构造和 WebGL 钩子约束继续核对。此归一化不推广到第三方源码或二进制，它们仍使用原始字节指纹。不要在文档维护第二份哈希清单，具体值以源码登记为准。
+
+新增或调整 SDK 处理器时，同时核对 `SdkWebglCapture_ResolvesCurrentFrameworkSourceWithoutExecutingCallbacks` 的定向用例；处理器引入 WebGL override 或其他新副作用时，必须重新审查对应分支，不能只刷新哈希。
+
 ## PSD2UGUI 可选插件
 
 项目组以自然语言制作、同步和维护 PSD 界面时，使用 `nova-project-psd2ugui`。Framework 提供 `nova.project.psd2ugui.inspect` 和 `nova.project.psd2ugui.run`，通过已核验的 `cn.efunstudio.psd2ugui` 包调用固定桥 `UGF.EditorTools.Psd2UGUI.NovaPsdAutomation`；不依赖商业程序集编译，不接受任意类型名、方法或代码。缺包为 `not_applicable`，已安装但桥不兼容为 `blocked`，不影响其他 Action 的发现。
@@ -479,7 +489,7 @@ Google/FB/MAX规则从原const读取，Firebase与AppsFlyer的纯树由原回调
 
 ### Android Generate 的独立接线与未完成边界
 
-`PlayerBuildAction.AndroidGenerateAdapter` 已接入既有 `hotfix.generate-artifacts` 的 Android 分支；请求字段和 Action ID 保持。它分别捕获实际 provider、完整回调集、SDK/NDK/JDK/Gradle 工具身份及 Native 场景预览输入。有 AppsFlyer 回调时才冻结对应输入和导入收据。`AndroidHybridClrGenerateEvidenceStore` 保存同次计划及实际报告、输出、阶段与失败材料；Store 的读写测试只证明存储合同，不证明 Generate 成功。`unboundContracts` 非空仍写前 blocked，不能修改 DTO 或借 WebGL 证据放行。
+`PlayerBuildAction.AndroidGenerateAdapter` 已接入既有 `hotfix.generate-artifacts` 的 Android 分支；请求字段和 Action ID 保持。它分别捕获实际 provider、完整回调集、SDK/NDK/JDK/Gradle 工具身份及 Native 场景预览输入。配置来源的已审源码按 Unity 当前注册的 Framework 包根定位，再逐份核对摘要。有 AppsFlyer 回调时才冻结对应输入和导入收据。`AndroidHybridClrGenerateEvidenceStore` 保存同次计划及实际报告、输出、阶段与失败材料；Store 的读写测试只证明存储合同，不证明 Generate 成功。`unboundContracts` 非空仍写前 blocked，不能修改 DTO 或借 WebGL 证据放行。
 
 Core 的中立观察桥默认休眠。原 SDK pre 循环的 before/after、Native 场景 preview 和属性导入观察均围绕原调用执行，不额外调用 SDK。AF scope 在父 observer 租约之前完成完整工厂复核；异常/取消保留已取得的阶段，finally 仅释放自己的租约。AF-before 的 Manifest 从实际阶段取得，不使用父 merge 后的较晚文件补造；Import 记录保留 imported/deleted/moved/movedFrom 全部四数组。固定源码与 Module 身份仍独立检查。
 

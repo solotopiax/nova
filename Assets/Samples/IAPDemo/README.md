@@ -25,7 +25,7 @@ GameLogin 当前没有页面取消参数，关闭页面不会取消其身份请�
 
 ## 验证边界
 
-核对 Android 购买前补单时，关闭 Editor 的“始终支付成功”模拟，并使用已确认的测试账号、商品和服务端环境：首次没有时间记录时正常进入支付；窗口内重复点击应先查询，服务端命中后只补单，查询失败时不得继续新建订单。业务执行授权仍按接入流程确认，不能为了查看配置自动发起真实支付。
+核对 Android 购买前补单时，在 Android 测试设备上使用已确认的测试账号、商品和服务端环境；Editor 仅提供“始终支付成功”模拟，关闭后真实第三方购买在建单前明确失败：首次没有时间记录时正常进入支付；窗口内重复点击应先查询，服务端命中后只补单，查询失败时不得继续新建订单。业务执行授权仍按接入流程确认，不能为了查看配置自动发起真实支付。
 
 若界面显示本次调用成功但没有新的可发货订单，先检查是否为历史订单批次完成；`CanDeliver=false` 的汇总不能追加奖励。关闭购买前查询后仍可能收到独立后台补单事件，这两项行为分别验收。运行时设置与错误码见 [ThirdPay 配置能力](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/ThirdPayStoreConfig.md#运行时调整购买前查询`） 和 [返回与失败处理](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/ThirdPayStore.md#购买前补单的返回与失败处理`）。
 
@@ -43,6 +43,12 @@ Mobile 消耗品补单使用 `PaySuccess`，订阅和非消耗品恢复分别使
 
 `ProcedurePreload` 在网络表加载成功后，等待本次启动的同一轮 GM 应用配置拉取，再继续 SDK 等后续步骤；拉取失败、超时或未配置时继续使用当前配置。仍保留原有八步顺序，预加载重试和重复等待不会重新发起启动拉取。Network Inspector 的“启动时GM配置请求超时时间（秒）”默认每次请求 5 秒，主备请求和重试分别计时，整轮总耗时可能超过 5 秒。
 
+## 第三方支付页验证
+
+ThirdPay 无需安装 UniWebView。iOS Safe Browsing 使用系统 `SFSafariViewController`；包内构建处理器只链接 `SafariServices.framework`，回跳由项目实际配置接入，不自动注册 `uniwebview`。Android 保留现有 Auth Tab / Custom Tabs / 系统浏览器链。Editor 打开 IAP 的“始终支付成功”可验证界面反馈；关闭后真实第三方购买在建单前明确失败，真实页面、回跳和验单在对应测试设备验证。
+
+升级与配置说明见 [ThirdPay 文档定位](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/ThirdPayStore.md#自有系统浏览器与升级说明`）。
+
 ## 跨包文档定位
 
 本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
@@ -51,4 +57,4 @@ Mobile 消耗品补单使用 `PaySuccess`，订阅和非消耗品恢复分别使
 |---|---|---|
 | `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Agents/INDEX.md`<br>`Docs/Onboarding/PROJECT_STRUCTURE.md`<br>`Docs/START_HERE.md` |
 | `com.solotopia.nova.framework.sdk.iap` | `Nova/Doc/INDEX.md` | `Nova/Doc` |
-| `com.solotopia.nova.framework.sdk.iap.thirdpay` | `Nova/Doc/INDEX.md` | `Nova/Doc/ThirdPayStore.md#android-重复点击补单查询`<br>`Nova/Doc/ThirdPayStore.md#购买前补单的返回与失败处理`<br>`Nova/Doc/ThirdPayStoreConfig.md#运行时调整购买前查询` |
+| `com.solotopia.nova.framework.sdk.iap.thirdpay` | `Nova/Doc/INDEX.md` | `Nova/Doc/ThirdPayStore.md#android-重复点击补单查询`<br>`Nova/Doc/ThirdPayStore.md#购买前补单的返回与失败处理`<br>`Nova/Doc/ThirdPayStoreConfig.md#运行时调整购买前查询`<br>`Nova/Doc/ThirdPayStore.md#自有系统浏览器与升级说明` |

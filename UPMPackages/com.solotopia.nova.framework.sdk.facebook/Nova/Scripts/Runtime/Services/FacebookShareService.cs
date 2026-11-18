@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Facebook.Unity;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.Facebook
 {
@@ -18,8 +19,10 @@ namespace NovaFramework.SDK.Facebook
         public UniTask<FacebookShareResult> ShareLinkAsync(FacebookShareRequest request, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            Log.Debug(LogTag.Facebook, "分享调用开始。");
             if (request == null || request.ContentUrl == null)
             {
+                Log.Warning(LogTag.Facebook, "分享未执行：链接为空。");
                 return UniTask.FromResult(new FacebookShareResult
                 {
                     Success = false,
@@ -27,15 +30,35 @@ namespace NovaFramework.SDK.Facebook
                 });
             }
 
-            var tcs = new UniTaskCompletionSource<FacebookShareResult>();
-            FB.ShareLink(
-                request.ContentUrl,
-                request.Title,
-                request.Description,
-                request.PhotoUrl,
-                result => tcs.TrySetResult(BuildShareResult(result)));
-
-            return tcs.Task.AttachExternalCancellation(ct);
+            try
+            {
+                ct.ThrowIfCancellationRequested();
+                var tcs = new UniTaskCompletionSource<FacebookShareResult>();
+                FB.ShareLink(
+                    request.ContentUrl,
+                    request.Title,
+                    request.Description,
+                    request.PhotoUrl,
+                    result =>
+                    {
+                        FacebookShareResult share = BuildShareResult(result);
+                        Log.Debug(LogTag.Facebook, $"分享回调：成功={share.Success}，取消={share.Cancelled}；不代表接收者已收到。");
+                        if (!share.Success)
+                            Log.Warning(LogTag.Facebook, $"分享未完成：error={(share.ErrorMessage?.Length > 240 ? share.ErrorMessage.Substring(0, 237) + "..." : share.ErrorMessage)}。");
+                        tcs.TrySetResult(share);
+                    });
+                return tcs.Task.AttachExternalCancellation(ct);
+            }
+            catch (System.OperationCanceledException)
+            {
+                Log.Debug(LogTag.Facebook, "分享调用已取消。");
+                throw;
+            }
+            catch (System.Exception ex)
+            {
+                Log.Warning(LogTag.Facebook, $"分享异常：error={(ex.Message.Length > 240 ? ex.Message.Substring(0, 237) + "..." : ex.Message)}。");
+                throw;
+            }
         }
 
         /// <summary>

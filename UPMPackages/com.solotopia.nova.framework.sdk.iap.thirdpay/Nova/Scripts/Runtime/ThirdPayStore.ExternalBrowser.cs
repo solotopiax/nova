@@ -174,7 +174,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             ThirdPayCallbackResolveResult resolveResult;
             try
             {
-                var message = new UniWebViewMessage(url);
+                if (!ThirdPayBrowserMessage.TryParse(url, out ThirdPayBrowserMessage message)) return;
                 resolveResult = ThirdPayWebViewCallbackResolver.ResolveCallback(message.Path, message.Args, out callback);
             }
             catch (Exception ex)

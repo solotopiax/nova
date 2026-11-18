@@ -23,17 +23,18 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
+    ExtensionConfigsJson: '{}'
     PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
     InfoPlistUsageDescriptions: '{}'
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2095149308307832996
-  - rid: 2095149308307832997
-  - rid: 2095149308307832998
+  - rid: 2824342271013421262
+  - rid: 2824342271013421263
+  - rid: 2824342271013421264
   EnabledKitConfigs:
-  - rid: 2095149308307832999
-  - rid: 2095149308307833000
+  - rid: 2824342271013421265
+  - rid: 2824342271013421266
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -65,7 +66,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2095149308307832996
+    - rid: 2824342271013421262
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -76,19 +77,24 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 2095149308307832997
+    - rid: 2824342271013421263
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2095149308307833001
+          - rid: 2824342271013421267
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
+          m_GroupRetryIntervalsSeconds:
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 2095149308307832998
+        m_RevenueReportCmdName: 
+    - rid: 2824342271013421264
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
         m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
@@ -96,19 +102,19 @@ MonoBehaviour:
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
         m_AutoRestoreOnInitialize: 0
-    - rid: 2095149308307832999
+    - rid: 2824342271013421265
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 2095149308307833000
+    - rid: 2824342271013421266
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
         m_BindingQueryCmdName: 
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
-    - rid: 2095149308307833001
+    - rid: 2824342271013421267
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -116,13 +122,13 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_BannerAutoRefreshIntervalSeconds: 10
-        m_RVPlacementIds:
+        m_RVPlacementGroups:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
+        m_InterPlacementGroups:
         - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
         - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
+        m_AppOpenPlacementGroups: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1

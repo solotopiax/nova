@@ -3,7 +3,7 @@
 **类签名**：`public static partial class LogTag`  
 **命名空间**：`NovaFramework.Runtime`
 
-日志标签常量集合，用于统一标记日志来源模块，配合 `Log.Debug/Warning/Error` 做分类输出与过滤。
+`LogTag` 定义各模块统一使用的日志标签，便于识别日志来源，并在调试控制台中按模块筛选。标签表示来源模块，日志级别由调用的方法决定：`Log.Debug` 记录技术诊断，`Log.Info` 记录业务过程，`Log.Warning` 提示需要关注的异常或失败，`Log.Error` 记录错误。
 
 ## § 2 文件表
 
@@ -35,6 +35,7 @@
 | `WebSocket` | `[Network][WebSocket]` | WebSocket 子模块 |
 | `Network` | `[Network]` | 网络模块 |
 | `SDK` | `[SDK]` | SDK 模块 |
+| `Facebook` | `[SDK][Facebook]` | Facebook 初始化、认证、Graph 接口、资料头像、好友、分享与 App Events 日志 |
 | `Table` | `[Table]` | 表格模块 |
 | `Sound` | `[Sound]` | 声音模块 |
 | `Vibrate` | `[Vibrate]` | 振动模块 |
@@ -53,8 +54,11 @@
 ```csharp
 Log.Debug(LogTag.Procedure, "版本检查开始。");
 Log.Warning(LogTag.Hotfix, "热更下载异常，准备重试。");
-Log.Error(LogTag.NetworkHttp, "接口请求失败。");
+Log.Warning(LogTag.Http, "接口请求失败。");
+Log.Debug(LogTag.Facebook, "登录开始。");
 ```
+
+运行时 Debug 从 `LogTag` 常量构建标签树，Facebook 对应 `SDK → Facebook`。标签只参与分类与筛选，不控制日志等级或编译宏，也不保证第三方 SDK 自身的输出自动归入此标签。
 
 ## § 13 关联文档
 

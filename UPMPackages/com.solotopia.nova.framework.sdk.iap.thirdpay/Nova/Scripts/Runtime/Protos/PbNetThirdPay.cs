@@ -38,49 +38,50 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             "aW1lLlBiTmV0VGhpcmRDaGFubmVsQ29uZmlnElwKE3BheW1lbnRfcGFnZV9j",
             "b25maWcYBSABKAsyPy5Ob3ZhRnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50",
             "aW1lLlBiTmV0VGhpcmRQYXltZW50UGFnZUNvbmZpZxIVCg1jbGllbnRfY29u",
-            "ZmlnGAYgASgJIkUKGVBiTmV0VGhpcmRQYXlBdmFpbGFiaWxpdHkSDwoHZW5h",
-            "YmxlZBgBIAEoCBIXCg9kaXNhYmxlZF9yZWFzb24YAiABKAUiagoXUGJOZXRU",
-            "aGlyZFByb2R1Y3RDb25maWcSTwoMcHJvZHVjdF9saXN0GAEgAygLMjkuTm92",
-            "YUZyYW1ld29yay5JQVAuVGhpcmRQYXkuUnVudGltZS5QYk5ldFRoaXJkUHJv",
-            "ZHVjdEluZm8iNwoXUGJOZXRUaGlyZENoYW5uZWxDb25maWcSHAoUcGF5bWVu",
-            "dF9jdXN0b21lcl9pZHMYASABKAkiNwobUGJOZXRUaGlyZFBheW1lbnRQYWdl",
-            "Q29uZmlnEhgKEHBheW1lbnRfcGFnZV91cmwYASABKAkiWAoVUGJOZXRUaGly",
-            "ZFByb2R1Y3RJbmZvEhYKDmxvY2FsX2N1cnJlbmN5GAEgASgJEhMKC2xvY2Fs",
-            "X3ByaWNlGAIgASgJEhIKCnByb2R1Y3RfaWQYAyABKAkiVQoeUGJOZXRUaGly",
-            "ZFF1ZXJ5UGVuZGluZ09yZGVyUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
-            "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXIisAEKH1BiTmV0VGhpcmRR",
-            "dWVyeVBlbmRpbmdPcmRlclJlc3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFt",
-            "ZXdvcmsuUnVudGltZS5QYk5ldFJlc3BIZWFkZXISVwoKb3JkZXJfbGlzdBgC",
-            "IAMoCzJDLk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJO",
-            "ZXRUaGlyZFF1ZXJ5UGVuZGluZ09yZGVySW5mbyJMCh9QYk5ldFRoaXJkUXVl",
-            "cnlQZW5kaW5nT3JkZXJJbmZvEhcKD2NsaWVudF9vcmRlcl9pZBgBIAEoCRIQ",
-            "Cgh0YWJsZV9pZBgCIAEoAyJnChZQYk5ldFRoaXJkVmVyaWZ5SWFwUmVxEjMK",
-            "BGhlYWQYASABKAsyJS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFI",
-            "ZWFkZXISGAoQY2xpZW50X29yZGVyX2lkcxgCIAMoCSKkAQoXUGJOZXRUaGly",
-            "ZFZlcmlmeUlhcFJlc3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsu",
-            "UnVudGltZS5QYk5ldFJlc3BIZWFkZXISUwoKb3JkZXJfbGlzdBgCIAMoCzI/",
-            "Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRUaGly",
-            "ZFZlcmlmeU9yZGVyUmVzdWx0IskBChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJS",
-            "ZXN1bHQSFwoPc2VydmVyX29yZGVyX2lkGAEgASgJEk8KBnN0YXR1cxgCIAEo",
-            "DjI/Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRU",
-            "aGlyZFZlcmlmeU9yZGVyU3RhdHVzEhUKDXJlY2VpcHRfcGFyYW0YAyABKAkS",
-            "EAoIdGFibGVfaWQYBCABKAMSFwoPY2xpZW50X29yZGVyX2lkGAUgASgJKvkC",
-            "ChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJTdGF0dXMSMAosUEJfTkVUX1RISVJE",
-            "X1ZFUklGWV9PUkRFUl9TVEFUVVNfVU5TUEVDSUZJRUQQABI0CjBQQl9ORVRf",
-            "VEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19QRU5ESU5HX1BBWU1FTlQQARIv",
-            "CitQQl9ORVRfVEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19QUk9DRVNTSU5H",
-            "EAISKQolUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfUEFJRBAD",
-            "EjYKMlBCX05FVF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX0ZBSUxFRF9P",
-            "Ul9FWFBJUkVEEAQSLgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFU",
-            "VVNfREVMSVZFUkVEEAUSLgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9T",
-            "VEFUVVNfTk9UX0ZPVU5EEAZCKaoCJk5vdmFGcmFtZXdvcmsuU0RLLklBUC5U",
-            "aGlyZFBheS5SdW50aW1lYgZwcm90bzM="));
+            "ZmlnGAYgASgJIl8KGVBiTmV0VGhpcmRQYXlBdmFpbGFiaWxpdHkSDwoHZW5h",
+            "YmxlZBgBIAEoCBIXCg9kaXNhYmxlZF9yZWFzb24YAiABKAUSGAoQZGlzYWJs",
+            "ZWRfbWVzc2FnZRgDIAEoCSJqChdQYk5ldFRoaXJkUHJvZHVjdENvbmZpZxJP",
+            "Cgxwcm9kdWN0X2xpc3QYASADKAsyOS5Ob3ZhRnJhbWV3b3JrLklBUC5UaGly",
+            "ZFBheS5SdW50aW1lLlBiTmV0VGhpcmRQcm9kdWN0SW5mbyI3ChdQYk5ldFRo",
+            "aXJkQ2hhbm5lbENvbmZpZxIcChRwYXltZW50X2N1c3RvbWVyX2lkcxgBIAEo",
+            "CSI3ChtQYk5ldFRoaXJkUGF5bWVudFBhZ2VDb25maWcSGAoQcGF5bWVudF9w",
+            "YWdlX3VybBgBIAEoCSJYChVQYk5ldFRoaXJkUHJvZHVjdEluZm8SFgoObG9j",
+            "YWxfY3VycmVuY3kYASABKAkSEwoLbG9jYWxfcHJpY2UYAiABKAkSEgoKcHJv",
+            "ZHVjdF9pZBgDIAEoCSJVCh5QYk5ldFRoaXJkUXVlcnlQZW5kaW5nT3JkZXJS",
+            "ZXESMwoEaGVhZBgBIAEoCzIlLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5l",
+            "dFJlcUhlYWRlciKwAQofUGJOZXRUaGlyZFF1ZXJ5UGVuZGluZ09yZGVyUmVz",
+            "cBI0CgRoZWFkGAEgASgLMiYuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0",
+            "UmVzcEhlYWRlchJXCgpvcmRlcl9saXN0GAIgAygLMkMuTm92YUZyYW1ld29y",
+            "ay5JQVAuVGhpcmRQYXkuUnVudGltZS5QYk5ldFRoaXJkUXVlcnlQZW5kaW5n",
+            "T3JkZXJJbmZvIkwKH1BiTmV0VGhpcmRRdWVyeVBlbmRpbmdPcmRlckluZm8S",
+            "FwoPY2xpZW50X29yZGVyX2lkGAEgASgJEhAKCHRhYmxlX2lkGAIgASgDImcK",
+            "FlBiTmV0VGhpcmRWZXJpZnlJYXBSZXESMwoEaGVhZBgBIAEoCzIlLk5vdmFG",
+            "cmFtZXdvcmsuUnVudGltZS5QYk5ldFJlcUhlYWRlchIYChBjbGllbnRfb3Jk",
+            "ZXJfaWRzGAIgAygJIqQBChdQYk5ldFRoaXJkVmVyaWZ5SWFwUmVzcBI0CgRo",
+            "ZWFkGAEgASgLMiYuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVzcEhl",
+            "YWRlchJTCgpvcmRlcl9saXN0GAIgAygLMj8uTm92YUZyYW1ld29yay5JQVAu",
+            "VGhpcmRQYXkuUnVudGltZS5QYk5ldFRoaXJkVmVyaWZ5T3JkZXJSZXN1bHQi",
+            "yQEKG1BiTmV0VGhpcmRWZXJpZnlPcmRlclJlc3VsdBIXCg9zZXJ2ZXJfb3Jk",
+            "ZXJfaWQYASABKAkSTwoGc3RhdHVzGAIgASgOMj8uTm92YUZyYW1ld29yay5J",
+            "QVAuVGhpcmRQYXkuUnVudGltZS5QYk5ldFRoaXJkVmVyaWZ5T3JkZXJTdGF0",
+            "dXMSFQoNcmVjZWlwdF9wYXJhbRgDIAEoCRIQCgh0YWJsZV9pZBgEIAEoAxIX",
+            "Cg9jbGllbnRfb3JkZXJfaWQYBSABKAkq+QIKG1BiTmV0VGhpcmRWZXJpZnlP",
+            "cmRlclN0YXR1cxIwCixQQl9ORVRfVEhJUkRfVkVSSUZZX09SREVSX1NUQVRV",
+            "U19VTlNQRUNJRklFRBAAEjQKMFBCX05FVF9USElSRF9WRVJJRllfT1JERVJf",
+            "U1RBVFVTX1BFTkRJTkdfUEFZTUVOVBABEi8KK1BCX05FVF9USElSRF9WRVJJ",
+            "RllfT1JERVJfU1RBVFVTX1BST0NFU1NJTkcQAhIpCiVQQl9ORVRfVEhJUkRf",
+            "VkVSSUZZX09SREVSX1NUQVRVU19QQUlEEAMSNgoyUEJfTkVUX1RISVJEX1ZF",
+            "UklGWV9PUkRFUl9TVEFUVVNfRkFJTEVEX09SX0VYUElSRUQQBBIuCipQQl9O",
+            "RVRfVEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19ERUxJVkVSRUQQBRIuCipQ",
+            "Ql9ORVRfVEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19OT1RfRk9VTkQQBkIp",
+            "qgImTm92YUZyYW1ld29yay5TREsuSUFQLlRoaXJkUGF5LlJ1bnRpbWViBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigReq.Parser, new[]{ "Head", "Country" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp.Parser, new[]{ "Head", "Availability", "ProductConfig", "ChannelConfig", "PaymentPageConfig", "ClientConfig" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability.Parser, new[]{ "Enabled", "DisabledReason" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability.Parser, new[]{ "Enabled", "DisabledReason", "DisabledMessage" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig.Parser, new[]{ "ProductList" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig.Parser, new[]{ "PaymentCustomerIds" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig.Parser, new[]{ "PaymentPageUrl" }, null, null, null, null),
@@ -876,6 +877,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public PbNetThirdPayAvailability(PbNetThirdPayAvailability other) : this() {
       enabled_ = other.enabled_;
       disabledReason_ = other.disabledReason_;
+      disabledMessage_ = other.disabledMessage_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -904,7 +906,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public const int DisabledReasonFieldNumber = 2;
     private int disabledReason_;
     /// <summary>
-    /// 禁用原因；具体枚举值由服务端协议后续约定
+    /// 0=无 1=未命中任何白名单规则 2=用户黑名单
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -912,6 +914,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       get { return disabledReason_; }
       set {
         disabledReason_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "disabled_message" field.</summary>
+    public const int DisabledMessageFieldNumber = 3;
+    private string disabledMessage_ = "";
+    /// <summary>
+    /// 空=无；未命中任何白名单规则；用户黑名单
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string DisabledMessage {
+      get { return disabledMessage_; }
+      set {
+        disabledMessage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -932,6 +949,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       }
       if (Enabled != other.Enabled) return false;
       if (DisabledReason != other.DisabledReason) return false;
+      if (DisabledMessage != other.DisabledMessage) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -941,6 +959,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       int hash = 1;
       if (Enabled != false) hash ^= Enabled.GetHashCode();
       if (DisabledReason != 0) hash ^= DisabledReason.GetHashCode();
+      if (DisabledMessage.Length != 0) hash ^= DisabledMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -967,6 +986,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(16);
         output.WriteInt32(DisabledReason);
       }
+      if (DisabledMessage.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(DisabledMessage);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -985,6 +1008,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(16);
         output.WriteInt32(DisabledReason);
       }
+      if (DisabledMessage.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(DisabledMessage);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1000,6 +1027,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       }
       if (DisabledReason != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(DisabledReason);
+      }
+      if (DisabledMessage.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(DisabledMessage);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1018,6 +1048,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       }
       if (other.DisabledReason != 0) {
         DisabledReason = other.DisabledReason;
+      }
+      if (other.DisabledMessage.Length != 0) {
+        DisabledMessage = other.DisabledMessage;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1046,6 +1079,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             DisabledReason = input.ReadInt32();
             break;
           }
+          case 26: {
+            DisabledMessage = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -1071,6 +1108,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
           }
           case 16: {
             DisabledReason = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            DisabledMessage = input.ReadString();
             break;
           }
         }

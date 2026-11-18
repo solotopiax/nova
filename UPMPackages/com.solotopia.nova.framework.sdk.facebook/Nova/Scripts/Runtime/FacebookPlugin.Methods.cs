@@ -39,6 +39,7 @@ namespace NovaFramework.SDK.Facebook
             await m_AuthService.InitializeAsync(ct);
 
             SetLoginState(new FacebookUserData(m_AuthService.CurrentUserId, m_AuthService.CurrentAccessToken));
+            Log.Debug(LogTag.Facebook, $"插件初始化完成：恢复登录态={IsLoggedIn}，自动下载头像={m_RuntimeConfig.AutoDownloadAvatarOnLogin}，头像尺寸={avatarSize}。");
         }
 
         /// <summary>
@@ -47,6 +48,7 @@ namespace NovaFramework.SDK.Facebook
         /// <param name="ct">取消令牌。</param>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
+            Log.Debug(LogTag.Facebook, "释放插件：清除本地服务与登录缓存，不执行原厂登出。");
             SetLoginState(null);
             m_AuthService = null;
             m_ProfileService = null;
@@ -103,10 +105,12 @@ namespace NovaFramework.SDK.Facebook
             {
                 string avatarPath = await m_ProfileService.DownloadAvatarAsync(m_CurrentUserData.UserId, ct);
                 m_CurrentUserData = m_CurrentUserData?.WithAvatarPath(avatarPath);
+                if (string.IsNullOrEmpty(avatarPath))
+                    Log.Warning(LogTag.Facebook, "登录后自动下载头像未取得文件，请查看 Graph 请求日志。");
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.SDK, $"Facebook 头像自动下载失败：{ex.Message}");
+                Log.Warning(LogTag.Facebook, $"头像自动下载未完成：error={(ex.Message.Length > 240 ? ex.Message.Substring(0, 237) + "..." : ex.Message)}。");
             }
         }
 

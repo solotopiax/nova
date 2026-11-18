@@ -10,8 +10,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using Path = System.IO.Path;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -27,7 +25,7 @@ namespace NovaFramework.Editor
     {
         private const string Globals = "ProjectSettings/Nova/Globals.json";
         private static readonly string[][] Sources = {
-            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs", "40b384c49c50076070653ef80cf6c37239194986aead9ad2cc8a3e041ad15f20" },
+            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs", "f61d78388ff6450527d63c92ed8b422ff23a9a39281160a6e5493f5fa740d61a" },
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.cs", "61dfacd7dfbe804aad895c4559e9fa9648c36c4f731593120908874374b2e6f6" },
             new[] { "Assets/Framework/Scripts/Runtime/Modules/Config/ConfigRuntimeSO.cs", "5ffd7778b56aab2671a645a5995fedf119ec208b88adfa7a8779800366dd127a" },
         };
@@ -53,8 +51,11 @@ namespace NovaFramework.Editor
         {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android) throw new InvalidOperationException("配置provider合同只支持真实Android活动域。");
             foreach (string[] source in Sources)
-                if (GenerateActionCommon.ComputeFileHash(Path.Combine(BuildActionCommon.ProjectRoot, source[0]), token) != source[1])
+            {
+                string path = NovaAndroidParentBuildContract.ResolveReviewedSource(BuildActionCommon.ProjectRoot, source[0]);
+                if (GenerateActionCommon.ComputeFileHash(path, token) != source[1])
                     throw new InvalidOperationException("Android配置provider已审源码漂移：" + source[0]);
+            }
             if (!EditorUtil.Config.WorkspaceActive.TryGetPersistedConfigMaster(out ConfigMasterSO master, out string guid, out string actualPath, out string error) || actualPath != masterPath)
                 throw new InvalidOperationException(error ?? "Android provider的持久Master与Action不同。");
             ConfigRuntimeSO runtime = master.ExportTarget;

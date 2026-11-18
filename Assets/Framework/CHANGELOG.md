@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.7.13] - 2026-11-18
+
+### Fixed
+
+- 将 ThirdPay 自有 iOS 浏览器构建处理器纳入受控 Player 构建的精确回调合同，保留其 WebGL 空钩子检查，避免安装 ThirdPay 后阻断 WebGL 构建预检。
+
+- Nova 自有 SDK 的已审 C# 构建源码统一按 LF 文本计算指纹，兼容 Windows CRLF 检出，避免内容未变却阻断预检；第三方源码及二进制仍保留原始字节校验。
+
+- 修复广告渠道及商店配置添加菜单误列私有测试类型或无法无参构造的类型，避免点击后报错；构造失败时不再先插入空配置项。
+
+- Android 热更生成在实际解析的 Framework 包内检查配置来源，消费工程无需开发仓目录。
+
+- 清理 Framework 和 MainDemo 中已空的目录元数据，避免导入时自动补建空目录。
+
+### Added
+
+- 新增 SDK/Facebook 调试日志标签，支持在运行时 Debug Console 中单独筛选 Facebook 插件日志。
+
+- 新项目首装检查增加 `Editor/Settings` 工作区设置与引用，以及 `Excels` 源表和导出配置的核对。
+
 ## [0.7.12] - 2026-11-18
 
 ### Fixed

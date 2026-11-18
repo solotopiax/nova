@@ -27,10 +27,12 @@ namespace NovaFramework.SDK.Facebook
         {
             if (!FB.IsInitialized || string.IsNullOrWhiteSpace(userId))
             {
+                Log.Debug(LogTag.Facebook, $"App Events 用户同步跳过：已初始化={FB.IsInitialized}，含用户ID={!string.IsNullOrWhiteSpace(userId)}。");
                 return;
             }
 
             FB.Mobile.UserID = userId;
+            Log.Debug(LogTag.Facebook, "App Events 用户ID已同步。");
         }
 
         /// <summary>
@@ -56,10 +58,12 @@ namespace NovaFramework.SDK.Facebook
         {
             if (!FB.IsInitialized || string.IsNullOrEmpty(eventName))
             {
+                Log.Warning(LogTag.Facebook, $"App Event 未调用：已初始化={FB.IsInitialized}，含事件名={!string.IsNullOrEmpty(eventName)}。");
                 return;
             }
 
             FB.LogAppEvent(eventName, null, BuildFacebookParameters(parameters));
+            Log.Debug(LogTag.Facebook, $"App Event 已交给 SDK：event={(eventName.Length > 240 ? eventName.Substring(0, 237) + "..." : eventName)}，输入参数数={parameters?.Count ?? 0}。");
         }
 
         /// <summary>

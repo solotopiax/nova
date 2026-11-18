@@ -108,6 +108,29 @@ Before release, recheck Facebook platform policy, App Review permission requirem
 
 ## Error Handling Expectations
 
+### 调试登录与接口调用
+
+运行时 Debug 的 Console 标签中选择 `SDK → Facebook`，可查看初始化、登录/好友授权、退出、Graph 请求、资料、头像缓存与下载、好友和分享的关键过程。Graph GET 使用本地 `request` 编号对应开始与返回；它只用于诊断，不保证外部操作隔离。日常技术诊断（包括 App Events 用户同步与事件调用）统一使用 Debug，失败或缺失数据使用 Warning；不使用业务 Info 或触发 Crash。
+
+不需要新增配置。Editor 保留这些日志；Player 使用框架现有 `Nova/Enable Logs/Enable Debug And Above Logs` 菜单启用 Debug 及以上等级，或通过已有构建配置保留 `ENABLE_LOG` / `ENABLE_DEBUG_AND_ABOVE_LOG`。精确等级宏 `ENABLE_DEBUG_LOG` 只保留 Debug，本身不会同时开启 Warning。只开启 Warning 及以上时看不到正常调用过程；Console 还需允许显示对应等级。标签筛选不能开启已被编译裁剪的日志。
+
+长请求路径、错误文本和事件名在日志调用处简单截断，最多显示 240 字符（含 `...`）。接口返回打印字段数、是否包含纹理及成功/失败状态，不展开完整响应或事件参数值。直接沿用框架现有日志开关、等级和 Console 筛选，不增加独立诊断或脱敏工具。
+
+登录请求已包含 `public_profile`，回调记录当前令牌是否包含该权限；不会为了日志追加重复授权，没有再次弹窗也不足以判断权限是否缺失。登录成功与资料/头像可用分别记录，Graph 错误和头像空结果有单独提示。昵称仍由 `Profile.GetCurrentProfileAsync` 读取，不自动加入 `CurrentUserData`。日志不改变原有返回值、权限、取消或异常传播契约；平台真实权限与头像昵称是否可用仍需真机核验。
+
+按以下顺序查看日志即可定位当前停在哪一步：
+
+| 现象 | 查看内容与下一步 |
+|---|---|
+| 点击登录没有日志 | 确认使用包含 Facebook 标签和日志的 Framework / Facebook 包；检查 Player 日志宏、Console 等级和标签筛选。Demo 的页面反馈区不自动转发到 Console，插件日志是独立的调用记录。 |
+| 有“登录开始”，没有“登录回调” | 说明调用已进入原厂授权流程，但尚未观察到回调；结合平台登录窗口及设备日志继续定位，不以此断言登录失败。登录没有默认超时，取消本地等待也不撤销原厂操作。 |
+| 登录回调失败或取消 | 查看同组 Warning 的 `error` 摘要，以及回调的“用户取消”“含用户ID”“含Token”和权限布尔值。 |
+| 登录成功但昵称为空 | 确认业务或 Demo 已调用 `Profile.GetCurrentProfileAsync()`；查看 `me?fields=id,name,picture` 对应 Graph 请求的结果和“资料读取完成”的“含昵称”状态。 |
+| 头像没有显示 | 先查自动下载开关与“头像缓存可用”，再查缓存命中、Graph 图片结果、文件写入及纹理解码日志。自动下载关闭时，显式资料读取仍可能下载头像；登录成功不表示图片已取得。 |
+| 好友或分享没有达到预期 | 好友需单独申请 `user_friends`，空列表不一定是接口错误；分享成功仅表示 SDK 回调未报错且未取消。App Event 日志只证明已交给 SDK，不证明后台已接收。 |
+
+240 字符限制针对单个动态文本，不是整条日志总长度；截断只影响日志展示，接口收到的原参数、原错误返回及业务结果保持原样。
+
 - `LoginAsync` and `EnsureFriendsPermissionAsync` return `AuthResult.Success == false` on failure and provide details through `ErrorMessage`.
 - `Share.ShareLinkAsync` returns `FacebookShareResult.Success == false` on failure and provides details through `ErrorMessage`.
 - Profile, avatar, and friend APIs are asynchronous. Callers must handle cancellation, network failure, missing permissions, and empty data.

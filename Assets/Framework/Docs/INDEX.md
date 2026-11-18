@@ -587,7 +587,7 @@
 | [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（表格展示 Package/Current/Latest，支持"跳过当前版本"持久化） |
 | [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) | 升级后重要声明模态确认窗口，无手动菜单 |
 | [PipifyWindow.md](Editor/Windows/PipifyWindow.md) | Pipify 流水线配置与执行窗口（Nova/Open Pipify） |
-| [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | 空壳说明页：`EnvironmentWindow` 类不存在、`Windows/EnvironmentWindow/` 目录为空；「环境检测」UI 实际内嵌在 ConfigWindow 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment` |
+| [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | Config 窗口的环境检测入口及使用说明。检测逻辑由 `EditorUtil.Environment` |
 
 ## Editor — Tools（工具 + AB 处理器）
 

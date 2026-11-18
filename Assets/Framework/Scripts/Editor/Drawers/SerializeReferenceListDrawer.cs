@@ -333,7 +333,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 弹出 GenericMenu，列出满足 FilterAddableType 的全部 TInterface 派生具体类型。
+        /// 弹出 GenericMenu，列出可公开构造、可序列化且满足 FilterAddableType 的具体类型。
         /// 已存在的类型显示为禁用项；菜单为空时显示 EmptyAddMenuLabel 禁用项。
         /// </summary>
         /// <param name="itemsProp">m_Items SerializedProperty，用于执行数组插入。</param>
@@ -357,7 +357,7 @@ namespace NovaFramework.Editor
             var types = TypeCache.GetTypesDerivedFrom<TInterface>();
             foreach (var type in types)
             {
-                if (type.IsAbstract || type.IsInterface)
+                if (!IsAddableReferenceType(type))
                 {
                     continue;
                 }
@@ -374,9 +374,10 @@ namespace NovaFramework.Editor
                 {
                     menu.AddItem(new GUIContent(type.Name), false, () =>
                     {
+                        object instance = Activator.CreateInstance(capturedType);
                         itemsProp.InsertArrayElementAtIndex(itemsProp.arraySize);
                         SerializedProperty newElem = itemsProp.GetArrayElementAtIndex(itemsProp.arraySize - 1);
-                        newElem.managedReferenceValue = Activator.CreateInstance(capturedType);
+                        newElem.managedReferenceValue = instance;
                         property.serializedObject.ApplyModifiedProperties();
                     });
                 }
@@ -388,6 +389,17 @@ namespace NovaFramework.Editor
             }
             menu.ShowAsContext();
         }
+
+        /// <summary>
+        /// 仅允许公开、可序列化且具有公共无参构造器的普通类进入添加菜单，排除私有测试夹具等不可用类型。
+        /// </summary>
+        /// <param name="type">TypeCache 返回的接口实现类型。</param>
+        /// <returns>可由当前菜单构造并存入托管引用列表时返回 true。</returns>
+        private static bool IsAddableReferenceType(Type type)
+            => type.IsClass && !type.IsAbstract && type.IsVisible && !type.ContainsGenericParameters
+               && !typeof(UnityEngine.Object).IsAssignableFrom(type)
+               && type.IsDefined(typeof(SerializableAttribute), false)
+               && type.GetConstructor(Type.EmptyTypes) != null;
 
         /// <summary>
         /// 通过反射 path-walking 从 SerializedProperty 路径中提取 TWrapper 托管实例。

@@ -29,15 +29,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         bool IsPaymentInformationScreenSkipped { get; }
 
         /// <summary>
-        /// 设置第三方支付 WebView 导航栏左上角的显示名称。
+        /// 保留旧支付页标题设置入口以兼容源码；当前系统浏览器不应用任意标题文案。
         /// </summary>
-        /// <param name="titleText">标题文本；空值时恢复应用名称。</param>
+        /// <param name="titleText">旧标题文本，当前实现忽略此值。</param>
         void SetThirdPayWebViewTitleText(string titleText);
 
         /// <summary>
-        /// 设置第三方支付 WebView 导航栏右上角的关闭文本。
+        /// 保留旧支付页关闭文案入口以兼容源码；当前关闭按钮由系统负责。
         /// </summary>
-        /// <param name="closeText">关闭文本；空值时恢复为 close。</param>
+        /// <param name="closeText">旧关闭文本，当前实现忽略此值。</param>
         void SetThirdPayWebViewCloseText(string closeText);
     }
 }

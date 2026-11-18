@@ -37,10 +37,17 @@ related:
 1. 支付页会话只产生一个页面终态：有效成功 `pay_callback` 上报 `nova_iap_local_pay_success`；已建立会话但未收到成功 callback 的关闭、失败、未知状态或异常上报 `nova_iap_third_pay_close_order`。
 2. `nova_iap_local_pay_fail` 只覆盖支付会话建立前的失败。页面终态已经确定后，后续验单失败不得再补报该事件。
 3. 验单事件独立描述服务端确认过程。每次可重试失败上报 `nova_iap_validate_fail`，达到上限或不可重试时上报 `nova_iap_validate_fail_finish`，成功上报 `nova_iap_validate_success`。
-4. Deep Link 使用 Unity `Application.deepLinkActivated` 作为 Android 与 iOS 的统一入口。处理 `pay_callback` 前必须校验订单号；无效参数、错单回调和无活动会话只记录日志，不推进当前会话。
-5. 本地订单只有在持久层实际删除成功后才上报 `nova_iap_third_pay_order_removed`，并同时携带删除原因、验单场景、协议码、服务端状态、客户端状态和双订单号。
-6. 原因与状态使用独立属性。关闭原因、支付失败原因、建单失败原因、删单原因、客户端订单状态和验单场景不得混写到同一个枚举属性；`nova_reason_detail` 必须与当前事件的专属枚举一一对应。
-7. ThirdPay 订单生命周期事件只使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送阶段语义不稳定的 `nova_order_id`；尚未取得服务端订单号时对应字段为空。完整事件属性由 [ThirdPayStore.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.Track.cs) 构造，父包不持有渠道开关或 ThirdPay 专属事件。其他 Store 保留各自订单号契约。
+4. 系统浏览器模块只管理展示和关闭，消息解析器只解码 URL，不承担订单、验单或支付状态解释。iOS 自有原生桥只回报页面事件，展示完成才建立会话；先确定唯一终态再关闭原生页，取消与展示交错时关闭迟到页面。
+5. Deep Link 使用 Unity `Application.deepLinkActivated` 作为 Android 与 iOS 的统一入口。处理 `pay_callback` 前必须校验订单号；无效参数、错单回调和无活动会话只记录日志，不推进当前会话。
+6. 本地订单只有在持久层实际删除成功后才上报 `nova_iap_third_pay_order_removed`，并同时携带删除原因、验单场景、协议码、服务端状态、客户端状态和双订单号。
+7. 原因与状态使用独立属性。关闭原因、支付失败原因、建单失败原因、删单原因、客户端订单状态和验单场景不得混写到同一个枚举属性；`nova_reason_detail` 必须与当前事件的专属枚举一一对应。
+8. ThirdPay 订单生命周期事件只使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送阶段语义不稳定的 `nova_order_id`；尚未取得服务端订单号时对应字段为空。完整事件属性由 [ThirdPayStore.Track.cs](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/ThirdPayStore.Track.cs) 构造，父包不持有渠道开关或 ThirdPay 专属事件。其他 Store 保留各自订单号契约。
+
+## 系统浏览器接入边界
+
+iOS 的自有 Safe Browsing 由 `SafariServices.framework` 中的 `SFSafariViewController` 提供，不依赖 UniWebView。构建处理器只链接系统 framework，不注册 `uniwebview` 或其他回跳协议；回跳到达 Unity 是项目接入需要独立验证的条件。原生桥只回报页面生命周期，消息解析器只解码 URL，不能把成功展示、URL 可解析或页面关闭当作已支付与可发货证据。
+
+Editor 仅支持既有始终成功模拟；关闭模拟后真实购买在建单前明确失败，不提供旧内嵌页。历史 EmbeddedWebView 枚举保留用于数据兼容，不代表仍有嵌入式实现。当前接入细节见 [ThirdPayStore.md](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md#自有系统浏览器与升级说明)。
 
 ## 为什么这样做
 

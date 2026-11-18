@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-11-18
+
+### Changed
+
+- 更新 IAP 文档与 IAPDemo 的 ThirdPay 接入和验证说明。Editor 可验证模拟支付反馈，真实支付页、回跳和 Android 购买前补单使用测试真机验证。
+
 ## [0.2.7] - 2026-11-13
 
 ### Fixed

@@ -33,7 +33,8 @@ message PbNetThirdPaymentConfigResp {
 // 当前用户的第三方支付可用性
 message PbNetThirdPayAvailability {
     bool enabled = 1;                                            // 是否允许发起新的第三方支付
-    int32 disabled_reason = 2;                                   // 禁用原因；具体枚举值由服务端协议后续约定
+    int32 disabled_reason = 2;                                   // 0=无 1=未命中任何白名单规则 2=用户黑名单
+    string disabled_message = 3;                                 // 空=无；未命中任何白名单规则；用户黑名单
 }
 
 // 第三方支付商品配置

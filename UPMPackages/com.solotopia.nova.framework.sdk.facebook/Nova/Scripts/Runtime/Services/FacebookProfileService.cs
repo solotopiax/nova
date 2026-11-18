@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Facebook.Unity;
+using NovaFramework.Runtime;
 using UnityEngine;
 
 namespace NovaFramework.SDK.Facebook
@@ -47,9 +48,16 @@ namespace NovaFramework.SDK.Facebook
         /// <returns>当前用户资料。</returns>
         public async UniTask<FacebookProfile> GetCurrentProfileAsync(CancellationToken ct = default)
         {
+            Log.Debug(LogTag.Facebook, "读取当前资料：fields=id,name,picture。");
             IGraphResult result = await m_GraphService.GetAsync(FacebookGraphPaths.CurrentProfileWithPicture).AttachExternalCancellation(ct);
+            // 原有返回契约不变；Graph 错误在请求层记录，这里补充资料解析是否可用。
+            if (!string.IsNullOrEmpty(result?.Error))
+            {
+                Log.Warning(LogTag.Facebook, "资料读取收到 Graph 错误，返回资料可能缺少昵称或头像。");
+            }
             if (result == null || result.ResultDictionary == null)
             {
+                Log.Warning(LogTag.Facebook, "资料读取未取得字段字典。");
                 return null;
             }
 
@@ -65,6 +73,7 @@ namespace NovaFramework.SDK.Facebook
                 profile.AvatarPath = await DownloadAvatarAsync(profile.FacebookId, ct);
             }
 
+            Log.Debug(LogTag.Facebook, $"资料读取完成：含ID={!string.IsNullOrEmpty(profile.FacebookId)}，含昵称={!string.IsNullOrEmpty(profile.Name)}，含头像URL={!string.IsNullOrEmpty(profile.AvatarUrl)}，含头像文件={!string.IsNullOrEmpty(profile.AvatarPath)}。");
             return profile;
         }
 
@@ -76,26 +85,31 @@ namespace NovaFramework.SDK.Facebook
         /// <returns>头像本地路径。</returns>
         public async UniTask<string> DownloadAvatarAsync(string facebookId = null, CancellationToken ct = default)
         {
+            Log.Debug(LogTag.Facebook, $"头像下载调用：目标={(string.IsNullOrEmpty(facebookId) ? "当前用户" : "指定用户")}，尺寸={m_AvatarSize}。");
             string id = ResolveFacebookId(facebookId);
             if (string.IsNullOrEmpty(id))
             {
+                Log.Warning(LogTag.Facebook, "头像下载跳过：没有可用的 Facebook 用户ID。");
                 return string.Empty;
             }
 
             string localPath = FacebookAvatarCache.BuildAvatarPath(id);
             if (File.Exists(localPath))
             {
+                Log.Debug(LogTag.Facebook, "头像命中本地文件缓存，跳过网络下载。");
                 return localPath;
             }
 
             IGraphResult result = await m_GraphService.GetAsync(FacebookGraphPaths.AvatarPicture(id, m_AvatarSize)).AttachExternalCancellation(ct);
             if (result == null || !string.IsNullOrEmpty(result.Error) || result.Texture == null)
             {
+                Log.Warning(LogTag.Facebook, $"头像未取得图片：空结果={result == null}，接口错误={!string.IsNullOrEmpty(result?.Error)}，含纹理={result?.Texture != null}。");
                 return string.Empty;
             }
 
             FacebookAvatarCache.EnsureAvatarDirectory();
             File.WriteAllBytes(localPath, result.Texture.EncodeToPNG());
+            Log.Debug(LogTag.Facebook, "头像图片已写入本地缓存。");
             return localPath;
         }
 
@@ -110,12 +124,18 @@ namespace NovaFramework.SDK.Facebook
             string path = await DownloadAvatarAsync(facebookId, ct);
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
             {
+                Log.Warning(LogTag.Facebook, "头像纹理加载跳过：本地文件不可用。");
                 return null;
             }
 
             byte[] bytes = File.ReadAllBytes(path);
             var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            return texture.LoadImage(bytes) ? texture : null;
+            bool loaded = texture.LoadImage(bytes);
+            if (loaded)
+                Log.Debug(LogTag.Facebook, $"头像纹理解码完成：文件字节数={bytes.Length}。");
+            else
+                Log.Warning(LogTag.Facebook, $"头像纹理解码失败：文件字节数={bytes.Length}。");
+            return loaded ? texture : null;
         }
 
         /// <summary>

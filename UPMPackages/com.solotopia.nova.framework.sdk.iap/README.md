@@ -1,7 +1,7 @@
-﻿# Nova Framework - SDK - IAP
+# Nova Framework - SDK - IAP
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 当前版本：`0.2.7`
+> 当前版本：`0.2.8`
 
 Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运行期查询、SKU Excel 导入/模板导出、支付事件桥接、Loading 防重入与通用持久化模板。具体渠道能力由子包提供，例如 `com.solotopia.nova.framework.sdk.iap.mobile`。
 
@@ -11,7 +11,7 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap": "0.2.7"
+  "com.solotopia.nova.framework.sdk.iap": "0.2.8"
 }
 ```
 
@@ -57,6 +57,8 @@ IAP Config 商品列表在“导入 SKU Excel”下方提供“上传支付表�
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。
 
+ThirdPay 的支付页已由子包自有实现承载：iOS 使用系统浏览器，Android 保留原浏览器链，不要求安装 UniWebView。Editor 仅支持始终成功模拟，关闭模拟后真实第三方购买在建单前失败；升级与项目回跳配置见 [ThirdPay 当前接入边界](README.md#跨包文档定位)（`com.solotopia.nova.framework.sdk.iap.thirdpay` 包内 `Nova/Doc/ThirdPayStore.md#自有系统浏览器与升级说明`）。
+
 ## 跨包文档定位
 
 本页链接相对于当前文件；独立包之间不假定相邻安装。先用 `UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages()` 按下表精确包名查找，以该包的 `resolvedPath` 为根读取文档入口，再按包内相对链接进入目标。无 Editor 通道时使用当前有效 manifest 或解析工具给出的实际包位置。
@@ -64,5 +66,5 @@ IAP Config 商品列表在“导入 SKU Excel”下方提供“上传支付表�
 | 包名 | 包内文档入口 | 本文引用的包内位置 |
 |---|---|---|
 | `com.solotopia.nova.framework.sdk.iap.mobile` | `Nova/DOCS/INDEX.md` | `Nova/DOCS/INDEX.md` |
-| `com.solotopia.nova.framework.sdk.iap.thirdpay` | `Nova/Doc/INDEX.md` | `Nova/Doc/INDEX.md`<br>`Nova/Doc/ThirdPayStore.md#android-重复点击补单查询` |
+| `com.solotopia.nova.framework.sdk.iap.thirdpay` | `Nova/Doc/INDEX.md` | `Nova/Doc/INDEX.md`<br>`Nova/Doc/ThirdPayStore.md#android-重复点击补单查询`<br>`Nova/Doc/ThirdPayStore.md#自有系统浏览器与升级说明` |
 | `com.solotopia.nova.framework.sdk.iap.voucher` | `Nova/Doc/INDEX.md` | `Nova/Doc/INDEX.md` |

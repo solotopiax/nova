@@ -282,6 +282,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public int DisabledReason { get; }
 
         /// <summary>
+        /// 获取服务端返回的支付禁用说明；旧服务端未下发时由 Protobuf 缺省为空。
+        /// </summary>
+        public string DisabledMessage { get; }
+
+        /// <summary>
         /// 获取当前快照的商品列表视图；元素仍是可变的协议对象引用。
         /// </summary>
         public IReadOnlyList<PbNetThirdProductInfo> Products => m_Products;
@@ -315,6 +320,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             Enabled = response.Availability.Enabled;
             DisabledReason = response.Availability.DisabledReason;
+            DisabledMessage = response.Availability.DisabledMessage;
             PaymentCustomerIds = response.ChannelConfig?.PaymentCustomerIds ?? string.Empty;
             PaymentPageUrl = response.PaymentPageConfig?.PaymentPageUrl ?? string.Empty;
             CountryCode = fallbackCountryCode ?? string.Empty;
@@ -330,6 +336,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 }
             }
 
+            IAPLog.Debug(LogTag.IAPThirdPay, $"ThirdPayAvailability: Enabled={Enabled}，DisabledReason={DisabledReason}，DisabledMessage={DisabledMessage}");
             IAPLog.Debug(LogTag.IAPThirdPay, $"ThirdPayClientConfig={ClientConfig}");
         }
 

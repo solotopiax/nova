@@ -52,7 +52,7 @@
 
 - `PlugPalsWindow` 属于 `Windows/`，不是 [Tools/](../../Scripts/Editor/Tools/)
 - `KitsViewWindow` 属于 `Windows/`
-- `Windows/EnvironmentWindow/` 目录为空壳：`EnvironmentWindow` 类并不存在，「环境检测」UI 内嵌在 `ConfigWindow` 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment`；详见 [EnvironmentWindow.md](Windows/EnvironmentWindow.md)
+- 「环境检测」位于 `ConfigWindow` 左侧分组。检测逻辑由 `EditorUtil.Environment` 提供。入口参见 [EnvironmentWindow.md](Windows/EnvironmentWindow.md)
 - 业务侧 Editor UI 以 `EditorUtil.Draw` 为主，不鼓励在 Inspector/Window 里直接扩散原生 IMGUI 写法
 
 ## 阅读顺序建议
@@ -61,7 +61,7 @@
 
 `SerializeReferenceListDrawer<TInterface,TWrapper>` 按全局字段、标题、条目、添加按钮的固定顺序绘制，派生的高度与绘制 hook 必须保持对应；全局绘制返回高度增量。包装实例从第一个 `targetObject` 的字段/数组路径反射取得，不支持任意属性、基类 private 字段遍历或完整多对象编辑，索引格式/越界错误也不是一律返回 null。GUI 的 Begin/EndProperty 没有 finally 保证，异常交由 Unity/调用方处理。
 
-添加菜单按 TypeCache、抽象/接口过滤及派生条件列候选；这不等于已经验证 Serializable、封闭泛型或无参构造器。菜单回调先插入再构造实例，失败可能留下未完成草稿；它不冻结原目标/路径，也不在回调时重新校验重复。空列表属性仍可能打开菜单，最终写入由实际序列化对象和 Inspector 生命周期承担。删除只做本次元素删除并 Apply，不承诺其他 Unity 引用类型的二次删除效果。
+添加菜单从 TypeCache 中只保留公开、非抽象、不含未绑定泛型参数、标记 Serializable 且具有公共无参构造器的普通类，并排除 UnityEngine.Object 派生类，再应用派生条件；私有测试夹具不会进入菜单。菜单回调先构造实例，成功后才插入列表，避免构造失败留下新元素；它不冻结原目标/路径，也不在回调时重新校验重复。空列表属性仍可能打开菜单，最终写入由实际序列化对象和 Inspector 生命周期承担。删除只做本次元素删除并 Apply，不承诺其他 Unity 引用类型的二次删除效果。
 
 ### 本地设备安装脚本
 

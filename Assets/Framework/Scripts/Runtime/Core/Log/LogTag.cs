@@ -124,6 +124,12 @@ namespace NovaFramework.Runtime
         public const string Firebase = "[SDK][Firebase]";
 
         /// <summary>
+        /// Facebook 插件日志标签。
+        /// </summary>
+        [LogTagDescription("Facebook 插件")]
+        public const string Facebook = "[SDK][Facebook]";
+
+        /// <summary>
         /// TGA 模块日志标签。
         /// </summary>
         [LogTagDescription("TGA 插件")]

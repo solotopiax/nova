@@ -1,9 +1,9 @@
 # Nova Framework - SDK - IAP - ThirdPay
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.thirdpay`
-> 当前版本：`0.1.5`
+> 当前版本：`0.1.6`
 
-Nova 的应用内第三方支付 Store。客户端生成订单号与加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 当前调用 Unity Purchasing 5.4.4 的 `ExternalBillingProgramClient` 外部结算接口。平台计划资格和现行选择、披露及上报要求须另行核对；接入时须核对当前商品协议、支付网页参数和商户映射。
+Nova 的应用内第三方支付 Store。客户端生成订单号与加密支付 URL，包内通过自有 iOS 系统浏览器桥或 Android Auth Tab / Custom Tabs 外部支付页承载支付；Android 当前调用 Unity Purchasing 5.4.4 的 `ExternalBillingProgramClient` 外部结算接口。平台计划资格和现行选择、披露及上报要求须另行核对；接入时须核对当前商品协议、支付网页参数和商户映射。
 
 业务按需使用 `IIAPThirdPayConfigCapable`、`IIAPThirdPayProductCapable`、`IIAPThirdPayCheckoutCapable`，分别依赖配置状态与关闭原因、商品查询和结算展示能力；购买前补单查询的运行时开关与窗口由独立的 `IIAPThirdPayOrderRecoveryCapable` 提供。
 
@@ -17,26 +17,38 @@ Android 重复点击购买时，默认在首次建单后的 30 分钟内先查�
 
 在 Unity 中打开 `Nova/Open PlugPals`，从外网仓库查找并安装 `com.solotopia.nova.framework.sdk.iap.thirdpay`。外网仓库默认入口为 [upm.solotopiax.com](https://upm.solotopiax.com)，实际使用窗口中保存的仓库地址。
 
-当前包声明依赖 Nova Framework `0.7.3`、IAP `0.2.6`、UniTask `10.0.6`、Unity Purchasing `5.4.4` 和 `com.onevcat.uniwebview` `5.11.1`。UniWebView 是商业依赖，须先取得有效授权；通过 PlugPals 的「内部云仓库」取得该依赖时还须有对应仓库访问权限。内部云仓库地址由项目在 PlugPals 工具栏配置，不以本包外网可见代替商业库授权。安装后核对 UPM 实际解析结果，再配置和导出 Runtime；下方仅是已配置相应 registry 后的依赖片段。
+当前包声明依赖 Nova Framework `0.7.13`、IAP `0.2.6`、UniTask `10.0.6` 和 Unity Purchasing `5.4.4`。Framework 从 `0.7.13` 起在 WebGL 构建预检中识别新版 ThirdPay 构建回调。支付页由包内实现，不再需要安装 UniWebView 或取得该插件授权。安装后核对 UPM 实际解析结果，再配置和导出 Runtime。下方是配置相应 registry 后的依赖片段。
 
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.5"
+    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.6"
   }
 }
 ```
 
+## 支付页与回跳配置
+
+| 平台 | 当前支付页实现 | 使用条件 |
+|---|---|---|
+| iOS | 包内 Safe Browsing 薄封装，底层为 `SFSafariViewController` | 链接系统 `SafariServices.framework`，无需安装 UniWebView；回跳使用项目实际配置 |
+| Android | 现有 Auth Tab → Custom Tabs → 系统浏览器回退 | 保留现有浏览器能力与支付回调配置 |
+| Editor | IAP 的“始终支付成功”模拟 | 关闭模拟后真实购买在建单前明确失败，不提供内嵌支付页 |
+
+`SafariServices.framework` 是 iOS 系统框架，用来提供系统浏览器页面；它不负责支付回调路由。`ThirdPayPluginBuildProcessor` 只负责链接该 framework，不注册 `uniwebview` 或其他 URL scheme、不修改已有 plist 回跳配置。项目回跳送达 `Application.deepLinkActivated` 后，由 ThirdPay 核对订单并按现有流程验单。
+
+`uniwebview://` 在兼容解析中是 URL 协议字符串，不是域名、插件安装要求或 iOS 自动回跳配置。完整生命周期、升级与验收边界见 [自有系统浏览器与升级说明](Nova/Doc/ThirdPayStore.md#自有系统浏览器与升级说明)。
+
 ## 设计边界
 
 - 仅支持 InAppAuto，不对业务暴露支付页打开器或 DeepLink 模式；iOS 内部通过 Safe Browsing 与 Deep Link 完成支付回调。
-- 支付页打开方式由平台固定决定，不通过国家列表配置：Android 默认使用外部支付页，iOS 使用 UniWebView Safe Browsing，Editor 使用嵌入式 UniWebView。
+- 支付页打开方式由平台固定决定，不通过国家列表配置：Android 默认使用外部支付页，iOS 使用包内桥接的系统浏览器，Editor 仅支持模拟支付。
 - Android 打开支付页前会先执行 Google 外链信息页流程；当前系统不支持该信息页时继续进入浏览器打开规则。外部支付页通过包内 [Nova/Plugins/Android/ThirdPayAuthTab.androidlib](Nova/Plugins/Android/ThirdPayAuthTab.androidlib/) 优先打开 Auth Tab，不支持时回退 AndroidX Browser `1.10.0` Custom Tabs；两者不可用或打开失败时，由 C# 层调用 `Application.OpenURL` 回退系统浏览器。外部支付会话直接订阅 Unity `Application.deepLinkActivated`；三种方式收到 `pay_callback` 成功回调后都会核对活动订单并立即验单，App 返回倒计时仅用于没有收到成功回调时的兜底。
 - Android 通过包内 [Nova/Plugins/Android/NovaThirdPayBillingBridge.java](Nova/Plugins/Android/NovaThirdPayBillingBridge.java) 读取 Google Play Billing 商店地区代码；Google 外链政策仍使用 Unity Purchasing 的 `ExternalBillingProgramClient`。该裸 Java 插件依赖 Unity Purchasing 5.4.4 注入的 `com.android.billingclient:billing:9.0.0`，不需要额外的 `.androidlib`。
 - 国家码不从 `ThirdPayStoreConfig` 读取，也不提供配置默认值；Store 初始化时只并发启动 Billing、iOS Storefront、AD 三路查询，不等待结果，也不请求用户态配置。AD 查询会等待 SDK 统一初始化完成，并持续等待广告插件首次发布国家码，不受广告业务接口默认超时限制。登录后首次通过 `GetCountryCode()` 取得的有效自动解析结果会按 `Billing > iOS Storefront > AD` 锁定到当前 Store 生命周期，后续异步来源和重新登录不会改变业务国家；`SetDebugCountryCode` 仅作为显式 Debug 覆盖，不重写自动锁定值。所有来源执行 `Trim + ToUpperInvariant`，`IV` / `UNKNOWN` / 空值都视为无国家码。
-- iOS 使用 UniWebView Safe Browsing；回调、关闭和异常清理由包内服务统一处理。
+- iOS 使用包内桥接的 `SFSafariViewController`；回调、关闭和异常清理由包内服务统一处理。
 - 应用 Pause/Focus 生命周期由 `SDKComponent` 统一广播到 `IAPPlugin`，再转发给 `ThirdPayStore`；ThirdPay 不创建独立隐藏 GameObject 监听生命周期。
-- 应用内 WebView 不接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为承载面板；该配置用于点击支付后的准备阶段和验单等待期的 IAP Loading。
+- 系统支付页不接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为承载面板；该配置用于点击支付后的准备阶段和验单等待期的 IAP Loading。
 - 本地订单以 `clientOrderId` 为键，同一商品可保留多笔待处理订单。
 - 第三方支付可用性、商品、`payment_customer_ids` 和 HTTPS 支付页地址由 `ThirdGetPaymentConfig` 一次返回；客户端额外发送登录后锁定的国家码，白名单、黑名单和国家策略由服务端统一判断。国家码为空或无效时客户端不会发送该协议，协议层也会返回 `PARAM_ERROR` 作为最终保护。
 - 统一配置按账号、国家和 NetCmd 缓存，同上下文并发请求合并，账号或国家变化时旧响应不会覆盖当前快照；商品通过 `IAPProductEntry.ThirdProductID` 与服务端 `product_id` 匹配。
@@ -58,6 +70,7 @@ Android 重复点击购买时，默认在首次建单后的 30 分钟内先查�
 
 | 包名 | 包内文档入口 | 本文引用的包内位置 |
 |---|---|---|
+| `com.solotopia.nova.framework` | `Docs/INDEX.md` | `Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md#sdk-构建处理器与源码指纹` |
 | `com.solotopia.nova.framework.sdk.iap` | `Nova/Doc/INDEX.md` | `Nova/Doc/IAP-Architecture.md#支付打点三维属性`<br>`Sample IAPDemo / README.md` |
 
 `Sample 名称 / 相对路径` 表示该包导入的示例内容；通过 Package Manager 和实际导入清单定位当前副本，再从其 README 进入。不要把开发仓源目录或某个版本的导入目录当作固定位置。

@@ -4,6 +4,16 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-18
+
+### Fixed
+
+- 补齐 Facebook 初始化、登录权限、Graph 接口、资料头像、好友和分享的 Debug/Warning 日志，以及 App Events 调用摘要；长路径、错误文本和事件名在调用处简单截断，接口失败与头像空结果单独提示，沿用统一日志开关与等级控制。
+
+### Changed
+
+- Facebook 专用日志标签要求 Nova Framework `0.7.13` 或更高版本。Facebook 示例同步更新广告组重试间隔、隐私扩展配置和 Pipify 产物目录。
+
 ## [0.2.0] - 2026-11-13
 
 ### Fixed

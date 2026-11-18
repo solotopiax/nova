@@ -72,6 +72,8 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 - **软可选库迁移债**：`UniWebView` / `SimpleDiskUtils` / `WebGLSupport` / `NiceVibrations` 等仍在主框架 `requiredLibraries` 靠旧宏体系；移除 PlugPals 宏注入后其宏暂失效，需逐个迁移（进各自 `dependencies` + 引用方 asmdef 配 `versionDefines`）才恢复。
 - 命中即自动写 manifest 的 `scopedRegistries`（有写副作用，但沿用既有 `EnsureScopedRegistry`）。
 
+当前适用边界：上方 UniWebView 迁移债描述的是当时背景，不能作为当前 ThirdPay 的依赖清单。ThirdPay 已改用自有系统浏览器和 URL 消息解析，不再声明 UniWebView 依赖；本决策关于真实依赖显式声明的原则保持不变。当前包边界见 [ThirdPay 安装说明](../../../../../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/README.md#安装)。
+
 ## 被排除的方案（Alternatives）
 
 | 方案 | 否决理由 |

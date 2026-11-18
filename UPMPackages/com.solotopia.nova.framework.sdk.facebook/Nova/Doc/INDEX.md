@@ -7,6 +7,8 @@
 - [`FacebookSdkUsage.md`](./FacebookSdkUsage.md): Facebook Unity SDK API map retained from the removed official examples.
 - [`OpenSourceCompliance.md`](./OpenSourceCompliance.md): package license boundary, third-party dependencies, and public release risks.
 
+登录无日志、头像昵称为空或权限结果排查，直接进入 [调试登录与接口调用](FacebookPlugin.md#调试登录与接口调用)。当前用户数据与昵称资料的区别见 [FacebookUserData.md](FacebookUserData.md)。
+
 ## Current State
 
 - Runtime integration lives under [Nova/Scripts/Runtime](../Scripts/Runtime/).

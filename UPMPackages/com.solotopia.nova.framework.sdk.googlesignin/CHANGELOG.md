@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-18
+
+### Changed
+
+- Google Sign-In 示例的配置导出明确使用 Android、Google 商店和 Debug，更新 Pipify 产物目录，并刷新广告组重试与隐私扩展配置。
+
 ## [0.1.3] - 2026-11-13
 
 ### Fixed

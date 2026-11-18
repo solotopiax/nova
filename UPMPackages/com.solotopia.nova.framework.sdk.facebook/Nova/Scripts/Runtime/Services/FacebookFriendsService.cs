@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Facebook.Unity;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.Facebook
 {
@@ -38,8 +39,11 @@ namespace NovaFramework.SDK.Facebook
         /// <returns>好友列表。</returns>
         public async UniTask<IReadOnlyList<FacebookFriend>> GetFriendsAsync(CancellationToken ct = default)
         {
+            Log.Debug(LogTag.Facebook, "读取好友列表开始。");
             IGraphResult result = await m_GraphService.GetAsync(FacebookGraphPaths.FriendsWithPicture).AttachExternalCancellation(ct);
-            return ParseFriends(result);
+            IReadOnlyList<FacebookFriend> friends = ParseFriends(result);
+            Log.Debug(LogTag.Facebook, $"好友列表解析完成：数量={friends.Count}，接口错误={!string.IsNullOrEmpty(result?.Error)}。");
+            return friends;
         }
 
         /// <summary>
@@ -49,6 +53,7 @@ namespace NovaFramework.SDK.Facebook
         /// <returns>带本地头像路径的好友列表。</returns>
         public async UniTask<IReadOnlyList<FacebookFriend>> GetFriendsWithAvatarsAsync(CancellationToken ct = default)
         {
+            Log.Debug(LogTag.Facebook, "读取好友及头像开始。");
             IReadOnlyList<FacebookFriend> friends = await GetFriendsAsync(ct);
             for (int i = 0; i < friends.Count; i++)
             {
@@ -56,6 +61,7 @@ namespace NovaFramework.SDK.Facebook
                 friend.AvatarPath = await m_ProfileService.DownloadAvatarAsync(friend.FacebookId, ct);
             }
 
+            Log.Debug(LogTag.Facebook, $"好友头像处理完成：数量={friends.Count}。");
             return friends;
         }
 

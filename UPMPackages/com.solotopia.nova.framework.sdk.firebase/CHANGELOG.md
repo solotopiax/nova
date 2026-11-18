@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-18
+
+### Changed
+
+- Firebase 示例补入 Google 登录、IAP 和 GameSave 配置项。场景显式指定 Google 渠道，并更新广告组重试、隐私扩展和 Pipify 产物目录配置。
+
 ## [0.2.0] - 2026-11-13
 
 ### Fixed
