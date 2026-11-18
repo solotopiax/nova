@@ -451,7 +451,9 @@ namespace NovaFramework.Editor
             var requested = new HashSet<string>(
                 assetPaths.Where(path => !string.IsNullOrWhiteSpace(path)).Select(NormalizeAssetPath),
                 StringComparer.OrdinalIgnoreCase);
-            CollectResult collectResult = CollectRequestedAssets(packageName, requested);
+            BundleCollectorSetting setting = EditorUtil.Config.YooAssetInjector.LoadExistingBundleCollector(EditorUtil.Config.WorkspaceActive.Get());
+            if (setting == null) return result;
+            CollectResult collectResult = CollectRequestedAssets(setting, packageName, requested);
             foreach (CollectAssetInfo collectAsset in collectResult.CollectAssets)
             {
                 string assetPath = NormalizeAssetPath(collectAsset?.AssetInfo?.AssetPath);
@@ -466,11 +468,14 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 使用临时配置副本收集地址，避免尚未生成且与当前请求无关的 HybridCLR 目录阻断解析。
         /// </summary>
+        /// <param name="source">已确认来源的现有采集配置。</param>
+        /// <param name="packageName">AssetComponent 声明的包名。</param>
+        /// <param name="requested">本次需要的资产路径。</param>
         private static CollectResult CollectRequestedAssets(
+            BundleCollectorSetting source,
             string packageName,
             HashSet<string> requested)
         {
-            BundleCollectorSetting source = BundleCollectorSettingData.Setting;
             BundleCollectorSetting working = UnityEngine.Object.Instantiate(source);
             working.hideFlags = UnityEngine.HideFlags.HideAndDontSave;
             try

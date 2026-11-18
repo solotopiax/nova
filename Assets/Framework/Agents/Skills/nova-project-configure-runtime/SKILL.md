@@ -113,7 +113,7 @@ Plan/Execute复核完整资产和精确物理写集，只保存Master；Verify�
 
 ## 执行与验证边界
 
-按“保存 Master → 导出单一 Runtime 快照 → Unity 编译”执行。Exporter 会覆盖已存在的目标 `ConfigRuntimeSO`，并可能按已配置的维度解析更新对应 [YooAssetSettings.asset（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md)；因此目标资产和该坐标的解析结果必须在确认的写入集内。导出时只验证本次坐标的 `EnabledSDKConfigs` / `EnabledKitConfigs` 快照，不把其他坐标、Bundle、Player、CDN 或厂商运行时结果推断为成功。
+按“保存 Master → 导出单一 Runtime 快照 → Unity 编译”执行。Exporter 会覆盖已存在的目标 `ConfigRuntimeSO`，并可能按已配置的维度解析更新对应 [YooAssetSettings.asset（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md)；因此目标资产和该坐标的解析结果必须在确认的写入集内。项目 Master 尚无有效导出目标时，`export-runtime` 计划还会列出 Master，成功导出后保存其 `ExportTarget`，并读回确认。已有有效目标沿用。导出时只验证本次坐标的 `EnabledSDKConfigs` / `EnabledKitConfigs` 快照，不把其他坐标、Bundle、Player、CDN 或厂商运行时结果推断为成功。
 
 `export-runtime` Action 与 Pipify `export.config` 均不回写 Master 当前 Channel/DevelopMode，也不调用场景快照写入器。需要保存当前选择时使用上方 `coordinate-switch`；需要构建时核对 Master 当前坐标、Runtime 与已保存入口场景的 Asset/App 渠道。ConfigWindow 导出会写当前活动场景，仍须保存并检查全部启用场景；场景准备在已授权范围内经既有窗口/受控 Unity 编辑完成。每平台显式切换、坐标保存、导出与构建按单写者串行进行，批次外独立保留 Master、Runtime、Scene 与 PlayerSettings 基线；Batch Plan 不提供这些状态的完整冻结。
 

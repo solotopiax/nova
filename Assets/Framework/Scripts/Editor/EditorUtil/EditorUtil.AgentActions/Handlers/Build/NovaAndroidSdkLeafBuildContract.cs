@@ -38,8 +38,8 @@ namespace NovaFramework.Editor
             "NovaFramework.SDK.Facebook.FacebookPluginConfig", "NovaFramework.SDK.GoogleSignIn.GoogleSignInPluginConfig" };
         private static readonly string[][] Sources = {
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateAppsFlyerScope.cs", "02629620daf25554a947a7b68f25117859f2764cff73043d57d64e78a630a05a" },
-            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveRefreshContract.cs", "060f6a4f9c92eaa5eed6512d95b761a38afff68f8d2a40f5a6139e0f3adf5260" },             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewContract.cs", "30bdc0793d977b5cfeb29d42170932fe419fdd506cd707b138968b024f7b57e6" },
-            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewScope.cs", "efa995930462101e4e7d61a058c076f820a192cdc8501b8ba941ff70ab6c511e" },
+            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveRefreshContract.cs", "060f6a4f9c92eaa5eed6512d95b761a38afff68f8d2a40f5a6139e0f3adf5260" },             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewContract.cs", "8e11903e2c65d52bead5f5a5244ef58e38fd9ef1bd93396984184d2be87e9452" },
+            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewScope.cs", "936bf38c0186ea6d6043e9128dd087ef698958a2bd520fb38493a5ec2cae19c0" },
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateToolchainContract.cs", "88c0f84f19003a7bb1752880feba534302bfeebc4199c23ea8c077c546de0a78" },
 new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPreviewObservers.cs", "4094febb68b8dade04c9158afee5a77ea196ffd9165d0576b775d7aec9c135cd" }, new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Core/NovaBuildShared.cs", "4024f716e33ea5eacb06e02c04624a4ffdc4c9716aeae5b88273ef6303690e78" },
             new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Core/NovaBuildPreprocessor.cs", "b49ae79eea5bedbafa52e04e37ea7f2c20f2fae735a594ae5d0898aab83b6722" },
@@ -166,11 +166,12 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android) throw new InvalidOperationException("叶子配置必须在实际Android域捕获。");
             RequireFactory(factory); RequireSources(BuildActionCommon.ProjectRoot, factory);
             NovaAndroidParentBuildContract.VerifyFactoryBefore(factory, CancellationToken.None);
-            RequireConfigurationPins(pins);
+            string[] configurationTypes = GetConfigurationTypes(factory);
+            RequireConfigurationPins(pins, configurationTypes);
             ConfigRuntimeSO runtime = EditorUtil.Config.RuntimeProvider.GetCurrent();
             if (runtime == null || runtime.GetType() != typeof(ConfigRuntimeSO) || runtime.Platform != PlatformType.Android) throw new InvalidOperationException("当前原Runtime不是准确Android配置，不创建或导出替代。");
             RuntimeSource before = ReadRuntimeSource(runtime); var selected = new Dictionary<string, ISDKPluginConfig>(); var rows = new List<ConfigurationRow>();
-            foreach (string name in ConfigurationTypes)
+            foreach (string name in configurationTypes)
             {
                 Type type = ResolveConfigurationType(name); var pin = pins.Single(value => value.type == name); string dll = Hash(File.ReadAllBytes(type.Assembly.Location));
                 if (!type.IsSealed || !ReferenceEquals(type.Module, type.Assembly.ManifestModule) || !typeof(ISDKPluginConfig).IsAssignableFrom(type) || type.Assembly.FullName != pin.assemblyFullName || type.Module.ModuleVersionId.ToString("D") != pin.mvid || dll != pin.dllSha256) throw new InvalidOperationException("叶子配置Android身份/完整DLL不同于独立审核值。");
@@ -181,7 +182,7 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
             return new ConfigurationBinding(runtime, selected, rows.ToArray(), before, factory);
         }
 
-        /// <summary>生产入口先核四种配置的已审源码与准确元数据，再将本次实际DLL/MVID交给原绑定器；不把当前身份称为历史pin。</summary>
+        /// <summary>生产入口只核参与当前构建回调的配置类型源码与元数据，再交给原绑定器。</summary>
         /// <param name="factory">本次源码/构造IL准入的真实工厂。</param><param name="provider">同次已证明不会修复Globals的实际provider来源。</param><returns>原Runtime和原配置引用的冻结。</returns>
         internal static ConfigurationBinding CaptureReviewedConfigurations(NovaAndroidParentBuildContract.FactorySnapshot factory, AndroidGenerateProviderContract.Snapshot provider)
         {
@@ -189,7 +190,7 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
             if (factory.admission != "reviewed-source-signature-ctor-priority-il-v1" || provider == null ||
                 !AndroidGenerateProviderContract.Equal(provider, AndroidGenerateProviderContract.Capture(provider.masterPath, CancellationToken.None)))
                 throw new InvalidOperationException("Android配置缺实际生产工厂或原provider完整来源。");
-            var pins = ConfigurationTypes.Select(name =>
+            var pins = GetConfigurationTypes(factory).Select(name =>
             {
                 Type type = ResolveConfigurationType(name);
                 if (!type.IsSealed || type.TypeInitializer != null || !typeof(ISDKPluginConfig).IsAssignableFrom(type) || type.ContainsGenericParameters)
@@ -203,8 +204,31 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
         /// <summary>仅核四配置角色独立pin的完整形状，不能从格式通过推断已审核或实际DLL匹配。</summary>
         /// <param name="pins">Android配置pin全集。</param>
         internal static void RequireConfigurationPins(NovaAndroidParentBuildContract.AuditedTypePin[] pins)
+            => RequireConfigurationPins(pins, ConfigurationTypes);
+
+        /// <summary>配置角色取自完整工厂，已安装但未在 Runtime 启用的 SDK 仍按实际回调核验。</summary>
+        /// <param name="factory">当前工厂快照或旧版全集工厂。</param>
+        /// <returns>本次需核验的准确配置类型。</returns>
+        private static string[] GetConfigurationTypes(NovaAndroidParentBuildContract.FactorySnapshot factory)
         {
-            if (pins == null || pins.Length != ConfigurationTypes.Length || pins.Any(pin => pin == null || string.IsNullOrWhiteSpace(pin.assemblyFullName) || !Guid.TryParseExact(pin.mvid, "D", out _) || pin.dllSha256 == null || pin.dllSha256.Length != 64 || pin.dllSha256.Any(character => character < '0' || character > '9' && character < 'a' || character > 'f')) || !pins.Select(pin => pin.type).OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(ConfigurationTypes.OrderBy(value => value, StringComparer.Ordinal))) throw new InvalidOperationException("叶子Runtime类型独立Android pins缺失、重复或格式未知。");
+            if (factory.admission != "reviewed-source-signature-ctor-priority-il-v1") return ConfigurationTypes;
+            string[] processors = factory.preprocessOrder;
+            return ConfigurationTypes.Where((name, index) => index switch
+            {
+                0 => processors.Contains(AppsFlyer),
+                1 => processors.Contains(AdMob) || processors.Contains(Max),
+                2 => processors.Contains(Facebook),
+                3 => processors.Contains(Google),
+                _ => false,
+            }).ToArray();
+        }
+
+        /// <summary>核对本工厂需要的完整配置 pin 集合，拒绝缺失、重复和格式错误。</summary>
+        /// <param name="pins">实际配置模块身份。</param>
+        /// <param name="expected">本轮应核验的配置角色。</param>
+        private static void RequireConfigurationPins(NovaAndroidParentBuildContract.AuditedTypePin[] pins, string[] expected)
+        {
+            if (pins == null || pins.Length != expected.Length || pins.Any(pin => pin == null || string.IsNullOrWhiteSpace(pin.assemblyFullName) || !Guid.TryParseExact(pin.mvid, "D", out _) || pin.dllSha256 == null || pin.dllSha256.Length != 64 || pin.dllSha256.Any(character => character < '0' || character > '9' && character < 'a' || character > 'f')) || !pins.Select(pin => pin.type).OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(expected.OrderBy(value => value, StringComparer.Ordinal))) throw new InvalidOperationException("叶子Runtime类型独立Android pins缺失、重复或格式未知。");
         }
 
         /// <summary>按原pre顺序生成八型Context模型；只调用明确纯规则builder/常量元数据，不提前执行SDK回调，未接Native或writer始终保留缺口。</summary>
@@ -315,7 +339,7 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
                 models == null || models.Length != factory.discovered.Length || models.Any(model => model?.effect == null || model.requiredContracts == null) ||
                 !models.Select(model => model.type).SequenceEqual(factory.preprocessOrder, StringComparer.Ordinal))
                 throw new InvalidOperationException("Android生产叶子查询缺完整工厂、预测或同次原provider来源。");
-            return RequiredContracts(Native, false).Concat(RequiredContracts(AppsFlyer, false)).Concat(models.SelectMany(model => model.requiredContracts))
+            return RequiredContracts(Native, false).Concat(models.SelectMany(model => model.requiredContracts))
                 .Where(value => value != "ConfigRuntime.active-provider-natural-capture-observation").Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal).ToArray();
         }
 
@@ -332,7 +356,7 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
         /// <param name="factory">父实际捕获。</param>
         private static void RequireFactory(NovaAndroidParentBuildContract.FactorySnapshot factory)
         {
-            string[] expected = factory?.admission == "reviewed-source-signature-ctor-priority-il-v1" ? NovaAndroidParentBuildContract.ReviewedRoster(factory.adMobPackageInstalled) : Roster;
+            string[] expected = factory?.admission == "reviewed-source-signature-ctor-priority-il-v1" ? NovaAndroidParentBuildContract.ReviewedRoster(factory.packageRoster) : Roster;
             if (factory == null || factory.types == null || factory.types.Length != expected.Length || factory.discovered == null || factory.discovered.Length != expected.Length || factory.preprocessOrder == null || !factory.types.Select(type => type.FullName).OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(expected.OrderBy(value => value, StringComparer.Ordinal)) || !factory.preprocessOrder.OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(expected.OrderBy(value => value, StringComparer.Ordinal))) throw new InvalidOperationException("叶子不能从缺失真实Type或包解析见证的父DTO批准SDK。");
         }
         /// <summary>只解析已加载的固定配置类型，不LoadAssembly或初始化类型。</summary>
@@ -363,9 +387,12 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
         /// <param name="root">准确工程根。</param>
         private static void RequireSources(string root, NovaAndroidParentBuildContract.FactorySnapshot factory)
         {
-            bool includeAdMob = factory?.admission != "reviewed-source-signature-ctor-priority-il-v1" || factory.adMobPackageInstalled;
-            foreach (string[] source in Sources.Where(source => includeAdMob || !source[0].StartsWith("UPMPackages/com.solotopia.nova.framework.sdk.admob/", StringComparison.Ordinal)))
+            bool reviewed = factory?.admission == "reviewed-source-signature-ctor-priority-il-v1";
+            bool includesAppsFlyer = factory.discovered.Any(row => row.type == AppsFlyer);
+            foreach (string[] source in Sources)
             {
+                if (reviewed && !NovaAndroidParentBuildContract.HasReviewedSourcePackage(factory.packageRoster, source[0])) continue;
+                if (!includesAppsFlyer && NovaAndroidParentBuildContract.IsAppsFlyerSupportSource(source[0])) continue;
                 string path = NovaAndroidParentBuildContract.ResolveReviewedSource(root, source[0]); RequireUnlinked(path);
                 if (Hash(File.ReadAllBytes(path)) != source[1]) throw new InvalidOperationException("叶子已审源码漂移：" + source[0]);
             }

@@ -34,7 +34,7 @@ namespace NovaFramework.Editor
         internal const string ScenePath = "Assets/Samples/MainDemo/MainDemo.unity";
         internal const string InputPath = "Library/PackageCache/com.unity.inputsystem@21a28c3a6c83/InputSystem/Plugins/PlayerInput/DefaultInputActions.inputactions";
         private static readonly string[][] Sources = {
-            new[] { "Assets/Framework/Prefabs/Nova.prefab", "7f33f69ad2925eab0c48696a0d22db57a060a1ce153000e8f4bc4f3891584d6c" },
+            new[] { "Assets/Framework/Prefabs/Nova.prefab", "82aeb4ac23666b4fa949c30315e3cd40fd8c4677a40cc8213f0376dae6764b80" },
             new[] { "Assets/Framework/Prefabs/Nova.prefab.meta", "b92550383edfad3e074e17f1fba78eeb5a198a6e8922d7ec30c074dcb28cbb2c" },
             new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPreviewObservers.cs", "4094febb68b8dade04c9158afee5a77ea196ffd9165d0576b775d7aec9c135cd" },
             new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildProcessor.cs", "d39e80105ff80fda84e02263524b940d1185204fbb1a674e0831add27611ae01" },
@@ -189,7 +189,7 @@ namespace NovaFramework.Editor
             new[] { "Assets/Framework/Scripts/Runtime/Modules/Vibrate/VibrateComponent.cs.meta", "30f1f54900162b99959f139994765a2b6b4ee6efc96032ad5acf3057bfe84918" },
             new[] { "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef", "498b84a1db23dbddd5b70bc2d869248be85bb9ed925e7d9aca0216fb762803e7" },
             new[] { "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef.meta", "f5b070a55ecd4dafede0e8b6845fa1ff69cd1ea1ef66ff8bd8191581285ec5ce" },
-            new[] { "Assets/Samples/MainDemo/MainDemo.unity", "7332d380c1e6221565db633502f45797ca3a7636ad27997cea4a964e6c570d6a" },
+            new[] { "Assets/Samples/MainDemo/MainDemo.unity", "46f25eeb621586066513031448cc45e98b7c37f5f951e88e4b9d349c22f31a4e" },
             new[] { "Assets/Samples/MainDemo/MainDemo.unity.meta", "874666e5820bd8bd42f87b22a9b2310a96cd9e67a6ad5e3b0a16d5e7bd78f6e3" },
             new[] { "Library/PackageCache/com.unity.inputsystem@21a28c3a6c83/InputSystem/Actions/InputAction.cs", "ee0d5b348b9abe6287590dc7478480e3888f60457eec6855823b54b95aa86dad" },
             new[] { "Library/PackageCache/com.unity.inputsystem@21a28c3a6c83/InputSystem/Actions/InputAction.cs.meta", "7b80d6ecad037fe0a825c58c0f124f1059acaf1593ef75ceeda6c5bd1fcb2cd1" },

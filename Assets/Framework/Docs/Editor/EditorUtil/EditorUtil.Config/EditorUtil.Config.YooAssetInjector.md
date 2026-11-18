@@ -80,4 +80,4 @@ if (collector == null)
 
 ## 注入与回退状态
 
-Inject/InjectByPath 先清 Collector 缓存和旧 Settings，null/空/无效路径也会撤销旧注入；只改 Editor 静态态，不保存目标资产。只注册 BundleCollectorSetting 的显式路径 provider，其它类型或缺 Master 返回 null，仍允许 Yoo 自己回退，不能据此证明排除了所有多副本。启动延迟协调可能写路由，没有独立稳定/批模式门；SettingLoader 常规缺失可返回 null，但解析/领域异常仍可传播。
+Inject/InjectByPath 先清 Collector 缓存和旧 Settings，null/空/无效路径也会撤销旧注入；只改 Editor 静态态，不保存目标资产。只注册 BundleCollectorSetting 的显式路径 provider，其它类型或缺 Master 返回 null，仍允许 Yoo 自己回退，不能据此证明排除了所有多副本。启动延迟协调可能写路由，没有独立稳定/批模式门；SettingLoader 常规缺失可返回 null，但解析/领域异常仍可传播。Config 的包名查询和 Table 地址推导只读取当前坐标绑定的资产，或 `Assets` 下唯一的现有采集配置。没有明确来源时不推导，也不会触发 YooAsset 创建根目录的空配置。需要设置采集时先在 Config 绑定实际配置。

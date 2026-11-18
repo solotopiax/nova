@@ -89,7 +89,7 @@ Player 输入捕获仅排除由准确 TrueType 导入器与已加载主 Font 的
 
 Generate 的自有 `HybridClrStripGradleScope` 在独立 Player 中只接受准确当前源码与真实无活动租约；三个回调自然在读取设置/报告/路径前返回。Player 不调用 Begin、Dispose 或任何回调去制造 inactive；活动 Generate 租约不能被独立 Player 接管。
 
-`nova.project.config.export-runtime` 的请求仍显式携带 `platform / channel / developMode`，但 `platform` 必须等于 Plan 时 Unity 当前 Active BuildTarget 映射的 Nova `PlatformType`。未映射为 Android / iOS / WebGL、请求不一致，或 Execute 前 Active BuildTarget 漂移，都会以 `blocked` 收口并要求先切换 BuildTarget 后重新 Plan；该限制不改变底层 `EditorUtil.Config.Exporter.Export` 的显式平台 API。
+`nova.project.config.export-runtime` 的请求仍显式携带 `platform / channel / developMode`，但 `platform` 必须等于 Plan 时 Unity 当前 Active BuildTarget 映射的 Nova `PlatformType`。未映射为 Android / iOS / WebGL、请求不一致，或 Execute 前 Active BuildTarget 漂移，都会以 `blocked` 收口并要求先切换 BuildTarget 后重新 Plan；底层 `EditorUtil.Config.Exporter.Export` 仍保留显式平台 API。项目 Master 尚无有效导出目标时，计划同时纳入 Master，成功导出后持久绑定并验证新快照。已有显式目标或布局回退目标继续沿用。
 
 Config 的有效执行坐标要求平台和渠道为非 `None` 的精确枚举名称。共享 Generate 请求解析仍接受 `ChannelType.None`，`config.export-runtime` 已在自身请求边界拒绝该值；校验、插件补齐和构建预检须分别按其当前实现判断。
 
@@ -391,7 +391,7 @@ WebGL Generate 在同一内部 Player partial adapter 中复用准确 callbacks�
 
 校验 Action 的“执行成功”和“业务对象有效”是两层语义。例如 `config.validate-coordinate` 可以 `success + data.valid=false`，表示校验闭环成功完成但目标配置存在问题。
 
-同样，Collector 查询可成功返回 `collectorLoaded=false`，Readiness 查询成功也可包含 errors，都不表示 Bundle/Player 可构建。旧 `config.validate-coordinate` 的完整性预检按集合中是否存在完整条目判断，不修复首个重复残缺项或任意坏容器，后续 Getter/Validator 仍可能失败。旧 `config.ensure-plugin-instances` 预演会调用配置类型的正规构造；其 Verify 核当前实例和启用情况，不能继承新版 panel 编辑的整状态、meta、写入起点或保存后文件冻结。旧 `config.export-runtime` Verify 核本收据产物与 Runtime 坐标/Namespace，不提供所有当前源输入、YooAsset 内容及草稿的完整来源证明。这些差异不能因共用 Dispatcher 而抹平。
+同样，Collector 查询可成功返回 `collectorLoaded=false`，Readiness 查询成功也可包含 errors，都不表示 Bundle/Player 可构建。旧 `config.validate-coordinate` 的完整性预检按集合中是否存在完整条目判断，不修复首个重复残缺项或任意坏容器，后续 Getter/Validator 仍可能失败。旧 `config.ensure-plugin-instances` 预演会调用配置类型的正规构造；其 Verify 核当前实例和启用情况，不能继承新版 panel 编辑的整状态、meta、写入起点或保存后文件冻结。`config.export-runtime` Verify 核对收据产物与 Runtime 坐标/Namespace，首次绑定时另核对实际保存的引用，不提供所有当前源输入、YooAsset 内容及草稿的完整来源证明。这些差异不能因共用 Dispatcher 而抹平。
 
 ## 扩展要求
 
@@ -449,7 +449,7 @@ TMP 后态观察不重跑 Prepare：Plan/写前准备仍保留原安全 Load；S
 
 ### Android Nova 父链内部合同
 
-本节八型入口保留原兼容合同。Android Generate 另有按实际安装程序集捕获的生产入口；当前安装集为七型，不伪造未安装 AdMob，也不按 EnabledSDKs 删减真实工厂。两种入口均不代表普通 Android Player Action 已开放。
+本节八型入口保留原兼容合同。Android Generate 另有按实际安装程序集捕获的生产入口；生产入口按当前 Unity 实际注册的已审包确定回调集合。框架 Native 回调始终核对，SDK 回调仅在包已安装时加入。仍需核对实际发现的全部回调及配置来源。两种入口均不代表普通 Android Player Action 已开放。
 
 `NovaAndroidParentBuildContract` 是尚未接入公开 Player 准入的内部可组合父合同。它完整覆盖包含 AdMob 的八个 Android Nova SDK processor 的实际 TypeCache 发现顺序、默认构造元数据与 Priority 常量，并用当前 BCL 的两轮 `List.Sort` 重现 pre/post 的真实 tie 次序；不执行 SDK 构造、虚 getter 或回调。独立 Android DLL/MVID pin 必须经真实编译审查，缺失时明确拒绝，不能用当前 WebGL 身份自签。未来执行仍须原入口普通构造同一批实例、同一 `NovaBuildContext`/report，严格观察 constructed → pre → post；本合同不替代各 SDK 叶子的独立配置、写集和副作用证明。
 
@@ -479,8 +479,8 @@ Google/FB/MAX规则从原const读取，Firebase与AppsFlyer的纯树由原回调
 
 ### Android Generate 的独立接线与未完成边界
 
-`PlayerBuildAction.AndroidGenerateAdapter` 已接入既有 `hotfix.generate-artifacts` 的 Android 分支；请求字段和 Action ID 保持。它分别捕获实际 provider、完整回调集、SDK/NDK/JDK/Gradle 工具身份、Native preview 和 AppsFlyer 输入。`AndroidHybridClrGenerateEvidenceStore` 保存同次计划及实际报告、输出、阶段与失败材料；Store 的读写测试只证明存储合同，不证明 Generate 成功。`unboundContracts` 非空仍写前 blocked，不能修改 DTO 或借 WebGL 证据放行。
+`PlayerBuildAction.AndroidGenerateAdapter` 已接入既有 `hotfix.generate-artifacts` 的 Android 分支；请求字段和 Action ID 保持。它分别捕获实际 provider、完整回调集、SDK/NDK/JDK/Gradle 工具身份及 Native 场景预览输入。有 AppsFlyer 回调时才冻结对应输入和导入收据。`AndroidHybridClrGenerateEvidenceStore` 保存同次计划及实际报告、输出、阶段与失败材料；Store 的读写测试只证明存储合同，不证明 Generate 成功。`unboundContracts` 非空仍写前 blocked，不能修改 DTO 或借 WebGL 证据放行。
 
 Core 的中立观察桥默认休眠。原 SDK pre 循环的 before/after、Native 场景 preview 和属性导入观察均围绕原调用执行，不额外调用 SDK。AF scope 在父 observer 租约之前完成完整工厂复核；异常/取消保留已取得的阶段，finally 仅释放自己的租约。AF-before 的 Manifest 从实际阶段取得，不使用父 merge 后的较晚文件补造；Import 记录保留 imported/deleted/moved/movedFrom 全部四数组。固定源码与 Module 身份仍独立检查。
 
-当前未闭合项包括 `AppsFlyer.generated-assets-and-parent-manifest.import-tail` 及尚无完整合同的第三方回调、Search/Version 和后续 Manifest、代码导入尾链；Native preview、provider、工具链的局部接线不解除这些门。普通 Android Player、真正 Generate、最终 APK 和设备业务分别验收，纯规则或 Store 回归不提升这些结果。已审、已保存且副作用获授权的 Pipify 组合仍是已有独立入口，按原 Step、完整输入和实际产物验证；它不会把此 Action 的 blocked 改为 success。
+Native 场景预览目前只支持已审的开发态 MainDemo 场景。安装了 AppsFlyer 时，其 `AppsFlyer.generated-assets-and-parent-manifest.import-tail` 仍是未闭合项。缺少完整合同的第三方回调、Search/Version、后续 Manifest 和代码导入也保留各自的阻断条件。普通 Android Player、真正 Generate、最终 APK 和设备业务分别验收，纯规则或 Store 回归不提升这些结果。已审、已保存且副作用获授权的 Pipify 组合仍是已有独立入口，按原 Step、完整输入和实际产物验证；它不会把此 Action 的 blocked 改为 success。

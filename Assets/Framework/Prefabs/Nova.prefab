@@ -294,7 +294,7 @@ MonoBehaviour:
         ProjectId: main
         ExportDescriptionId: json
         RuntimeDataTarget: json
-        ResolvedBindingTypeName: NovaFramework.Samples.Runtime.TableTablesBinding
+        ResolvedBindingTypeName:
         Assets:
         - DataFile: tbdemo_item
           AssetPath: Assets/Samples/MainDemo/Jsons/Tables/tbdemo_item.json

@@ -54,6 +54,7 @@ namespace NovaFramework.Editor
             public DevelopMode Mode;
             public string MasterPath;
             public string MasterHash;
+            public bool BindExportTarget;
             public string SavePath;
             public string SaveAbsolutePath;
             public string YooAssetSettingsPath;
@@ -71,6 +72,7 @@ namespace NovaFramework.Editor
             public string savePath;
             public string placeholderTime;
             public string resolvedNamespace;
+            public bool bindsExportTarget;
             public GenerateActionCommon.Artifact[] artifacts;
         }
 
@@ -91,6 +93,7 @@ namespace NovaFramework.Editor
             return GenerateActionCommon.TryResolveAssetSavePath(request.savePath, out _, out _, out error);
         }
 
+        /// <summary>冻结导出坐标、产物和首次绑定写入范围，保留已有的有效目标。</summary>
         public override Task<AgentActionHandlerPlan> PlanAsync(Request request, AgentActionExecutionContext context)
         {
             GenerateActionCommon.TryParseCoordinate(
@@ -139,6 +142,11 @@ namespace NovaFramework.Editor
                 return Blocked("savePath 已存在非 ConfigRuntimeSO 资产，拒绝覆盖：" + savePath);
             }
 
+            ConfigRuntimeSO boundRuntime = EditorUtil.Config.WorkspaceActive.ResolveRuntimeForMaster(master);
+            bool bindExportTarget = boundRuntime == null;
+            if (bindExportTarget && (!masterPath.StartsWith("Assets/", StringComparison.Ordinal) || HasUnsavedMasterChanges(master)))
+                return Blocked("首次正式导出需要保存 ConfigMaster 的导出目标。请使用项目自有 Master，并先处理未保存编辑。");
+
             EditorUtil.Config.DimensionalResolver.YooAssetResult yoo =
                 EditorUtil.Config.DimensionalResolver.ResolveYooAsset(master, platform, channel, mode);
             string yooPath = string.IsNullOrWhiteSpace(yoo.YooAssetSettingsPath)
@@ -165,6 +173,7 @@ namespace NovaFramework.Editor
                 Mode = mode,
                 MasterPath = masterPath,
                 MasterHash = masterHash,
+                BindExportTarget = bindExportTarget,
                 SavePath = savePath,
                 SaveAbsolutePath = saveAbsolute,
                 YooAssetSettingsPath = yooPath,
@@ -180,16 +189,21 @@ namespace NovaFramework.Editor
                 savePath = savePath,
                 placeholderTime = placeholderTime.ToString("O"),
                 resolvedNamespace = EditorUtil.Config.DimensionalResolver.ResolveNamespace(master, platform, channel, mode),
+                bindsExportTarget = bindExportTarget,
                 artifacts = Array.Empty<GenerateActionCommon.Artifact>(),
             };
 
             var writeSet = new List<string> { savePath, savePath + ".meta (仅新建资产时)" };
             if (yooPath != null) writeSet.Add(yooPath);
-            string[] warnings = issues.Select(issue => issue.Path + ": " + issue.Message).ToArray();
+            var warnings = issues.Select(issue => issue.Path + ": " + issue.Message).ToList();
+            if (bindExportTarget) writeSet.Add(masterPath);
+            else if (AssetDatabase.GetAssetPath(boundRuntime) != savePath)
+                warnings.Add("下游继续使用现有导出目标 " + AssetDatabase.GetAssetPath(boundRuntime) + "。需要切换时请先在 Config 的导出文件处保存新引用。");
             return Task.FromResult(new AgentActionHandlerPlan
             {
                 Status = "ready",
-                Summary = $"将 {masterPath} 的 {platform}/{channel}/{mode} 导出到 {savePath}。",
+                Summary = $"将 {masterPath} 的 {platform}/{channel}/{mode} 导出到 {savePath}。"
+                    + (bindExportTarget ? "成功后将该资产保存为此 Master 的首次导出目标。" : string.Empty),
                 DataJson = Util.Json.Serialize(receipt),
                 State = state,
                 WriteSet = writeSet.ToArray(),
@@ -198,6 +212,7 @@ namespace NovaFramework.Editor
             });
         }
 
+        /// <summary>写前复核 Master，导出成功后只在冻结计划允许时保存首次目标引用。</summary>
         public override Task<AgentActionResult> ExecuteAsync(object state, AgentActionExecutionContext context)
         {
             if (!(state is State frozen)) return Task.FromResult(AgentActionResult.Create(null, "blocked", "Config 导出冻结状态无效。"));
@@ -219,6 +234,9 @@ namespace NovaFramework.Editor
             {
                 return Task.FromResult(AgentActionResult.Create(null, "blocked", "冻结的 Config 三维矩阵行已不存在。"));
             }
+            if (frozen.BindExportTarget && (HasUnsavedMasterChanges(master) ||
+                EditorUtil.Config.WorkspaceActive.ResolveRuntimeForMaster(master) != null))
+                return Task.FromResult(AgentActionResult.Create(null, "blocked", "首次导出的目标或草稿状态已变化，请重新 Plan。"));
 
             ConfigRuntimeSO runtime = EditorUtil.Config.Exporter.Export(
                 master, frozen.Platform, frozen.Channel, frozen.Mode, frozen.SavePath, frozen.PlaceholderTime, true);
@@ -231,6 +249,23 @@ namespace NovaFramework.Editor
             {
                 GenerateActionCommon.CaptureFile(frozen.SaveAbsolutePath, context.CancellationToken),
             };
+            string[] bindingWarnings = Array.Empty<string>();
+            if (frozen.BindExportTarget)
+            {
+                ConfigRuntimeSO current = EditorUtil.Config.WorkspaceActive.ResolveRuntimeForMaster(master);
+                string masterAbsolute = Path.Combine(GenerateActionCommon.ProjectRoot, masterPath);
+                if (HasUnsavedMasterChanges(master) || (current != null && current != runtime) ||
+                    GenerateActionCommon.ComputeFileHash(masterAbsolute, context.CancellationToken) != frozen.MasterHash)
+                    return Task.FromResult(AgentActionResult.Create(null, "partial", "Runtime 已导出。ConfigMaster 在导出期间变化，首次引用未保存，请核对后接续绑定。"));
+
+                master.ExportTarget = runtime;
+                EditorUtility.SetDirty(master);
+                AssetDatabase.SaveAssetIfDirty(master);
+                if (EditorUtility.IsDirty(master))
+                    return Task.FromResult(AgentActionResult.Create(null, "partial", "Runtime 已导出，ConfigMaster 的首次目标引用尚未保存。"));
+                artifacts.Add(GenerateActionCommon.CaptureFile(masterAbsolute, context.CancellationToken));
+                bindingWarnings = EditorUtil.Config.DesignTimeEditing.NotifyMasterSaved(master);
+            }
             if (File.Exists(frozen.SaveAbsolutePath + ".meta"))
             {
                 artifacts.Add(GenerateActionCommon.CaptureFile(frozen.SaveAbsolutePath + ".meta", context.CancellationToken));
@@ -251,16 +286,19 @@ namespace NovaFramework.Editor
                 savePath = frozen.SavePath,
                 placeholderTime = frozen.PlaceholderTime.ToString("O"),
                 resolvedNamespace = runtime.Namespace,
+                bindsExportTarget = frozen.BindExportTarget,
                 artifacts = artifacts.ToArray(),
             };
             AgentActionResult result = AgentActionResult.Create(null, "partial", "ConfigRuntime 已导出，等待只读 Verify 核对精确字段与 SHA-256。" );
             result.ReceiptJson = Util.Json.Serialize(receipt);
             result.DataJson = result.ReceiptJson;
             result.Artifacts.AddRange(artifacts.Select(artifact => artifact.path));
-            result.Evidence.Add("Execute 仅调用 EditorUtil.Config.Exporter.Export 一次，仅保存并精确导入本次 ConfigRuntime 目标；失败不会自动重放。" );
+            result.Warnings.AddRange(bindingWarnings);
+            result.Evidence.Add("Execute 调用 EditorUtil.Config.Exporter.Export 一次，首次目标引用按计划保存；失败不会自动重放。" );
             return Task.FromResult(result);
         }
 
+        /// <summary>只读核对 Runtime 产物和本次实际保存的首次目标引用。</summary>
         public override Task<AgentActionResult> VerifyAsync(string receiptJson, AgentActionExecutionContext context)
         {
             Receipt receipt;
@@ -296,6 +334,13 @@ namespace NovaFramework.Editor
             {
                 return Task.FromResult(AgentActionResult.Create(null, "partial", "ConfigRuntimeSO 的 Platform/Channel/DevelopMode/Namespace 与 Receipt 不一致。"));
             }
+            if (receipt.bindsExportTarget)
+            {
+                ConfigMasterSO master = GenerateActionCommon.ResolveMaster(receipt.masterGuid, out string masterPath);
+                if (master == null || masterPath != receipt.masterPath || master.ExportTarget != runtime ||
+                    !actual.Any(artifact => artifact.kind == "file" && artifact.path == Path.Combine(GenerateActionCommon.ProjectRoot, masterPath)))
+                    return Task.FromResult(AgentActionResult.Create(null, "partial", "ConfigMaster 的首次导出目标引用缺失或发生变化。"));
+            }
 
             AgentActionResult success = AgentActionResult.Create(null, "success", "ConfigRuntime 精确字段与所有写入产物 SHA-256 已只读核对。" );
             success.EvidenceKinds = AgentActionEvidence.Static | AgentActionEvidence.Artifact;
@@ -304,6 +349,10 @@ namespace NovaFramework.Editor
             success.Evidence.Add("Verify 未调用 Exporter、SaveAssets 或任何恢复写入。" );
             return Task.FromResult(success);
         }
+
+        /// <summary>保护真实资产上的未保存改动和 Config 窗口的工作副本。</summary>
+        private static bool HasUnsavedMasterChanges(ConfigMasterSO master)
+            => EditorUtility.IsDirty(master) || EditorUtil.Config.DesignTimeEditing.HasUnsavedDraft(master);
 
         private static Task<AgentActionHandlerPlan> Blocked(string message)
         {

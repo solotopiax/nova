@@ -99,9 +99,12 @@ namespace NovaFramework.Editor
             try { native = AndroidGenerateNativePreviewContract.Capture(scenes, token); }
             catch (Exception nativeError) when (!(nativeError is OperationCanceledException)) { nativeFailure = "Android.NativePreview:" + nativeError.Message; }
             AndroidGenerateAppsFlyerScope.Plan appsFlyer = null; string appsFlyerFailure = null;
-            try { appsFlyer = AndroidGenerateAppsFlyerScope.CapturePlan(factory, token); }
-            catch (Exception appsFlyerError) when (!(appsFlyerError is OperationCanceledException)) { appsFlyerFailure = "Android.AppsFlyer:" + appsFlyerError.Message; }
-            string selected = new CustomAndroidManifest(Path.Combine(BuildActionCommon.ProjectRoot, NovaAndroidParentBuildContract.TemplatePath))
+            if (factory.preprocessOrder.Contains(NovaAndroidSdkLeafBuildContract.AppsFlyer))
+            {
+                try { appsFlyer = AndroidGenerateAppsFlyerScope.CapturePlan(factory, token); }
+                catch (Exception appsFlyerError) when (!(appsFlyerError is OperationCanceledException)) { appsFlyerFailure = "Android.AppsFlyer:" + appsFlyerError.Message; }
+            }
+            string selected = new CustomAndroidManifest(NovaAndroidParentBuildContract.ResolveReviewedSource(BuildActionCommon.ProjectRoot, NovaAndroidParentBuildContract.TemplatePath))
                 .SelectUnityLauncherActivity(PlayerSettings.Android.applicationEntry);
             string[] unbound; NovaAndroidSdkLeafBuildContract.ConfigurationRow[] rows;
             using (var configurations = NovaAndroidSdkLeafBuildContract.CaptureReviewedConfigurations(factory, provider))
@@ -117,7 +120,8 @@ namespace NovaFramework.Editor
                 recoveryDirectory = PhysicalPath("Library/Nova/AgentActions/HybridCLRGenerateAndroid/" + Guid.NewGuid().ToString("N") + "/report-backup"),
                 unboundContracts = callbacks.unsupported.Select(value => "PlayerCallback:" + value).Concat(unbound)
                     .Concat(toolchainFailure == null ? Array.Empty<string>() : new[] { toolchainFailure }).Concat(nativeFailure == null ? Array.Empty<string>() : new[] { nativeFailure })
-                    .Concat(appsFlyerFailure == null ? Array.Empty<string>() : new[] { appsFlyerFailure }).Concat(new[] { AndroidGenerateAppsFlyerScope.TailUnbound }).Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal).ToArray() };
+                    .Concat(appsFlyerFailure == null ? Array.Empty<string>() : new[] { appsFlyerFailure })
+                    .Concat(appsFlyer?.unboundContracts ?? Array.Empty<string>()).Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal).ToArray() };
             if (plan.unboundContracts.Length != 0) return plan;
             var projection = CreateAndroidGenerateProjection(masterLinkXml, scenes.Concat(new[] { masterPath, provider.runtimePath }).Select(PhysicalPath).ToArray());
             var svs = GenerateSceneVisibilityContract.CaptureInitial(); plan.sceneVisibilityBefore = svs.baseline;
@@ -149,7 +153,7 @@ namespace NovaFramework.Editor
                     throw new InvalidOperationException("Android Generate真实写前输入漂移。");
                 using (var configurations = NovaAndroidSdkLeafBuildContract.CaptureReviewedConfigurations(plan.factory, plan.provider))
                 {
-                    string selected = new CustomAndroidManifest(Path.Combine(BuildActionCommon.ProjectRoot, NovaAndroidParentBuildContract.TemplatePath)).SelectUnityLauncherActivity(PlayerSettings.Android.applicationEntry);
+                    string selected = new CustomAndroidManifest(NovaAndroidParentBuildContract.ResolveReviewedSource(BuildActionCommon.ProjectRoot, NovaAndroidParentBuildContract.TemplatePath)).SelectUnityLauncherActivity(PlayerSettings.Android.applicationEntry);
                     var models = NovaAndroidSdkLeafBuildContract.PredictReviewedGenerate(plan.factory, configurations, selected, plan.nativePreview);
                     if (models.Any(model => !model.contextComplete) || NovaAndroidSdkLeafBuildContract.DescribeReviewedGenerateUnboundContracts(plan.factory, models, plan.provider, plan.nativePreview).Length != 0)
                         throw new InvalidOperationException("Android SDK真实叶子义务仍未闭合；不接受修改DTO清空required。");
@@ -162,7 +166,7 @@ namespace NovaFramework.Editor
                     try
                     {
                     using (var prepared = NovaAndroidParentBuildContract.PrepareOutputs(BuildActionCommon.ProjectRoot, settings, models.Select(model => model.effect).ToArray(), token))
-                    using (var appsFlyer = observedAppsFlyer = AndroidGenerateAppsFlyerScope.Begin(plan.appsFlyer, plan.factory, token))
+                    using (var appsFlyer = observedAppsFlyer = plan.appsFlyer == null ? null : AndroidGenerateAppsFlyerScope.Begin(plan.appsFlyer, plan.factory, token))
                     using (var parent = observedParent = NovaAndroidParentBuildObserverScope.Begin(plan.factory, prepared, token))
                     using (var native = observedNative = AndroidGenerateNativePreviewScope.Begin(plan.nativePreview, plan.factory, token))
                     using (var gradle = HybridClrStripGradleScope.BeginAndroidGenerate(plan.output, plan.toolchain))
@@ -171,8 +175,8 @@ namespace NovaFramework.Editor
                         Application.LogCallback observer = (message, trace, kind) => { if (kind == LogType.Error || kind == LogType.Exception || kind == LogType.Assert) Interlocked.Increment(ref evidence.logErrors); };
                         Application.logMessageReceivedThreaded += observer;
                         try { token.ThrowIfCancellationRequested(); evidence.chainEntered = true; EditorUtil.HybridCLR.GenerateAll(); evidence.chainReturned = true;
-                            gradle.RequireComplete(); evidence.gradle = gradle.Observed; evidence.parent = parent.CompleteObservation(); evidence.nativePreview = native.CompleteObservation(); evidence.appsFlyer = appsFlyer.CompleteObservation(); }
-                        finally { Application.logMessageReceivedThreaded -= observer; evidence.gradle = gradle.Observed; evidence.toolchainAtGradle = gradle.ActualToolSelection; evidence.parent = parent.CaptureEvidence(); evidence.nativePreview = native.CaptureEvidence(); evidence.appsFlyer = appsFlyer.CaptureEvidence(); }
+                            gradle.RequireComplete(); evidence.gradle = gradle.Observed; evidence.parent = parent.CompleteObservation(); evidence.nativePreview = native.CompleteObservation(); evidence.appsFlyer = appsFlyer?.CompleteObservation(); }
+                        finally { Application.logMessageReceivedThreaded -= observer; evidence.gradle = gradle.Observed; evidence.toolchainAtGradle = gradle.ActualToolSelection; evidence.parent = parent.CaptureEvidence(); evidence.nativePreview = native.CaptureEvidence(); evidence.appsFlyer = appsFlyer?.CaptureEvidence(); }
                     }
                     }
                     finally
@@ -183,7 +187,8 @@ namespace NovaFramework.Editor
                     }
                 }
                 AndroidGenerateNativePreviewContract.VerifyCompleted(plan.nativePreview, evidence.nativePreview, token);
-                if (evidence.appsFlyer?.unboundContracts == null || evidence.appsFlyer.unboundContracts.Length != 0) throw new InvalidOperationException("AF真实同步写入不代替Generated资产/Manifest导入尾链闭合。");
+                if (plan.appsFlyer != null && (evidence.appsFlyer?.unboundContracts == null || evidence.appsFlyer.unboundContracts.Length != 0))
+                    throw new InvalidOperationException("AF真实同步写入不代替Generated资产/Manifest导入尾链闭合。");
                 evidence.sceneVisibilityAfter = GenerateSceneVisibilityContract.Capture();
                 evidence.stripAfter = HybridClrStripBuildContract.CaptureAndroid();
                 if (evidence.logErrors != 0 || !HybridClrStripBuildContract.AfterEqual(plan.stripBefore, evidence.stripAfter)) throw new InvalidOperationException("Android Generate错误日志或官方StripAOT后态不符。");
@@ -288,8 +293,11 @@ namespace NovaFramework.Editor
         /// <param name="plan">原冻结计划。</param>
         private static void RequireAndroidGenerateExecutable(AndroidGeneratePlan plan)
         {
-            if (plan?.unboundContracts == null || plan.unboundContracts.Length != 0 || plan.callbacks?.unsupported == null || plan.callbacks.unsupported.Length != 0 || plan.inputs == null || plan.owned == null || plan.factory == null || plan.provider == null || plan.toolchain == null || plan.nativePreview == null || plan.appsFlyer?.unboundContracts == null || plan.appsFlyer.unboundContracts.Length != 0 || plan.sceneVisibilityBefore == null)
+            if (plan?.unboundContracts == null || plan.unboundContracts.Length != 0 || plan.callbacks?.unsupported == null || plan.callbacks.unsupported.Length != 0 || plan.inputs == null || plan.owned == null || plan.factory?.preprocessOrder == null || plan.provider == null || plan.toolchain == null || plan.nativePreview == null || plan.sceneVisibilityBefore == null)
                 throw new InvalidOperationException("Android Generate完整typed执行合同尚未闭合。");
+            bool hasAppsFlyer = plan.factory.preprocessOrder.Contains(NovaAndroidSdkLeafBuildContract.AppsFlyer);
+            if (hasAppsFlyer ? plan.appsFlyer?.unboundContracts == null || plan.appsFlyer.unboundContracts.Length != 0 : plan.appsFlyer != null)
+                throw new InvalidOperationException("Android Generate 的 AppsFlyer 证据与实际回调集合不对应。");
         }
 
         /// <summary>对完整真实材料计算编译前证书，排除证书字段自身。</summary>

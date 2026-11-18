@@ -30,6 +30,7 @@ namespace NovaFramework.Editor
         internal const string ManifestPath = "Assets/Plugins/Android/AndroidManifest.xml";
         internal const string ProguardPath = "Assets/Plugins/Android/proguard-user.txt";
         internal const string TemplatePath = "Assets/Framework/Scripts/Editor/BuildProcessor/Android/UnityManifest.xml";
+        private const string FrameworkPackage = "com.solotopia.nova.framework";
         private const int MaxFileBytes = 2 * 1024 * 1024;
         private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false, true);
         private static readonly string Domain = Guid.NewGuid().ToString("N");
@@ -56,8 +57,8 @@ namespace NovaFramework.Editor
         private static readonly string[][] ParentSources = {
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateAppsFlyerScope.cs", "02629620daf25554a947a7b68f25117859f2764cff73043d57d64e78a630a05a" },
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Generate/AndroidResolveRefreshContract.cs", "060f6a4f9c92eaa5eed6512d95b761a38afff68f8d2a40f5a6139e0f3adf5260" },
-            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewContract.cs", "30bdc0793d977b5cfeb29d42170932fe419fdd506cd707b138968b024f7b57e6" },
-            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewScope.cs", "efa995930462101e4e7d61a058c076f820a192cdc8501b8ba941ff70ab6c511e" },
+            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewContract.cs", "8e11903e2c65d52bead5f5a5244ef58e38fd9ef1bd93396984184d2be87e9452" },
+            new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateNativePreviewScope.cs", "936bf38c0186ea6d6043e9128dd087ef698958a2bd520fb38493a5ec2cae19c0" },
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/AndroidGenerateToolchainContract.cs", "88c0f84f19003a7bb1752880feba534302bfeebc4199c23ea8c077c546de0a78" },
             new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPreviewObservers.cs", "4094febb68b8dade04c9158afee5a77ea196ffd9165d0576b775d7aec9c135cd" },
             new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Core/NovaBuildShared.cs", "4024f716e33ea5eacb06e02c04624a4ffdc4c9716aeae5b88273ef6303690e78" },
@@ -173,11 +174,11 @@ namespace NovaFramework.Editor
             private readonly string root;
             private bool disposed;
             private readonly string summarySha256;
-            private readonly bool includeAdMob;
+            private readonly string[] processorTypes;
             /// <summary>绑定本次准确文件摘要及自有预测副本，不接管业务对象。</summary>
             /// <param name="projectRoot">已验证根目录。</param><param name="value">完整预测摘要。</param><param name="manifest">完整自有XML字节。</param><param name="proguard">完整自有规则字节。</param>
             internal Prepared(string projectRoot, OutputSummary value, byte[] manifest, byte[] proguard)
-            { root = projectRoot; summary = value; summarySha256 = HashText(JsonConvert.SerializeObject(value)); expectedManifest = (byte[])manifest.Clone(); expectedProguard = (byte[])proguard.Clone(); includeAdMob = value.expectedInstanceState.Any(row => row.StartsWith(NovaAndroidSdkLeafBuildContract.AdMob + "|", StringComparison.Ordinal)); }
+            { root = projectRoot; summary = value; summarySha256 = HashText(JsonConvert.SerializeObject(value)); expectedManifest = (byte[])manifest.Clone(); expectedProguard = (byte[])proguard.Clone(); processorTypes = value.expectedInstanceState.Select(row => row.Split('|')[0]).ToArray(); }
             /// <summary>把借用预测精确绑定到调用方实际工程根；只做完整路径规范化比较，不访问/创建目录或改写原root。</summary>
             /// <param name="expectedActualRoot">Scope从BuildActionCommon.ProjectRoot取得的实际根，不能由请求或预测DTO替代。</param>
             internal void RequireProjectRoot(string expectedActualRoot)
@@ -192,14 +193,14 @@ namespace NovaFramework.Editor
             /// <param name="token">原Action取消令牌。</param>
             internal void VerifyBefore(CancellationToken token)
             {
-                RequireAlive(); RequireSources(root, token, includeAdMob);
+                RequireAlive(); RequireSources(root, token, processorTypes);
                 if (!Same(summary.template, ReadFile(root, TemplatePath, token)) || !Same(summary.manifestBefore, ReadFile(root, ManifestPath, token)) || !Same(summary.proguardBefore, ReadFile(root, ProguardPath, token))) throw new InvalidOperationException("Nova Android父合同写前源/meta/属性漂移。");
             }
             /// <summary>在原父merge、Manifest.Save与Proguard.Rebuild完成后且OnAfterNovaPreprocess叶子之前验收两个源文件；叶子物理变换另由独立合同验收。</summary>
             /// <param name="token">原取消令牌。</param><returns>完整预测字节、原meta/属性及模板均保持才为真。</returns>
             internal bool VerifyAfter(CancellationToken token)
             {
-                RequireAlive(); RequireSources(root, token, includeAdMob);
+                RequireAlive(); RequireSources(root, token, processorTypes);
                 FileState manifest = ReadFile(root, ManifestPath, token), proguard = ReadFile(root, ProguardPath, token);
                 return Same(summary.template, ReadFile(root, TemplatePath, token)) && AfterFile(summary.manifestBefore, manifest, summary.manifestExpectedSha256, expectedManifest.Length) && AfterFile(summary.proguardBefore, proguard, summary.proguardExpectedSha256, expectedProguard.Length);
             }
@@ -235,7 +236,7 @@ namespace NovaFramework.Editor
                 for (int index = 0; index < processors.Count; index++) if (processors[index] == null || processors[index].GetType() != expected.types[index]) throw new InvalidOperationException("普通构造失败、遗漏、替换或TypeCache顺序漂移。");
                 if (actual.ManifestRuleSets.Count != 0 || actual.ProguardRules.Count != 0 || actual.AndroidManifest != null || actual.ActivityName != CustomAndroidManifest.c_UnityPlayerActivity) throw new InvalidOperationException("新Context的原始字段已改变。");
                 if (expected.bclSha256 != HashFile(typeof(List<>).Assembly.Location, CancellationToken.None) || expected.bclMvid != typeof(List<>).Assembly.ManifestModule.ModuleVersionId.ToString("D")) throw new InvalidOperationException("Nova排序BCL身份在计划后变化。");
-                RequireSources(BuildActionCommon.ProjectRoot, CancellationToken.None, expected.discovered.Any(row => row.type == NovaAndroidSdkLeafBuildContract.AdMob));
+                RequireSources(BuildActionCommon.ProjectRoot, CancellationToken.None, expected.discovered.Select(row => row.type));
                 factory = expected; context = actual; list = processors; instances = processors.ToArray(); report = actualReport;
                 constructed = Observe("constructed");
                 if (constructed.instanceState.Any(value => value.EndsWith("=True", StringComparison.Ordinal))) throw new InvalidOperationException("普通构造的Facebook实例初值不是false。");
@@ -263,42 +264,87 @@ namespace NovaFramework.Editor
 
         /// <summary>由已审源码、准确构造/优先级IL与成员形状建立生产见证；DLL/MVID只绑定本次实际编译身份，不自称历史审核。</summary>
         /// <param name="token">读取已解析包、源码与实际模块时的取消令牌。</param>
-        /// <returns>当前Android完整七型或安装AdMob后的八型工厂；未知包、类型、成员和IL均拒绝。</returns>
+        /// <returns>由当前包解析证明的完整工厂，真实类型、成员或 IL 不吻合时拒绝。</returns>
         internal static FactorySnapshot CaptureReviewedFactory(CancellationToken token)
         {
-            string[] packages = CaptureInstalledProcessorPackages(out bool adMobInstalled);
-            string[] expected = ReviewedRoster(adMobInstalled);
+            var installed = CaptureInstalledProcessorPackages();
+            string[] packages = installed.Select(package => package.name + "|" + package.version + "|" + Path.GetFullPath(package.resolvedPath))
+                .OrderBy(value => value, StringComparer.Ordinal).ToArray();
+            string[] expected = ReviewedRoster(packages);
             Type[] types = TypeCache.GetTypesDerivedFrom<NovaSDKBuildProcessor>().Where(type => !type.IsAbstract).ToArray();
             if (!types.Select(type => type.FullName).OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(expected.OrderBy(value => value, StringComparer.Ordinal)))
-                throw new InvalidOperationException("Android真实TypeCache与已解析SDK包的完整七/八型集合不一致；不能按Runtime配置过滤。");
-            foreach (Type type in types) RequireReviewedProcessorShape(type);
+                throw new InvalidOperationException("Android 实际构建回调与当前注册包对应的已审集合不一致。");
+            foreach (Type type in types)
+            {
+                ProcessorSpec spec = Specs.Single(entry => entry.type == type.FullName);
+                var package = installed.Single(item => item.name == (ReviewedSdkSourcePackage(spec.source) ?? FrameworkPackage));
+                var owner = UnityEditor.PackageManager.PackageInfo.FindForAssembly(type.Assembly);
+                if (owner == null || owner.name != package.name || owner.version != package.version ||
+                    owner.resolvedPath != package.resolvedPath)
+                    throw new InvalidOperationException("Android 构建回调的注册包来源不一致：" + type.FullName);
+                RequireReviewedProcessorShape(type);
+            }
             var current = types.Select(type => new AuditedTypePin { type = type.FullName, assemblyFullName = type.Assembly.FullName,
                 mvid = type.Module.ModuleVersionId.ToString("D"), dllSha256 = HashFile(type.Assembly.Location, token) }).ToArray();
             FactorySnapshot result = CaptureFactoryCore(current, token, expected);
             result.admission = "reviewed-source-signature-ctor-priority-il-v1";
-            result.adMobPackageInstalled = adMobInstalled;
+            result.adMobPackageInstalled = expected.Contains(NovaAndroidSdkLeafBuildContract.AdMob);
             result.packageRoster = packages;
             return result;
         }
 
-        /// <summary>返回已审完整工厂名称；AdMob缺席只由包解析及TypeCache证明，不由SDK启用开关决定。</summary>
-        /// <param name="adMobInstalled">准确AdMob包是否已解析。</param><returns>七型或八型准确名称的独立数组。</returns>
-        internal static string[] ReviewedRoster(bool adMobInstalled) => Specs.Where(spec => adMobInstalled || spec.type != NovaAndroidSdkLeafBuildContract.AdMob).Select(spec => spec.type).ToArray();
+        /// <summary>Framework 自有回调始终进入工厂，其余只按真实包解析纳入完整已审集合。</summary>
+        /// <param name="packageRoster">真实注册包名、版本和位置的冻结记录。</param>
+        /// <returns>与当前包图对应的准确回调类型名。</returns>
+        internal static string[] ReviewedRoster(string[] packageRoster)
+            => Specs.Where(spec => HasReviewedSourcePackage(packageRoster, spec.source)).Select(spec => spec.type).ToArray();
 
-        /// <summary>只读实际已解析包的准确位置/版本；当前合同要求七个基础包，AdMob只允许明确安装或明确缺席。</summary>
-        /// <param name="adMobInstalled">返回AdMob包实际解析状态。</param><returns>与SDK工厂对应的完整包身份。</returns>
-        private static string[] CaptureInstalledProcessorPackages(out bool adMobInstalled)
+        /// <summary>依据固定审核表的包归属判断源码是否参与本工程的回调核验。</summary>
+        /// <param name="packageRoster">真实注册包快照。</param>
+        /// <param name="source">固定表中的源码路径角色。</param>
+        /// <returns>Framework 自有源码或实际注册 SDK 的源码返回 true。</returns>
+        internal static bool HasReviewedSourcePackage(string[] packageRoster, string source)
+        {
+            string package = ReviewedSdkSourcePackage(source);
+            return package == null || packageRoster != null && packageRoster.Any(row => row.StartsWith(package + "|", StringComparison.Ordinal));
+        }
+
+        /// <summary>这两份 Framework 源文件仅由 AppsFlyer 的生成观察链使用。</summary>
+        /// <param name="source">审核表中的源文件路径。</param>
+        /// <returns>仅在实际 AppsFlyer 回调存在时需要核验的源码返回 true。</returns>
+        internal static bool IsAppsFlyerSupportSource(string source)
+            => source.EndsWith("/AndroidGenerateAppsFlyerScope.cs", StringComparison.Ordinal)
+                || source.EndsWith("/AndroidResolveRefreshContract.cs", StringComparison.Ordinal);
+
+        /// <summary>只解析固定审核表中的 SDK 源码包名，Framework 源码不属于可选项。</summary>
+        /// <param name="source">固定表中的源码路径角色。</param>
+        /// <returns>对应 SDK 包名或 null。</returns>
+        private static string ReviewedSdkSourcePackage(string source)
+        {
+            const string prefix = "UPMPackages/";
+            if (!source.StartsWith(prefix, StringComparison.Ordinal)) return null;
+            int separator = source.IndexOf('/', prefix.Length);
+            return source.Substring(prefix.Length, separator - prefix.Length);
+        }
+
+        /// <summary>核对 Framework 与实际注册的已审 SDK，缺席的可选 SDK 不构成限制。</summary>
+        /// <returns>参与回调及配置来源核验的真实、唯一包注册材料。</returns>
+        private static UnityEditor.PackageManager.PackageInfo[] CaptureInstalledProcessorPackages()
         {
             var packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
-            string[] required = { "com.solotopia.nova.framework", "com.solotopia.nova.framework.sdk.appsflyer", "com.solotopia.nova.framework.sdk.facebook",
-                "com.solotopia.nova.framework.sdk.max", "com.solotopia.nova.framework.sdk.googlesignin", "com.solotopia.nova.framework.sdk.applesignin", "com.solotopia.nova.framework.sdk.firebase" };
-            if (packages == null || required.Any(name => packages.Count(package => package.name == name) != 1))
-                throw new InvalidOperationException("Android已审七型工厂的基础包未完整解析；不能拿UPMPackages源码存在代替安装。");
-            const string adMob = "com.solotopia.nova.framework.sdk.admob";
-            if (packages.Count(package => package.name == adMob) > 1) throw new InvalidOperationException("AdMob包解析身份不唯一。");
-            adMobInstalled = packages.Any(package => package.name == adMob);
-            return packages.Where(package => required.Contains(package.name, StringComparer.Ordinal) || package.name == adMob)
-                .Select(package => package.name + "|" + package.version + "|" + Path.GetFullPath(package.resolvedPath)).OrderBy(value => value, StringComparer.Ordinal).ToArray();
+            if (packages == null || packages.Count(package => package.name == FrameworkPackage) != 1)
+                throw new InvalidOperationException("Android 构建回调需要当前实际注册的唯一 Framework 包。");
+            var known = new HashSet<string>(Specs.Select(spec => ReviewedSdkSourcePackage(spec.source)), StringComparer.Ordinal)
+            {
+                FrameworkPackage,
+                "com.solotopia.nova.framework.sdk.ad",
+            };
+            var installed = packages.Where(package => known.Contains(package.name)).ToArray();
+            if (installed.GroupBy(package => package.name, StringComparer.Ordinal).Any(group => group.Count() != 1)
+                || installed.Any(package => string.IsNullOrWhiteSpace(package.version) || string.IsNullOrWhiteSpace(package.resolvedPath) ||
+                    package.errors?.Length > 0))
+                throw new InvalidOperationException("Android 构建回调的实际包注册材料不完整。");
+            return installed;
         }
 
         /// <summary>核已审Android编译分支的准确成员签名；复杂SDK方法仍须独立叶子合同，本工厂不批准其副作用。</summary>
@@ -338,7 +384,7 @@ namespace NovaFramework.Editor
             if (!NovaBuildParentObservers.IsInactive) throw new InvalidOperationException("Nova parent已有活动观察者，不能另取工厂计划。");
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android) throw new InvalidOperationException("Nova父metadata仅支持实际Android活动域，不移植WebGL身份。");
             string[] expected = reviewedRoster ?? Specs.Select(spec => spec.type).ToArray();
-            string root = BuildActionCommon.ProjectRoot; RequireSources(root, token, expected.Contains(NovaAndroidSdkLeafBuildContract.AdMob));
+            string root = BuildActionCommon.ProjectRoot; RequireSources(root, token, expected);
             if (reviewedRoster == null) RequirePins(pins);
             else if (pins == null || pins.Length != expected.Length || !pins.Select(pin => pin?.type).OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(expected.OrderBy(value => value, StringComparer.Ordinal)))
                 throw new InvalidOperationException("Android生产工厂的实际模块身份集合不完整。");
@@ -362,7 +408,7 @@ namespace NovaFramework.Editor
                 rows.Add(new ProcessorRow { type = type.FullName, assemblyFullName = pin.assemblyFullName, mvid = pin.mvid, dllSha256 = dll, sourceSha256 = spec.sha256, constructorIlSha256 = Hash(type.GetConstructor(Type.EmptyTypes).GetMethodBody().GetILAsByteArray()), pre = spec.pre, post = spec.post });
             }
             ProcessorRow[] pre = Sort(rows.ToArray(), true), post = Sort(pre, false);
-            return new FactorySnapshot { domain = Domain, bclSha256 = HashFile(typeof(List<>).Assembly.Location, token), bclMvid = typeof(List<>).Assembly.ManifestModule.ModuleVersionId.ToString("D"), sourcePins = ParentSources.Concat(Specs.Where(spec => expected.Contains(spec.type)).Select(spec => new[] { spec.source, spec.sha256 })).Select(pair => pair[0] + "|" + pair[1]).ToArray(), discovered = rows.ToArray(), preprocessOrder = pre.Select(row => row.type).ToArray(), postprocessOrder = post.Select(row => row.type).ToArray(), types = types };
+            return new FactorySnapshot { domain = Domain, bclSha256 = HashFile(typeof(List<>).Assembly.Location, token), bclMvid = typeof(List<>).Assembly.ManifestModule.ModuleVersionId.ToString("D"), sourcePins = SourcesFor(expected).Select(pair => pair[0] + "|" + pair[1]).ToArray(), discovered = rows.ToArray(), preprocessOrder = pre.Select(row => row.type).ToArray(), postprocessOrder = post.Select(row => row.type).ToArray(), types = types };
         }
 
         /// <summary>正常构建写前重核本域工厂见证、真实元数据/源码与BCL次序；不构造SDK，不从持久DTO补签types。</summary>
@@ -436,7 +482,7 @@ namespace NovaFramework.Editor
             if (settings == null || settings.bundleId == null || settings.versionCode == null || settings.versionName == null || orderedEffects == null || orderedEffects.Any(effect => effect == null || string.IsNullOrEmpty(effect.type)) || orderedEffects.Select(effect => effect.type).Distinct().Count() != orderedEffects.Length) throw new InvalidOperationException("Nova父预测缺少完整设置或有序效果。");
             string root = Path.GetFullPath(projectRoot); FileState template = ReadFile(root, TemplatePath, token), manifestBefore = ReadFile(root, ManifestPath, token), proguardBefore = ReadFile(root, ProguardPath, token);
             // 构造的是原领域XML树，只有读文件；并非SDK processor构造，也不Save源文件。
-            byte[] templateBytes = File.ReadAllBytes(Path.Combine(root, TemplatePath)); if (Hash(templateBytes) != template.sha256) throw new InvalidOperationException("Nova模板在预测前变化。");
+            byte[] templateBytes = File.ReadAllBytes(ResolveReviewedSource(root, TemplatePath)); if (Hash(templateBytes) != template.sha256) throw new InvalidOperationException("Nova模板在预测前变化。");
             var document = new CustomAndroidManifest(templateBytes, Path.Combine(root, ManifestPath)); string selected = document.SelectUnityLauncherActivity(settings.entry), activity = selected;
             var rules = new List<ManifestRuleSet>(); var proguard = new List<(string sdkName, string rules)>(); bool registered = false;
             foreach (ContextEffect effect in orderedEffects)
@@ -477,7 +523,9 @@ namespace NovaFramework.Editor
         internal static FileState ReadFile(string projectRoot, string relative, CancellationToken token)
         {
             if (relative != ManifestPath && relative != ProguardPath && relative != TemplatePath) throw new InvalidOperationException("Nova父文件角色未知。");
-            string root = Path.GetFullPath(projectRoot), path = Path.Combine(root, relative); RequireUnlinked(path); RequireUnlinked(path + ".meta");
+            string root = Path.GetFullPath(projectRoot);
+            string path = relative == TemplatePath ? ResolveReviewedSource(root, relative) : Path.Combine(root, relative);
+            RequireUnlinked(path); RequireUnlinked(path + ".meta");
             var info = new FileInfo(path); var meta = new FileInfo(path + ".meta"); if (!info.Exists || !meta.Exists || info.Length > MaxFileBytes || meta.Length > 65536) throw new InvalidOperationException("Nova父文件/meta缺失或越界，不制造新GUID。");
             long length = info.Length, modified = info.LastWriteTimeUtc.Ticks, metaModified = meta.LastWriteTimeUtc.Ticks; int attrs = (int)info.Attributes, metaAttrs = (int)meta.Attributes;
             string fileSha = HashFile(path, token), metaSha = HashFile(path + ".meta", token); info.Refresh(); meta.Refresh();
@@ -500,14 +548,25 @@ namespace NovaFramework.Editor
             }
         }
 
-        /// <summary>逐源校验父链及全部八型源码，不把旧磁盘pin提升为Android编译身份。</summary>
+        /// <summary>逐源校验父链与本轮真实回调源码，不把磁盘源码提升为编译身份。</summary>
         /// <param name="root">原工程根。</param><param name="token">取消令牌。</param>
-        private static void RequireSources(string root, CancellationToken token, bool includeAdMob = true)
+        /// <param name="processorTypes">本轮实际纳入保护的回调类型。</param>
+        private static void RequireSources(string root, CancellationToken token, IEnumerable<string> processorTypes)
         {
-            foreach (string[] pair in ParentSources.Concat(Specs.Where(spec => includeAdMob || spec.type != NovaAndroidSdkLeafBuildContract.AdMob).Select(spec => new[] { spec.source, spec.sha256 })))
+            foreach (string[] pair in SourcesFor(processorTypes))
             {
                 string path = ResolveReviewedSource(root, pair[0]); RequireUnlinked(path); if (HashFile(path, token) != pair[1]) throw new InvalidOperationException("Nova父链源指纹变化：" + pair[0]);
             }
+        }
+
+        /// <summary>源码核验和收据使用同一份按真实回调筛选的审核表。</summary>
+        /// <param name="processorTypes">已核对的回调类型集合。</param>
+        /// <returns>该集合的审核路径与摘要。</returns>
+        private static IEnumerable<string[]> SourcesFor(IEnumerable<string> processorTypes)
+        {
+            bool includesAppsFlyer = processorTypes.Contains(NovaAndroidSdkLeafBuildContract.AppsFlyer);
+            return ParentSources.Where(pair => includesAppsFlyer || !IsAppsFlyerSupportSource(pair[0]))
+                .Concat(Specs.Where(spec => processorTypes.Contains(spec.type)).Select(spec => new[] { spec.source, spec.sha256 }));
         }
 
         /// <summary>生产源沿实际已解析包定位，审核标签不等于消费项目目录；独立纯文件fixture仍只读取其自有根。</summary>

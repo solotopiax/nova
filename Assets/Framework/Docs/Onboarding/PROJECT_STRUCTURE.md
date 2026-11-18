@@ -6,6 +6,27 @@
 
 新建项目先准备基础环境、固定启动资源和本地配置，跑通最小启动闭环，再开展依赖这些前置的业务制作。前期没有 App 后台或服务器物料也必须遵守 [NA-002：先核对当前能力，再选择接口或提出补充](DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 的启动底线；App 远端服务可以未配置或失败，本地游戏仍须能启动。准备工作本身可以创建必要配置、预加载代码和真实可加载的占位资源；尚未开发的业务内容先明确来源与接入阶段，在消费前补齐。已有工程仅核对本次相关项，不自动迁移启动架构。
 
+### 首装后的入口场景交接
+
+首次安装或初始化收尾时，先沿[项目就绪检查](../../Agents/Skills/nova-project-check-readiness/SKILL.md)核对启用的构建场景、实际入口、承载 Nova 的场景和实例来源。单场景、独立 Bootstrap 和多场景项目都按现有拓扑判断。缺少证据时交接待确认或待核验的具体项。Console 的工具链成功通知可作为场景核对的起点。
+
+场景接入在本次建项范围内且目标已确认时，直接用[入口场景操作](../../Agents/Skills/nova-project-setup-entry-scene/SKILL.md)完成接入并读回保存结果。仅准备工具时，交付中写明场景状态、待办与接续操作。场景已接入后，按[实际依赖清单](#按实际依赖逐项准备)继续准备本地启动资源、配置与流程，并独立取得启动证据。场景名称和资产目录沿用项目约定。
+
+承载 Nova 的场景把已连接的 Nova 预制体实例放在 Hierarchy 根节点第一位。相机、灯光和其它根对象排在其下，保留这些对象原有的相对顺序。经 Unity 保存后读回第一项和预制体来源。
+
+### 首装收尾的工程文件
+
+新项目的首装交接同时核对下列工程文件。工具准备阶段报告实际结果和下一个操作。在本次范围内负责完整新建与初始化时，补齐工程文件、场景和默认启动基线，再复核 Editor 到达 `ProcedurePlaying`。
+
+1. **引导脚本退出。** 核对实际包图和当前工具链通过记录，再确认原厂 NovaSpark 和本工程的接力标记已清理。确认 Unity 重载后仍加载原先核对的 Framework 版本。旧脚本仍在时按[工具链收尾](../Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)处理，用户定制脚本保留。
+2. **先确定采集配置，再打开采集工具。** 读取当前工作区中 ConfigMaster 对有效坐标解析出的 `BundleCollectorSettingPath`，包含坐标覆盖值。用[配置操作](../../Agents/Skills/nova-project-configure-runtime/SKILL.md)的只读定位入口核对现有资产。配置缺失时先复用同用途资产或在项目配置目录建一份，再保存绑定。只有已知空白兜底时可以移动并复用它。项目已有有效资产时，确认根目录空副本无采集项、配置引用和草稿，再决定是否清理。其他坐标或有内容的配置按用途保留。准备和重载后重新核对当前坐标及采集内容，避免 YooAsset 兜底额外创建文件。
+3. **归位 Unity 模板设置。** 已确认的新项目模板中，可移动的 `DefaultVolumeProfile.asset`、`UniversalRenderPipelineGlobalSettings.asset`、`InputSystem_Actions.inputactions` 等工程级设置统一放在 `Assets/Settings`，项目已有自定义布局时按项目约定。预查同名冲突、路径引用及固定位置要求，再使用 Unity 的资产移动接口，保存原 GUID 并读回 Graphics、Volume 和 Input 引用。已有工程首次接入 Nova 时先交接候选资产和引用，待本次范围明确后再整理。
+4. **配置项目命名空间并建立业务程序集。** 依据 Unity 工程名和已有项目标识确定符合 C# 命名规则的项目关键词。例如 Tower 采用 `Tower`。用[配置操作](../../Agents/Skills/nova-project-configure-runtime/SKILL.md)保存首装 ConfigMaster 的 `Namespace` 为 `<项目关键词>.Runtime`，并核对当前坐标的有效值。新项目至少建立 `Assets/Game/Scripts/Runtime/<项目关键词>.Runtime.asmdef` 与 `Assets/Game/Scripts/Editor/<项目关键词>.Editor.asmdef`。Editor 程序集仅包含 Editor 平台，Runtime 保持可用于 Player。生成代码使用项目 Runtime 命名空间和实际程序集归属，HybridCLR 按其业务程序集真实名称配置。保存后读回 Config、两个 asmdef 和编译结果。已有项目沿用已确立的名称与目录，迁移按项目范围处理。
+5. **按实际资源类型归位。** 项目自有资源按类型直放 `Assets/Game`，例如 `Assets/Game/Tilemaps`、`Assets/Game/Configs`、`Assets/Game/Data`、`Assets/Game/Dlls`、`Assets/Game/Fonts`、`Assets/Game/Sounds`、`Assets/Game/UIs`。仅保留有内容的类型目录，禁止新建 `StartupContent` 一类再包一层的总目录。有内容的类型目录归并到 `Assets/Game` 对应位置。固定启动 `Resources`、`Scenes`、`Scripts/Runtime` 和 `Scripts/Editor` 按各自用途组织。经授权调整已有布局时，先核对冲突和固定位置约束，再用 Unity 移动原目录或资产，保留 GUID，复核 YooAsset 采集及地址、配置、表和 DLL 的导出与加载路径。
+6. **清尽首装遗留的空目录。** 安装、移动、样例导入和临时材料清理完成后，从本次涉及目录的最深层向上检查。迁移后已空的模板目录和本轮新增的空目录均清理，直到其父目录仍有内容或超出本次范围。`Assets` 内经 Unity 删除空目录及其 `.meta`。如本次配置仍引用迁移后已空的旧目录，先把引用更新到实际位置。等最后一次导入回调完成后，复核目录和对应 `.meta` 已消失。
+
+当前自动引导负责实际包准备、工具链和原厂引导退出。项目工程文件由新项目的准备步骤接续。自动化写入应绑定已确认的目标工作区、模板来源和写入范围，并覆盖重复执行、编译重载、同名资产与已有配置的验收。
+
 ### Config、Pipify、PlugPals 基线
 
 所有 Nova 项目按 [NA-002：先核对当前能力，再选择接口或提出补充](DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 配置并实际使用这三个工具：
@@ -49,6 +70,13 @@ Android、iOS、WebGL 的完整本地打包 Batch 以当前 MainDemo 的全量�
 - 默认引入 MainDemo 的 Resources 固定启动资源及真实依赖，配置 `ProcedureComponent.LauncherSettings`；实际来源、复制边界、默认键与验证见 [固定启动资源](RESOURCE_WORKFLOW.md#新项目默认固定启动资源)。路径有值不代表资源已存在。
 - 业务预加载必须以当前 MainDemo 的 `ProcedurePreload` 为默认参考，按下节完整落实八项标准动作，再进入产品首个业务流程。开发态来源是 `Assets/Samples/MainDemo/Scripts/Runtime/Procedures/ProcedurePreload.cs`；消费端使用[当前已安装版本声明的正式 MainDemo Sample](../../package.json)，不依赖开发机绝对路径或修改包缓存。
 - 复用流程取消、进入与尝试代次保护、逐项结果检查、失败处理和启动面板收尾，建立项目自己的命名空间、程序集、入口与正式数据。流程保持模块级编排，具体文本键、表类型和字体标记由配置及专项验收负责，不硬编码进通用预加载；具体门禁见下节。
+
+### 新项目本地启动准备顺序
+
+1. 按[首装工程文件标准](#首装收尾的工程文件)确定目录、Config 命名空间和业务程序集。通过[配置操作](../../Agents/Skills/nova-project-configure-runtime/SKILL.md)保存项目自己的本地配置和生效的 YooAsset 采集配置，正式导出 Runtime 并读回绑定，再执行网络等依赖 Runtime 的导出。
+2. 通过[入口场景操作](../../Agents/Skills/nova-project-setup-entry-scene/SKILL.md)准备正式启动场景、连接 Nova 实例和三项固定启动资源。按当前版本 MainDemo 的资源引用复制必要资源及依赖并读回目标。
+3. 按下节用现有配置、表、资源等操作准备八项本地预加载依赖。在项目入口实例上配置项目生成的 Table Binding 和对应资源地址，以及已确认的入口类型和业务程序集。已有可用配置和正式产物直接复用。
+4. 走项目的 `ProcedurePreload` 进入 `ProcedurePlaying`，确认 Loading 关闭和入口可操作，最后清理本次安装遗留的空目录。按[开工放行与验收](#开工放行与验收)取得本次交付需要的证据。
 
 ### 标准产品预加载基线
 

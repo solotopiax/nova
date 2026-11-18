@@ -50,17 +50,15 @@ namespace NovaFramework.Editor
             internal readonly Dictionary<string, string> Hashes = new Dictionary<string, string>(StringComparer.Ordinal);
             internal readonly Dictionary<System.Reflection.Assembly, string> Assemblies = new Dictionary<System.Reflection.Assembly, string>();
             internal ReviewedAssembly[] Reviewed;
-            private readonly ReadScope m_Previous;
+            /// <summary>建立最外层同步只读缓存；嵌套读取不创建独立实例。</summary>
+            internal ReadScope() { s_ReadScope = this; }
 
-            /// <summary>保存外层同步只读作用域，禁止把摘要缓存提升为跨 Plan 的身份许可。</summary>
-            internal ReadScope() { m_Previous = s_ReadScope; s_ReadScope = this; }
-
-            /// <summary>结束本轮读取并恢复外层作用域；不修改 Unity、源码或任何编译输出。</summary>
-            public void Dispose() { s_ReadScope = m_Previous; }
+            /// <summary>结束最外层读取并丢弃缓存；不修改 Unity、源码或任何编译输出。</summary>
+            public void Dispose() { if (ReferenceEquals(s_ReadScope, this)) s_ReadScope = null; }
         }
 
-        /// <summary>为调用方的一次同步身份或自然支路遍历创建有界读取缓存。</summary>
-        internal static IDisposable BeginReadScope() => new ReadScope();
+        /// <summary>同一同步只读阶段共享已有缓存，仅最外层持有释放租约；写入、await 或返回下一阶段前必须结束。</summary>
+        internal static IDisposable BeginReadScope() => s_ReadScope == null ? new ReadScope() : null;
 
         /// <summary>只路由固定已审程序集族；reference 不能通过添加任意程序集扩大可执行范围。</summary>
         internal static bool SupportsAssembly(string assemblyName) => s_AssemblyNames.Contains(assemblyName, StringComparer.Ordinal);
@@ -314,10 +312,20 @@ namespace NovaFramework.Editor
             return full.Substring(prefix.Length).Replace('\\', '/');
         }
 
-        /// <summary>在同步读取作用域内去重流式摘要；缓存不跨越任何 Plan、Execute 或 Verify 阶段。</summary>
+        /// <summary>先保持源码专属的普通文件检查，再复用当前同步阶段的文件摘要。</summary>
         private static string HashFile(string path, CancellationToken token)
         {
             RequireOrdinaryFile(path);
+            return ScopedFileHash(path, token);
+        }
+
+        /// <summary>在同步只读作用域内去重文件摘要；缓存命中仍检查取消，文件准入规则由调用方负责。</summary>
+        /// <param name="path">调用方已按自身来源规则核对的实际文件路径。</param>
+        /// <param name="token">本次读取取消令牌，缓存命中也不能忽略。</param>
+        /// <returns>当前同步阶段首次读取的 SHA-256；没有作用域时直接重新读取。</returns>
+        internal static string ScopedFileHash(string path, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
             if (s_ReadScope != null && s_ReadScope.Hashes.TryGetValue(path, out string cached)) return cached;
             string hash = GenerateActionCommon.ComputeFileHash(path, token);
             if (s_ReadScope != null) s_ReadScope.Hashes[path] = hash;

@@ -19,6 +19,10 @@ description: Use when 项目组需要评估陌生 Unity 项目能否接入、继
 
 ## 检查步骤
 
+首装收尾只需要交接入口场景时，把检查限定在构建列表、入口拓扑和 Nova 实例来源。交付时按[首装后的入口场景交接](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#首装后的入口场景交接)标明已接入的事实或待核对项，并交给现有场景操作接续。
+
+新项目完整首装收尾按[首装工程文件](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#首装收尾的工程文件)核对引导退出、采集配置、模板资产、Config 命名空间、Runtime 与 Editor 程序集、资产分类及空目录。通过 `nova.project.config.inspect-bundle-collector(masterGuid)` 定位当前激活坐标的采集资产，并只读检查根目录候选、用途与引用。写入需求交给本次获授权的准备步骤，读取采集配置时使用显式路径以避免触发 YooAsset 的默认创建。
+
 新项目或开工准备评估先按 [Docs/Onboarding/PROJECT_STRUCTURE.md](../../../Docs/Onboarding/PROJECT_STRUCTURE.md) 的“新项目开工准备”逐项只读建立前置清单，报告真实状态、依据和后续 Operation；一般工程层级可以说明不适用，标准预加载节点按下段核对。默认 MainDemo 启动 Resources 与预加载基线不能仅凭 canonical Prefab 或路径字段判齐备；HybridCLR 按环境文档分别核对包、本地安装、启用及所需产物。只读评估不负责安装、复制资源或配置；清单交给获授权的准备步骤，必需项未齐不称整套环境 ready。
 
 清单同时记录各准备项的 Skill/contract、实际 Adapter、输入来源与依赖；参数声明、项目现值和有效业务输入分别判断。按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 区分可复用本地素材、应首次准备的项目本地值和外部服务缺配，真实 Demo 凭据只是可选来源。分别报告本地启动与外部服务状态，不能仅因缺 App 后台物料就判整个游戏启动受阻；当前校验或等待确实卡住时，报告不满足 NA-002 启动底线的具体实现差距。ConfigMaster/App/Privacy 参数转配置 Skill；本只读检查不生成密钥、分配后台编号或代填配置。

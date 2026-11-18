@@ -263,6 +263,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Runtime.LoadDescriptions.Array.data[0].ResolvedBindingTypeName
+      value: NovaFramework.Samples.Runtime.TableTablesBinding
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

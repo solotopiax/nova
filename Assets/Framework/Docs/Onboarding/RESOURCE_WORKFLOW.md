@@ -53,7 +53,7 @@ Nova 配表的业务内容可以扩展，原有视觉风格和工作簿结构应
   "target": "Assets/Game/Excels/Localizations/Texts.xlsx",
   "targetHash": null,
   "sourceRoots": ["Assets/Game/Excels"],
-  "generatedRoots": ["Assets/Game/Data", "Assets/Game/Runtime/Generated"]
+  "generatedRoots": ["Assets/Game/Data", "Assets/Game/Scripts/Runtime/Generated"]
 }
 ```
 
@@ -78,7 +78,7 @@ Nova 配表的业务内容可以扩展，原有视觉风格和工作簿结构应
   "target": "Assets/Game/Excels/UIs/UIs.xlsx",
   "targetHash": null,
   "sourceRoots": ["Assets/Game/Excels"],
-  "generatedRoots": ["Assets/Game/Data", "Assets/Game/Runtime/Generated"],
+  "generatedRoots": ["Assets/Game/Data", "Assets/Game/Scripts/Runtime/Generated"],
   "sheetName": "UIs",
   "title": "游戏界面注册",
   "rows": [{"Name":"MainView","Desc":"主界面","AssetLocation":"MainView","UIGroupName":"Game","PauseCoveredUIView":false,"InObjectPools":false}]

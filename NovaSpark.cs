@@ -76,6 +76,9 @@ namespace NovaBootstrap
         /// <summary>域重载后的实际安装包查询；Resolve 不返回请求对象，必须另行核对安装包图。</summary>
         private static UnityEditor.PackageManager.Requests.ListRequest s_InstalledPackagesRequest;
 
+        /// <summary>本轮实际注册的 Framework 来源与版本；只接受该身份对应的工具链成功结果。</summary>
+        private static string s_FrameworkIdentity;
+
         // ---- manifest 待补全的依赖项 ----
 
         /// <summary>External Dependency Manager(EDM) 包键。Firebase/AppsFlyer/MAX 等的公共依赖，按策略由工程 manifest 显式固定，不靠各包传递。</summary>
@@ -91,19 +94,19 @@ namespace NovaBootstrap
         /// </summary>
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
-        /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.7.11";
+        /// <summary>Nova 框架主包最低正式版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
+        private const string c_FrameworkValue = "0.7.12";
 
         /// <summary>默认显式安装的 Nova 内存防护扩展包键；不随之安装付费 Anti-Cheat Toolkit。</summary>
         private const string c_MemoryProtectionKey = "com.solotopia.nova.framework.memory.protection";
 
-        /// <summary>Nova 内存防护扩展包的固定目标版本，经 Solotopia registry 解析。</summary>
+        /// <summary>Nova 内存防护扩展包的最低正式版本，经 Solotopia registry 解析。</summary>
         private const string c_MemoryProtectionValue = "0.1.4";
 
         /// <summary>默认显式安装的 Nova MCP 中立契约包键，与 Unity MCP Provider 包分开管理。</summary>
         private const string c_NovaMcpKey = "com.solotopia.nova.framework.mcp";
 
-        /// <summary>Nova MCP 中立契约包的固定目标版本；其 Unity MCP Provider 依赖经 OpenUPM 解析。</summary>
+        /// <summary>Nova MCP 中立契约包的最低正式版本；其 Unity MCP Provider 依赖经 OpenUPM 解析。</summary>
         private const string c_NovaMcpValue = "0.1.9";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
@@ -164,6 +167,9 @@ namespace NovaBootstrap
         {
             try
             {
+                // Unity 重新编译前，同一脚本先前排队的回调仍可能执行。
+                if (!File.Exists(SelfFilePath())) return;
+
                 // Unity 版本门槛：仅允许 6000.4.x 且不低于最低版本，其余版本不执行任何检测或补全。
                 // 不自删（便于用户切换到支持版本后重新触发引导）；每会话仅提示一次，避免域重载反复弹窗。
                 if (!IsUnityVersionSupported())
@@ -201,7 +207,7 @@ namespace NovaBootstrap
                     EditorPrefs.SetBool(PendingToolchainKey, true);
                     string state = SessionState.GetString("Nova.AgentSkills.Toolchain.State.v1", string.Empty);
                     string identity = SessionState.GetString("Nova.AgentSkills.Toolchain.CheckedIdentity.v1", string.Empty);
-                    bool toolchainReady = state == "success" && identity.EndsWith("|" + c_FrameworkValue, StringComparison.Ordinal);
+                    bool toolchainReady = state == "success" && string.Equals(identity, s_FrameworkIdentity, StringComparison.Ordinal);
                     if (!toolchainReady && !s_ToolchainRequested)
                     {
                         s_ToolchainRequested = EditorApplication.ExecuteMenuItem(c_ToolchainMenuPath);
@@ -224,12 +230,12 @@ namespace NovaBootstrap
                             ScheduleRun();
                             return;
                         }
+                        DeleteSelf();
                         EditorPrefs.DeleteKey(PendingOpenKey);
                         EditorPrefs.DeleteKey(PendingToolchainKey);
                         SessionState.SetString("NovaSpark.Phase.v1", "complete");
                         SessionState.EraseString("NovaSpark.WaitingReason.v1");
                         Debug.Log($"[{c_Name}] Nova Framework 和 AI 工具链已自动安装、绑定并通过本地复核，引导脚本自动删除。");
-                        DeleteSelf();
                     }
                     else if (s_ToolchainRequested)
                     {
@@ -356,10 +362,11 @@ namespace NovaBootstrap
             }
         }
 
-        /// <summary>查询 UPM 实际安装版本；Resolve 无返回结果，必须以目标包图而非旧菜单判断接力条件。</summary>
-        /// <returns>实际 Framework 和配套直接包已按本轮目标注册时返回 true。</returns>
+        /// <summary>查询 UPM 实际安装版本；正式版本达到目标下限且来源正确后才允许接力，不把主动升级视为需要降级。</summary>
+        /// <returns>实际 Framework 和配套直接包达到目标，且 Framework 列表与当前注册来源一致时返回 true。</returns>
         private static bool AreBootstrapPackagesReady()
         {
+            s_FrameworkIdentity = null;
             if (s_InstalledPackagesRequest == null)
             {
                 s_InstalledPackagesRequest = Client.List(true, true);
@@ -382,23 +389,26 @@ namespace NovaBootstrap
                 return false;
             }
 
-            bool framework = false, novaMcp = false, memory = false, edm = false;
+            UnityEditor.PackageManager.PackageInfo framework = null;
+            bool novaMcp = false, memory = false, edm = false;
             foreach (UnityEditor.PackageManager.PackageInfo package in s_InstalledPackagesRequest.Result)
             {
-                if (package.errors != null && package.errors.Length > 0) continue;
-                if (package.name == c_FrameworkKey && package.version == c_FrameworkValue) framework = true;
-                if (package.name == c_NovaMcpKey && package.version == c_NovaMcpValue) novaMcp = true;
-                if (package.name == c_MemoryProtectionKey && package.version == c_MemoryProtectionValue) memory = true;
-                if (package.name == c_EdmKey && package.version == c_EdmValue) edm = true;
+                if (IsBootstrapPackageReady(package, c_FrameworkKey, c_FrameworkValue, s_PlugPalsExternalUrl)) framework = package;
+                if (IsBootstrapPackageReady(package, c_NovaMcpKey, c_NovaMcpValue, s_PlugPalsExternalUrl)) novaMcp = true;
+                if (IsBootstrapPackageReady(package, c_MemoryProtectionKey, c_MemoryProtectionValue, s_PlugPalsExternalUrl)) memory = true;
+                if (IsBootstrapPackageReady(package, c_EdmKey, c_EdmValue, "https://package.openupm.com")) edm = true;
             }
-            if (framework && novaMcp && memory && edm)
+            if (framework != null && novaMcp && memory && edm)
             {
                 // UPM 列表与 Editor 已注册包都达到目标，避免列表已更新而加载中的程序集仍属于旧包。
                 UnityEditor.PackageManager.PackageInfo[] registered = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
-                if (registered != null && Array.Exists(registered,
-                    package => package.name == c_FrameworkKey && package.version == c_FrameworkValue
-                        && (package.errors == null || package.errors.Length == 0)))
+                UnityEditor.PackageManager.PackageInfo current = registered == null ? null : Array.Find(registered,
+                    package => IsBootstrapPackageReady(package, c_FrameworkKey, c_FrameworkValue, s_PlugPalsExternalUrl));
+                if (current != null && current.version == framework.version
+                    && !string.IsNullOrEmpty(current.resolvedPath) && !string.IsNullOrEmpty(framework.resolvedPath)
+                    && string.Equals(Path.GetFullPath(current.resolvedPath), Path.GetFullPath(framework.resolvedPath), StringComparison.Ordinal))
                 {
+                    s_FrameworkIdentity = Path.GetFullPath(Path.Combine(current.resolvedPath, "Agents")) + "|" + current.version;
                     return true;
                 }
             }
@@ -423,6 +433,32 @@ namespace NovaBootstrap
             return false;
         }
 
+        /// <summary>仅接受指定 registry 中无解析错误、达到目标下限的正式包，不把同名本地或 Git 包当作安装完成。</summary>
+        /// <param name="package">UPM 实际返回或当前已注册的包。</param>
+        /// <param name="name">本轮需要的准确包名。</param>
+        /// <param name="minimum">脚本的最低正式版本。</param>
+        /// <param name="registryUrl">该包的正式 registry 地址。</param>
+        /// <returns>包身份、正式来源和版本均符合时返回 true。</returns>
+        private static bool IsBootstrapPackageReady(UnityEditor.PackageManager.PackageInfo package, string name, string minimum, string registryUrl)
+        {
+            return package != null && package.name == name && package.source == PackageSource.Registry
+                && (package.errors == null || package.errors.Length == 0)
+                && string.Equals(package.registry?.url?.TrimEnd('/'), registryUrl.TrimEnd('/'), StringComparison.Ordinal)
+                && IsReleaseAtLeast(package.version, minimum);
+        }
+
+        /// <summary>比较三段正式包版本；预发行、来源表达式和非法版本不能满足安装下限。</summary>
+        /// <param name="version">待核对的正式版本。</param>
+        /// <param name="minimum">最低正式版本。</param>
+        /// <returns>两者均为三段正式版本且前者不低于后者时返回 true。</returns>
+        private static bool IsReleaseAtLeast(string version, string minimum)
+        {
+            const string pattern = @"\A(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\z";
+            return Regex.IsMatch(version ?? string.Empty, pattern) && Regex.IsMatch(minimum ?? string.Empty, pattern)
+                && Version.TryParse(version, out Version actual) && Version.TryParse(minimum, out Version target)
+                && actual.CompareTo(target) >= 0;
+        }
+
         /// <summary>有等待项时按秒继续推进；失败状态由 Framework 自动重试，不要求项目组补装。</summary>
         private static void ScheduleRun(double delaySeconds = 1)
         {
@@ -439,7 +475,7 @@ namespace NovaBootstrap
             Run();
         }
 
-        /// <summary>检测新工程与已装工程的默认直接依赖、registry 及配置缺项，统一核对固定目标版本。</summary>
+        /// <summary>检测默认直接依赖、registry 及配置缺项；保留已达到下限的更高正式版本。</summary>
         /// <param name="manifest">当前工程 manifest；Framework 的 file: 源工程已由调用方提前跳过。</param>
         /// <returns>缺失项及与本版目标不一致的可读说明。</returns>
         private static List<string> Detect(JObj manifest)
@@ -518,14 +554,14 @@ namespace NovaBootstrap
         {
             // 模板与发布开关先作为一个准备步骤提交；缺源或冲突时不先改 manifest。
             PrepareAndroidTemplates();
-            // 1) dependencies：缺键补齐，已有值与固定目标不一致时覆盖，不比较版本高低。
+            // 1) dependencies：缺键补齐，低于目标的版本才提升；保留项目主动选择的更高正式版本。
             var deps = manifest.Get("dependencies") as JObj;
             if (deps == null)
             {
                 deps = new JObj();
                 manifest.Set("dependencies", deps);
             }
-            // 固定工程的直接安装目标；Nova MCP 的 Provider 继续由其依赖解析，ACTk 仍由获授权项目另行安装。
+            // 补齐工程直接依赖的最低目标；Nova MCP 的 Provider 继续由其依赖解析，ACTk 仍由获授权项目另行安装。
             UpsertDepVersion(deps, c_FrameworkKey, c_FrameworkValue);
             UpsertDepVersion(deps, c_MemoryProtectionKey, c_MemoryProtectionValue);
             UpsertDepVersion(deps, c_NovaMcpKey, c_NovaMcpValue);
@@ -882,24 +918,27 @@ namespace NovaBootstrap
             return absolute.Substring(idx + 1);
         }
 
-        /// <summary>检查默认直接依赖是否缺失或与固定目标不一致，供新工程和已装工程共用。</summary>
+        /// <summary>检查默认直接依赖是否缺失或未达到正式版本下限，供新工程和已装工程共用。</summary>
         /// <param name="deps">当前直接依赖对象；缺少整个对象时按缺失处理。</param>
         /// <param name="missing">收集待用户确认的配置调整说明。</param>
         /// <param name="key">准确的 UPM 包名。</param>
-        /// <param name="value">本版固定目标版本，不比较版本高低。</param>
+        /// <param name="value">本版最低正式版本。</param>
         /// <param name="label">包的可读名称。</param>
         private static void DetectDepVersion(JObj deps, List<string> missing, string key, string value, string label)
         {
             if (deps == null || !deps.ContainsKey(key))
                 missing.Add($"依赖 {key}（{label}，目标版本 {value}）");
-            else if ((deps.Get(key) as string) != value)
-                missing.Add($"依赖 {key}（{label}）版本与目标不一致，需对齐为 {value}");
+            else if (!IsReleaseAtLeast(deps.Get(key) as string, value))
+                missing.Add($"依赖 {key}（{label}）尚未达到正式版本 {value}，需对齐为 {value}");
         }
 
-        /// <summary>缺键则补、键存在但值不一致则覆盖（用于 semver 依赖矫正，避免 UPM 拉到下架版本）。</summary>
+        /// <summary>补齐缺失依赖并提升未达标版本；配置矫正不会把已有更高正式版本写回旧目标。</summary>
+        /// <param name="deps">当前工程直接依赖。</param>
+        /// <param name="key">准确包名。</param>
+        /// <param name="value">本版最低正式版本。</param>
         private static void UpsertDepVersion(JObj deps, string key, string value)
         {
-            if (!deps.ContainsKey(key) || (deps.Get(key) as string) != value)
+            if (!deps.ContainsKey(key) || !IsReleaseAtLeast(deps.Get(key) as string, value))
                 deps.Set(key, value);
         }
 

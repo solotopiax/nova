@@ -347,11 +347,12 @@ namespace NovaFramework.Editor
             }, inset: 0f, spacing: 0f);
         }
 
-        /// <summary>读取官方收集器的已有 PackageName，不创建或修改 YooAsset Package。</summary>
+        /// <summary>从已绑定或唯一现有采集配置读取包名，缺项时不触发 YooAsset 创建。</summary>
         private static string[] GetResourcePackageNames()
         {
-            if (!BundleCollectorSettingData.HasSettingAsset()) return Array.Empty<string>();
-            return BundleCollectorSettingData.Setting.Packages.Select(package => package.PackageName)
+            BundleCollectorSetting setting = EditorUtil.Config.YooAssetInjector.LoadExistingBundleCollector(EditorUtil.Config.WorkspaceActive.Get());
+            if (setting == null) return Array.Empty<string>();
+            return setting.Packages.Select(package => package.PackageName)
                 .Where(name => !string.IsNullOrEmpty(name)).Distinct().ToArray();
         }
 

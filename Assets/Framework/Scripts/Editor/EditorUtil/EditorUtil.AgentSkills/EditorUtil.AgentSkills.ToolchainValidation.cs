@@ -10,11 +10,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Log = NovaFramework.Runtime.Log;
 using LogTag = NovaFramework.Runtime.LogTag;
 
@@ -147,6 +149,10 @@ namespace NovaFramework.Editor
                 if (!force && SessionState.GetString(c_ToolchainCheckedIdentityKey, string.Empty) == identity)
                 {
                     SetToolchainSchedulingPhase("complete", "本次会话已通过当前 Framework 身份的检查。", false);
+                    string entryHandoff = GetNovaSparkEntrySceneHandoff();
+                    if (!string.IsNullOrEmpty(entryHandoff))
+                        LogToolchainMessage("[Nova AI 工具链] 本次会话已通过检查。" + entryHandoff, true);
+                    QueueLegacyNovaSparkHandoff();
                     return;
                 }
 
@@ -192,11 +198,12 @@ namespace NovaFramework.Editor
                         if (!s_ToolchainValidationQueued) SessionState.EraseBool(c_ToolchainPendingKey);
                         s_ToolchainRetryCount = 0;
                         SetToolchainSchedulingPhase("complete", "自动安装、绑定与本地复核已完成。", false);
+                        QueueLegacyNovaSparkHandoff();
                     }
                     else if (report.CanAutomaticallyRetry) QueueToolchainRetry();
                     else SetToolchainSchedulingPhase("blocked", "自动重试已暂停；未完成状态保留，等待处理报告中的原因后显式重检。", false);
                     LogToolchainMessage("[Nova AI 工具链] " + report.FormatMessage()
-                        + (complete ? "\n自动安装、绑定与本地复核已完成。"
+                        + (complete ? "\n自动安装、绑定与本地复核已完成。" + GetNovaSparkEntrySceneHandoff()
                             : report.CanAutomaticallyRetry
                                 ? "\n缺失项继续自动安装与绑定，未完成状态将自动重试；不会把补装工作交给项目组。"
                                 : "\n自动重试已暂停，未完成状态与引导接力均保留；处理所报原因后可从 Nova 菜单显式重检。"), complete);
@@ -290,6 +297,198 @@ namespace NovaFramework.Editor
             private static string BuildToolchainRetryPauseIdentity(string projectRoot, string frameworkIdentity)
             {
                 return Path.GetFullPath(projectRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + "|" + frameworkIdentity;
+            }
+
+            /// <summary>引导接力期间补充入口场景交接。观察失败只标记待核验，不影响工具链成功或旧脚本收尾。</summary>
+            /// <returns>给项目组的当前场景观察与接续入口，无引导任务时返回空字符串。</returns>
+            private static string GetNovaSparkEntrySceneHandoff()
+            {
+                const string nextStep = "\n用 nova-project-check-readiness 核对引导退出、采集配置、Unity 默认设置和本地启动准备。确认需要接入的场景后，使用 nova-project-setup-entry-scene。";
+                try
+                {
+                    string projectRoot = ResolveProjectRoot();
+                    if (!EditorPrefs.GetBool("NovaSpark.PendingOpenPlugPals." + projectRoot, false)
+                        && !EditorPrefs.GetBool("NovaSpark.PendingToolchainValidation." + projectRoot, false))
+                        return string.Empty;
+
+                    return "\n" + DescribeEntrySceneHandoff(EditorBuildSettings.scenes) + nextStep;
+                }
+                catch (Exception)
+                {
+                    return "\n入口场景待核验，暂时无法读取当前场景状态。" + nextStep;
+                }
+            }
+
+            /// <summary>仅读取启用的构建场景及已打开、已保存的单一场景，不装载或修改场景资产。</summary>
+            /// <param name="buildScenes">Unity 当前提供的构建场景列表。</param>
+            /// <returns>按实际读取范围给出的入口状态和 Prefab 来源。</returns>
+            private static string DescribeEntrySceneHandoff(EditorBuildSettingsScene[] buildScenes)
+            {
+                string[] paths = buildScenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
+                if (paths.Length == 0)
+                    return "入口场景待接入，当前构建列表没有启用场景。";
+
+                string buildList = "已启用的构建场景为 " + string.Join("、", paths) + "。";
+                if (paths.Length > 1)
+                    return buildList + "入口拓扑待确认，请核对哪个场景承载 Nova。";
+
+                Scene scene = SceneManager.GetSceneByPath(paths[0]);
+                if (EditorApplication.isPlayingOrWillChangePlaymode || !scene.IsValid() || !scene.isLoaded || scene.isDirty)
+                    return buildList + "Nova 实例待核验，请在编辑状态下核对已保存的场景。";
+
+                var instances = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<NovaFramework.Runtime.Nova>(true)).ToArray();
+                if (instances.Length == 0)
+                    return buildList + "该场景尚无 Nova 实例，请先确认它是否为承载 Nova 的入口。";
+                if (instances.Length > 1)
+                    return buildList + "入口拓扑待确认，该场景存在多个 Nova 实例。";
+
+                var instance = instances[0];
+                var source = PrefabUtility.GetCorrespondingObjectFromSource(instance);
+                string sourcePath = source != null ? AssetDatabase.GetAssetPath(source) : string.Empty;
+                var framework = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(EditorUtil).Assembly);
+                string canonicalPath = framework == null ? "Assets/Framework/Prefabs/Nova.prefab"
+                    : framework.name == c_FrameworkPackageName ? framework.assetPath + "/Prefabs/Nova.prefab" : null;
+                if (instance.isActiveAndEnabled && PrefabUtility.GetPrefabInstanceStatus(instance) == PrefabInstanceStatus.Connected
+                    && sourcePath == canonicalPath)
+                    return buildList + "入口场景已接入 Nova，实例来自 " + sourcePath + "。";
+
+                return buildList + "Nova 实例待核验，请检查启用状态和预制体连接。"
+                    + (string.IsNullOrEmpty(sourcePath) ? string.Empty : "当前实例来源为 " + sourcePath + "。");
+            }
+
+            /// <summary>在真实工具链成功后接续已知旧版引导器；不改写旧目标，也不伪造旧版本成功身份。</summary>
+            private static void QueueLegacyNovaSparkHandoff()
+            {
+                EditorApplication.update -= TryCompleteLegacyNovaSparkHandoff;
+                EditorApplication.update += TryCompleteLegacyNovaSparkHandoff;
+            }
+
+            /// <summary>只清理仍有接力标记、全文与已核实原厂快照一致的旧引导文件；未知或用户修改的脚本保持原样。</summary>
+            private static void TryCompleteLegacyNovaSparkHandoff()
+            {
+                if (EditorApplication.isCompiling || EditorApplication.isUpdating || EditorUtility.scriptCompilationFailed
+                    || EditorApplication.isPlayingOrWillChangePlaymode
+                    || ImportantUpdates.IsPresentationShowing || SessionState.GetBool("Nova.ImportantUpdates.PendingPresentation.v1", false)) return;
+                EditorApplication.update -= TryCompleteLegacyNovaSparkHandoff;
+                if (s_ToolchainStopping || SessionState.GetString(ToolchainStateSessionKey, string.Empty) != "success") return;
+                try
+                {
+                    string identity = ResolveToolchainValidationIdentity();
+                    if (SessionState.GetString(c_ToolchainCheckedIdentityKey, string.Empty) != identity) return;
+                    string projectRoot = ResolveProjectRoot();
+                    string openKey = "NovaSpark.PendingOpenPlugPals." + projectRoot;
+                    string validationKey = "NovaSpark.PendingToolchainValidation." + projectRoot;
+                    string removedKey = "NovaSpark.LegacyRemovalPending." + projectRoot;
+
+                    const string assetPath = "Assets/Editor/NovaSpark.cs";
+                    string scriptPath = Path.Combine(projectRoot, assetPath);
+                    if (!File.Exists(scriptPath))
+                    {
+                        // 旧脚本在域重载前仍可执行已排队的回调。保留原接力状态，直到旧类型已卸载。
+                        if (!EditorPrefs.GetBool(removedKey, false) || File.Exists(scriptPath + ".meta")
+                            || AppDomain.CurrentDomain.GetAssemblies().Any(assembly => assembly.GetType("NovaBootstrap.NovaSpark", false) != null)) return;
+                        EditorPrefs.DeleteKey(openKey);
+                        EditorPrefs.DeleteKey(validationKey);
+                        EditorPrefs.DeleteKey(removedKey);
+                        SessionState.SetString("NovaSpark.Phase.v1", "complete");
+                        SessionState.EraseString("NovaSpark.WaitingReason.v1");
+                        Log.Debug(LogTag.Editor, "[NovaSpark] 当前正式版本及 AI 工具链已通过本地复核，旧版原厂引导文件和接力标记已清理。");
+                        return;
+                    }
+
+                    EditorPrefs.DeleteKey(removedKey);
+                    if (!EditorPrefs.GetBool(openKey, false) && !EditorPrefs.GetBool(validationKey, false)) return;
+                    if (IsReparsePoint(Path.Combine(projectRoot, "Assets"))
+                        || IsReparsePoint(Path.GetDirectoryName(scriptPath)) || IsReparsePoint(scriptPath)
+                        || IsReparsePoint(scriptPath + ".meta")) return;
+                    string minimum = GetLegacyNovaSparkMinimumVersion(ComputeFileHash(scriptPath));
+                    if (minimum == null) return;
+
+                    // 按原脚本的四项直接依赖复核真实包图；只承接正常 registry 升级，不接管来源切换或未完成安装。
+                    JObject dependencies = (JObject)JObject.Parse(File.ReadAllText(Path.Combine(projectRoot, "Packages/manifest.json")))["dependencies"];
+                    UnityEditor.PackageManager.PackageInfo[] packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
+                    UnityEditor.PackageManager.PackageInfo framework = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(EditorUtil).Assembly);
+                    if (packages == null || dependencies == null || framework == null
+                        || identity != Path.GetFullPath(Path.Combine(framework.resolvedPath, "Agents")) + "|" + framework.version) return;
+                    var required = new[]
+                    {
+                        (Name: c_FrameworkPackageName, Version: minimum, Registry: "https://upm.solotopiax.com"),
+                        (Name: "com.solotopia.nova.framework.memory.protection", Version: "0.1.4", Registry: "https://upm.solotopiax.com"),
+                        (Name: "com.solotopia.nova.framework.mcp", Version: "0.1.9", Registry: "https://upm.solotopiax.com"),
+                        (Name: "com.google.external-dependency-manager", Version: "1.2.190", Registry: "https://package.openupm.com"),
+                    };
+                    foreach (var target in required)
+                    {
+                        UnityEditor.PackageManager.PackageInfo package = Array.Find(packages, item => item.name == target.Name);
+                        string declared = (string)dependencies[target.Name];
+                        if (package == null || (package.errors != null && package.errors.Length > 0)
+                            || !IsBootstrapReleaseAtLeast(declared, target.Version)
+                            || !IsBootstrapRegistryRelease(package.version, declared, package.source, package.registry?.url, target.Registry)) return;
+                        if (target.Name == c_FrameworkPackageName && (package.version != framework.version
+                            || package.resolvedPath != framework.resolvedPath)) return;
+                    }
+                    if (EditorPrefs.GetBool(openKey, false) && !EditorApplication.ExecuteMenuItem("Nova/Open PlugPals"))
+                    {
+                        Log.Warning(LogTag.Editor, "[NovaSpark] 工具链已通过，但 PlugPals 入口尚未就绪，已保留引导文件；可从 Nova/Check and Setup AI Toolchain 重检接续。");
+                        return;
+                    }
+                    // 删除前再次核对全文，避免等待窗口或打开菜单期间的本地编辑被清理。
+                    if (GetLegacyNovaSparkMinimumVersion(ComputeFileHash(scriptPath)) != minimum || !AssetDatabase.DeleteAsset(assetPath)) return;
+                    EditorPrefs.SetBool(removedKey, true);
+                    AssetDatabase.Refresh();
+                    QueueLegacyNovaSparkHandoff();
+                }
+                catch (Exception)
+                {
+                    Log.Warning(LogTag.Editor, "[NovaSpark] 旧版引导收尾尚未完成，已保留剩余文件和标记；可从 Nova/Check and Setup AI Toolchain 重检接续。");
+                }
+            }
+
+            /// <summary>按已核实原厂文件的完整 SHA256 确认旧脚本及其最低目标；任何字节修改或未知版本均不授权清理。</summary>
+            /// <param name="scriptHash">待处理文件的完整 SHA256，不根据类型名或版本常量猜测归属。</param>
+            /// <returns>已核实快照的最低 Framework 版本；未知文件返回 null。</returns>
+            private static string GetLegacyNovaSparkMinimumVersion(string scriptHash)
+            {
+                switch (scriptHash)
+                {
+                    // 原厂 0.7.10 的两次仓库快照（ca5ff842e、74b97c552）及 0.7.11（4aa1915df）。
+                    case "f850d97bc19e4702e89915b05577f2194394deb67a53b6ee73da73ba5053c233":
+                    case "c8420260d1e2a125c4502b44d8d8cbd274ddfc7698e5bd4c6af6b083a4d3a9f1":
+                        return "0.7.10";
+                    case "747265b62caeb9834829abf2e786eee990bb36bd886422665d6fcd7ff276d085":
+                        return "0.7.11";
+                    default:
+                        return null;
+                }
+            }
+
+            /// <summary>旧引导收尾只接受预期 registry 中达到最低目标的正式版本。</summary>
+            /// <param name="version">实际已注册包版本。</param>
+            /// <param name="minimum">最低正式版本。</param>
+            /// <param name="source">实际已注册的 UPM 来源类型。</param>
+            /// <param name="registryUrl">实际来源 registry。</param>
+            /// <param name="expectedRegistryUrl">原脚本声明的正式 registry。</param>
+            /// <returns>来源和版本均符合时返回 true。</returns>
+            private static bool IsBootstrapRegistryRelease(string version, string minimum, UnityEditor.PackageManager.PackageSource source,
+                string registryUrl, string expectedRegistryUrl)
+            {
+                return source == UnityEditor.PackageManager.PackageSource.Registry
+                    && string.Equals(registryUrl?.TrimEnd('/'), expectedRegistryUrl.TrimEnd('/'), StringComparison.Ordinal)
+                    && IsBootstrapReleaseAtLeast(version, minimum);
+            }
+
+            /// <summary>比较三段正式包版本；预发行、来源表达式和非法版本不能满足引导下限。</summary>
+            /// <param name="version">待核对的正式版本。</param>
+            /// <param name="minimum">最低正式版本。</param>
+            /// <returns>两者均为三段正式版本且前者不低于后者时返回 true。</returns>
+            private static bool IsBootstrapReleaseAtLeast(string version, string minimum)
+            {
+                const string pattern = @"\A(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\z";
+                return System.Text.RegularExpressions.Regex.IsMatch(version ?? string.Empty, pattern)
+                    && System.Text.RegularExpressions.Regex.IsMatch(minimum ?? string.Empty, pattern)
+                    && Version.TryParse(version, out Version actual) && Version.TryParse(minimum, out Version target)
+                    && actual.CompareTo(target) >= 0;
             }
 
             /// <summary>按真实来源与版本识别手动升级，不依赖安装时的旧 manifest 或缓存目录。</summary>

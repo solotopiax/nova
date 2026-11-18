@@ -38,6 +38,8 @@
 - 不负责 `ITable` 具体实现行为
 - 不负责单表配置的详细解释
 
+通用 `Nova.prefab` 保留 Table 加载描述，项目实例在正式导出后配置生成的 Binding 类型和 DataFile 对应的资源地址。MainDemo 自己在场景中保存其示例 Binding。新项目按[表接入操作](../../../../Agents/Skills/nova-project-integrate-table/SKILL.md)通过 Inspector 刷新并读回实际入口的加载描述。 升级后若仍在使用从旧版导入的 MainDemo 场景，刷新并保存该场景的示例 Binding。
+
 ## 核心流程
 
 ### Awake：校验设置并创建管理器

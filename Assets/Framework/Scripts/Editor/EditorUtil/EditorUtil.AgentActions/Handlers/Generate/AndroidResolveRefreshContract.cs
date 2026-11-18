@@ -401,7 +401,7 @@ namespace NovaFramework.Editor
             return true;
         }
 
-        /// <summary>复核稳定输入和非目标保护；只在执行后接纳明确声明的缓存/单例及 Graph 处理器物化。</summary>
+        /// <summary>在当前同步读取作用域内复核稳定输入和非目标保护；只在执行后接纳明确声明的缓存/单例及 Graph 处理器物化。</summary>
         /// <param name="snapshot">同域完整刷新合同快照。</param>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
         /// <param name="after">是否属于执行后阶段；写前不接受声明的自然物化。</param>
@@ -416,6 +416,7 @@ namespace NovaFramework.Editor
             out AndroidVersionHandlerReadOnlyContract.Snapshot version, out AndroidResolveUirObjectContract.Snapshot uirAfter,
             out AndroidResolveAiStoreContract.Snapshot aiStoresAfter, out string error)
         {
+            using var sourceRead = AndroidRefreshSourceIdentityContract.BeginReadScope();
             version = null;
             uirAfter = null;
             aiStoresAfter = null;

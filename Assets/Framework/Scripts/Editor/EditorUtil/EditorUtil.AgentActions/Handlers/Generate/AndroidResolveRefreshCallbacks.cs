@@ -185,7 +185,7 @@ namespace NovaFramework.Editor
             { error = "实际回调继承已变化。"; return false; }
             string location = type.Assembly.Location;
             if (!hashes.TryGetValue(location, out string hash))
-                hashes[location] = hash = GenerateActionCommon.ComputeFileHash(location, token);
+                hashes[location] = hash = AndroidRefreshSourceIdentityContract.ScopedFileHash(location, token);
             string edmDll = binding.Id == 3 ? "Google.PackageManagerResolver.dll" : binding.Id == 5 ? "Google.VersionHandlerImpl.dll" :
                 binding.Id == 6 ? "Google.JarResolver.dll" : binding.Id == 7 ? "Google.IOSResolver.dll" : null;
             if (edmDll != null) return AndroidEdmCompatibilityContract.TryGetIdentity(type, edmDll, token, out identity, out error);

@@ -24,7 +24,7 @@ description: Use when 项目组要检查或配置 Nova 项目的启动场景、B
 
 确认入口场景、Build Settings 的精确增删/排序范围、共同运行的 Nova 拓扑、每个 Content 场景的加载者与卸载者、目标 BuildTarget 和允许的场景/业务代码写入集。入口或 Content 角色不明确、需要替换非生成 Prefab、或要改动现有 Build Settings 闭包时先请求确认。
 
-新项目默认固定启动资源分支须在场景实施前冻结当前已解析版本的 MainDemo 来源、项目目标目录、全部必要依赖、资源键冲突处理、`ProcedureComponent.LauncherSettings` 原值/目标值与保存范围。使用已有同范围建项授权继续，不把可读取路径转交用户猜；已有项目只补已授权缺项，不引入整套 Sample。基础配置、平台环境或业务预加载尚缺时，按准备清单路由既有 Operation，不能用本 Skill 的场景保存替代整个开工门。
+新项目按[本地启动准备顺序](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#新项目本地启动准备顺序)接续。固定启动资源须在场景实施前冻结当前已解析版本的 MainDemo 来源、项目目标目录、全部必要依赖、资源键冲突处理、`ProcedureComponent.LauncherSettings` 原值/目标值与保存范围。使用已有同范围建项授权继续，不把可读取路径转交用户猜；已有项目只补已授权缺项，不引入整套 Sample。基础配置、平台环境或业务预加载尚缺时，按准备清单路由既有 Operation，不能用本 Skill 的场景保存替代整个开工门。
 
 固定启动 Resources 的 Splash/Progress/Dialog 使用独立 CanvasScaler，须按产品声明的横屏或竖屏核对与调整；玩法 UIComponent 不自动适配启动面板。按[逐页适配](../../../Docs/Runtime/Modules/UI/UIComponent.md#从启动到玩法的逐页适配)覆盖启动实际显示，背景和关键内容分别布局；完整产品验收交接玩法、暂停/结算等后续页面，不默认要求另一方向，不把固定资源存在或单页截图当作全流程适配完成。
 
@@ -45,6 +45,7 @@ description: Use when 项目组要检查或配置 Nova 项目的启动场景、B
 
 1. 先只读检查启动路径和 Build Settings。首个启用场景没有 Nova 时先核实是否为自定义 Bootstrap，不自动改写。
 2. 承载 Nova 的场景必须通过 Unity Editor / MCP 使用 Framework 提供的完整 canonical [Nova.prefab（定位）](../../../Docs/Onboarding/PROJECT_STRUCTURE.md) connected instance；不得手工拼装组件或手写 Scene/Prefab YAML。已有残缺根节点不自动删除或替换。
+   将连接实例设为该场景第一个根对象。相机和其它对象保留相对顺序。保存并读回根节点顺序，首装后按[工程文件收尾](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#首装收尾的工程文件)清理本次接入产生的空目录。
    新项目按资源文档经 Unity 正式导入/复制 MainDemo 三启动面板、字体/材质/贴图及所需启动 JSON 到项目自有 Resources，检查全局键唯一与启动前依赖；保存并读回项目实例的 LauncherSettings 及 Prefab 引用。只复制 Prefab 或看到默认路径不算完成。资产复制仍经 Unity 工具，不手写 YAML、不修改包缓存；业务预加载代码复用 integrate-procedure，配置/正式导出复用对应 Operation。
 3. 共同运行的拓扑只保留一个有效 Nova。明确为 Content 的场景不承载 Nova，且必须有项目显式的加载、失败处理与卸载责任；Nova 不会自动加载 Content。
 4. 仅按已确认范围更新 Build Settings，不因发现 Sample、测试或插件 Scene 扩大闭包。

@@ -100,6 +100,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 核对当前 Target、实际刷新回调与调度后冻结正规解析和非目标保护；未知支路不预读或执行解析。
+        /// 文件摘要只在本次同步 Plan 内共享，返回前释放，不传给 Execute。
         /// </summary>
         /// <param name="request">显式 Android 请求；不负责切换 BuildTarget。</param>
         /// <param name="context">Core 提供的执行上下文、取消令牌与证据目标。</param>
@@ -108,6 +109,7 @@ namespace NovaFramework.Editor
             Request request,
             AgentActionExecutionContext context)
         {
+            using var sourceRead = AndroidRefreshSourceIdentityContract.BeginReadScope();
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
             {
                 return Task.FromResult(new AgentActionHandlerPlan
@@ -185,6 +187,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 复核依赖图未漂移后调用一次既有 AndroidResolver.Resolve，并冻结 EDM4U 输出证据。
+        /// 写前核验共享同步读取缓存，进入 Resolve 或异步等待前释放。
         /// </summary>
         /// <param name="state">本次冻结的解析状态。</param>
         /// <param name="context">Core 提供的执行上下文、取消令牌与证据目标。</param>
@@ -197,38 +200,41 @@ namespace NovaFramework.Editor
             {
                 return AgentActionResult.Create(null, "blocked", "Android 依赖解析冻结状态无效。");
             }
-            if (!HasCompleteTemplateRefreshContract(context.CancellationToken, out string refreshError))
+            using (AndroidRefreshSourceIdentityContract.BeginReadScope())
             {
-                return AgentActionResult.Create(null, "blocked", refreshError);
-            }
-            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
-            {
-                return AgentActionResult.Create(null, "blocked", "activeBuildTarget 已离开 Android，请重新 Plan。");
-            }
-            if (!AndroidResolveActionCommon.TryCaptureDependencyGraph(
-                    out AndroidResolveActionCommon.DependencyEntry[] currentGraph,
-                    out string graphError) ||
-                !string.Equals(
-                    frozen.GraphSha256,
-                    AndroidResolveActionCommon.ComputeGraphSha256(currentGraph),
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                return AgentActionResult.Create(
-                    null,
-                    "blocked",
-                    "EDM4U 依赖图已漂移，请重新 Plan：" + graphError);
-            }
+                if (!HasCompleteTemplateRefreshContract(context.CancellationToken, out string refreshError))
+                {
+                    return AgentActionResult.Create(null, "blocked", refreshError);
+                }
+                if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
+                {
+                    return AgentActionResult.Create(null, "blocked", "activeBuildTarget 已离开 Android，请重新 Plan。");
+                }
+                if (!AndroidResolveActionCommon.TryCaptureDependencyGraph(
+                        out AndroidResolveActionCommon.DependencyEntry[] currentGraph,
+                        out string graphError) ||
+                    !string.Equals(
+                        frozen.GraphSha256,
+                        AndroidResolveActionCommon.ComputeGraphSha256(currentGraph),
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return AgentActionResult.Create(
+                        null,
+                        "blocked",
+                        "EDM4U 依赖图已漂移，请重新 Plan：" + graphError);
+                }
 
-            context.CancellationToken.ThrowIfCancellationRequested();
-            if (!AndroidResolveActionCommon.TryCaptureTemplateResolutionPlan(context.CancellationToken,
-                    out AndroidResolveActionCommon.TemplateResolutionPlan currentPlan, out string planError) ||
-                frozen.TemplatePlan?.sha256 != currentPlan.sha256)
-            {
-                return AgentActionResult.Create(null, "blocked",
-                    "正规解析设置、仓库、删除集合、模板或工具链漂移，请重新 Plan：" + planError);
+                context.CancellationToken.ThrowIfCancellationRequested();
+                if (!AndroidResolveActionCommon.TryCaptureTemplateResolutionPlan(context.CancellationToken,
+                        out AndroidResolveActionCommon.TemplateResolutionPlan currentPlan, out string planError) ||
+                    frozen.TemplatePlan?.sha256 != currentPlan.sha256)
+                {
+                    return AgentActionResult.Create(null, "blocked",
+                        "正规解析设置、仓库、删除集合、模板或工具链漂移，请重新 Plan：" + planError);
+                }
+                if (!AndroidResolveRefreshContract.TryVerifySnapshot(frozen.Refresh, context.CancellationToken, out string refreshStateError))
+                    return AgentActionResult.Create(null, "blocked", refreshStateError);
             }
-            if (!AndroidResolveRefreshContract.TryVerifySnapshot(frozen.Refresh, context.CancellationToken, out string refreshStateError))
-                return AgentActionResult.Create(null, "blocked", refreshStateError);
             string[] failures = Array.Empty<string>();
             AndroidResolveRefreshContract.Receipt refreshReceipt = null;
             try
@@ -374,6 +380,8 @@ namespace NovaFramework.Editor
             string receiptJson,
             AgentActionExecutionContext context)
         {
+            // Verify 全程同步只读，单独复核当前输入，不继承 Plan 或 Execute 的文件摘要。
+            using var sourceRead = AndroidRefreshSourceIdentityContract.BeginReadScope();
             Receipt receipt;
             try
             {

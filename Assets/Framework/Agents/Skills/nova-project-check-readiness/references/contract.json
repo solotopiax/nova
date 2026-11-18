@@ -28,9 +28,14 @@
       "when": "Unity 已就绪且用户允许收集已安装 SDK/Kit Config 类型的稳定只读元数据时；Tool 不可用则保留 partial"
     },
     {
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-bundle-collector",
+      "when": "首装收尾已确认当前激活的 ConfigMaster 时，按其当前坐标定位实际采集资产，保持只读"
+    },
+    {
       "kind": "unity-editor-automation",
       "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
-      "when": "用户明确允许收集 Unity 或 Play 证据时"
+      "when": "用户明确允许收集 Unity 或 Play 证据时，只读核对场景、资产引用和 Console，包括首装工程文件和重载后的包身份"
     }
   ],
   "inputs": [
@@ -95,6 +100,7 @@
     "已安装 Nova SDK/Kit 的 package id、版本、source、INDEX 路径及 Config/路由/资源/平台前置证据缺口",
     "nova.project.config.inspect-plugin-types 的只读类型发现证据（取得时）",
     "静态、Unity、Play 证据的明确分级",
+    "新项目首装收尾时核对 NovaSpark 退出与重载后的 Framework 版本、当前坐标采集资产及根目录空副本候选、Unity 模板设置与引用，以及项目命名空间、业务程序集、入口场景根节点顺序和首装空目录。缺项交接给获授权的准备步骤，定位时通过显式路径避免 YooAsset 默认创建。",
     "Editor分支分别记录模态阻塞、普通设置窗口、正常忙碌、编译失败和进程故障的直接证据或未知项；窗口处置/关闭提示不代表底层错误已修复，不能无证据将重启归因弹窗。",
     "新项目或目标含UI布局时记录现有适配方案、UIComponent/CanvasScaler有效配置、安全区拥有者及待补缺项；在写入Operation制作布局前补齐，不在只读检查中改设置。",
     "新项目开工清单的每项状态、依据与后续Operation；固定启动资源及完整依赖/唯一键、正式配置与导出、最小启动证据分别核对；只读评估完整交付不等于工程整体ready。",

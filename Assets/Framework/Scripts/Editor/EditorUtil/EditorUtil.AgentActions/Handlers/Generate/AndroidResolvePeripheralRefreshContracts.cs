@@ -336,6 +336,8 @@ namespace NovaFramework.Editor
         {
             public string Digest;
             public string[] ReferenceIdentities;
+            // 仅新增捕获填写分项摘要；旧回执保持 null，避免改变旧快照的序列化身份。
+            public string[] CallbackFingerprints;
             public string ClipboardPendingFingerprint;
             public string[] ClipboardPreferenceEffects;
             public string[] LightingExpectedEffects;
@@ -362,6 +364,7 @@ namespace NovaFramework.Editor
         {
             if (checkedIds == null) throw new ArgumentNullException(nameof(checkedIds));
             var rows = new List<string>();
+            var callbackFingerprints = new List<string>();
             var references = new List<object> { AppDomain.CurrentDomain };
             var lightingExpected = new List<string>();
             var lightingObserved = new List<string>();
@@ -370,6 +373,7 @@ namespace NovaFramework.Editor
             {
                 token.ThrowIfCancellationRequested();
                 if (!s_Names.TryGetValue(id, out string name)) throw new InvalidOperationException("未知快照ID");
+                int firstRow = rows.Count;
                 Type type = Owner(name, token);
                 add("callback:" + id, type);
                 switch (id)
@@ -501,12 +505,15 @@ namespace NovaFramework.Editor
                         }
                         break;
                 }
+                callbackFingerprints.Add(id + "|" + GenerateActionCommon.ComputeTextHash(string.Join("\n",
+                    rows.Skip(firstRow).OrderBy(row => row, StringComparer.Ordinal))));
             }
             rows.Sort(StringComparer.Ordinal);
             using (var sha = SHA256.Create())
             {
                 byte[] digest = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(string.Join("\n", rows)));
                 var snapshot = new StableSnapshot(BitConverter.ToString(digest).Replace("-", "").ToLowerInvariant(), references.Select(WeakIdentityKey).ToArray());
+                snapshot.CallbackFingerprints = callbackFingerprints.ToArray();
                 snapshot.LightingExpectedEffects = lightingExpected.OrderBy(row => row, StringComparer.Ordinal).ToArray();
                 snapshot.LightingObservedEffects = lightingObserved.OrderBy(row => row, StringComparer.Ordinal).ToArray();
                 snapshot.ClipboardPendingFingerprint = checkedIds.Contains(21) ? CaptureClipboardPendingFingerprint(token) : null;
@@ -538,12 +545,30 @@ namespace NovaFramework.Editor
             if (before == null || after == null || string.IsNullOrEmpty(before.Digest) || before.Digest != after.Digest ||
                 before.ReferenceIdentities == null || after.ReferenceIdentities == null ||
                 before.ReferenceIdentities.Length != after.ReferenceIdentities.Length || before.ReferenceIdentities.Length == 0)
-                return "外围非目标稳定状态摘要变化";
+                return DescribeStableSnapshotChange(before, after);
             for (int i = 0; i < before.ReferenceIdentities.Length; i++)
                 if (before.ReferenceIdentities[i] != after.ReferenceIdentities[i] ||
                     !before.ReferenceIdentities[i].StartsWith(s_DomainIdentity + "|", StringComparison.Ordinal))
                     return "外围非目标对象/委托WeakGUID或域身份变化";
             return null;
+        }
+
+        /// <summary>以固定参与项和摘要定位变化；不输出偏好值，也不以分项记录替代完整稳定性校验。</summary>
+        /// <param name="before">原完整快照；旧回执可能没有分项记录。</param>
+        /// <param name="after">当前重新捕获的完整快照。</param>
+        /// <returns>最多列出四个发生变化的参与项；旧回执明确说明无法反推。</returns>
+        private static string DescribeStableSnapshotChange(StableSnapshot before, StableSnapshot after)
+        {
+            const string message = "外围非目标稳定状态摘要变化";
+            if (before?.CallbackFingerprints == null || after?.CallbackFingerprints == null)
+                return message + "：缺少分项记录，不能反推具体参与项";
+            string[] changed = s_Names.OrderBy(pair => pair.Key).Where(pair =>
+            {
+                string prefix = pair.Key + "|";
+                return !before.CallbackFingerprints.Where(row => row != null && row.StartsWith(prefix, StringComparison.Ordinal))
+                    .SequenceEqual(after.CallbackFingerprints.Where(row => row != null && row.StartsWith(prefix, StringComparison.Ordinal)));
+            }).Take(4).Select(pair => pair.Value).ToArray();
+            return message + (changed.Length > 0 ? "，变化参与项：" + string.Join("、", changed) : "：引用数量或未分项状态变化");
         }
 
         /// <summary>执行前除稳定状态外还须逐字匹配完整pending输入队列；执行后改用VerifyStableSnapshot允许已声明缓存物化。</summary>
@@ -1437,22 +1462,13 @@ namespace NovaFramework.Editor
                 throw new InvalidOperationException("新增下游源码漂移：" + packageName + "/" + source);
         }
 
-        /// <summary>分块只读摘要并响应取消；每次执行重新计算，不复用可能过期的磁盘摘要。</summary>
+        /// <summary>分块只读摘要并响应取消；只在当前同步核验作用域内共享，写入或异步等待后重新读取。</summary>
         /// <param name="path">当前检查的精确路径，不授予目录通配权限。</param>
         /// <param name="token">本次只读捕获或遍历的取消令牌；不取消厂商或引擎工作。</param>
         /// <returns>当前完整文件内容的 SHA，读取失败抛出异常。</returns>
         private static string FileHash(string path, CancellationToken token)
         {
-            using (var stream = File.OpenRead(path))
-            using (var sha = SHA256.Create())
-            {
-                var buffer = new byte[65536];
-                int read;
-                while ((read = stream.Read(buffer, 0, buffer.Length)) != 0)
-                { token.ThrowIfCancellationRequested(); sha.TransformBlock(buffer, 0, read, buffer, 0); }
-                sha.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                return BitConverter.ToString(sha.Hash).Replace("-", "").ToLowerInvariant();
-            }
+            return AndroidRefreshSourceIdentityContract.ScopedFileHash(path, token);
         }
 
         /// <summary>静态字段只有无cctor、已InitializeOnLoad、正常派发完成见证或已审纯常量/集合初始化才准读取。</summary>

@@ -93,6 +93,20 @@ namespace NovaFramework.Editor
                     return SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>(path);
                 }
 
+                /// <summary>只读查找现有采集配置。优先使用有效坐标的显式路径，其次只接受唯一现有资产。</summary>
+                /// <param name="master">当前激活的 ConfigMaster，可为空。</param>
+                /// <returns>已有明确来源的配置。缺失或有多个未绑定候选时返回 null，不触发 YooAsset 创建兜底。</returns>
+                internal static BundleCollectorSetting LoadExistingBundleCollector(ConfigMasterSO master)
+                {
+                    BundleCollectorSetting setting = LoadBundleCollector(master);
+                    if (setting != null) return setting;
+
+                    string[] candidates = AssetDatabase.FindAssets("t:BundleCollectorSetting", new[] { "Assets" });
+                    return candidates.Length == 1
+                        ? SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>(AssetDatabase.GUIDToAssetPath(candidates[0]))
+                        : null;
+                }
+
                 /// <summary>
                 /// 域重载时向 YooAsset 的 SettingLoader 注册显式路径回调，
                 /// 让 BundleCollectorWindow 等 YooAsset 内部窗口直接走当前激活 ConfigMaster 的显式路径加载，

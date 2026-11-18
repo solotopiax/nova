@@ -49,7 +49,7 @@ WebGL 当前真实目标复用同一 Action 内的 Player typed adapter；具体
 
 Framework 已注册并开放 `nova.project.hotfix.generate-artifacts`。先用 `describe` 读取当前 Schema，再按冻结的 Target、DevelopmentBuild 与 Config 坐标执行 `plan -> execute -> verify`；清理或重建生成目录仍必须使用当前一次性 PlanId 确认。Action 内部固定 `GenerateAll -> ValidateLinkXml`、锁、漂移检查和恢复验证，不得退化到 `execute_code`、反射或临时 C#。
 
-Android 使用独立计划与真实阶段证据，未闭合回调或 AF 导入尾链仍 blocked；准确边界见 [Android Generate](../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md#android-generate-的独立接线与未完成边界)。用户已要求运行同范围、已审且已保存的 Pipify 组合时，可复用 `nova.project.pipify.run-batch`；缺少适用组合先进入 `nova-project-configure-pipeline`。批次外冻结场景、Master、坐标、Development、生成写集与实际外部副作用，保存后单独 Plan/Execute/Verify；失败或重载只查原任务，不重放。该入口不改变专用 Action 的阻断状态，也不把 Job 结束当作完整生成与编译证据。
+Android 使用独立计划与真实阶段证据，按实际安装包核对回调。Native 场景预览、未闭合回调和已安装 AppsFlyer 的导入尾链仍按其实际限制判断；准确边界见 [Android Generate](../../../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md#android-generate-的独立接线与未完成边界)。用户已要求运行同范围、已审且已保存的 Pipify 组合时，可复用 `nova.project.pipify.run-batch`；缺少适用组合先进入 `nova-project-configure-pipeline`。批次外冻结场景、Master、坐标、Development、生成写集与实际外部副作用，保存后单独 Plan/Execute/Verify；失败或重载只查原任务，不重放。该入口不改变专用 Action 的阻断状态，也不把 Job 结束当作完整生成与编译证据。
 
 ## 生成后验证
 
