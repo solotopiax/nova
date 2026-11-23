@@ -489,7 +489,7 @@ Google/FB/MAX规则从原const读取，Firebase与AppsFlyer的纯树由原回调
 
 ### Android Generate 的独立接线与未完成边界
 
-`PlayerBuildAction.AndroidGenerateAdapter` 已接入既有 `hotfix.generate-artifacts` 的 Android 分支；请求字段和 Action ID 保持。它分别捕获实际 provider、完整回调集、SDK/NDK/JDK/Gradle 工具身份及 Native 场景预览输入。配置来源的已审源码按 Unity 当前注册的 Framework 包根定位，再逐份核对摘要。有 AppsFlyer 回调时才冻结对应输入和导入收据。`AndroidHybridClrGenerateEvidenceStore` 保存同次计划及实际报告、输出、阶段与失败材料；Store 的读写测试只证明存储合同，不证明 Generate 成功。`unboundContracts` 非空仍写前 blocked，不能修改 DTO 或借 WebGL 证据放行。
+`PlayerBuildAction.AndroidGenerateAdapter` 已接入既有 `hotfix.generate-artifacts` 的 Android 分支；请求字段和 Action ID 保持。它分别捕获实际 provider、完整回调集、SDK/NDK/JDK/Gradle 工具身份及 Native 场景预览输入。配置来源的已审源码按 Unity 当前注册的 Framework 包根定位，再逐份核对摘要。有 AppsFlyer 回调时才冻结对应输入和导入收据。AppLovin 设置源码只在实际发现 MAX 构建回调时核验。该回调存在时仍须解析实际 AppLovin 包并比对固定摘要。`AndroidHybridClrGenerateEvidenceStore` 保存同次计划及实际报告、输出、阶段与失败材料；Store 的读写测试只证明存储合同，不证明 Generate 成功。`unboundContracts` 非空仍写前 blocked，不能修改 DTO 或借 WebGL 证据放行。
 
 Core 的中立观察桥默认休眠。原 SDK pre 循环的 before/after、Native 场景 preview 和属性导入观察均围绕原调用执行，不额外调用 SDK。AF scope 在父 observer 租约之前完成完整工厂复核；异常/取消保留已取得的阶段，finally 仅释放自己的租约。AF-before 的 Manifest 从实际阶段取得，不使用父 merge 后的较晚文件补造；Import 记录保留 imported/deleted/moved/movedFrom 全部四数组。固定源码与 Module 身份仍独立检查。
 

@@ -2,7 +2,7 @@
 
 **Skill 告诉 AI 怎么完成任务，Action 执行已经封装好的具体动作，MCP 把工具调用送进 Unity。Router、Workflow、Operation 是三种不同职责的 Skill。**
 
-理解它们时，要分别看“任务怎么安排”和“请求怎么送达”。前者由 AI 按 Skill 的说明处理，后者由 MCP 通道和工具接收。
+理解它们时，要分别看“任务怎么安排”和“请求怎么送达”。前者由 AI 按 Skill 的说明处理，后者由选定的工具送进 Unity。
 
 ## Nova 协作体系
 
@@ -61,19 +61,20 @@ Nova 按功能族维护这份映射，让一个 Skill、Action 或固定代码�
 
 ## 第二件事：把选好的调用送进 Unity
 
-AI 在 Unity Editor 外部，Nova Action 在 Unity Editor 内部，需要连接把请求送进去。**Nova 当前复用 Unity MCP 的连接，并把自己的 `nova_project_action` 工具注册进去。**
-
-AI 在发出请求之前，就已经选择了 Nova 工具。“先经过 Unity MCP”说的是请求经过的通道；需求分析已经在上一阶段完成。
+例如，你说「查一下当前场景层级，再截一张 Game 视图」，Agent 优先通过 Unity CLI 连接目标 Editor 内的 Unity Pipeline。你说「导出这张表」或「导出当前 ConfigMaster 坐标的运行时配置」，Agent 按对应 Skill 调用注册在 Coplay Unity MCP 的 `nova_project_action`。具体工具选择见 [NA-002：先核对当前能力，再选择接口或提出补充](DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充)。
 
 ```mermaid
 flowchart LR
-    A["AI：已选好工具和参数"] --> M["Unity MCP 接收并传递调用"]
+    A["AI 已选好工具和参数"] --> C["Unity CLI"]
+    A --> M["Coplay Unity MCP"]
     subgraph E["Unity Editor 内部"]
-        N["Nova 工具 nova_project_action"] --> G["Nova 网关：检查请求并分发"]
+        P["Unity Pipeline"] --> API["Unity Editor API"]
+        N["Nova 工具 nova_project_action"] --> G["Nova 网关检查请求并分发"]
         G --> X["对应 Nova Action"]
-        X --> API["Unity API / Nova 既有工具"]
+        X --> T["Nova 既有工具"] --> API
         U["Unity MCP 通用工具"] --> API
     end
+    C -->|"查场景、跑测试、截图"| P
     M -->|"调用 Nova 工具"| N
     M -->|"调用 Prefab、组件等通用工具"| U
 ```

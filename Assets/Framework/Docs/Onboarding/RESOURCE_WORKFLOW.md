@@ -50,9 +50,9 @@ Nova 配表的业务内容可以扩展，原有视觉风格和工作簿结构应
 {
   "mode": "copy",
   "template": "localization-text",
-  "target": "Assets/Game/Excels/Localizations/Texts.xlsx",
+  "target": "Assets/Editor/Excels/Localizations/Texts.xlsx",
   "targetHash": null,
-  "sourceRoots": ["Assets/Game/Excels"],
+  "sourceRoots": ["Assets/Editor/Excels"],
   "generatedRoots": ["Assets/Game/Data", "Assets/Game/Scripts/Runtime/Generated"]
 }
 ```
@@ -75,9 +75,9 @@ Nova 配表的业务内容可以扩展，原有视觉风格和工作簿结构应
 ```json
 {
   "template": "ui",
-  "target": "Assets/Game/Excels/UIs/UIs.xlsx",
+  "target": "Assets/Editor/Excels/UIs/UIs.xlsx",
   "targetHash": null,
-  "sourceRoots": ["Assets/Game/Excels"],
+  "sourceRoots": ["Assets/Editor/Excels"],
   "generatedRoots": ["Assets/Game/Data", "Assets/Game/Scripts/Runtime/Generated"],
   "sheetName": "UIs",
   "title": "游戏界面注册",

@@ -4,6 +4,8 @@
 
 ## 日常研发的共同入口
 
+打开 Unity 后，[Nova 问题自动反馈](Onboarding/NOVA_ISSUES.md) 会自动发送允许上报的环境和验证信息。日常任务发现有框架侧证据的问题时，把脱敏证据交给本地 Agent。业务通过绕行完成时也保留已确认的框架问题。
+
 进入任意 Nova 研发任务并定位当前 Framework 后，先读取[日常研发的最小原则](Onboarding/DEVELOPMENT_CONSTRAINTS.md#日常研发的最小原则)，再按任务选择相关 NA 条目和具体操作；在展开模块合同、业务日志或源码前完成这一步。相同工程、同一会话中已读取且未变化的共同上下文可以复用。这些原则覆盖所有 Nova 项目 Skill，不需要先触发 `nova-project-development`。
 
 完整方法按[阅读导航](Onboarding/AI_DEVELOPMENT_WORKFLOW.md#按需阅读导航)选择章节；明确的单点任务直接进入已有 Operation。只有需要比较玩法方案、梳理变化中的复杂需求或组织多个依赖阶段时，才使用[复杂需求梳理入口](../Agents/Skills/nova-project-development/SKILL.md)。
@@ -34,6 +36,8 @@
 Nova 项目先执行 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 的识别与入口优先要求；无需用户在每条需求中重复说 Nova。宿主发现阶段由 [项目任务路由](../Agents/Skills/nova-project-router/SKILL.md) 的描述覆盖一般 Unity 请求，进入后按当前包事实选择最窄路径。通用 Unity Skill 在选定路径中提供引擎操作指导，不单独替换框架方案；包未解析或工具未连接按具体缺项处理。
 
 所有 `nova-project-*` Skill 触发后都先读取本页。本页定义项目组消费态日常任务的共同底线；它不是需要用户手工选择或按顺序执行的 Skill。
+
+查场景层级、跑 Unity 测试或截图时，按 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 的「通用编辑器操作优先用官方 CLI」选择工具。
 
 新建项目和整套交付也按 [NA-002：先核对当前能力，再选择接口或提出补充](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 在各阶段写入前选定并读取对应 Skill/contract，按其声明入口执行；参数来源、缺值处理和实际执行路径按 [NA-014：授权范围、实时合同和恢复回执约束实际执行](Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-014授权范围实时合同和恢复回执约束实际执行) 核对。新项目阶段衔接见 [开工准备](Onboarding/PROJECT_STRUCTURE.md#新项目开工准备)，不能只在最后构建时使用 Skill。
 

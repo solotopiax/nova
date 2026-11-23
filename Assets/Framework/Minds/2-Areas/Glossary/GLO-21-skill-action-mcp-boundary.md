@@ -44,7 +44,7 @@ related:
 
 **任务关系：**AI 按 Nova Skill 理解需求、安排步骤、选择工具。范围明确时可以直接进入 Operation；Router 和 Workflow 按需使用。
 
-**调用关系：**外部 AI 通过当前连接把已经选好的工具请求送进 Unity。默认路径是 `Unity MCP → nova_project_action → Nova 网关 → Nova Action → Unity API / Nova 既有工具`。
+**调用关系**指外部 AI 怎样把已选工具的请求送进 Unity。Nova Action 通过 `Coplay Unity MCP → nova_project_action → Nova 网关 → Nova Action` 接收请求。通用引擎操作按 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 选工具。
 
 这条调用路径只描述请求如何送达。AI 在请求发出前就已选择 Nova 工具，Unity MCP 不承担 Skill 的业务拆解职责。Action 已在 Editor 内部执行，可以直接调用内部 API。
 
@@ -52,7 +52,7 @@ related:
 
 - Router、Workflow、Operation 是 Skill 的分类，Skill 不是自运行的 C# 执行器。
 - 动作前先按 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 选定匹配的 Skill、读取其 contract，并按声明入口执行；通用 Unity 操作或工作区源码编辑也须符合该入口的边界，工具能执行不等于已获准绕行。
-- 一个 Skill 可以使用多个 Action，一个 Action 也可以被多个 Skill 复用；只读或工作区任务可以不经过 Unity MCP。
+- 一个 Skill 可以使用多个 Action，同一 Action 也可被多个 Skill 复用。
 - 当前 Nova MCP 包扩展默认 Unity MCP Provider，复用其服务；包名含 MCP 不代表另外启动独立服务。
 - 注册工具声明工具名、参数与处理函数，解决 AI 如何发现工具以及请求交给谁的问题。
 - Skill 发现、MCP Tool 发现和 Action 列表是三层不同的发现机制，数量没有一一对应关系。

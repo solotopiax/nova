@@ -8,6 +8,8 @@
 - Package Manager 或 PlugPals 手动升级 Framework：包注册事件和编译重载后自动同步 Skills，再执行同一安装流程；同版本重新安装也会触发。
 - Editor 启动和域重载：编译与包更新稳定后接续未完成任务。相同来源和版本在当前会话已成功时去重；显式重试绕过去重。
 - 可恢复失败：保留未完成状态，依次等待 30、120、300 秒重试，之后每 300 秒重试。未连接、超时、编译、重载或等待窗口会说明实际原因，不当作成功。
+
+安装或更新 Framework 后，Nova 会在本机准备 [Nova 自动反馈机制的授权入口](../../../Onboarding/NOVA_ISSUES.md#在-codex-中启用-nova-自动反馈机制)。成员在 Codex 中自行决定是否启用。
 - CLI 返回错误工程、非法 JSON、不支持的结构或截断输出：保留未完成状态并暂停当前工程、当前 Framework 来源及版本的自动重试；域重载不会重复相同错误。处理原因后使用 `Nova/Check and Setup AI Toolchain` 显式重检，或由新的 Framework 身份重新核验，不伪造成功、不提前删除 NovaSpark。
 
 NovaSpark 的四项默认直接依赖以脚本声明的正式版本为下限，保留项目已安装的更高正式版本；完成条件同时核对实际 registry、当前注册来源和当前 Framework 的工具链成功身份。旧版脚本仍按精确版本等待时，Framework 的同一成功链可接续收尾。要求固定 `Assets/Editor/NovaSpark.cs`、该工程的接力标记、命中已核实原厂快照的全文摘要及实际直接依赖全部吻合。等待重要声明处理后沿原入口打开 PlugPals，再删除脚本。接力标记保留到 Unity 域重载、旧脚本类型已卸载，避免残存回调重新进入旧版配置矫正。未知、本地修改或软链文件保留。收尾须按实际加载版本核验。
@@ -53,6 +55,10 @@ CLI 连接检查使用 `unity command editor status --project-path <当前工程
 外部 Agent 当前聊天是否已刷新工具列表仍要现场验证：确认连接同一项目，`tools/list` 能看到 `nova_project_action`，并执行只读 `describe`。项目配置已写入、插件已启用和 Editor 桥接成功分别是明确证据，不能推定当前聊天已自动刷新。宿主不支持即时加载时保留这一限制，不把缺项交给项目组安装。
 
 临时下载脚本在本轮结束、失败或取消后删除。SessionState 只保存会话状态、成功身份和未完成标记；NovaSpark 使用项目专属 EditorPrefs 接续安装，不生成长期验收档案。
+
+### 资产移动与重命名
+
+当实际注册的 `com.coplaydev.unity-mcp` 为 `10.3.0` 时，`manage_asset` 的移动和重命名会反向判断 Unity 返回值。用 Unity Project 窗口或本次获授权的 Unity 编辑入口执行，并记录移动前的 GUID。成功时 `AssetDatabase.MoveAsset` 返回空字符串，失败时返回错误文本。最终以原路径消失、目标路径存在且 GUID 一致为准。若工具已报告移动失败，先对照原路径、目标路径和原 GUID，再决定是否重试。 [Unity AssetDatabase.MoveAsset](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/AssetDatabase.MoveAsset.html)
 
 ## 安装阶段与自动窗口
 

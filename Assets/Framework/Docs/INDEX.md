@@ -49,6 +49,7 @@
 | **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
 | **升级后强制确认重要内容（CHANGELOG Important / 单包与批量 / 本地已读）** | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) → [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) |
 | **安装或升级后自动补齐 AI 开发工具** | [Nova Skills 与 AI 工具链安装](Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)包含自动安装、绑定、重检和连接说明。新项目接着做[入口场景交接](Onboarding/PROJECT_STRUCTURE.md#首装后的入口场景交接)。 |
+| **自动反馈项目中的 Nova 问题** | [Nova 问题自动反馈](Onboarding/NOVA_ISSUES.md)说明 Codex 和 Editor 的发现入口、确认依据及本地补发。 |
 | **Inspector GUI 绘制工具** | [EditorUtil.Draw.md · 全方法签名](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) |
 | **持久化存储（读写数据）** | [PersistComponent.md · 直接访问属性](Runtime/Modules/Persist/PersistComponent.md) → [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) / [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) / [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) |
 | 理解 UIGroup 深度 / 遮挡排序 | [UIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/UIGroupHelper.md) → [UIManager.md · UIGroup.Refresh 算法](Runtime/Modules/UI/UIManager/UIManager.md) |

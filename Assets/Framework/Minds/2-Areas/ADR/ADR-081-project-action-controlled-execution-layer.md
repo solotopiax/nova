@@ -22,6 +22,7 @@ related:
   - "[[PAT-18-editor-window-vs-util-split|PAT-18]]"
   - "[[PAT-49-pipify-step-no-batch-lock-assumption|PAT-49]]"
   - "[[GLO-21-skill-action-mcp-boundary|GLO-21]]"
+  - "[[ADR-093-project-local-issue-attribution|ADR-093]]"
 ---
 
 # ADR-081：Nova Project Action 采用按操作性质分类的受控执行层

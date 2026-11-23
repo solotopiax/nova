@@ -65,6 +65,7 @@ description: Use when 处理 Unity 项目的开发、界面、资源、配置、
 4. 选择最窄的路径：
    - 新项目、完整打包或 HybridCLR 基线修正：先按[三平台构建与 HybridCLR 基线](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#三平台构建与-hybridclr-基线)路由配置、正式设置入口、生成、DLL 部署与流水线；HybridCLR 是所有 Nova 项目必备项，不按小游戏/单机/离线自行省略。只读路由不执行安装或构建，已有项目局改不自动扩成整项目迁移。
    - 只查功能、参数声明、源码/文档及技能执行入口：直接使用下面的共享查询 CLI；Router 交付查询和路由结果，不强制进入写入 Operation。
+   - 查当前场景层级、运行已有 Unity 测试或截取 Game / Scene 视图：按 [NA-002：先核对当前能力，再选择接口或提出补充](../../../Docs/Onboarding/DEVELOPMENT_CONSTRAINTS.md#na-002先核对当前能力再选择接口或提出补充) 选通用工具。Router 只确认目标工程及实际可用的命令，交接给执行方。
    - 范围或项目事实不清：`nova-project-check-readiness`。
    - 编译失败、Play 门禁、黑屏或启动链异常：`nova-project-diagnose-startup`；已有 WebGL 页面启动失败先按其浏览器参考只读 loader → Wasm/data → Unity/Nova，不自动启动服务、刷新页或清缓存。
    - 入口场景、Build Settings、Nova 根或 Content 职责：`nova-project-setup-entry-scene`。

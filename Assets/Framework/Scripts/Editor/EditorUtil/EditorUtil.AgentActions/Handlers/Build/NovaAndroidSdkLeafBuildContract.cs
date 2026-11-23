@@ -32,6 +32,7 @@ namespace NovaFramework.Editor
         internal const string Google = "NovaFramework.SDK.GoogleSignIn.Editor.GoogleSignInPluginBuildProcessor";
         internal const string Apple = "NovaFramework.SDK.AppleSignIn.Editor.AppleSignInPluginBuildProcessor";
         internal const string Firebase = "NovaFramework.SDK.FirebasePlugin.Editor.FirebasePluginBuildProcessor";
+        private const string AppLovinSettingsSource = "Library/PackageCache/com.applovin.mediation.ads@6c8fcb4e757f/Scripts/IntegrationManager/Editor/AppLovinSettings.cs";
         private static readonly string[] Roster = { Native, AppsFlyer, AdMob, Facebook, Max, Google, Apple, Firebase };
         private static readonly string[] ConfigurationTypes = {
             "NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig", "NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig",
@@ -67,7 +68,7 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
             new[] { "UPMPackages/com.solotopia.nova.framework.sdk.googlesignin/Nova/Scripts/Runtime/GoogleSignInPluginConfig.cs", "5d7ef0e0ba8ced2398e53c5954c887bc0f59cf9bacabaebbde0e2f6a0b0b9f51" },
             new[] { "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/MaxAdChannelConfig.cs", "572b5df8c8e98f5c266b5415a4ec18a8b1e78f8cc13ad09bcff5ad73eb801f2b" },
             new[] { "UPMPackages/com.solotopia.nova.framework.sdk.admob/Nova/Scripts/Runtime/AdMobAdChannelConfig.cs", "15d83b5e44b5e05fe44340d6641d4e707e6ffa4e4f99396b1e4704fce0a18d72" },
-            new[] { "Library/PackageCache/com.applovin.mediation.ads@6c8fcb4e757f/Scripts/IntegrationManager/Editor/AppLovinSettings.cs", "7da9b18781e7fd124684493a9ebcc5bd01c2e598fc9136d20103081c05d75492" },
+            new[] { AppLovinSettingsSource, "7da9b18781e7fd124684493a9ebcc5bd01c2e598fc9136d20103081c05d75492" },
             new[] { "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Build/NovaAndroidParentBuildObserverScope.cs", "665aaa6fe55e9059919e8cc8ec79862d08659ce0f83fcd859073d552f2236df4" },
             new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Core/NovaBuildParentObservers.cs", "72ba83a02e00894526b59b0001c77e925295e51b30dac7add00ce58d0fa76051" } };
 
@@ -385,16 +386,36 @@ new[] { "Assets/Framework/Scripts/Editor/BuildProcessor/Native/NativeBuildPrevie
         private static string FactorySignature(NovaAndroidParentBuildContract.FactorySnapshot factory) => Hash(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(factory)));
         /// <summary>核全部已审来源，只读固定源文件，不修改业务文件。</summary>
         /// <param name="root">准确工程根。</param>
+        /// <param name="factory">已复核的实际回调工厂。</param>
         private static void RequireSources(string root, NovaAndroidParentBuildContract.FactorySnapshot factory)
         {
-            bool reviewed = factory?.admission == "reviewed-source-signature-ctor-priority-il-v1";
+            foreach (string[] source in RequiredSources(factory))
+            {
+                string path;
+                try { path = NovaAndroidParentBuildContract.ResolveReviewedSource(root, source[0]); }
+                catch (InvalidOperationException error) when (source[0] == AppLovinSettingsSource)
+                {
+                    throw new InvalidOperationException("MAX 构建回调依赖的 AppLovin 设置源码无法解析：" + error.Message, error);
+                }
+                RequireUnlinked(path);
+                if (Hash(File.ReadAllBytes(path)) != source[1]) throw new InvalidOperationException("叶子已审源码漂移：" + source[0]);
+            }
+        }
+
+        /// <summary>按实际回调保留其专属源码，即使所需第三方依赖未解析。</summary>
+        /// <param name="factory">已复核的实际回调工厂。</param>
+        /// <returns>本轮必须核验的源码路径和摘要。</returns>
+        internal static IEnumerable<string[]> RequiredSources(NovaAndroidParentBuildContract.FactorySnapshot factory)
+        {
+            bool reviewed = factory.admission == "reviewed-source-signature-ctor-priority-il-v1";
             bool includesAppsFlyer = factory.discovered.Any(row => row.type == AppsFlyer);
+            bool includesMax = factory.discovered.Any(row => row.type == Max);
             foreach (string[] source in Sources)
             {
                 if (reviewed && !NovaAndroidParentBuildContract.HasReviewedSourcePackage(factory.packageRoster, source[0])) continue;
                 if (!includesAppsFlyer && NovaAndroidParentBuildContract.IsAppsFlyerSupportSource(source[0])) continue;
-                string path = NovaAndroidParentBuildContract.ResolveReviewedSource(root, source[0]); RequireUnlinked(path);
-                if (Hash(File.ReadAllBytes(path)) != source[1]) throw new InvalidOperationException("叶子已审源码漂移：" + source[0]);
+                if (!includesMax && source[0] == AppLovinSettingsSource) continue;
+                yield return source;
             }
         }
         /// <summary>仅SHA计算，不输出原数据。</summary>

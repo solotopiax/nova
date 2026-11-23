@@ -3581,12 +3581,17 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.Toolchain.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainValidation.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainSetup.cs",
-        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainProvisioning.cs"
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainProvisioning.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.CodexHooks.cs",
+        "Assets/Framework/Agents/Tools/nova_issues_agent.py"
       ],
       "docs": [
         "Assets/Framework/Docs/INDEX.md",
         "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md",
-        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md"
+        "Assets/Framework/Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md",
+        "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md",
+        "Assets/Framework/Docs/Onboarding/NOVA_ISSUES.md"
       ],
       "skills": [
         "nova-project-router",
@@ -3628,6 +3633,16 @@
           "entry": "Unity Editor menu Nova/Check and Setup AI Toolchain -> completed Nova AI toolchain Console report",
           "kind": "unity-editor-automation",
           "when": "安装或升级后自动补齐缺失工具、绑定本项目并等待复核完成；失败自动重试，无需项目组手动补装；当前聊天连接另行现场验收"
+        },
+        {
+          "entry": "unity command --project-path <projectRoot>",
+          "kind": "cli",
+          "when": "按 NA-002 发现目标 Editor 提供的场景层级、Unity 测试和截图命令时"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status",
+          "kind": "cli",
+          "when": "新版本已准备本地反馈队列且用户需要排查时，查询当前工作区最近的任务归因和上报状态。项目成员在 Codex 中自行审查反馈授权"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",

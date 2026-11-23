@@ -28,6 +28,8 @@ description: Use when Nova 项目组要把当前 direct Nova Framework 从既有
 
 ## 结果与不可越界项
 
+目标 Framework 含 Nova 自动反馈机制时，项目成员可按 [使用说明](../../../Docs/Onboarding/NOVA_ISSUES.md#在-codex-中启用-nova-自动反馈机制) 在 Codex 中自行审查和选择启用。
+
 目标 Framework 含重要升级提示能力时，重载稳定后会从实际安装包的 [CHANGELOG.md（当前包定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 正式版本提取 `### Important` 并自动弹窗；跨版本声明按版本分组。外部宿主没有传入显式批次时按同步升级补查处理，不推断用户点击范围。窗口等待人工确认不等于 UPM 卡死；Agent 不得自动确认或修改 [Library/Nova/ImportantUpdates（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，不得为关闭窗口重放升级。仅需解释时读取目标包 [Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，分别报告安装核验与人工阅读状态。
 
 所有版本、来源、编译、Catalog 投影、工具链逐项证据及当前会话 `nova_project_action` 的只读连接核验均符合冻结目标时才为 `success`。写入前缺少外部 UPM 宿主、当前默认 Provider Adapter 或可解析闭包时为 `blocked`；写入已提交后因 Resolve、重载、编译、投影、工具链或 MCP 重连未完成时为 `partial`，只给出恢复核验路径，不回滚。

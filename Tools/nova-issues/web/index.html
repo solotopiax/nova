@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>nova-issues</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main id="login" class="login-layout" hidden>
+    <form id="login-form" class="login-card">
+      <div class="brand"><span class="mark" aria-hidden="true">N</span> nova-issues</div>
+      <h1>登录维护台</h1>
+      <label>账号<input name="username" autocomplete="username" required maxlength="80"></label>
+      <label>密码<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label>
+      <p id="login-error" class="error" role="alert" hidden></p>
+      <button class="primary" type="submit">登录</button>
+    </form>
+  </main>
+  <div id="workspace" class="layout" hidden>
+    <aside class="sidebar">
+      <div class="brand"><span class="mark" aria-hidden="true">N</span> nova-issues</div>
+      <nav aria-label="维护台" id="nav">
+        <button type="button" data-view="overview" aria-current="page">总览</button>
+        <button type="button" data-view="issues">问题</button>
+        <button type="button" data-view="projects">项目与版本</button>
+        <button type="button" data-view="usage">使用记录</button>
+      </nav>
+      <div class="account"><span id="account"></span><button type="button" id="logout">退出</button></div>
+    </aside>
+    <main class="main">
+      <header class="page-header">
+        <div><p id="updated" class="updated" aria-live="polite"></p><h1 id="page-title">总览</h1></div>
+        <div id="page-actions" class="actions"></div>
+      </header>
+      <p id="page-error" class="error" role="alert" hidden></p>
+      <div id="content"></div>
+    </main>
+  </div>
+  <dialog id="details" aria-labelledby="detail-title">
+    <div class="dialog-head">
+      <h2 id="detail-title"></h2>
+      <form method="dialog"><button class="secondary" type="submit">关闭</button></form>
+    </div>
+    <div id="detail-body"></div>
+  </dialog>
+</body>
+</html>

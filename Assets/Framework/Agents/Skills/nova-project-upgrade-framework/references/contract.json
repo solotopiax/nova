@@ -24,6 +24,11 @@
       "when": "新版本 Resolve、编译和自动投影稳定后，以新解析 catalog.json 的实际 Skill 数量核验 .agents/skills 受管状态，不手工 sync 或 reconcile"
     },
     {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status",
+      "when": "新版本已准备本地反馈队列且用户需要排查时，查询当前工作区最近的任务归因和上报状态。项目成员在 Codex 中自行审查反馈授权"
+    },
+    {
       "kind": "unity-editor-automation",
       "entry": "MCP tools/list -> nova_project_action presence -> read-only describe",
       "when": "重新连接同一消费工程后确认Tool可见并执行只读describe，不用它升级自身"

@@ -34,7 +34,6 @@ MonoBehaviour:
     m_Name: Solotopia Internal
     m_Url: http://172.16.22.175:4874
     m_Scopes:
-    - com.onevcat
     - com.starlus
     - com.da-assets
     - cn.efunstudio
@@ -81,7 +80,7 @@ MonoBehaviour:
     m_Compliance:
       m_Status: 0
       m_Violations: []
-  m_UserSelectedRegistryName: 
+  m_UserSelectedRegistryName: Solotopia Internal
   m_UserAddingNewScopedRegistry: 0
   m_RegistryInfoDraft:
     m_Modified: 0

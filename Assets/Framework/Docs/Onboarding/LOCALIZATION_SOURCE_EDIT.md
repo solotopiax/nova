@@ -6,7 +6,7 @@
 
 从有效 LocalizationSettings 读取源文件和全部代码/数据生成根。用当前 Python 执行：
 
-    python3 -B "<frameworkRoot>/Agents/Tools/nova_table_source.py" --project-root "<projectRoot>" inspect --source "Assets/Game/Excels/Localizations/Texts.xlsx" --layout localization-texts
+    python3 -B "<frameworkRoot>/Agents/Tools/nova_table_source.py" --project-root "<projectRoot>" inspect --source "Assets/Editor/Excels/Localizations/Texts.xlsx" --layout localization-texts
 
 Windows 使用 py -3 -B。xlsx 读取依赖当前 Python 的 openpyxl；缺失返回 blocked，不自动安装。输出实际 Sheet、有效 Key、语言、Desc 存在性、追加行、待用列、整文件 sourceHash 和 languageSourceHash。可选 --sheet 只筛选检查输出，不缩小 Plan 对整个工作簿的语言集合检查。
 
@@ -17,9 +17,9 @@ Windows 使用 py -3 -B。xlsx 读取依赖当前 Python 的 openpyxl；缺失�
 严格请求如下。addLanguages/addKeys 可二选一或同 Plan，合计 1–256 项，不接受 cells、插列位置或其他额外字段。路径、语言和 Key 必须替换为当前事实：
 
     {
-      "source": "Assets/Game/Excels/Localizations/Texts.xlsx",
+      "source": "Assets/Editor/Excels/Localizations/Texts.xlsx",
       "sourceHash": "<inspect 的整文件 SHA256>",
-      "sourceRoots": ["Assets/Game/Excels/Localizations"],
+      "sourceRoots": ["Assets/Editor/Excels/Localizations"],
       "generatedRoots": ["Assets/Game/Jsons/Localizations", "Assets/Game/Scripts/Runtime/DataTypes/Localizations"],
       "layout": "localization-texts",
       "addLanguages": [{

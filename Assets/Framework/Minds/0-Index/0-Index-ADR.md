@@ -116,7 +116,8 @@ auto_generated: true
 - [ADR-028 HybridCLR 拷贝 AOT 裁剪 dll 必须在 BuildPlayer 之后](../2-Areas/ADR/ADR-028-hybridclr-copy-aot-after-buildplayer.md) — CopyAotDll 必须在 BuildPlayer 之后
 - [ADR-031 每个 UPM 包必须自带 CHANGELOG、LICENSE、README](../2-Areas/ADR/ADR-031-upm-three-piece-mandatory.md) — Nova 自维护 UPM 包缺少三件套时，发版应直接中止
 - [ADR-066 EDM 公共依赖与 OpenUPM 工程固定策略](../2-Areas/ADR/ADR-066-edm-openupm-registry-strategy.md) — OpenUPM 工程固定，registry 链须覆盖传递依赖
+- [ADR-093 消费端问题在项目本地归因和上报](../2-Areas/ADR/ADR-093-project-local-issue-attribution.md) — 当前工程负责确认证据，局域网服务汇总已确认问题
 
 
 ---
-_共 77 条，分布于 10 个 category。_
+_共 78 条，分布于 10 个 category。_

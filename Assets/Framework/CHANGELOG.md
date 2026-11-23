@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [0.7.14] - 2026-11-23
+
+### Fixed
+
+- Android 热更生成仅在存在 MAX 构建回调时检查其 AppLovin 设置源码。
+
+- 修复 Nova 自动反馈机制准备 Codex 配置时的 Unity Editor 编译错误。
+
+- Nova 自动反馈机制按实际执行回执确认入口遗漏，修复答疑误报。授权入口准备受阻时在 Unity Console 提示原因，临时故障会自动重试。
+
+### Added
+
+- 新增 Nova 问题自动反馈。打开 Unity 即可向固定的局域网服务发送已确认的问题、项目环境和执行记录，无需配置地址或凭据。已启用 Codex 钩子的工作站也会核对任务是否走到预期的 Nova 入口。断线时保留在工程 Library，恢复后自动补传。
+
+- 更新 Nova 后打开 Unity，即可在 Codex CLI 或 ChatGPT 桌面 App 审查「Nova 自动反馈机制」，自行启用功能使用记录和已确认的框架问题反馈。
+
+### Changed
+
+- Nova 环境在首次识别或基础信息变化时自动上报，基础信息未变时按工作区每天首次 Editor 编译完成上报。Codex 模块调用与 Skill 查阅由本地脚本记录，维护台按项目和时间汇总。
+
+- 查场景层级、运行已有 Unity 测试和截取 Game 或 Scene 视图时，优先使用已连接目标 Editor 的官方 Unity CLI。
+
+- 新项目的 Excel 源表与配套导出配置统一放在 `Assets/Editor/Excels`。已有项目按需通过 Unity 迁移源表，保留 GUID 并同步场景与导出配置中的路径。
+
 ## [0.7.13] - 2026-11-18
 
 ### Fixed
