@@ -19,7 +19,7 @@ description: Use when Nova 项目组要把当前 direct Nova Framework 从既有
 
 ## Freeze → Confirm → Upgrade → Recover
 
-1. 只读冻结唯一项目根、当前 manifest direct entry、当前 lock 解析版本与来源、脱敏后的 registry 身份和可达性、`latest` 或精确目标版本、目标元数据，以及目标 Framework → Nova MCP 包 → 默认 Provider Adapter 的可解析闭包。当前版本已等于或高于目标为 `not_applicable`；任何来源、版本、依赖或宿主不唯一为 `blocked`。
+1. 只读冻结唯一项目根、当前 manifest direct entry、当前 lock 解析版本与来源、脱敏后的 registry 身份和可达性、`latest` 或精确目标版本、目标元数据，以及目标 Framework → Nova MCP 包 → 默认 Provider Adapter 的可解析闭包。当前版本已等于或高于目标为 `not_applicable`；任何来源、版本、依赖或宿主不唯一为 `blocked`。记下项目原有的 Nova 自动反馈定义，供重载后核对。
 2. 展示唯一的 Framework 版本 diff、目标来源、预期 Resolve 影响、后续重载风险和验证清单。只有用户确认该冻结计划后，才调用外部宿主的一次升级；若宿主要求自己的确认，仍须按其精确 Schema 单独完成。
 3. 外部宿主提交 manifest 变更并触发 Resolve 后，连接中断、domain reload 或编译尚未稳定时只能返回 `partial`，保留已知的目标与宿主 receipt（如有）。不得自动重试、复用旧请求、清缓存、回滚或改写其它包。
 4. 重连到同一项目且 Unity 稳定后，先由包外宿主只读核验 direct manifest、packages-lock、目标 Framework 版本和同源解析。再从新解析的 Framework 读取其 [Agents/catalog.json](../../catalog.json)，以该版本 Catalog 的实际项数运行 `nova_skills.py doctor --project-root <projectRoot>`，确认投影没有 missing、modified、sourceChanged 或未完成事务。
@@ -28,7 +28,7 @@ description: Use when Nova 项目组要把当前 direct Nova Framework 从既有
 
 ## 结果与不可越界项
 
-目标 Framework 含 Nova 自动反馈机制时，项目成员可按 [使用说明](../../../Docs/Onboarding/NOVA_ISSUES.md#在-codex-中启用-nova-自动反馈机制) 在 Codex 中自行审查和选择启用。
+目标 Framework 含 Nova 自动反馈机制时，编译稳定后按 [审查检查](../../../Docs/Onboarding/NOVA_ISSUES.md#在-codex-任务开始时检查审查状态) 核对本机准备状态。首次生成或更新了 Nova 钩子定义时，在当前对话的升级结果里主动给出审查入口。建议启用时使用同页的[提示文案](../../../Docs/Onboarding/NOVA_ISSUES.md#建议启用反馈的提示文案)。遇到准备受阻，说明当前状态并指向 Unity Console。升级按原有验收条件收尾。普通项目任务开始时会再查实际审查状态。
 
 目标 Framework 含重要升级提示能力时，重载稳定后会从实际安装包的 [CHANGELOG.md（当前包定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 正式版本提取 `### Important` 并自动弹窗；跨版本声明按版本分组。外部宿主没有传入显式批次时按同步升级补查处理，不推断用户点击范围。窗口等待人工确认不等于 UPM 卡死；Agent 不得自动确认或修改 [Library/Nova/ImportantUpdates（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，不得为关闭窗口重放升级。仅需解释时读取目标包 [Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，分别报告安装核验与人工阅读状态。
 

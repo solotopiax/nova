@@ -27,6 +27,7 @@ from database import Conflict, Database, EnrollmentLimit
 from protocol import (
     InvalidInput, PRIORITIES, STATUSES, UUID, enum, int_range, key, label, obj, validate_event,
 )
+from registries import RegistryVersions
 
 
 ROOT = Path(__file__).resolve().parent
@@ -52,7 +53,7 @@ def load_web_assets():
 def runtime_revision(assets=None):
     """用服务端源码和实际加载的 Web 内容生成可核对的版本标识。"""
     digest = hashlib.sha256()
-    for name in ("serve.py", "database.py", "protocol.py"):
+    for name in ("serve.py", "database.py", "protocol.py", "registries.py"):
         digest.update(hashlib.sha256((ROOT / name).read_bytes()).digest())
     if assets is None:
         assets = load_web_assets()
@@ -131,6 +132,7 @@ class NovaIssuesServer(HTTPServer):
         self.tls = tls
         self.login_limits = LoginLimits()
         self.enrollment_limits = LoginLimits()
+        self.registry_versions = RegistryVersions()
         self.slots = threading.BoundedSemaphore(32)
         self.pool = ThreadPoolExecutor(max_workers=32)
         self.assets = load_web_assets()
@@ -158,6 +160,7 @@ class NovaIssuesServer(HTTPServer):
     def server_close(self):
         super().server_close()
         self.pool.shutdown()
+        self.registry_versions.close()
 
 
 class HttpError(Exception):
@@ -282,7 +285,8 @@ class Handler(BaseHTTPRequestHandler):
         elif method == "GET" and path == "/health":
             self.reply(200, {"status": "ok", "service": "nova-issues-server", "protocol": 1,
                              "automatic_reporting": self.allows_automatic_reporting(), "codex_telemetry": True,
-                             "revision": self.server.revision})
+                             "project_snapshot_details": True, "git_user_name_reporting": True,
+                             "hook_activity": True, "revision": self.server.revision})
         elif method == "POST" and path == "/api/session":
             self.login()
         elif method == "GET" and path == "/api/session":
@@ -368,8 +372,28 @@ class Handler(BaseHTTPRequestHandler):
         elif method == "POST" and (match := re.fullmatch(r"projects/([^/]+)/rotate", path)):
             token = db.rotate(key(match[1]))
             self.reply_found({"id": match[1], "token": token} if token else None)
+        elif method == "POST" and (match := re.fullmatch(r"projects/([^/]+)/team", path)):
+            data = obj(self.body(), ("team", "previous_team"))
+            team = label(data["team"], 100, empty=True)
+            previous = label(data["previous_team"], 100, empty=True)
+            self.reply_found(db.update_team(key(match[1]), team, previous))
         elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)", path)):
             self.reply_found(db.project_detail(key(match[1])))
+        elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)/package-versions", path)):
+            project_id = key(match[1])
+            snapshot_ids = parse_qs(url.query, keep_blank_values=True).get("snapshot")
+            if snapshot_ids:
+                snapshot = db.project_snapshot(project_id, key(snapshot_ids[0], UUID))
+                if snapshot is None:
+                    raise HttpError(404, "没有找到对应环境快照。")
+                packages, pending = self.server.registry_versions.for_snapshot(snapshot)
+                self.reply(200, {"packages": packages, "pending": pending})
+            else:
+                detail = db.project_detail(project_id)
+                if detail is None:
+                    raise HttpError(404, "没有找到对应记录。")
+                packages = {package["id"] for snapshot in detail["snapshots"] for package in snapshot["data"]["packages"]}
+                self.reply(200, {"packages": self.server.registry_versions.for_packages(packages)})
         elif (match := re.fullmatch(r"issues/([0-9]{1,15})", path)):
             issue_id = int(match[1])
             if method == "GET":

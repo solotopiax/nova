@@ -3584,14 +3584,16 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainProvisioning.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.CodexHooks.cs",
-        "Assets/Framework/Agents/Tools/nova_issues_agent.py"
+        "Assets/Framework/Agents/Tools/nova_issues_agent.py",
+        "Assets/Framework/Agents/Tools/nova_hook_review.py"
       ],
       "docs": [
         "Assets/Framework/Docs/INDEX.md",
         "Assets/Framework/Docs/Onboarding/LOCAL_BUILD_EVIDENCE.md",
         "Assets/Framework/Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md",
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md",
-        "Assets/Framework/Docs/Onboarding/NOVA_ISSUES.md"
+        "Assets/Framework/Docs/Onboarding/NOVA_ISSUES.md",
+        "Assets/Framework/Docs/START_HERE.md"
       ],
       "skills": [
         "nova-project-router",
@@ -3642,7 +3644,32 @@
         {
           "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status",
           "kind": "cli",
-          "when": "新版本已准备本地反馈队列且用户需要排查时，查询当前工作区最近的任务归因和上报状态。项目成员在 Codex 中自行审查反馈授权"
+          "when": "排查当前工作区的任务归因、钩子运行报告和其他上报的队列状态。项目成员在 Codex 中自行审查反馈授权"
+        },
+        {
+          "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",
+          "kind": "workspace-inspection",
+          "when": "Nova 升级后首次准备或定义更新，或用户定向检查反馈授权入口时，在当前 Codex 对话提示审查"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
+          "kind": "cli",
+          "when": "macOS/Linux 的普通消费项目任务启动时检查待审查条目并判定本机的首次版本提醒"
+        },
+        {
+          "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
+          "kind": "cli",
+          "when": "Windows 的普通消费项目任务启动时检查待审查条目并判定本机的首次版本提醒"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
+          "kind": "cli",
+          "when": "macOS/Linux 定向查询或暂停后只读复查 Codex 的 Nova 反馈钩子状态"
+        },
+        {
+          "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
+          "kind": "cli",
+          "when": "Windows 定向查询或暂停后只读复查 Codex 的 Nova 反馈钩子状态"
         }
       ],
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",

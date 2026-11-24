@@ -13,6 +13,26 @@
       "when": "一般 Unity 请求也先只读识别是否接入或明确要求 Nova，再从当前框架能力中选择最窄路径；不要求用户点名 Nova"
     },
     {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
+      "when": "macOS/Linux 的普通消费项目任务启动时检查待审查条目并判定本机的首次版本提醒"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
+      "when": "Windows 的普通消费项目任务启动时检查待审查条目并判定本机的首次版本提醒"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
+      "when": "macOS/Linux 在暂停后只读复查 Codex 的当前状态"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
+      "when": "Windows 在暂停后只读复查 Codex 的当前状态"
+    },
+    {
       "kind": "unity-editor-automation",
       "entry": "nova_project_action(operation=describe, action_id=<selected action id>)",
       "when": "所选 Skill 引用 Project Action，且需要区分当前 MCP 可执行、传输未就绪或 Action 未开放时；只允许 describe"
@@ -45,19 +65,23 @@
     }
   ],
   "effects": [
-    "read"
+    "read",
+    "workspace-write"
   ],
   "writeScope": {
-    "allow": [],
+    "allow": [
+      "Library/Nova/Issues/hook-review-*/** 临时查询文件，结束时清理",
+      "Library/Nova/Issues/hook-review.sqlite3 及其 SQLite 事务文件，仅记录首次任务核查的版本"
+    ],
     "deny": [
-      "all project writes"
+      "all other project writes"
     ]
   },
-  "locks": [],
-  "idempotency": "read-only",
+  "locks": ["Library/Nova/Issues/hook-review.sqlite3 的 SQLite 写事务"],
+  "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [],
-    "rule": "路由只读；把后续写入或外部副作用的确认门原样传递给被选中的 Skill。"
+    "rule": "有待审查条目，或首次检查当前 Framework 版本时发现钩子停用，先询问并暂停原任务。用户可在升级提醒中选择继续停用。按反馈文档只读复查后恢复，后续业务操作的确认由所选 Skill 执行。"
   },
   "minimumEvidence": "static",
   "resultStates": [
@@ -66,6 +90,7 @@
     "not_applicable"
   ],
   "evidence": [
+    "普通消费项目任务以 --task-start 核查本机状态及实际 Framework 版本，明确记录待审查数量或当前版本的首次停用提醒。暂停后的复查使用只读模式。",
     "当前工程是否使用或明确要求 Nova 的依据；已接入时记录准确包身份、版本、实际包根与匹配入口，待解析不误报为未接入；相同工程未变的已核实上下文可复用。",
     "先选择 Nova 能力及执行路径，再使用通用 Unity Skill/CLI/MCP；引擎操作不替换框架业务入口、配置、生命周期和导出链，缺少工具与缺少框架能力分别报告。",
     "通用编辑器任务按 NA-002 记录目标工程、当前可用命令与交接入口。专项任务使用已选 Skill/contract 声明的执行和验证入口。",

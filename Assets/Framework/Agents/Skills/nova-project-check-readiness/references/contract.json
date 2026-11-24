@@ -23,6 +23,21 @@
       "when": "已安装或本次范围点名 Nova SDK/Kit，且需要只读确认 package id、版本、source、实际根路径和包内文档入口时"
     },
     {
+      "kind": "workspace-inspection",
+      "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",
+      "when": "用户只检查 Nova 自动反馈授权入口时，核对本机配置和脚本，并在当前对话中给出审查入口"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
+      "when": "macOS/Linux 定向只读查询待审查和已停用的 Nova 条目"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
+      "when": "Windows 定向只读查询待审查和已停用的 Nova 条目"
+    },
+    {
       "kind": "agent-action",
       "entry": "nova.project.config.inspect-plugin-types",
       "when": "Unity 已就绪且用户允许收集已安装 SDK/Kit Config 类型的稳定只读元数据时；Tool 不可用则保留 partial"
@@ -70,7 +85,7 @@
     "read"
   ],
   "writeScope": {
-    "allow": [],
+    "allow": ["Library/Nova/Issues/hook-review-*/** 临时查询文件，结束时清理"],
     "deny": [
       "Packages/manifest.json",
       "Packages/packages-lock.json",
@@ -96,6 +111,7 @@
   ],
   "evidence": [
     "UPM 解析与版本",
+    "定向检查 Nova 自动反馈授权入口时，分别交付本机准备状态及脚本取得的 Codex 审查状态。处理待审查条目时给出当前宿主审查路径",
     "项目拓扑和托管范围",
     "已安装 Nova SDK/Kit 的 package id、版本、source、INDEX 路径及 Config/路由/资源/平台前置证据缺口",
     "nova.project.config.inspect-plugin-types 的只读类型发现证据（取得时）",

@@ -26,9 +26,12 @@ MCP = FRAMEWORK + ".mcp"
 WORKDIR = Path("Library/Nova/Issues")
 REPORT_SERVER = "http://172.16.22.175:8787"
 ENVIRONMENT_REPORT_KEY = "editor_environment_report"
+HOOK_ACTIVITY_REPORT_KEY = "codex_hook_activity_report"
+HOOK_ACTIVITY_INTERVAL = 3600
 MAX_INPUT = 4 << 20
 ID = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\Z")
 VERSION = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9.\-+]{0,79}\Z")
+APPLICATION_IDENTIFIER = re.compile(r"[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)+\Z")
 PRIVATE = re.compile(
     r"(?i)(\b(?:https?|ssh|file)://|\b[A-Z]:[\\/]|/(?:Users|home|private|tmp)/|"
     r"-----BEGIN [A-Z ]*PRIVATE KEY|\bbearer\s+\S+|"
@@ -146,6 +149,18 @@ def run_readonly(command, root, timeout=1):
         return subprocess.run(command, cwd=root, capture_output=True, timeout=timeout, check=False)
     except (OSError, subprocess.TimeoutExpired):
         return None
+
+
+def git_user_name(root):
+    """读取当前工程生效的 Git 用户名，缺失或不适合显示时返回空值。"""
+    result = run_readonly(["git", "--no-optional-locks", "config", "--get", "user.name"], root)
+    if result is None or result.returncode != 0:
+        return ""
+    try:
+        name = text_field(result.stdout.decode("utf-8").strip(), 100)
+    except UnicodeDecodeError:
+        return ""
+    return name if not re.search(r"[\x00-\x1f\x7f-\x9f]", name) else ""
 
 
 def git_safe(root):
@@ -381,7 +396,8 @@ def snapshot(root, db):
                                           "codex": "observed" if now() - state(db, "codex_seen", 0) < 1800 else "waiting",
                                           "editor": "observed" if now() - editor.get("at", 0) < 1800 else "waiting"}}
     if match:
-        result.update({name: editor[name] for name in ("platform", "channel", "mode", "enabled", "coordinate_source")
+        result.update({name: editor[name] for name in ("platform", "channel", "mode", "enabled", "coordinate_source",
+                                                       "application_identifiers", "codex_hooks")
                        if name in editor})
     return result
 
@@ -395,7 +411,16 @@ def report_editor_environment(root, db, *, compilation_day=None):
     stamp = now()
     day = datetime.fromtimestamp(stamp).date().isoformat()
     previous = state(db, ENVIRONMENT_REPORT_KEY, {})
-    signature = event_id(project["id"], data["framework"], data["unity"])
+    fields = [project["id"], data["framework"], data["unity"]]
+    if "application_identifiers" in data or "codex_hooks" in data:
+        identifiers = data.get("application_identifiers", {})
+        fields.extend(("|".join(f"{name}={identifiers[name]}" for name in sorted(identifiers)),
+                       data.get("codex_hooks")))
+    git_name = git_user_name(root)
+    if git_name:
+        data["git_user_name"] = git_name
+        fields.append(git_name)
+    signature = event_id(*fields)
     if previous.get("hash") != signature or compilation_day == day and previous.get("day") != day:
         enqueue(db, "snapshot", data, observed_at=stamp)
         save(db, ENVIRONMENT_REPORT_KEY, {"hash": signature, "day": day})
@@ -705,8 +730,25 @@ def relevant_hook(event):
                                         or UNITY_COMMAND.match(command) or any(script in command for script in NOVA_CLI))
 
 
+def report_hook_activity(db, framework, stamp):
+    """同一工作区首次运行立即入队，后续按实际运行时间限频。"""
+    cutoff = stamp - HOOK_ACTIVITY_INTERVAL
+    previous = state(db, HOOK_ACTIVITY_REPORT_KEY)
+    if previous is not None and previous > cutoff:
+        return False
+    # 竞争中的钩子必须在同一事务里取得上报资格并入队。
+    claimed = db.execute("""
+        INSERT INTO state (key,value) VALUES (?,?)
+        ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE CAST(state.value AS INTEGER)<=?
+    """, (HOOK_ACTIVITY_REPORT_KEY, compact(stamp), cutoff))
+    if claimed.rowcount != 1:
+        return False
+    enqueue(db, "hook_activity", {"framework": framework}, observed_at=stamp)
+    return True
+
+
 def handle_hook(root, db, event):
-    """只为模块用量和已确认问题入队，任务观察保存在工作区。"""
+    """上报限频的钩子运行记录、模块用量和已确认问题，任务观察保存在工作区。"""
     name = event.get("hook_event_name")
     if name not in HOOK_EVENTS:
         return False
@@ -717,15 +759,16 @@ def handle_hook(root, db, event):
         tools["codex"] = {"at": stamp, "tool": {"state": "observed"}}
         save(db, "codex_tools", tools)
     if name == "SessionStart":
+        report_hook_activity(db, observed_framework(root, db), stamp)
         return has_pending_reports(db)
     identifier = turn_key(event)
     if not identifier:
         return False
     turn = record_turn(root, db, event, identifier)
-    pending = False
+    framework = turn["version"]
+    pending = report_hook_activity(db, framework, stamp)
     if name == "PostToolUse":
         tool_name, action, operation, command = tool_operation(event)
-        framework = turn["version"]
         skills = observed_skills(root, db, event, tool_name, command, framework, identifier)
         route = ROUTE_BY_SKILL.get(turn["route"])
         if route:
@@ -786,6 +829,12 @@ def editor_snapshot(root, db, payload):
         value = text_field(payload.get(name), 80)
         if value:
             result[name] = value
+    identifiers = payload.get("application_identifiers")
+    if isinstance(identifiers, dict) and len(identifiers) <= 3:
+        result["application_identifiers"] = {name: value for name, value in identifiers.items()
+                                             if identity(name) and APPLICATION_IDENTIFIER.fullmatch(string(value, 255))}
+    if payload.get("codex_hooks") in ("complete", "pending", "incomplete"):
+        result["codex_hooks"] = payload["codex_hooks"]
     result["sdk_attempt"] = identity(payload.get("sdk_attempt"))
     enabled = payload.get("enabled")
     for value in enabled[:100] if isinstance(enabled, list) else []:
@@ -1032,7 +1081,10 @@ def work(root, folder, worker_id, *, single=False):
             probe = not single and now() - state(db, "version_probe_at", 0) >= 600
             ready = db.execute(f"""
                 SELECT id,payload,attempts,json_extract(payload,'$.kind') AS kind,
-                       json_extract(payload,'$.data.source') AS source
+                       json_extract(payload,'$.data.source') AS source,
+                       COALESCE(json_type(payload,'$.data.codex_hooks'),
+                                json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS has_project_details,
+                       json_type(payload,'$.data.git_user_name') IS NOT NULL AS has_git_user_name
                 FROM outbox WHERE accepted IS NULL AND ready_at<=?
                 AND {SENDABLE_REPORT_FILTER}
                 ORDER BY json_extract(payload,'$.kind')!='issue',ready_at,rowid LIMIT 8
@@ -1042,7 +1094,13 @@ def work(root, folder, worker_id, *, single=False):
         for item in ready:
             if not health:
                 received, error = None, "service-unavailable"
+            elif item["kind"] == "hook_activity" and health.get("hook_activity") is not True:
+                received, error = None, "server-upgrade-required"
             elif item["kind"] == "usage" and item["source"] and health.get("codex_telemetry") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["has_project_details"] and health.get("project_snapshot_details") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["has_git_user_name"] and health.get("git_user_name_reporting") is not True:
                 received, error = None, "server-upgrade-required"
             else:
                 received, error = deliver(project, token, item)

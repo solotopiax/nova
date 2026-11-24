@@ -12,6 +12,7 @@ STATUSES = ("open", "triaged", "working", "awaiting_verification", "closed", "du
 PRIORITIES = ("P0", "P1", "P2", "P3")
 KEY = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\Z")
 UUID = re.compile(r"[a-f0-9]{32}\Z")
+APPLICATION_IDENTIFIER = re.compile(r"[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)+\Z")
 PRIVATE_TEXT = re.compile(
     r"(?i)(\b(?:https?|ssh|file)://|\b[A-Z]:[\\/]|/(?:Users|home|private|tmp)/|"
     r"-----BEGIN [A-Z ]*PRIVATE KEY|\bbearer\s+\S+|"
@@ -59,7 +60,7 @@ def records(value, limit):
 
 def validate_snapshot(data):
     obj(data, ("framework", "unity", "packages", "tools", "coverage"),
-        ("platform", "channel", "mode", "enabled", "coordinate_source"))
+        ("platform", "channel", "mode", "enabled", "coordinate_source", "application_identifiers", "codex_hooks", "git_user_name"))
     for name in ("framework", "unity", "platform", "channel", "mode", "coordinate_source"):
         if name in data:
             label(data[name], 80, empty=name not in ("framework", "unity"))
@@ -71,6 +72,20 @@ def validate_snapshot(data):
         enum(package["evidence"], ("registered", "resolved", "declared"))
     for entry in records(data.get("enabled", []), 100):
         key(entry)
+    if "codex_hooks" in data:
+        enum(data["codex_hooks"], ("complete", "pending", "incomplete"))
+    if "git_user_name" in data:
+        label(data["git_user_name"], 100)
+        if re.search(r"[\x00-\x1f\x7f-\x9f]", data["git_user_name"]):
+            raise InvalidInput("Git 名称必须是单行文本。")
+    if "application_identifiers" in data:
+        identifiers = data["application_identifiers"]
+        if not isinstance(identifiers, dict) or len(identifiers) > 3:
+            raise InvalidInput("应用包名列表无效。")
+        for platform, identifier in identifiers.items():
+            key(platform)
+            if not isinstance(identifier, str) or len(identifier) > 255 or not APPLICATION_IDENTIFIER.fullmatch(identifier):
+                raise InvalidInput("应用包名格式无效。")
     if not isinstance(data["tools"], dict) or not data["tools"].keys() <= {"codex", "unity-cli", "mcp", "pipeline"}:
         raise InvalidInput("工具清单无效。")
     for item in data["tools"].values():
@@ -108,6 +123,12 @@ def validate_task(data):
     label(data["unity"], 80)
 
 
+def validate_hook_activity(data):
+    """钩子运行记录复用信封的工作区和发生时间，数据只携带框架版本。"""
+    obj(data, ("framework",))
+    label(data["framework"], 80)
+
+
 def validate_issue(data):
     obj(data, ("code", "area", "title", "summary", "expected", "actual", "priority",
                "framework", "evidence", "source"), ("workaround", "version", "steps"))
@@ -135,6 +156,8 @@ def validate_event(value):
     key(value["id"], UUID)
     key(value["workspace"], UUID)
     int_range(value["observed_at"], 1, int(time.time()) + 86400)
-    kind = enum(value["kind"], ("snapshot", "usage", "issue", "task"))
-    {"snapshot": validate_snapshot, "usage": validate_usage, "issue": validate_issue, "task": validate_task}[kind](value["data"])
+    validators = {"snapshot": validate_snapshot, "usage": validate_usage, "issue": validate_issue,
+                  "task": validate_task, "hook_activity": validate_hook_activity}
+    kind = enum(value["kind"], validators)
+    validators[kind](value["data"])
     return value

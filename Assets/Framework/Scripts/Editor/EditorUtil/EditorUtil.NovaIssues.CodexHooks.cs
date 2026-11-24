@@ -16,7 +16,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
+using Log = NovaFramework.Runtime.Log;
+using LogTag = NovaFramework.Runtime.LogTag;
 
 namespace NovaFramework.Editor
 {
@@ -25,12 +26,16 @@ namespace NovaFramework.Editor
         internal static partial class NovaIssues
         {
             private const string c_CodexHookPath = ".codex/hooks.json";
+            private const string c_CodexAgentName = "nova_issues_agent";
             private const int c_CodexHookRetrySeconds = 30;
             private const string c_CodexGitUnavailable = "暂时无法核对工程的 Git 状态。";
             private const string c_CodexFeedbackTitle = "Nova 自动反馈机制";
-            private const string c_CodexFeedbackDescription = "欢迎启用 Nova 自动反馈机制，让游戏引擎组了解项目中遇到的框架问题和功能使用情况。\n"
+            private const string c_CodexFeedbackDescription = "欢迎启用 Nova 自动反馈机制，让游戏引擎组了解项目中遇到的框架问题和功能使用情况。"
+                + "启用反馈机制后，项目可以照常开发、构建和运行，请放心使用。\n"
                 + "感谢你帮助我们持续改进 Nova，让项目组遇到问题时能更及时地得到支持。";
             // 按旧版完整文案识别 Nova 原样生成的配置。
+            private const string c_PreviousAutomaticFeedbackDescription = "欢迎启用 Nova 自动反馈机制，让游戏引擎组了解项目中遇到的框架问题和功能使用情况。\n"
+                + "感谢你帮助我们持续改进 Nova，让项目组遇到问题时能更及时地得到支持。";
             private const string c_PreviousCodexFeedbackTitle = "Nova 使用反馈";
             private const string c_PreviousBriefCodexFeedbackDescription = "欢迎启用 Nova 使用反馈，让游戏引擎组了解项目中遇到的框架问题和 Nova 功能的使用情况。\n"
                 + "感谢你帮助我们持续改进 Nova，让项目组遇到问题时能更及时地得到支持。";
@@ -100,8 +105,10 @@ namespace NovaFramework.Editor
                     s_NextCodexHookAttempt = Now() + c_CodexHookRetrySeconds;
                 if (result.State == CodexHookPreparation.Updated)
                 {
-                    Debug.Log($"[{c_CodexFeedbackTitle}] {c_CodexFeedbackDescription}\n" +
-                              "在 Codex CLI 输入 /hooks，或在 ChatGPT 桌面 App 的 Codex 中点击 Review hooks，即可查看并决定是否启用。");
+                    Log.Debug(LogTag.Editor,
+                        $"[{c_CodexFeedbackTitle}] {c_CodexFeedbackDescription}\n" +
+                        "在工程目录启动 Codex CLI 后，输入 /hooks 查看。\n" +
+                        "在 ChatGPT 桌面 App 的 Codex 中打开同一个本地工程。若有「设置 → Hooks（钩子）」入口，可从这里查看。");
                 }
                 else if (result.Reason != null)
                 {
@@ -109,7 +116,7 @@ namespace NovaFramework.Editor
                     if (warning != s_CodexHookWarning)
                     {
                         s_CodexHookWarning = warning;
-                        Debug.LogWarning($"[{c_CodexFeedbackTitle}] Codex 授权入口尚未准备好。{warning}");
+                        Log.Warning(LogTag.Editor, $"[{c_CodexFeedbackTitle}] Codex 授权入口尚未准备好。{warning}");
                     }
                 }
             }
@@ -120,7 +127,7 @@ namespace NovaFramework.Editor
             {
                 string config = Path.Combine(project, c_CodexHookPath);
                 string configFolder = Path.GetDirectoryName(config);
-                string source = Path.Combine(framework, "Agents", "Tools", "nova_issues_agent.py");
+                string source = CodexAgentSource(framework);
                 if (!File.Exists(source))
                     return (CodexHookPreparation.Retry, "当前 Nova 包里的反馈脚本暂未就绪。");
                 if (IsLink(configFolder) || File.Exists(configFolder) || IsLink(config) || Directory.Exists(config))
@@ -149,7 +156,7 @@ namespace NovaFramework.Editor
                     string installedDescription = (definition["description"] as JValue)?.Value as string;
                     string installedTitle = installedDescription switch
                     {
-                        c_CodexFeedbackDescription => c_CodexFeedbackTitle,
+                        c_CodexFeedbackDescription or c_PreviousAutomaticFeedbackDescription => c_CodexFeedbackTitle,
                         c_PreviousBriefCodexFeedbackDescription or c_PreviousCodexFeedbackDescription => c_PreviousCodexFeedbackTitle,
                         c_InitialCodexFeedbackDescription => c_PreviousCodexFeedbackTitle + "（可选）",
                         _ => null
@@ -187,13 +194,76 @@ namespace NovaFramework.Editor
                 return (CodexHookPreparation.Updated, null);
             }
 
+            /// <summary>核对当前 Framework 需要的项目钩子和脚本，只上报准备状态。</summary>
+            private static string ObserveCodexHookStatus(string project, string folder, string framework)
+            {
+                string config = Path.Combine(project, c_CodexHookPath);
+                try
+                {
+                    if (IsLink(Path.GetDirectoryName(config)) || IsLink(config) || Directory.Exists(config) ||
+                        File.Exists(Path.GetDirectoryName(config)))
+                        return "incomplete";
+                    var file = new FileInfo(config);
+                    if (!file.Exists)
+                        return "pending";
+                    if (file.Length > 64 * 1024)
+                        return "incomplete";
+
+                    JToken value = JObject.Parse(File.ReadAllText(config))["hooks"];
+                    if (value == null)
+                        return "pending";
+                    if (value is not JObject hooks)
+                        return "incomplete";
+                    bool hasNovaHook = hooks.Properties().SelectMany(entry => CodexHookGroups(entry.Value))
+                        .Where(group => group["hooks"] is JArray)
+                        .SelectMany(group => ((JArray)group["hooks"]).OfType<JObject>())
+                        .Any(handler => new[] { "command", "commandWindows" }.Any(key =>
+                            handler[key]?.Type == JTokenType.String && ((string)handler[key]).Contains(c_CodexAgentName)));
+                    if (!hasNovaHook)
+                        return "pending";
+
+                    byte[] script = File.ReadAllBytes(CodexAgentSource(framework));
+                    using var sha = SHA256.Create();
+                    string digest = Hex(sha.ComputeHash(script));
+                    var desired = (JObject)CodexHookConfiguration(folder, digest, c_CodexFeedbackDescription, c_CodexFeedbackTitle)["hooks"];
+                    foreach (var entry in desired.Properties())
+                    {
+                        var expectedGroup = (JObject)entry.Value[0];
+                        if (!CodexHookGroups(hooks[entry.Name]).Any(group =>
+                            JToken.DeepEquals(group["matcher"], expectedGroup["matcher"]) && group["hooks"] is JArray handlers &&
+                            handlers.Any(handler => JToken.DeepEquals(handler, expectedGroup["hooks"][0]))))
+                            return "incomplete";
+                    }
+
+                    var agent = new FileInfo(CodexAgentPath(folder, digest));
+                    return !IsLink(agent.FullName) && agent.Exists && agent.Length == script.Length &&
+                        File.ReadAllBytes(agent.FullName).SequenceEqual(script) ? "complete" : "incomplete";
+                }
+                catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    return "incomplete";
+                }
+            }
+
+            /// <summary>枚举一个 Codex 事件中可读取的钩子组。</summary>
+            private static System.Collections.Generic.IEnumerable<JObject> CodexHookGroups(JToken value) =>
+                value is JArray groups ? groups.OfType<JObject>() : Enumerable.Empty<JObject>();
+
+            /// <summary>定位实际解析的 Framework 包内的反馈脚本。</summary>
+            private static string CodexAgentSource(string framework) =>
+                Path.Combine(framework, "Agents", "Tools", c_CodexAgentName + ".py");
+
             /// <summary>按脚本内容取得本机路径，内容不变时沿用原定义，脚本变化时交给 Codex 重新审查。</summary>
             private static string CodexAgentPath(string folder, string digest) =>
-                Path.Combine(folder, $"nova_issues_agent-{digest}.py");
+                Path.Combine(folder, $"{c_CodexAgentName}-{digest}.py");
 
             /// <summary>生成 Codex 支持的钩子和审查标题，事件与本地反馈脚本的处理入口对应。</summary>
             private static string CodexHookDefinition(string folder, string digest,
-                string description = c_CodexFeedbackDescription, string startupTitle = c_CodexFeedbackTitle)
+                string description = c_CodexFeedbackDescription, string startupTitle = c_CodexFeedbackTitle) =>
+                CodexHookConfiguration(folder, digest, description, startupTitle).ToString(Formatting.Indented) + System.Environment.NewLine;
+
+            /// <summary>供配置生成和状态核对共用当前框架的钩子定义。</summary>
+            private static JObject CodexHookConfiguration(string folder, string digest, string description, string startupTitle)
             {
                 string agent = CodexAgentPath(folder, digest);
                 string shellPath = "'" + agent.Replace("'", "'\"'\"'") + "'";
@@ -216,8 +286,7 @@ namespace NovaFramework.Editor
                     hooks[eventName] = new JArray(group);
                 }
 
-                return new JObject { ["description"] = description, ["hooks"] = hooks }
-                    .ToString(Formatting.Indented) + System.Environment.NewLine;
+                return new JObject { ["description"] = description, ["hooks"] = hooks };
             }
 
             /// <summary>优先沿用现有 Git 忽略规则，否则仅在本机的仓库排除文件中添加精确路径。</summary>

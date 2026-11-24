@@ -130,8 +130,12 @@ tbody tr:hover { background: #f7faf9; }
 td.mono, code, .token { font-family: ui-monospace, Menlo, Consolas, monospace; }
 td.mono { font-size: .84rem; }
 .pill { display: inline-block; padding: .1rem .48rem; white-space: nowrap; border-radius: 5px; color: #245951; background: var(--tint); font-size: .84rem; font-weight: 620; }
+.pill.success { color: #155939; background: #dff3e7; }
 .pill.urgent { color: #8b181c; background: #fce9e8; }
 .pill.warning { color: #784705; background: #fff0ca; }
+.project-team { display: flex; align-items: baseline; flex-wrap: wrap; gap: .22rem .55rem; }
+.project-team button { font-size: .86rem; white-space: nowrap; }
+.package-list td:nth-child(n+2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .muted, .empty { color: var(--muted); }
 .empty { padding: .5rem .15rem; margin: 0; }
 .error { border: 1px solid #e4aaa4; border-radius: 7px; background: #fff2f0; color: #812623; padding: .65rem .8rem; }

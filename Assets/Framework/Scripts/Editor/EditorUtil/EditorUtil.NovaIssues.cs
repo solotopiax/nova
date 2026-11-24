@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SqlCipher4Unity3D;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Compilation;
 using UnityEngine;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
@@ -44,6 +45,7 @@ namespace NovaFramework.Editor
             private const string c_EnvironmentReportKey = "editor_environment_report";
             private static readonly Regex s_Key = new(@"\A[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\z");
             private static readonly Regex s_Version = new(@"\A[a-zA-Z0-9][a-zA-Z0-9.+-]{0,79}\z");
+            private static readonly Regex s_ApplicationIdentifier = new(@"\A[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)+\z");
             private static readonly Regex s_Private = new(@"(?:https?|ssh|file)://|[A-Z]:[\\/]|/(?:Users|home|private|tmp)/|\b(?:api[_-]?key|access[_-]?token|password|secret)\s*[:=]|\bbearer\s|PRIVATE KEY", RegexOptions.IgnoreCase);
             private static readonly HttpClient s_Client = new(new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false })
             {
@@ -142,6 +144,7 @@ namespace NovaFramework.Editor
                     ["tools"] = tools,
                     ["enabled"] = new JArray(),
                     ["platform"] = EditorUserBuildSettings.activeBuildTarget.ToString(),
+                    ["application_identifiers"] = CaptureApplicationIdentifiers(),
                     ["sdk_attempt"] = s_SdkAttempt ?? string.Empty
                 };
                 if (Config.WorkspaceActive.TryGetPersistedConfigMaster(out var master, out _, out _, out _))
@@ -154,6 +157,23 @@ namespace NovaFramework.Editor
                         .Concat(master.EnabledKits ?? new System.Collections.Generic.List<string>()).Where(IsKey).Take(100));
                 }
                 return result;
+            }
+
+            /// <summary>读取 Android、iOS 和当前其他构建平台的 Player Settings 应用标识。</summary>
+            private static JObject CaptureApplicationIdentifiers()
+            {
+                var identifiers = new JObject();
+                var activeGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
+                foreach (var group in new[] { BuildTargetGroup.Android, BuildTargetGroup.iOS, activeGroup }.Distinct())
+                {
+                    if (group == BuildTargetGroup.Unknown)
+                        continue;
+                    var target = NamedBuildTarget.FromBuildTargetGroup(group);
+                    string identifier = PlayerSettings.GetApplicationIdentifier(target);
+                    if (identifier != null && identifier.Length <= 255 && s_ApplicationIdentifier.IsMatch(identifier))
+                        identifiers[group == BuildTargetGroup.iOS ? "iOS" : group.ToString()] = identifier;
+                }
+                return identifiers;
             }
 
             /// <summary>从已有预加载日志提取阶段事件，不保留完整日志。</summary>
@@ -239,6 +259,12 @@ namespace NovaFramework.Editor
                         db.Execute("CREATE INDEX IF NOT EXISTS ready_reports ON outbox(accepted, ready_at)");
                         while (s_Pending.TryPeek(out JObject input))
                         {
+                            if ((string)input["event"] == "snapshot")
+                            {
+                                input["codex_hooks"] = ObserveCodexHookStatus(s_Project, Path.GetDirectoryName(storage.Path),
+                                    (string)input["framework_root"]);
+                                input["git_user_name"] = ReadGitUserName(s_Project);
+                            }
                             db.RunInTransaction(() => Record(db, input));
                             s_Pending.TryDequeue(out _);
                         }
@@ -367,10 +393,13 @@ namespace NovaFramework.Editor
             private static void RecordSnapshot(SQLiteConnection db, JObject input, string workspace, string projectId, long stamp)
             {
                 var data = new JObject();
-                foreach (string field in new[] { "framework", "unity", "packages", "tools", "enabled", "platform", "channel", "mode", "coordinate_source" })
+                foreach (string field in new[] { "framework", "unity", "packages", "tools", "enabled", "platform", "channel", "mode", "coordinate_source",
+                             "application_identifiers", "codex_hooks" })
                 {
                     if (input[field] != null) data[field] = input[field].DeepClone();
                 }
+                string gitName = (string)input["git_user_name"];
+                if (gitName != null) data["git_user_name"] = gitName;
                 var source = new JObject { ["at"] = stamp, ["sdk_attempt"] = input["sdk_attempt"].DeepClone() };
                 foreach (var field in data.Properties()) source[field.Name] = field.Value.DeepClone();
                 SaveState(db, "editor", source);
@@ -380,7 +409,12 @@ namespace NovaFramework.Editor
 
                 // 按基础信息和本地自然日去重，工具状态变化仍保留在本地观察记录中。
                 JObject previous = ReadState(db, c_EnvironmentReportKey) as JObject;
-                string signature = EventId(projectId, (string)data["framework"], (string)data["unity"]);
+                var identifiers = (JObject)data["application_identifiers"];
+                string appSignature = string.Join("|", identifiers.Properties().OrderBy(field => field.Name, StringComparer.Ordinal)
+                    .Select(field => field.Name + "=" + (string)field.Value));
+                string[] signatureParts = { projectId, (string)data["framework"], (string)data["unity"], appSignature, (string)data["codex_hooks"] };
+                if (gitName != null) signatureParts = signatureParts.Append(gitName).ToArray();
+                string signature = EventId(signatureParts);
                 string day = LocalDay(stamp);
                 bool compiledToday = (string)input["compilation_day"] == day;
                 if ((string)previous?["hash"] != signature || compiledToday && (string)previous?["day"] != day)
@@ -456,7 +490,10 @@ namespace NovaFramework.Editor
             private static void SendPending(SQLiteConnection db)
             {
                 // 与 Python Agent 的待发查询一致，旧版缺少回执的自动入口遗漏保留在本机。
-                var reports = db.Query<PendingReport>(@"SELECT id AS Id,payload AS Payload,attempts AS Attempts FROM outbox
+                var reports = db.Query<PendingReport>(@"SELECT id AS Id,payload AS Payload,attempts AS Attempts,json_extract(payload,'$.kind') AS Kind,
+                    COALESCE(json_type(payload,'$.data.codex_hooks'), json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS HasProjectDetails,
+                    json_type(payload,'$.data.git_user_name') IS NOT NULL AS HasGitUserName
+                    FROM outbox
                     WHERE accepted IS NULL AND ready_at<=? AND json_extract(payload,'$.kind')!='task'
                     AND (COALESCE(json_extract(payload,'$.data.source'),'')!='codex'
                          OR COALESCE(json_extract(payload,'$.data.code'),'') NOT GLOB 'missing-nova-route.*'
@@ -470,14 +507,18 @@ namespace NovaFramework.Editor
                 bool ready = (string)health?["service"] == "nova-issues-server" && (int?)health["protocol"] == 1 && (bool?)health["automatic_reporting"] == true;
                 foreach (var report in reports)
                 {
-                    JObject receipt = ready ? Request(HttpMethod.Post, "/api/v1/auto-reports", (string)project["id"], token,
+                    bool needsUpgrade = (report.Kind == "hook_activity" && (bool?)health?["hook_activity"] != true) ||
+                        (report.HasProjectDetails != 0 && (bool?)health?["project_snapshot_details"] != true) ||
+                        (report.HasGitUserName != 0 && (bool?)health?["git_user_name_reporting"] != true);
+                    JObject receipt = ready && !needsUpgrade ? Request(HttpMethod.Post, "/api/v1/auto-reports", (string)project["id"], token,
                         new JObject { ["name"] = project["name"].DeepClone(), ["report"] = JObject.Parse(report.Payload) }) : null;
                     long stamp = Now();
                     if ((bool?)receipt?["accepted"] == true && (string)receipt["id"] == report.Id)
                         db.Execute("UPDATE outbox SET accepted=?,issue_id=?,error=NULL WHERE id=?", stamp, (long?)receipt["issue_id"], report.Id);
                     else
                         db.Execute("UPDATE outbox SET attempts=attempts+1,error=?,ready_at=? WHERE id=? AND accepted IS NULL",
-                            ready ? "transport" : "service-unavailable", stamp + Math.Min(300, 1L << Math.Min(report.Attempts + 1, 9)), report.Id);
+                            !ready ? "service-unavailable" : needsUpgrade ? "server-upgrade-required" : "transport",
+                            stamp + Math.Min(300, 1L << Math.Min(report.Attempts + 1, 9)), report.Id);
                 }
                 db.Execute("DELETE FROM outbox WHERE accepted IS NOT NULL AND accepted<?", Now() - 30 * 86400);
             }
@@ -508,7 +549,10 @@ namespace NovaFramework.Editor
                 public PendingReport() { }
                 public string Id { get; set; }
                 public string Payload { get; set; }
+                public string Kind { get; set; }
                 public int Attempts { get; set; }
+                public int HasProjectDetails { get; set; }
+                public int HasGitUserName { get; set; }
             }
 
             /// <summary>按同一格式生成 Nova 用量记录。</summary>
@@ -538,9 +582,17 @@ namespace NovaFramework.Editor
             /// <summary>验证包、回执和模块标识。</summary>
             private static bool IsKey(string value) => value != null && s_Key.IsMatch(value);
 
-            /// <summary>只保留可用于维护台显示的项目名。</summary>
-            private static string SafeName(string value) => !string.IsNullOrWhiteSpace(value) && value.Length <= 100 &&
-                !s_Private.IsMatch(value) && !value.Any(char.IsControl) ? value.Trim() : "Nova 项目";
+            /// <summary>读取当前工程生效的 Git 用户名，供维护台辨认上报来源。</summary>
+            private static string ReadGitUserName(string project)
+            {
+                var result = CodexGit(project, "config --get user.name");
+                return result.Success ? SafeName(result.Stdout.Trim(), null) : null;
+            }
+
+            /// <summary>只保留可用于维护台显示的名称，缺失时返回调用方指定的默认值。</summary>
+            private static string SafeName(string value, string fallback = "Nova 项目") =>
+                !string.IsNullOrWhiteSpace(value) && value.Length <= 100 && !s_Private.IsMatch(value) &&
+                !value.Any(char.IsControl) ? value.Trim() : fallback;
 
             /// <summary>从稳定的观察或回执标识生成与 Python Agent 一致的报告编号。</summary>
             private static string EventId(params string[] parts)

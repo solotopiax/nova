@@ -19,6 +19,11 @@
       "when": "升级前后只读冻结或核验 current/target Framework direct entry、版本、来源和可解析依赖闭包；registry 凭据不得输出"
     },
     {
+      "kind": "workspace-inspection",
+      "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",
+      "when": "只读对照升级前后的 Nova 自动反馈定义和本机脚本，在首次准备或定义更新后给出审查入口"
+    },
+    {
       "kind": "cli",
       "entry": "python3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" doctor --project-root <projectRoot>",
       "when": "新版本 Resolve、编译和自动投影稳定后，以新解析 catalog.json 的实际 Skill 数量核验 .agents/skills 受管状态，不手工 sync 或 reconcile"
@@ -129,6 +134,7 @@
     "用户对唯一同源目标及其外部 UPM diff 的明确确认，以及 host 提供的提交 receipt（如有）",
     "Resolve 与 domain reload 稳定后的 direct manifest、packages-lock 和 resolved Framework package 精确版本/来源，以及 Unity 编译结果",
     "目标 Framework 的 catalog.json 实际 Skill 数量和 nova_skills.py doctor 对 .agents/skills 的 clean 结果；数量不硬编码",
+    "目标包提供 Nova 自动反馈时，记录本机准备状态。首次准备或定义更新在同一 Codex 对话的升级结果中提示审查入口，授权由成员在 Codex 完成",
     "同一项目重连后 MCP tools/list 中 nova_project_action 的可见性，及缺失时未使用它或任意 C# 绕过的事实",
     "未执行 Config、缓存清理、回滚、Git、发布、外部部署或凭据输出的边界说明",
     "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。",

@@ -19,6 +19,7 @@ from unittest.mock import patch
 import uuid
 
 from database import Database
+from registries import APPLOVIN_REGISTRY, OPENUPM_REGISTRY, REGISTRIES, UNITY_REGISTRY
 from serve import ACCOUNTS, NovaIssuesServer, backup, password_hash
 
 
@@ -294,7 +295,7 @@ class IssuesTest(unittest.TestCase):
             "command": f'python3 -B "{cli}" --project-root "{root}" execute --confirmation-token fixture-private-arg',
         }, tool_response={"exit_code": 1})
         with agent.ledger(folder) as db, patch.object(agent, "snapshot", side_effect=AssertionError("hook rebuilt inventory")):
-            self.assertFalse(agent.handle_hook(root, db, self.event("SessionStart")))
+            self.assertTrue(agent.handle_hook(root, db, self.event("SessionStart")))
             for event in (prompt, prompt, execute, execute, read_skill,
                           read_skill | {"tool_use_id": "skill-2"}, cli_tool):
                 self.assertTrue(agent.relevant_hook(event))
@@ -309,7 +310,7 @@ class IssuesTest(unittest.TestCase):
             agent.handle_hook(root, db, self.event("Stop"))
             reports = [json.loads(row["payload"]) for row in db.execute("SELECT payload FROM outbox")]
             self.assertEqual(db.execute("SELECT COUNT(*) FROM turns").fetchone()[0], 2)
-            self.assertEqual([item["kind"] for item in reports], ["usage"] * 5)
+            self.assertCountEqual([item["kind"] for item in reports], ["hook_activity"] + ["usage"] * 5)
             self.assertNotIn("fixture-private", json.dumps(reports))
             self.assertNotIn(str(root), json.dumps(reports))
             # 升级前已排队的任务基础信息不再发送。
@@ -321,7 +322,7 @@ class IssuesTest(unittest.TestCase):
         }):
             agent.work(root, folder, "", single=True)
         with agent.ledger(folder) as db:
-            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 5)
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 6)
             db.execute("UPDATE outbox SET ready_at=0")
         with patch.object(agent, "REPORT_SERVER", self.url):
             agent.work(root, folder, "", single=True)
@@ -336,6 +337,74 @@ class IssuesTest(unittest.TestCase):
         detail = self.http(f"/api/maintainer/projects/{project}", headers=session)[1]
         self.assertEqual(detail["tasks"], [])
         self.assertEqual(detail["snapshots"], [])
+
+    def test_hook_activity_is_immediate_and_hourly_with_compatible_retry(self):
+        root, folder = self.fixture_project()
+        first_run = int(time.time()) - 7200
+        with agent.ledger(folder) as db:
+            with patch.object(agent, "now", return_value=first_run):
+                self.assertTrue(agent.handle_hook(root, db, self.event("SessionStart")))
+            with patch.object(agent, "now", return_value=first_run + 3599):
+                self.assertFalse(agent.handle_hook(root, db, self.event("UserPromptSubmit", prompt="private task prompt")))
+
+        def record(stamp):
+            with agent.ledger(folder) as db:
+                return agent.report_hook_activity(db, "0.7.13", stamp)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            self.assertCountEqual(pool.map(record, (first_run + 3600, first_run + 3601)), [True, False])
+
+        with agent.ledger(folder) as db:
+            reports = [json.loads(row["payload"]) for row in db.execute("SELECT payload FROM outbox ORDER BY rowid")]
+            self.assertEqual([item["kind"] for item in reports], ["hook_activity", "hook_activity"])
+            self.assertEqual([item["data"] for item in reports], [{"framework": "0.7.13"}] * 2)
+            self.assertEqual(reports[0]["observed_at"], first_run)
+            self.assertIn(reports[1]["observed_at"], (first_run + 3600, first_run + 3601))
+            workspace = agent.state(db, "workspace")
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            with patch.object(agent, "automatic_report_health", return_value={"automatic_reporting": True}):
+                agent.work(root, folder, "", single=True)
+            with agent.ledger(folder) as db:
+                pending = db.execute("SELECT id,accepted,error FROM outbox ORDER BY rowid").fetchall()
+                self.assertEqual([tuple(row) for row in pending], [
+                    (report["id"], None, "server-upgrade-required") for report in reports
+                ])
+                db.execute("UPDATE outbox SET ready_at=0")
+            agent.work(root, folder, "", single=True)
+
+        project = "auto-1234567890abcdef1234567890abcdef"
+        self.assertEqual(self.database.project_detail(project)["hook_activity"], [{
+            "workspace": workspace, "last_run": reports[1]["observed_at"], "framework": "0.7.13",
+        }])
+        records = self.database.overview(1)
+        self.assertEqual(next(row for row in records["projects"] if row["id"] == project)["last_hook_run"], reports[1]["observed_at"])
+        self.assertEqual(records["workspaces"], [])
+        self.assertEqual(records["usage"], [])
+
+    def test_hook_activity_uses_observed_time_instead_of_delivery_order(self):
+        self.assertTrue(self.http("/health")[1]["hook_activity"])
+        recent = int(time.time()) - 30
+        workspace = uuid.uuid4().hex
+        another_workspace = uuid.uuid4().hex
+
+        def run(workspace_id, observed_at, framework):
+            return {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace_id,
+                    "observed_at": observed_at, "kind": "hook_activity", "data": {"framework": framework}}
+
+        self.assertEqual(self.ingest(run(workspace, recent, "0.7.15"))[0], 201)
+        self.assertEqual(self.ingest(run(workspace, recent - 7200, "0.7.14"))[0], 201)
+        older = run(another_workspace, recent - 3600, "0.7.14")
+        self.assertEqual(self.ingest(older | {"data": older["data"] | {"prompt": "private"}})[0], 400)
+        self.assertEqual(self.ingest(older)[0], 201)
+        self.assertEqual(self.ingest(older)[0], 200)
+        session = self.login()
+        overview = self.http("/api/maintainer/overview?days=1", headers=session)[1]
+        self.assertEqual(overview["projects"][0]["last_hook_run"], recent)
+        detail = self.http("/api/maintainer/projects/project-a", headers=session)[1]
+        self.assertEqual(detail["hook_activity"], [
+            {"workspace": workspace, "last_run": recent, "framework": "0.7.15"},
+            {"workspace": another_workspace, "last_run": recent - 3600, "framework": "0.7.14"},
+        ])
 
     def test_editor_environment_reports_once_per_local_compile_day_or_changed_versions(self):
         """跨日但未编译时保留本地观察，版本变化和首次编译进入可重试队列。"""
@@ -378,6 +447,198 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual(overview["workspaces"][0]["unity"], "6000.4.3f1")
         project = self.database.project_detail(overview["workspaces"][0]["project_id"])
         self.assertEqual(len(project["snapshots"]), 5)
+
+    def test_environment_details_update_and_wait_for_compatible_service(self):
+        root, folder = self.fixture_project()
+        packages = [{"id": agent.FRAMEWORK, "version": "0.7.13", "source": "registry"}]
+        snapshot = {"event": "snapshot", "packages": packages, "tools": {}, "codex_hooks": "pending",
+                    "application_identifiers": {"Android": "com.fixture.game"}}
+        with agent.ledger(folder) as db:
+            agent.editor_event(root, db, snapshot)
+            agent.editor_event(root, db, snapshot)
+            agent.editor_event(root, db, snapshot | {"codex_hooks": "incomplete"})
+            agent.editor_event(root, db, snapshot | {"codex_hooks": "complete"})
+            agent.editor_event(root, db, snapshot | {"codex_hooks": "complete",
+                               "application_identifiers": {"Android": "com.fixture.newgame", "iOS": "com.fixture.ios"}})
+
+        old_health = {"automatic_reporting": True, "codex_telemetry": True}
+        with patch.object(agent, "automatic_report_health", return_value=old_health), patch.object(agent, "deliver") as send:
+            agent.work(root, folder, "", single=True)
+            send.assert_not_called()
+        with agent.ledger(folder) as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 4)
+            db.execute("UPDATE outbox SET ready_at=0")
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
+
+        project_id = self.database.overview(14)["workspaces"][0]["project_id"]
+        snapshots = self.database.project_detail(project_id)["snapshots"]
+        self.assertEqual([item["data"]["codex_hooks"] for item in snapshots], ["complete", "complete", "incomplete", "pending"])
+        self.assertEqual(snapshots[0]["data"]["application_identifiers"], {"Android": "com.fixture.newgame", "iOS": "com.fixture.ios"})
+
+    def test_git_name_follows_workspace_configuration_and_waits_for_support(self):
+        """工程名覆盖全局名，改名和清除名称都会刷新环境快照。"""
+        root, folder = self.fixture_project()
+        global_config = self.base / "user.gitconfig"
+        global_config.write_text("[user]\n\tname = 全局配置名\n", encoding="utf-8")
+        snapshot = {"event": "snapshot", "packages": [], "tools": {}}
+        started = int(time.time()) - 10
+
+        def observe(db, seconds):
+            with patch.object(agent, "now", return_value=started + seconds):
+                agent.editor_event(root, db, snapshot)
+
+        with patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": str(global_config), "GIT_CONFIG_NOSYSTEM": "1"}):
+            with agent.ledger(folder) as db:
+                observe(db, 0)
+                git(root, "config", "--local", "user.name", "工程配置名")
+                git(root, "config", "--local", "user.email", "fixture@example.test")
+                observe(db, 1)
+                observe(db, 2)
+                git(root, "config", "--local", "user.name", "新的配置名")
+                observe(db, 3)
+                git(root, "config", "--local", "--unset", "user.name")
+                global_config.write_text("", encoding="utf-8")
+                observe(db, 4)
+                payloads = [row[0] for row in db.execute("SELECT payload FROM outbox ORDER BY rowid")]
+                self.assertEqual([json.loads(row)["data"].get("git_user_name") for row in payloads],
+                                 ["全局配置名", "工程配置名", "新的配置名", None])
+                self.assertTrue(all("fixture@example.test" not in row for row in payloads))
+
+            old_health = {"automatic_reporting": True, "codex_telemetry": True, "project_snapshot_details": True}
+            with patch.object(agent, "REPORT_SERVER", self.url), patch.object(agent, "automatic_report_health", return_value=old_health):
+                agent.work(root, folder, "", single=True)
+            with agent.ledger(folder) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 3)
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE accepted IS NOT NULL").fetchone()[0], 1)
+                db.execute("UPDATE outbox SET ready_at=0")
+            with patch.object(agent, "REPORT_SERVER", self.url):
+                agent.work(root, folder, "", single=True)
+
+        project = self.database.overview(14)["workspaces"][0]["project_id"]
+        snapshots = self.http(f"/api/maintainer/projects/{project}", headers=self.login())[1]["snapshots"]
+        self.assertEqual([item["data"].get("git_user_name") for item in snapshots],
+                         [None, "新的配置名", "工程配置名", "全局配置名"])
+
+    def test_project_package_versions_and_older_snapshots(self):
+        public, internal, third_party = "com.solotopia.framework", "com.fixture.internal", "com.thirdparty.sdk"
+        stamp = int(time.time())
+        report = {"version": 1, "id": uuid.uuid4().hex, "workspace": uuid.uuid4().hex,
+                  "kind": "snapshot", "observed_at": stamp,
+                  "data": {"framework": "0.7.14", "unity": "6000.4.2f1", "tools": {}, "coverage": {},
+                           "packages": [{"id": name, "version": "1.0.0", "source": "registry", "evidence": "registered"}
+                                        for name in (third_party, internal, public)]}}
+        rich = report | {"data": report["data"] | {"codex_hooks": "complete",
+                                                   "application_identifiers": {"Android": "com.fixture.game"}}}
+        self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"codex_hooks": "authorized"}})[0], 400)
+        self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"git_user_name": "invalid\nname"}})[0], 400)
+        self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"application_identifiers": {"Android": "/Users/private"}}})[0], 400)
+        self.assertEqual(self.ingest(rich)[0], 201)
+        legacy = report | {"id": uuid.uuid4().hex, "observed_at": stamp - 1}
+        self.assertEqual(self.ingest(legacy)[0], 201)
+        session = self.login()
+        detail = self.http("/api/maintainer/projects/project-a", headers=session)[1]
+        self.assertEqual(detail["snapshots"][0]["data"]["codex_hooks"], "complete")
+        self.assertNotIn("codex_hooks", detail["snapshots"][1]["data"])
+
+        catalogs = {REGISTRIES["public"]: {public: "2.0.0"}, REGISTRIES["internal"]: {internal: "1.0.0"}}
+        route = "/api/maintainer/projects/project-a/package-versions"
+        self.assertEqual(self.http(route)[0], 401)
+        with patch("registries.fetch_catalog", side_effect=catalogs.get) as fetch:
+            expected = {public: {"registry": "public", "latest": "2.0.0"},
+                        internal: {"registry": "internal", "latest": "1.0.0"}}
+            self.assertEqual(self.http(route, headers=session)[1]["packages"], expected)
+            self.assertEqual(self.http(route, headers=session)[1]["packages"], expected)
+            self.assertEqual(fetch.call_count, 2)
+            self.server.registry_versions.expires["internal"] = 0
+            catalogs[REGISTRIES["internal"]] = None
+            expected[internal]["latest"] = None
+            self.assertEqual(self.http(route, headers=session)[1]["packages"], expected)
+
+    def test_third_party_versions_match_the_selected_snapshot_unity(self):
+        unity_package = "com.unity.fixture"
+        applovin = "com.applovin.mediation.adapters.fixture"
+        openupm = "com.fixture.public-tool"
+        builtin = "com.unity.ugui"
+        local = "com.unity.embedded-tool"
+        unknown = "com.fixture.project-local"
+        missing = "com.unity.unrecognized-version"
+        packages = [{"id": name, "version": version, "source": source, "evidence": "registered"}
+                    for name, version, source in ((unity_package, "1.9.0", "registry"), (applovin, "1.1.0-beta.2", "registry"),
+                                                  (openupm, "1.0.0", "registry"), (builtin, "2.0.0", "builtin"),
+                                                  (local, "1.0.0", "embedded"), (unknown, "1.0.0", "registry"),
+                                                  (missing, "5.0.0", "registry"))]
+        snapshots = {}
+        for unity in ("6000.4.2f1", "6000.4.2b9", "2022.3.62f1"):
+            identifier = uuid.uuid4().hex
+            event = {"version": 1, "id": identifier, "workspace": uuid.uuid4().hex, "kind": "snapshot",
+                     "observed_at": int(time.time()), "data": {"framework": "0.7.14", "unity": unity,
+                     "tools": {}, "coverage": {}, "packages": packages}}
+            self.assertEqual(self.ingest(event)[0], 201)
+            snapshots[unity] = identifier
+
+        def manifest(name, releases):
+            return {"name": name, "versions": releases}
+
+        metadata = {
+            (UNITY_REGISTRY, "/" + unity_package): manifest(unity_package, {
+                "1.9.0": {"unity": "2022.3"}, "1.10.0": {"unity": "2022.3", "unityRelease": "62f1"},
+                "2.0.0": {"unity": "6000.4", "unityRelease": "2f1"},
+                "2.1.0": {"unity": "6000.4", "unityRelease": "3f1"}, "3.0.0-exp.1": {},
+            }),
+            (UNITY_REGISTRY, "/" + missing): manifest(missing, {"6.0.0": {}}),
+            (APPLOVIN_REGISTRY, "/" + applovin): manifest(applovin, {"1.1.0-beta.2": {}, "1.1.0-beta.10": {}}),
+            (OPENUPM_REGISTRY, "/-/all"): {openupm: {"dist-tags": {"latest": "1.0.1"}}},
+            (OPENUPM_REGISTRY, "/" + openupm): manifest(openupm, {"1.0.0": {}, "1.0.1": {}}),
+        }
+        path = "/api/maintainer/projects/project-a"
+        session = self.login()
+        detail = self.http(path, headers=session)[1]
+        self.assertEqual({snapshot["id"] for snapshot in detail["snapshots"]}, set(snapshots.values()))
+        with patch("registries.registry_json", side_effect=lambda url, route: metadata.get((url, route))) as fetch:
+            for unity, latest in (("6000.4.2f1", "2.0.0"), ("6000.4.2b9", "1.10.0"), ("2022.3.62f1", "1.10.0")):
+                url = f"{path}/package-versions?snapshot={snapshots[unity]}"
+                status, response, _ = self.http(url, headers=session)
+                self.assertEqual(status, 200, response)
+                self.assertFalse(response["pending"])
+                self.assertEqual(response["packages"], {
+                    unity_package: {"registry": "third-party", "latest": latest},
+                    applovin: {"registry": "third-party", "latest": "1.1.0-beta.10"},
+                    openupm: {"registry": "third-party", "latest": "1.0.1"},
+                })
+            self.assertEqual(self.http(url.replace("/project-a/", "/another-project/"), headers=session)[0], 404)
+            self.assertCountEqual([call.args for call in fetch.call_args_list],
+                                  [*metadata, *((origin, "/-/all") for origin in REGISTRIES.values())])
+
+    def test_team_edit_survives_upgrade_and_automatic_reports(self):
+        project = "auto-" + uuid.uuid4().hex
+        token = "a" * 64
+        event = self.sample_issue()
+        credentials = {"X-Nova-Project": project, "Authorization": "Bearer " + token}
+        report = {"name": "示例项目", "report": event}
+        self.assertEqual(self.http("/api/v1/auto-reports", report, credentials)[0], 201)
+        self.assertEqual(self.database.project_detail(project)["project"]["team"], "")
+        self.database.register("manual", "手动项目", "自动登记")
+        with self.database.connect() as db:
+            db.execute("UPDATE projects SET team='自动登记' WHERE id=?", (project,))
+            db.execute("PRAGMA user_version=1")
+        reopened = Database(self.database.path)
+        self.assertEqual(reopened.project_detail(project)["project"]["team"], "")
+        self.assertEqual(reopened.project_detail("manual")["project"]["team"], "自动登记")
+
+        route = f"/api/maintainer/projects/{project}/team"
+        update = {"team": "  玩法组  ", "previous_team": ""}
+        self.assertEqual(self.http(route, update, credentials)[0], 401)
+        session = self.login()
+        self.assertEqual(self.http(route, update, session | {"X-Nova-CSRF": ""})[0], 403)
+        self.assertEqual(self.http(route, update, session)[1]["team"], "玩法组")
+        self.assertEqual(self.http(route, update, session)[0], 200)
+        self.assertEqual(self.http(route, update | {"team": "其他组"}, session)[0], 409)
+
+        self.assertEqual(self.http("/api/v1/auto-reports", report | {"report": event | {"id": uuid.uuid4().hex}}, credentials)[0], 201)
+        latest = Database(self.database.path).project_detail(project)["project"]
+        self.assertEqual((latest["name"], latest["team"]), ("示例项目", "玩法组"))
+        self.assertEqual(self.http(route, {"team": "", "previous_team": "玩法组"}, session)[1]["team"], "")
 
     def test_sdk_wait_requires_a_live_editor_observation(self):
         root, folder = self.fixture_project()

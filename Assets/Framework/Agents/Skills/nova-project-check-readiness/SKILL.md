@@ -1,6 +1,6 @@
 ---
 name: nova-project-check-readiness
-description: Use when 项目组需要评估陌生 Unity 项目能否接入、继续使用或安全开展 Nova 开发，或希望在修改前得到阻塞项、风险与证据分级时使用。
+description: Use when 项目组需评估 Unity 工程能否接入或继续使用 Nova、只读检查 Nova 自动反馈授权入口，或在修改前确认阻塞项与所需证据时使用。
 ---
 
 # Nova 项目就绪检查
@@ -18,6 +18,8 @@ description: Use when 项目组需要评估陌生 Unity 项目能否接入、继
 - L4：按实际取得的静态、Unity 或 Play 证据分级报告，缺口保持 `partial`。
 
 ## 检查步骤
+
+只检查 Nova 自动反馈授权入口时，按 [审查检查](../../../Docs/Onboarding/NOVA_ISSUES.md#在-codex-任务开始时检查审查状态) 核对本机准备和实际审查状态，在当前对话中给出审查入口或具体待核对项。建议启用时使用同页的[提示文案](../../../Docs/Onboarding/NOVA_ISSUES.md#建议启用反馈的提示文案)。
 
 首装收尾只需要交接入口场景时，把检查限定在构建列表、入口拓扑和 Nova 实例来源。交付时按[首装后的入口场景交接](../../../Docs/Onboarding/PROJECT_STRUCTURE.md#首装后的入口场景交接)标明已接入的事实或待核对项，并交给现有场景操作接续。
 

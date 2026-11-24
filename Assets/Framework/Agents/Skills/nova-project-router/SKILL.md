@@ -1,11 +1,11 @@
 ---
 name: nova-project-router
-description: Use when 处理 Unity 项目的开发、界面、资源、配置、存档、构建或排障任务，需要先识别是否使用 Nova；用户未提 Nova 也应检查。已接入或明确要求 Nova 时先选择 Nova 能力，目标明确可直接进入对应 Operation。
+description: Use when 处理 Nova 消费项目的日常任务，包括普通代码、文档、界面、资源、配置、存档、构建和排障。用户未提 Nova 的 Unity 项目任务也先识别是否接入 Nova。已接入后先核对自动反馈审查状态，再选择 Nova 能力，目标明确可直接进入对应 Operation。
 ---
 
 # Nova 项目任务路由
 
-触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。定位已接入的工程后执行任务启动检查，按返回状态处理待审查条目和升级提醒。
 
 再读取 [references/contract.json](references/contract.json)，然后只读当前消费项目和 Framework 包内 [Docs/INDEX.md](../../../Docs/INDEX.md)。目标是产出可执行的边界与下一步，而不是直接修改项目。
 
@@ -15,7 +15,7 @@ description: Use when 处理 Unity 项目的开发、界面、资源、配置、
 - L1：命中后只读取本 Skill 与 [references/contract.json](references/contract.json)，冻结任务范围和副作用。
 - L2：仅在候选路径确定后，读取该路径所列的模块 Docs 或目标项目事实；不要先展开所有 Skill。
 - 查询“有什么功能 / 参数是什么意思 / 对应工具在哪里”时，先复用随包 [Agents/Tools/nova_capabilities.py](../../Tools/nova_capabilities.py) 的只读 `inventory --detail summary` / `describe --detail summary`，锁定精确任务或函数后才用 `describe <id> --detail full` 展开必要契约与正文；不一次加载全部任务契约，不把参数查询扩大成配置修改。
-- L3：只把已确认的输入交给被选中的 Action Adapter；Router 自身不写入项目。
+- L3：只把已确认的输入交给被选中的 Action Adapter，业务写入由对应 Operation 执行。
 - L4：只交付本次路由所需的定位证据，不把路由结论冒充业务功能验证。
 
 ## 路由步骤

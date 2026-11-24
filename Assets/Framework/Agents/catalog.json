@@ -163,7 +163,8 @@
         "diagnosis"
       ],
       "effects": [
-        "read"
+        "read",
+        "workspace-write"
       ],
       "minimumEvidence": "static"
     },

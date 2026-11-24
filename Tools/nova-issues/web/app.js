@@ -16,6 +16,11 @@ const coverageNames = {
   connected: "已连接", installed: "已安装", unavailable: "未获得证据", ready: "可用",
   static: "静态证据", interrupted: "已中断", pending: "待分析",
 };
+const hookStatuses = {
+  complete: ["已加全", "success", "当前 Nova 版本的项目钩子和脚本已就绪，可在 Codex 中审查授权。启用反馈机制后，项目可以照常开发、构建和运行，请放心使用。"],
+  pending: ["待追加", "warning", "工作区中还没有 Nova 自动反馈钩子。"],
+  incomplete: ["不完整", "urgent", "工作区的钩子或脚本与当前 Nova 版本要求不一致。"],
+};
 const titles = { overview: "总览", issues: "问题", projects: "项目与版本", usage: "使用记录" };
 const date = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" });
 let session = null;
@@ -142,13 +147,23 @@ function activeProject(project) {
   return project.last_seen && data.server_time - project.last_seen <= 86400;
 }
 
-function projectRows(projects) {
+function teamControl(project, returnToProject = false) {
+  const control = node("div", null, "project-team");
+  if (project.team) control.append(node("span", project.team));
+  const edit = button(project.team ? "修改" : "设置团队", () => editTeam(project, returnToProject), "link");
+  edit.setAttribute("aria-label", `修改 ${project.name} 的团队`);
+  control.append(edit);
+  return control;
+}
+
+function projectRows(projects, editable = false) {
   return table(["项目", "团队", "Framework", "Unity", "最近环境上报", "最近上报"], projects.map((project) => {
     const workspaces = data.workspaces.filter((item) => item.project_id === project.id);
     const versions = [...new Set(workspaces.map((item) => item.framework))].join("、");
     const unity = [...new Set(workspaces.map((item) => item.unity).filter(Boolean))].join("、");
     return [
-      button(project.name, () => openProject(project.id), "link"), project.team || "—", versions || "暂无", unity || "暂无",
+      button(project.name, () => openProject(project.id), "link"), editable ? teamControl(project) : project.team || "—",
+      versions || "暂无", unity || "暂无",
       stamp(Math.max(0, ...workspaces.map((item) => item.received_at))), stamp(project.last_seen),
     ];
   }));
@@ -267,7 +282,7 @@ function render() {
   const actions = byId("page-actions");
   actions.replaceChildren(button("刷新", () => refresh(true)));
   if (view === "projects") actions.append(button("添加项目", registerProject, "primary"));
-  const pages = { overview, issues: issuesPage, projects: () => panel(null, projectRows(data.projects)), usage: usagePage };
+  const pages = { overview, issues: issuesPage, projects: () => panel(null, projectRows(data.projects, true)), usage: usagePage };
   const content = pages[view]();
   byId("content").replaceChildren(...(Array.isArray(content) ? content : [content]));
 }
@@ -298,7 +313,11 @@ function openDialog(title, children) {
 
 function fields(entries) {
   const list = node("dl");
-  for (const [name, value] of entries) list.append(node("dt", name), node("dd", value || "—"));
+  for (const [name, value] of entries) {
+    const detail = node("dd");
+    detail.append(value || "—");
+    list.append(node("dt", name), detail);
+  }
   return list;
 }
 
@@ -348,24 +367,151 @@ function registerProject() {
   openDialog("添加项目", [group]);
 }
 
-function snapshotPanel(snapshot) {
+function editTeam(project, returnToProject) {
+  const form = node("form", null, "form-grid");
+  const [teamField, team] = textField("团队", "team", project.team);
+  const save = node("button", "保存", "primary");
+  const error = node("p", "", "error");
+  error.setAttribute("role", "alert");
+  error.hidden = true;
+  function finish() {
+    if (returnToProject) openProject(project.id);
+    else byId("details").close();
+  }
+  const actions = node("div", null, "actions");
+  actions.append(save, button("取消", finish));
+  form.append(teamField, error, actions);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    save.disabled = true;
+    try {
+      await request(`/api/maintainer/projects/${encodeURIComponent(project.id)}/team`, {
+        team: team.value, previous_team: project.team,
+      });
+      if (form.isConnected && byId("details").open) finish();
+      refresh(true);
+    } catch (failure) {
+      showError(error, failure.message);
+    } finally {
+      save.disabled = false;
+    }
+  });
+  openDialog(`修改团队 · ${project.name}`, [form]);
+  team.focus();
+  team.select();
+}
+
+function gamePackageNames(identifiers) {
+  if (!identifiers) return "待上报";
+  const platforms = new Map();
+  for (const [platform, identifier] of Object.entries(identifiers)) {
+    if (!platforms.has(identifier)) platforms.set(identifier, []);
+    platforms.get(identifier).push(platform);
+  }
+  return [...platforms].map(([identifier, targets]) => `${identifier}（${targets.join(" / ")}）`).join("、") || "未配置";
+}
+
+function hookStatus(snapshot, run) {
+  const status = hookStatuses[snapshot?.codex_hooks];
+  let current = "待上报";
+  if (status) {
+    const [text, tone, title] = status;
+    current = pill(text, tone);
+    current.title = title;
+  }
+  if (!run) return current;
+  const value = node("div");
+  value.append(current, node("div", `工作区最近运行 ${stamp(run.last_run)} · Framework ${run.framework}`, "muted"));
+  return value;
+}
+
+function packageTable(packages, versions) {
+  function rank(item) {
+    if (item.id.startsWith("com.solotopia.")) return 0;
+    return versions.get(item.id)?.registry === "internal" ? 1 : 2;
+  }
+  const ordered = packages.map((item) => {
+    const found = versions.get(item.id);
+    const latest = found?.latest;
+    const canCompare = latest && item.version && item.version !== "unknown";
+    const followsUnity = !latest && item.source === "builtin";
+    return { item, found, latest, followsUnity, isLatest: canCompare ? item.version === latest : null };
+  });
+  // 先显示查到最新版本的包，其次是随 Unity 的包，最后是未知版本。
+  ordered.sort((a, b) => Number(!a.latest) - Number(!b.latest) ||
+    Number(b.followsUnity) - Number(a.followsUnity) ||
+    Number(b.isLatest === false) - Number(a.isLatest === false) ||
+    rank(a.item) - rank(b.item) || a.item.id.localeCompare(b.item.id));
+  const list = table(["已发现包", "当前版本", "最新版本"], ordered.map(({ item, found, latest, followsUnity, isLatest }) => {
+    let current = node("span", item.version);
+    if (isLatest !== null) {
+      const status = found.registry === "third-party"
+        ? (isLatest ? "已是当前 Unity 的最新兼容版本" : "有与当前 Unity 兼容的新版")
+        : (isLatest ? "已是最新" : "与仓库最新版本不同");
+      current = pill(item.version, isLatest ? "success" : "warning");
+      current.title = status;
+      current.setAttribute("aria-label", `${item.version}，${status}`);
+    }
+    return [node("code", item.id), current, latest || (followsUnity ? "随 Unity" : "—")];
+  }));
+  list.classList.add("package-list");
+  return list;
+}
+
+function snapshotPanel(snapshot, path, hookRun) {
   const snap = snapshot.data;
   const section = node("details");
+  const packages = node("div");
+  let loading = false;
+  let complete = false;
+  section.addEventListener("toggle", async () => {
+    if (!section.open || loading || complete) return;
+    if (!snap.packages.length) {
+      packages.replaceChildren(packageTable(snap.packages, new Map()));
+      complete = true;
+      return;
+    }
+
+    loading = true;
+    const route = `${path}/package-versions?snapshot=${encodeURIComponent(snapshot.id)}`;
+    const checking = node("p", "正在检查更多包版本…", "empty");
+    packages.replaceChildren(node("p", "正在读取包版本…", "empty"));
+    try {
+      const attempts = 6;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        if (!section.isConnected || !section.open || !byId("details").open) return;
+        const { packages: versions, pending } = await request(route);
+        packages.replaceChildren(packageTable(snap.packages, new Map(Object.entries(versions))));
+        complete = !pending;
+        if (complete || !section.open || attempt === attempts - 1) return;
+        packages.append(checking);
+        await new Promise((resolve) => setTimeout(resolve, 700));
+      }
+    } catch {
+      if (!packages.querySelector("table")) packages.replaceChildren(packageTable(snap.packages, new Map()));
+    } finally {
+      checking.remove();
+      loading = false;
+    }
+  });
   section.append(node("summary", `${snap.framework} · ${snap.unity} · ${stamp(snapshot.received_at)}`),
-    fields([["工作区", snapshot.workspace], ["平台 / 渠道 / 模式", [snap.platform, snap.channel, snap.mode].filter(Boolean).join(" / ")],
-      ["配置证据", snap.coordinate_source], ["已启用", snap.enabled?.join("、")],
+    fields([["上报人", snap.git_user_name || "暂无 Git 名称"],
+      ["游戏包名", gamePackageNames(snap.application_identifiers)], ["钩子追加", hookStatus(snap, hookRun)],
+      ["已启用", snap.enabled?.join("、")],
       ...Object.entries(snap.coverage).map(([name, state]) => [`${name} 采集`, coverageNames[state] || state]),
-      ...Object.entries(snap.tools).map(([name, item]) => [name, `${item.version || ""} ${coverageNames[item.state] || item.state}`.trim()])]),
-    table(["已发现包", "版本", "来源", "证据"], snap.packages.map((item) =>
-      [node("code", item.id), item.version, item.source, item.evidence])));
+      ...Object.entries(snap.tools).filter(([name]) => name !== "mcp" && name !== "pipeline")
+        .map(([name, item]) => [name, `${item.version || ""} ${coverageNames[item.state] || item.state}`.trim()])]),
+    packages);
   return section;
 }
 
 async function openProject(id) {
-  openDialog("读取项目", []);
+  const loading = node("p", "正在读取项目…", "empty");
+  openDialog("读取项目", [loading]);
+  const path = `/api/maintainer/projects/${encodeURIComponent(id)}`;
   try {
-    const result = await request(`/api/maintainer/projects/${encodeURIComponent(id)}`);
-    if (!session || !byId("details").open) return;
+    const result = await request(path);
+    if (!session || !loading.isConnected || !byId("details").open) return;
     const rotate = button("轮换上报凭据", () => {
       const actions = node("div", null, "actions");
       const error = node("p", "", "error");
@@ -384,15 +530,23 @@ async function openProject(id) {
       actions.append(save, button("返回", () => openProject(id)));
       openDialog("轮换上报凭据", [node("p", "轮换后旧凭据立即失效。请在维护端更新该项目的接入配置。"), error, actions]);
     });
-    const snapshots = result.snapshots.map(snapshotPanel);
+    const hookRuns = new Map((result.hook_activity || []).map((run) => [run.workspace, run]));
+    const snapshots = result.snapshots.map((snapshot) => {
+      const run = hookRuns.get(snapshot.workspace);
+      hookRuns.delete(snapshot.workspace);
+      return snapshotPanel(snapshot, path, run);
+    });
     if (snapshots.length) snapshots[0].open = true;
     openDialog(result.project.name, [
-      fields([["标识", id], ["项目组", result.project.team], ["最近上报", stamp(result.project.last_seen)]]),
+      fields([["标识", id], ["团队", teamControl(result.project, true)],
+        ["最近上报", stamp(result.project.last_seen)]]),
       panel("环境快照", ...(snapshots.length ? snapshots : [node("p", "等待该项目的首次上报。", "empty")])),
       rotate,
     ]);
   } catch (failure) {
-    if (session && byId("details").open) openDialog("读取项目失败", [node("p", failure.message, "error")]);
+    if (session && loading.isConnected && byId("details").open) {
+      openDialog("读取项目失败", [node("p", failure.message, "error")]);
+    }
   }
 }
 

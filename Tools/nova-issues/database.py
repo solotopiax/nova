@@ -73,11 +73,18 @@ class Database:
         self.path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         with self.connect() as db:
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1):
+            if version not in (0, 1, 2):
                 raise ValueError("数据库版本不受支持。")
             db.execute("PRAGMA journal_mode=WAL")
             db.executescript(SCHEMA)
-            db.execute("PRAGMA user_version=1")
+            if version < 2:
+                db.execute("BEGIN IMMEDIATE")
+                if db.execute("PRAGMA user_version").fetchone()[0] < 2:
+                    db.execute("""
+                        UPDATE projects SET team='' WHERE team='自动登记'
+                        AND id IN (SELECT project_id FROM automatic_workspaces)
+                        """)
+                    db.execute("PRAGMA user_version=2")
 
     @contextmanager
     def connect(self):
@@ -107,6 +114,17 @@ class Database:
             if not changed.rowcount:
                 return None
         return token
+
+    def update_team(self, project_id, team, previous):
+        """更新维护者填写的团队。相同结果可以重试，过期编辑需要重新读取。"""
+        with self.connect() as db:
+            updated = db.execute("UPDATE projects SET team=? WHERE id=? AND team IN (?,?)",
+                                 (team, project_id, previous, team))
+            if updated.rowcount:
+                return {"id": project_id, "team": team}
+            if db.execute("SELECT 1 FROM projects WHERE id=?", (project_id,)).fetchone() is None:
+                return None
+            raise Conflict("团队已被更新，请重新打开后再修改。")
 
     def authorize_project(self, project_id, token):
         with self.connect() as db:
@@ -149,7 +167,7 @@ class Database:
             raise EnrollmentLimit()
         if project is None:
             db.execute("INSERT INTO projects VALUES (?, ?, ?, ?, ?, NULL)",
-                       (project_id, name, "自动登记", "", now()))
+                       (project_id, name, "", "", now()))
         db.execute("INSERT INTO automatic_workspaces VALUES (?, ?, ?)", (workspace, project_id, token_hash))
 
     def ingest(self, project_id, event, token, *, automatic_name=None, allow_registration=None):
@@ -199,7 +217,13 @@ class Database:
         """按发生时间汇总真实的 Codex 轮次和模块来源，保留旧用量记录。"""
         since = now() - days * 86400
         with self.connect() as db:
-            projects = db.execute("SELECT id, name, team, created_at, last_seen FROM projects ORDER BY name")
+            projects = db.execute("""
+                SELECT p.id, p.name, p.team, p.created_at, p.last_seen, h.last_hook_run
+                FROM projects AS p LEFT JOIN (
+                    SELECT project_id, MAX(observed_at) AS last_hook_run
+                    FROM reports WHERE kind='hook_activity' GROUP BY project_id
+                ) AS h ON h.project_id=p.id ORDER BY p.name
+                """)
             latest = db.execute("""
                 SELECT workspace, project_id, received_at, json_extract(payload,'$.framework') AS framework,
                        json_extract(payload,'$.unity') AS unity,
@@ -286,22 +310,37 @@ class Database:
         return item
 
     def project_detail(self, project_id):
-        """返回项目环境和近期 Codex 任务基础信息。"""
+        """返回项目环境、各工作区最近的钩子运行和历史任务基础信息。"""
         with self.connect() as db:
             project = db.execute("SELECT id,name,team,created_at,last_seen FROM projects WHERE id=?",
                                  (project_id,)).fetchone()
             if project is None:
                 return None
             snapshots = db.execute("""
-                SELECT workspace, observed_at, received_at, payload FROM reports
-                WHERE project_id=? AND kind='snapshot' ORDER BY received_at DESC, rowid DESC LIMIT 100
+                SELECT id, workspace, observed_at, received_at, payload FROM reports
+                WHERE project_id=? AND kind='snapshot' ORDER BY observed_at DESC, received_at DESC, rowid DESC LIMIT 100
                 """, (project_id,))
             tasks = db.execute("""
                 SELECT workspace, observed_at, received_at, payload FROM reports
                 WHERE project_id=? AND kind='task' ORDER BY received_at DESC, rowid DESC LIMIT 30
                 """, (project_id,))
+            hook_activity = db.execute("""
+                SELECT workspace, observed_at AS last_run, json_extract(payload,'$.framework') AS framework
+                FROM (
+                    SELECT workspace, observed_at, payload, ROW_NUMBER() OVER (
+                        PARTITION BY workspace ORDER BY observed_at DESC, received_at DESC, rowid DESC
+                    ) AS n FROM reports WHERE project_id=? AND kind='hook_activity'
+                ) WHERE n=1 ORDER BY last_run DESC, workspace
+                """, (project_id,))
             return {"project": dict(project), "snapshots": list(map(self.decode, snapshots)),
-                    "tasks": list(map(self.decode, tasks))}
+                    "tasks": list(map(self.decode, tasks)), "hook_activity": list(map(dict, hook_activity))}
+
+    def project_snapshot(self, project_id, report_id):
+        """读取归属当前项目的单份环境快照。"""
+        with self.connect() as db:
+            row = db.execute("SELECT payload FROM reports WHERE project_id=? AND id=? AND kind='snapshot'",
+                             (project_id, report_id)).fetchone()
+            return json.loads(row["payload"]) if row is not None else None
 
     def issue_detail(self, issue_id):
         with self.connect() as db:
