@@ -15,8 +15,8 @@ namespace NovaFramework.Editor
     public static partial class EditorUtil
     {
         /// <summary>
-        /// UPM 包版本检查工具，提供启动时自动检查与手动触发检查两种入口。
-        /// 通过 SkipConfig 持久化记录用户选择跳过的版本，避免重复弹窗打扰。
+        /// UPM 包版本检查工具，支持启动及跨日自动检查，也支持手动检查。
+        /// 通过 SkipConfig 记录当天跳过自动提醒的版本。
         /// </summary>
         public static partial class CheckUpdate
         {

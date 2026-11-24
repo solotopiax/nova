@@ -51,12 +51,17 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 跳过提示的配置数据（key=包名，value=被跳过时的 latestVersion）。
+            /// 单个本地自然日的跳过提示记录。
             /// </summary>
             private sealed class SkipConfig
             {
                 /// <summary>
-                /// 跳过记录（包名 -> 被跳过的 latestVersion）。
+                /// 勾选日期（yyyy-MM-dd）。旧存档缺少日期时直接视为过期。
+                /// </summary>
+                public string LocalDate;
+
+                /// <summary>
+                /// 跳过记录（带仓库前缀的包名 -> 被跳过的最新版本）。
                 /// </summary>
                 public Dictionary<string, string> SkipVersions = new Dictionary<string, string>();
             }

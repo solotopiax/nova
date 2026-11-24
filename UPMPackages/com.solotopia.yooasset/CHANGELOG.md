@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-24
+
+### Changed
+
+- Solotopia 封装包升级至 1.2.3，内核基于官方 YooAsset 3.0.7（8cb910de899050d95b01644e7a3bd7a643f226c0），记录为 3.0.7-m1。同步 Runtime、Editor 与可选示例，保留 ConfigMaster 设置注入、Collector 缓存重置、构建服务筛选、编辑器友元及资源校验后的主备地址切换。
+
+- 缓存校验由后台工作线程连续处理；主线程分帧登记有效缓存并清理无效文件。
+
+- 太空战机（Space Shooter）示例改用 `Framework.Event` 和 `Framework.Machine`，以类型化上下文更新状态，并集中管理事件订阅。
+
+### Fixed
+
+- 完善资源包初始化、缓存操作、资源加载和卸载的进度报告，并修正重试和缓存命中的下载计数。
+
+### Breaking
+
+- 通过友元程序集自定义下载后端时，将请求推进逻辑移入 `IDownloadRequest.UpdateRequest()`，让 `IsDone` 只返回状态，并移除 `IDownloadBackend.Update()` 的实现。直接引用可选示例目录的脚本需使用 `Extension`、`UniTask` 和 `Tests` 新路径。
+
+- 直接引用 `InitializeFileSystemOperation` 的代码需改用 `ResourcePackage.InitializePackageAsync(...)` 获取初始化操作，原类型现为包内类型。
+
 ## [1.2.2] - 2026-11-13
 
 ### Changed

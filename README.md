@@ -3,7 +3,7 @@
 ![Nova](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.15-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.16-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
 
 **Nova 是 Solotopia 面向 Unity 游戏开发的客户端框架。**
@@ -29,7 +29,7 @@
 <table>
 <tr><th align="left" width="300">包名</th><th width="60">版本</th></tr>
 <tr><td><code>com.solotopia.hybridclr</code></td><td>10.1.2</td></tr>
-<tr><td><code>com.solotopia.yooasset</code></td><td>1.2.2</td></tr>
+<tr><td><code>com.solotopia.yooasset</code></td><td>1.2.3</td></tr>
 <tr><td><code>com.solotopia.unitask</code></td><td>10.0.7</td></tr>
 <tr><td><code>com.unity.inputsystem</code></td><td>1.20.1</td></tr>
 <tr><td><code>com.unity.textmeshpro</code></td><td>5.0.0</td></tr>

@@ -21,7 +21,17 @@
     {
       "kind": "workspace-inspection",
       "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",
-      "when": "只读对照升级前后的 Nova 自动反馈定义和本机脚本，在首次准备或定义更新后给出审查入口"
+      "when": "只读核对升级前后的 Nova 自动反馈定义及其绑定的本机脚本，准备受阻时指向 Unity Console"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
+      "when": "重载后核对当前项目 Nova 钩子的授权和启用状态，返回 blocked 时暂停升级收尾；Windows 使用 py -3 -B"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --defer-reminder <reminderToken>",
+      "when": "仅在成员明确选择暂不授权或继续停用后记录新版本当天的暂缓决定；Windows 使用 py -3 -B"
     },
     {
       "kind": "cli",
@@ -87,6 +97,7 @@
       "the confirmed external UPM host change to the single direct com.solotopia.nova.framework manifest entry, retaining the frozen configured registry source",
       "Packages/packages-lock.json and resolved dependency closure updates produced only by Unity Package Manager Resolve after that confirmed change",
       "Library/Nova/ImportantUpdates/<local-user-hash>/State.json automatic upgrade-scope bookkeeping and explicit human acknowledgement; never edited directly by the Agent",
+      "Library/Nova/Issues/hook-review-*/** 临时查询文件及 hook-review.sqlite3 的当日暂缓决定",
       "Framework 安装升级后固定自动流程安装缺失的 Unity CLI、Codex CLI、官方 Unity 插件及本项目 com.unity.pipeline；保留现有可用版本和其他包依赖",
       "默认 Provider 自动准备本机 MCP 服务，保留其他项目有效服务和宿主配置，仅补齐当前项目专用 Codex MCP 绑定",
       "Library/Nova/AgentToolchain/ 下本轮有界安装下载与失败恢复状态；临时脚本完成、失败或取消后清理"
@@ -109,7 +120,8 @@
     "nova-framework-mcp-adapter-closure",
     "default-mcp-provider-adapter",
     "domain-reload",
-    "managed-skill-projection"
+    "managed-skill-projection",
+    "Library/Nova/Issues/hook-review.sqlite3 的 SQLite 写事务"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -134,7 +146,7 @@
     "用户对唯一同源目标及其外部 UPM diff 的明确确认，以及 host 提供的提交 receipt（如有）",
     "Resolve 与 domain reload 稳定后的 direct manifest、packages-lock 和 resolved Framework package 精确版本/来源，以及 Unity 编译结果",
     "目标 Framework 的 catalog.json 实际 Skill 数量和 nova_skills.py doctor 对 .agents/skills 的 clean 结果；数量不硬编码",
-    "目标包提供 Nova 自动反馈时，记录本机准备状态。首次准备或定义更新在同一 Codex 对话的升级结果中提示审查入口，授权由成员在 Codex 完成",
+    "目标包提供 Nova 自动反馈时，用新解析包核对实际授权和启用状态。返回 blocked 时保留已安装版本并暂停收尾，成员完成开启或明确选择暂缓后恢复",
     "同一项目重连后 MCP tools/list 中 nova_project_action 的可见性，及缺失时未使用它或任意 C# 绕过的事实",
     "未执行 Config、缓存清理、回滚、Git、发布、外部部署或凭据输出的边界说明",
     "升级后的 CHANGELOG Important 按包分组、包内按完整 SemVer 从新到旧展示，需用户亲自阅读确认；Agent 不得自动确认或改写本地标记；安装成功与人工阅读状态分别报告。",

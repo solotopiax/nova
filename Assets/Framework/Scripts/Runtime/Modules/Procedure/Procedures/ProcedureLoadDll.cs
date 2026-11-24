@@ -247,6 +247,9 @@ namespace NovaFramework.Runtime
             {
                 m_LoadException = e;
                 m_LoadComplete = true;
+#if UNITY_EDITOR
+                EditorPlayEvidence.Fail(this);
+#endif
             }
         }
     }

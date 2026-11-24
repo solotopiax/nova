@@ -46,7 +46,7 @@
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
 | **构建 AssetBundle / RawFile (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset Scriptable/RawFile 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `bundlebuilder.build` / `bundlebuilder.build_raw_file` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
-| **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
+| **检查 UPM 包是否有新版本（自动提醒 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
 | **升级后强制确认重要内容（CHANGELOG Important / 单包与批量 / 本地已读）** | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) → [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) |
 | **安装或升级后自动补齐 AI 开发工具** | [Nova Skills 与 AI 工具链安装](Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.md)包含自动安装、绑定、重检和连接说明。新项目接着做[入口场景交接](Onboarding/PROJECT_STRUCTURE.md#首装后的入口场景交接)。 |
 | **自动反馈项目中的 Nova 问题** | [Nova 问题自动反馈](Onboarding/NOVA_ISSUES.md)说明 Codex 任务开始时的审查检查、Editor 的发现入口及本地补发。 |
@@ -532,7 +532,7 @@
 | [EditorUtil.Luban.ExportHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md) | Luban 导出辅助工具：构建导出上下文、生成关联文件名、查找单元设置 |
 | [EditorUtil.Luban.DataTypeNameHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md) | internal Excel Sheet 纯扫描器（不访问 SerializedProperty） |
 | [EditorUtil.Draw.SourceFileTree.md](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md) | 数据源文件树绘制与命名空间列表编辑静态工具集 |
-| [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动自动检查 + `MarkSkip`/`ClearSkip` 持久化，复用 PlugPals 网络层） |
+| [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动与跨日自动检查，支持当天跳过） |
 | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) | 已安装包 CHANGELOG Important 提取、本地确认、单包/批量范围与重载补查 |
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate、严格 DLL 拷贝及 Sample Editor 自动同步；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 模板准备与依赖解析（官方模板/开关原子准备；EDM4U 1.2.188/1.2.190 同步 JDK 交接及受控 Resolve 验证） |
@@ -585,7 +585,7 @@
 | 文档 | 说明 |
 |------|------|
 | [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口：三段布局、独立编辑坐标、各面板三维开关、WorkingCopy 全局保存与自动维度整理、ConfigRuntime 及客户端密钥源码导出；生产导出与 YooAsset 生效受 Active BuildTarget 门禁约束。 |
-| [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（表格展示 Package/Current/Latest，支持"跳过当前版本"持久化） |
+| [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（支持「今日不再提示这些版本」） |
 | [ImportantUpdatesWindow.md](Editor/Windows/ImportantUpdatesWindow.md) | 升级后重要声明模态确认窗口，无手动菜单 |
 | [PipifyWindow.md](Editor/Windows/PipifyWindow.md) | Pipify 流水线配置与执行窗口（Nova/Open Pipify） |
 | [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | Config 窗口的环境检测入口及使用说明。检测逻辑由 `EditorUtil.Environment` |

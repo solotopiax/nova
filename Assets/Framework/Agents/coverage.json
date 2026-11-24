@@ -679,6 +679,7 @@
     {
       "id": "core.Log",
       "sources": [
+        "Assets/Framework/Scripts/Runtime/Core/Log/EditorPlayEvidence.cs",
         "Assets/Framework/Scripts/Runtime/Core/Log/ILogHelper.cs",
         "Assets/Framework/Scripts/Runtime/Core/Log/Log.Debug.cs",
         "Assets/Framework/Scripts/Runtime/Core/Log/Log.Error.cs",
@@ -692,6 +693,7 @@
         "Assets/Framework/Scripts/Runtime/Core/Log/LogTagDescriptionAttribute.cs"
       ],
       "docs": [
+        "Assets/Framework/Docs/Onboarding/NOVA_ISSUES.md",
         "Assets/Framework/Docs/Runtime/Core/Log/LogTag.md",
         "Assets/Framework/Docs/Runtime/Core/Log/Log.md",
         "Assets/Framework/Docs/Runtime/Core/Log/LogLevel.md",
@@ -3583,6 +3585,10 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainSetup.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.ToolchainProvisioning.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Compilation.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Implementation.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Play.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Upgrade.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.CodexHooks.cs",
         "Assets/Framework/Agents/Tools/nova_issues_agent.py",
         "Assets/Framework/Agents/Tools/nova_hook_review.py"
@@ -3649,17 +3655,22 @@
         {
           "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",
           "kind": "workspace-inspection",
-          "when": "Nova 升级后首次准备或定义更新，或用户定向检查反馈授权入口时，在当前 Codex 对话提示审查"
+          "when": "Nova 升级后或定向排查时核对项目反馈定义和脚本是否齐备，实际授权由 Codex 审查状态决定"
         },
         {
           "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
           "kind": "cli",
-          "when": "macOS/Linux 的普通消费项目任务启动时检查待审查条目并判定本机的首次版本提醒"
+          "when": "macOS/Linux 升级、新任务或跨天继续时核对授权、启用和当日暂缓状态，按结果暂停任务并提醒"
         },
         {
           "entry": "py -3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",
           "kind": "cli",
-          "when": "Windows 的普通消费项目任务启动时检查待审查条目并判定本机的首次版本提醒"
+          "when": "Windows 升级、新任务或跨天继续时核对授权、启用和当日暂缓状态，按结果暂停任务并提醒"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --defer-reminder <reminderToken>",
+          "kind": "cli",
+          "when": "成员明确选择暂不授权或继续停用后，记录当前版本当天的决定；Windows 使用 py -3 -B"
         },
         {
           "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot>",
@@ -4154,7 +4165,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "自动更新检查在启动及跨日后排队；只有当天跳过的同一仓库、包和版本会被自动提示过滤。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md",
@@ -6212,7 +6224,8 @@
       "exposure": "Navigation to existing Skill/Action contracts; source declarations do not grant execution permission.",
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
-        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。"
+        "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
+        "关闭窗口会提交「今日不再提示这些版本」的当天选择，手动检查始终列出全部可用更新。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/Windows/CheckUpdateWindow.md",
@@ -6540,7 +6553,8 @@
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "GUI 仅公网包列表加载期间屏蔽内容区并保留工具栏；列表返回即恢复操作，缺失发布时间在后台原位补齐，刷新、改址或关闭取消旧批次。其他仓库加载不限制已返回条目，Agent Action 仍按其独立全来源计划合同执行。"
+        "GUI 仅公网包列表加载期间屏蔽内容区并保留工具栏；列表返回即恢复操作，缺失发布时间在后台原位补齐，刷新、改址或关闭取消旧批次。其他仓库加载不限制已返回条目，Agent Action 仍按其独立全来源计划合同执行。",
+        "PlugPals 搜索框右侧的「×」只清除搜索内容，列表即时恢复到当前页签。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/Windows/PlugPalsWindow.md",

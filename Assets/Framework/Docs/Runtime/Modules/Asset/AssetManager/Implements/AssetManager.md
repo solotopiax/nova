@@ -272,9 +272,9 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 - [IAssetWarmupGroup.md](../Interfaces/IAssetWarmupGroup.md)
 - [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)
 
-## YooAsset 3.0.6 与平台预下载
+## YooAsset 依赖与平台预下载
 
-当前依赖私包 1.2.0/Core 3.0.6。保留 ConfigMaster 注入与 Collector 缓存定制，SBP 使用官方按版本切换的构建任务。原生 Sandbox 的 URL 结果通知保留在缓存内容校验之后，以维持内容校验失败继续主备候选的语义；上游新版释放、中止与加载锁修复仍保留。
+当前依赖 `com.solotopia.yooasset` `1.2.3`（`coreVersion` 为 `3.0.7-m1`）。原生下载完成后，YooAsset 在内容通过缓存校验时才确认当前地址成功。传输或校验失败都交给主备重试策略处理。ConfigMaster 注入、Collector 缓存重置和 SBP 版本适配继续由现有接入负责。
 
 已安装微信适配包时，Web Host 在初始化时注入平台预下载策略与下载并发配置。TagsOnLaunch 使用 Downloader 到平台缓存，OnDemand 保持按需加载，AllOnLaunch 保持 Warmup 常驻。Web Player 的 CommitBootableVersion 不写原生 Sandbox 版本记录。详见 [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md) 的微信边界。
 

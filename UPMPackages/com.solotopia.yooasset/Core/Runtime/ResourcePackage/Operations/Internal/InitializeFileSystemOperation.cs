@@ -6,7 +6,7 @@ namespace YooAsset
     /// <summary>
     /// 初始化文件系统操作
     /// </summary>
-    public sealed class InitializeFileSystemOperation : AsyncOperationBase
+    internal sealed class InitializeFileSystemOperation : AsyncOperationBase
     {
         private enum ESteps
         {
@@ -21,8 +21,9 @@ namespace YooAsset
         private readonly List<FileSystemParameters> _parametersList;
         private List<FileSystemParameters> _cloneList;
         private FSInitializeOperation _initFileSystemOp;
+        private int _fileSystemCount;
         private ESteps _steps = ESteps.None;
-        
+
         internal InitializeFileSystemOperation(FileSystemHost host, List<FileSystemParameters> parametersList)
         {
             _host = host;
@@ -59,6 +60,7 @@ namespace YooAsset
                 }
 
                 _cloneList = _parametersList.ToList();
+                _fileSystemCount = _cloneList.Count;
                 _steps = ESteps.InitFileSystem;
             }
 
@@ -93,7 +95,10 @@ namespace YooAsset
             if (_steps == ESteps.CheckInitResult)
             {
                 _initFileSystemOp.UpdateOperation();
-                Progress = _initFileSystemOp.Progress;
+
+                // 说明：各文件系统等权折算
+                int stageIndex = _fileSystemCount - _cloneList.Count - 1;
+                Progress = CalculateMultiStageProgress(stageIndex, _fileSystemCount, _initFileSystemOp.Progress);
                 if (_initFileSystemOp.IsDone == false)
                     return;
 

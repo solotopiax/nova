@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **全局访问**：`EditorUtil.CheckUpdate`
 
-UPM 包版本检查工具，提供启动自动检查与手动触发两种入口，支持按版本跳过提示的持久化。当前检查流程同时覆盖外网仓库与内部云仓库，并在窗口层混合展示结果。
+UPM 包版本检查工具支持启动和跨日自动检查，也支持手动检查。当天跳过的版本会在次日仍可升级时重新提醒。查询覆盖外网仓库和内部云仓库，更新项由窗口合并展示。
 
 ---
 
@@ -16,7 +16,7 @@ UPM 包版本检查工具，提供启动自动检查与手动触发两种入口�
 | [EditorUtil.CheckUpdate.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs) | `partial EditorUtil.CheckUpdate` | 常量声明：`c_ConfigPath`、`c_MenuPath`、`c_RegistryUrl`、`c_InternalRegistryUrl`、`c_ApiPath`；菜单入口 `OpenWindow` |
 | [EditorUtil.CheckUpdate.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs) | `partial EditorUtil.CheckUpdate` | 查询与跳过实现：`CheckAsync`、`CheckOnStartupAsync`、`MarkSkip`、`ClearSkip`、`CheckExternalAsync`、`CheckInternalAsync` 及私有辅助方法 |
 | [EditorUtil.CheckUpdate.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Definitions.cs) | `partial EditorUtil.CheckUpdate` | 嵌套类型：`UpdateInfo`（public）、`SkipConfig`（private） |
-| [EditorUtil.CheckUpdate.Automatic.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Automatic.cs) | `partial EditorUtil.CheckUpdate` | 自动检查排队、待展示结果恢复、当前安装版本复核及等待原因 |
+| [EditorUtil.CheckUpdate.Automatic.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Automatic.cs) | `partial EditorUtil.CheckUpdate` | 自动检查排队、跨日触发、待展示结果恢复、当前安装版本复核及等待原因 |
 
 ---
 
@@ -61,9 +61,9 @@ public static async Task<List<UpdateInfo>> CheckAsync()
 
 ```csharp
 /// <summary>
-/// 将指定包的当前最新版本标记为"跳过"，写入持久化配置。
+/// 暂停指定外网包的当前最新版本的自动提醒，有效期为本地当天。
 /// </summary>
-/// <param name="items">要跳过的更新列表。</param>
+/// <param name="items">今天要跳过的外网仓库更新列表。</param>
 public static void MarkSkip(IEnumerable<UpdateInfo> items)
 
 /// <summary>
@@ -72,10 +72,10 @@ public static void MarkSkip(IEnumerable<UpdateInfo> items)
 public static void ClearSkip()
 ```
 
-内部还提供仓库感知重载：
+窗口使用内部重载一次保存两个来源，`selectedDay` 是用户勾选时的本地日期。
 
 ```csharp
-internal static void MarkSkip(IEnumerable<UpdateInfo> items, bool isInternal)
+internal static void MarkSkip(IEnumerable<UpdateInfo> externalItems, IEnumerable<UpdateInfo> internalItems, DateTime selectedDay)
 ```
 
 ### 嵌套类型
@@ -114,12 +114,15 @@ CheckOnStartupAsync()
       └─ 保存两来源的待展示列表，重新进入 update 队列
       ▼
 TryRunAutomaticStartupCheck()
-      ├─ 再读当前已安装版本和 SkipVersions，移除等待期间已升级、已卸载或已跳过的条目
+      ├─ 再读当前已安装版本和当天的 SkipVersions，移除已升级、已卸载或当天已跳过的条目
       ├─ 真正展示前重新读取窗口门禁；忙碌时保留列表等待，不重新联网
       └─ 安全时才 TryOpenAutomatic(filteredExternal, filteredInternal)，实际非模态展示后清除列表；已有窗口则保留队列
 
-[CheckUpdateWindow 关闭，m_DontShowAgain == true]
-      └─ EditorUtil.CheckUpdate.MarkSkip(items) → SaveConfig()
+[本轮处理结束]
+      └─ 每分钟查看本地日期，跨日后重新进入自动检查队列
+
+[CheckUpdateWindow 关闭，已勾选今日跳过且有更新]
+      └─ EditorUtil.CheckUpdate.MarkSkip(externalItems, internalItems, selectedDay) → SaveConfig()
 ```
 
 ---
@@ -129,7 +132,7 @@ TryRunAutomaticStartupCheck()
 - `CheckAsync` 和 `CheckOnStartupAsync` 均为 `async Task`，在 Unity Editor 主线程的 async 上下文中执行。
 - 内部通过 `PlugPals.FetchRemotePackagesAsync` 发起网络请求（`HttpClient` + `await`）；返回后回到主线程。
 - `CheckOnStartupAsync` 以 fire-and-forget（`_ = CheckOnStartupAsync()`）方式调用，异常在方法内部记录 Warning，不向外传播；异步完成回调只排队，不直接打开窗口。
-- `LoadConfig` 和 `SaveConfig` 为同步文件操作，调用时必须在主线程。
+- `LoadConfigForDay` 和 `SaveConfig` 为同步文件操作，调用时必须在主线程。
 
 ---
 
@@ -172,12 +175,12 @@ CheckOnStartupAsync()
 
 ### 跳过版本语义
 
-`SkipConfig.SkipVersions` 存储 `{ 带仓库前缀的包 key: 被跳过的 latestVersion }`，例如：
+`SkipConfig.LocalDate` 保存勾选时的本地自然日（`yyyy-MM-dd`）。`SkipConfig.SkipVersions` 保存每个仓库的包及被跳过的最新版本。例如：
 
 - `external:com.solotopia.nova.framework`
 - `internal:com.solotopia.nova.framework`
 
-判断规则：仅当 `skippedVersion == info.LatestVersion`（字符串相等）时跳过——即新版本出现后仍会弹窗提示，不会被旧的跳过记录屏蔽。
+日期为当天且 `skippedVersion == info.LatestVersion` 时才跳过。新版本在当天也会出现在后续检查中，次日会重新提醒任何仍可升级的版本。旧存档缺少日期时按已过期处理。
 
 ---
 
@@ -185,11 +188,11 @@ CheckOnStartupAsync()
 
 **误区 1：`ClearSkip` 不是按包清除**
 
-`ClearSkip` 写入全新空 `SkipConfig`，清除**所有**包的跳过记录，而非某一个包。如需按包清除，应在调用方手动修改 `SkipConfig.SkipVersions` 后调用 `SaveConfig`（当前无公开单包清除 API）。
+`ClearSkip` 会清除所有包的跳过记录。
 
 **误区 2：`CheckAsync` 不过滤跳过版本**
 
-`CheckAsync` 返回**所有** `latestVersion > currentVersion` 的包，不应用跳过过滤；跳过过滤仅在 `CheckOnStartupAsync` 中执行。手动打开 CheckUpdateWindow 时由窗口分别调用双仓库检查逻辑，因此会展示所有可用更新（包括已跳过的版本）。
+`CheckAsync` 与手动打开 `CheckUpdateWindow` 都返回全部可用更新。当天的跳过记录仅在自动展示前应用。
 
 **误区 3：`c_ConfigPath` 相对工程根而非 Assets**
 
@@ -213,10 +216,10 @@ foreach (EditorUtil.CheckUpdate.UpdateInfo info in updates)
 ### 标记跳过当前版本
 
 ```csharp
-// 跳过所有当前检查到的更新（启动时不再弹窗，直到有更新的版本出现）
-EditorUtil.CheckUpdate.MarkSkip(updates);
+// externalUpdates 是调用方已确认来源为外网仓库的更新列表
+EditorUtil.CheckUpdate.MarkSkip(externalUpdates);
 
-// 清除所有跳过记录（下次启动会重新检查弹窗）
+// 清除所有跳过记录，恢复下次自动检查的提醒
 EditorUtil.CheckUpdate.ClearSkip();
 ```
 
@@ -227,7 +230,7 @@ EditorUtil.CheckUpdate.ClearSkip();
 - `c_RegistryUrl` 与 `c_InternalRegistryUrl` 现已拆分为两个固定地址；后续如仓库迁移，只需替换 Visitors 常量。
 - 双仓库检查采用“单边失败不阻断另一边成功结果”的策略；日志中会分别记录失败仓库地址。
 - `Library/Nova/CheckUpdate.json` 不受版本控制，多人协作时跳过配置不同步。
-- `[InitializeOnLoad]` 仅在 Editor 启动（域重载）时触发；Play Mode 进出不会再次触发。
+- `[InitializeOnLoad]` 在脚本域加载时注册自动检查。编辑器持续打开时，空闲的检查队列会每分钟查看一次本地日期，发现跨日后安排下一轮检查。
 
 ---
 
@@ -242,7 +245,7 @@ EditorUtil.CheckUpdate.ClearSkip();
 
 外网与内部仓依次查询，各侧异常只 Warning 并投影为空列表；空列表同时可能代表禁用、失败或无升级，不是明确的检查成功收据。UpdateInfo 只保存包名、当前和最新版本，不携 registry URL；合并不去重，同属性的两个来源仍保留。列表显示排序中的版本是文本排序，不等同 ImportantUpdates 使用的完整 SemVer。
 
-手动检查不应用 skip；启动检查按 external/internal 分类键过滤，并在真正展示前重新读取跳过记录。单列表 MarkSkip 默认外网，两来源应分开传，分类键不绑定 URL，换仓后可能继续使用旧 skip。ClearSkip 清全部来源/包。存档同步直接写，失败仅日志无成功值；显式 JSON SkipVersions:null 不自动修复，后续过滤/写入可抛。
+自动展示前重新读取当天的跳过记录，按 `external` 和 `internal` 分类键过滤。分类键不绑定 URL，同日换仓后仍可能命中同名同版本的记录。两个来源一起保存，写入失败记录日志。缺日期、日期过期或 `SkipVersions` 为 `null` 时按空记录读取。
 
 自动检查在 batchmode 不启动；编译、导入、Play 切换、当前一轮工具链安装及重要声明检查/人工确认期间延后。工具链的延时重试间隔不占用展示门，不因 `partial` 状态永久等待。已完成查询的两来源列表保存在 SessionState 的 `Nova.CheckUpdate.Automatic.PendingSnapshot.v1`，通过普通非模态 `Show` 实际展示或确定无需提示后即删除；已有更新窗口时保留队列，不覆盖其阅读或跳过选择。跨域重载复用该列表，不重复网络请求。若网络请求尚未完成就重载，下一域可重新进行这次只读查询。手动 `Open()` 与带结果的 `Open(...)` 仍立即遵循各自原有入口，不受自动队列接管。
 

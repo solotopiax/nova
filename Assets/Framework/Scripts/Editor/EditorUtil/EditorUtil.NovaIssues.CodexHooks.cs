@@ -121,15 +121,12 @@ namespace NovaFramework.Editor
                 }
             }
 
-            /// <summary>在已验证的 Library 目录准备脚本，保留项目自有钩子，仅发布未经授权的 Codex 配置。</summary>
+            /// <summary>在已验证的 Library 目录准备脚本，沿用完整的既有定义，让 Codex 保留原来的审查结果。</summary>
             /// <returns>配置就绪状态或阻塞原因，临时失败可按原路径重试。</returns>
             private static (CodexHookPreparation State, string Reason) PrepareCodexHooks(string project, string folder, string framework)
             {
                 string config = Path.Combine(project, c_CodexHookPath);
                 string configFolder = Path.GetDirectoryName(config);
-                string source = CodexAgentSource(framework);
-                if (!File.Exists(source))
-                    return (CodexHookPreparation.Retry, "当前 Nova 包里的反馈脚本暂未就绪。");
                 if (IsLink(configFolder) || File.Exists(configFolder) || IsLink(config) || Directory.Exists(config))
                     return (CodexHookPreparation.Blocked, "工程的 Codex 配置路径与现有文件或链接冲突。");
 
@@ -141,28 +138,15 @@ namespace NovaFramework.Editor
                     return (CodexHookPreparation.Blocked, "工程的 Codex 配置已由 Git 跟踪。");
 
                 string existing = null;
+                string installedDigest = null;
                 if (File.Exists(config))
                 {
                     const string existingConfig = "工程已有自己的 Codex 钩子配置，Nova 已保留该配置。";
                     if (new FileInfo(config).Length > 64 * 1024)
                         return (CodexHookPreparation.Blocked, existingConfig);
                     existing = File.ReadAllText(config);
-                    JObject definition = JObject.Parse(existing);
-                    string command = (definition.SelectToken("hooks.SessionStart[0].hooks[0].command") as JValue)?.Value as string;
-                    Match match = s_CodexAgentDigest.Match(command ?? string.Empty);
-                    if (!match.Success)
-                        return (CodexHookPreparation.Blocked, existingConfig);
-                    // 仅更新已知文案对应的完整生成文件，保留项目自己的配置。
-                    string installedDescription = (definition["description"] as JValue)?.Value as string;
-                    string installedTitle = installedDescription switch
-                    {
-                        c_CodexFeedbackDescription or c_PreviousAutomaticFeedbackDescription => c_CodexFeedbackTitle,
-                        c_PreviousBriefCodexFeedbackDescription or c_PreviousCodexFeedbackDescription => c_PreviousCodexFeedbackTitle,
-                        c_InitialCodexFeedbackDescription => c_PreviousCodexFeedbackTitle + "（可选）",
-                        _ => null
-                    };
-                    if (installedTitle == null ||
-                        existing != CodexHookDefinition(folder, match.Groups[1].Value, installedDescription, installedTitle))
+                    installedDigest = ReadGeneratedCodexHookDigest(JObject.Parse(existing), folder);
+                    if (installedDigest == null)
                         return (CodexHookPreparation.Blocked, existingConfig);
                 }
 
@@ -170,6 +154,20 @@ namespace NovaFramework.Editor
                 if (ignored.State != CodexHookPreparation.Current)
                     return ignored;
 
+                if (installedDigest != null)
+                {
+                    string installedAgent = CodexAgentPath(folder, installedDigest);
+                    if (IsLink(installedAgent) || Directory.Exists(installedAgent))
+                        return (CodexHookPreparation.Blocked, "既有反馈脚本路径指向链接或目录。");
+                    if (File.Exists(installedAgent))
+                        return CodexAgentMatchesDigest(installedAgent, installedDigest)
+                            ? (CodexHookPreparation.Current, null)
+                            : (CodexHookPreparation.Blocked, "既有反馈脚本内容已变动，请检查当前工作区的反馈文件。");
+                }
+
+                string source = CodexAgentSource(framework);
+                if (!File.Exists(source))
+                    return (CodexHookPreparation.Retry, "当前 Nova 包里的反馈脚本暂未就绪。");
                 byte[] script = File.ReadAllBytes(source);
                 using var sha = SHA256.Create();
                 string digest = Hex(sha.ComputeHash(script));
@@ -184,7 +182,7 @@ namespace NovaFramework.Editor
                     return (CodexHookPreparation.Blocked, "本地反馈脚本路径已被其他文件占用。");
 
                 string desired = CodexHookDefinition(folder, digest);
-                if (existing == desired)
+                if (installedDigest == digest)
                     return (CodexHookPreparation.Current, null);
                 if (existing != null && File.ReadAllText(config) != existing)
                     return (CodexHookPreparation.Retry, "项目的 Codex 配置正在变动。");
@@ -194,7 +192,38 @@ namespace NovaFramework.Editor
                 return (CodexHookPreparation.Updated, null);
             }
 
-            /// <summary>核对当前 Framework 需要的项目钩子和脚本，只上报准备状态。</summary>
+            /// <summary>识别 Nova 完整生成的项目定义，包括早期文案，返回其绑定的不可变脚本摘要。</summary>
+            private static string ReadGeneratedCodexHookDigest(JObject definition, string folder)
+            {
+                string command = (definition.SelectToken("hooks.SessionStart[0].hooks[0].command") as JValue)?.Value as string;
+                Match match = s_CodexAgentDigest.Match(command ?? string.Empty);
+                if (!match.Success)
+                    return null;
+
+                string description = (definition["description"] as JValue)?.Value as string;
+                string title = description switch
+                {
+                    c_CodexFeedbackDescription or c_PreviousAutomaticFeedbackDescription => c_CodexFeedbackTitle,
+                    c_PreviousBriefCodexFeedbackDescription or c_PreviousCodexFeedbackDescription => c_PreviousCodexFeedbackTitle,
+                    c_InitialCodexFeedbackDescription => c_PreviousCodexFeedbackTitle + "（可选）",
+                    _ => null
+                };
+                string digest = match.Groups[1].Value;
+                return title != null && JToken.DeepEquals(definition, CodexHookConfiguration(folder, digest, description, title))
+                    ? digest : null;
+            }
+
+            /// <summary>核对原脚本仍是生成时的字节，供升级沿用同一条 Codex 审查定义。</summary>
+            private static bool CodexAgentMatchesDigest(string path, string digest)
+            {
+                if (IsLink(path) || !File.Exists(path))
+                    return false;
+                using var stream = File.OpenRead(path);
+                using var sha = SHA256.Create();
+                return Hex(sha.ComputeHash(stream)) == digest;
+            }
+
+            /// <summary>核对原有或当前 Framework 生成的项目钩子和脚本，只上报准备状态。</summary>
             private static string ObserveCodexHookStatus(string project, string folder, string framework)
             {
                 string config = Path.Combine(project, c_CodexHookPath);
@@ -209,7 +238,8 @@ namespace NovaFramework.Editor
                     if (file.Length > 64 * 1024)
                         return "incomplete";
 
-                    JToken value = JObject.Parse(File.ReadAllText(config))["hooks"];
+                    JObject definition = JObject.Parse(File.ReadAllText(config));
+                    JToken value = definition["hooks"];
                     if (value == null)
                         return "pending";
                     if (value is not JObject hooks)
@@ -221,6 +251,11 @@ namespace NovaFramework.Editor
                             handler[key]?.Type == JTokenType.String && ((string)handler[key]).Contains(c_CodexAgentName)));
                     if (!hasNovaHook)
                         return "pending";
+
+                    string installedDigest = ReadGeneratedCodexHookDigest(definition, folder);
+                    if (installedDigest != null)
+                        return CodexAgentMatchesDigest(CodexAgentPath(folder, installedDigest), installedDigest)
+                            ? "complete" : "incomplete";
 
                     byte[] script = File.ReadAllBytes(CodexAgentSource(framework));
                     using var sha = SHA256.Create();
@@ -253,7 +288,7 @@ namespace NovaFramework.Editor
             private static string CodexAgentSource(string framework) =>
                 Path.Combine(framework, "Agents", "Tools", c_CodexAgentName + ".py");
 
-            /// <summary>按脚本内容取得本机路径，内容不变时沿用原定义，脚本变化时交给 Codex 重新审查。</summary>
+            /// <summary>按脚本内容取得不可变路径，保留项目成员已审查的定义及执行内容。</summary>
             private static string CodexAgentPath(string folder, string digest) =>
                 Path.Combine(folder, $"{c_CodexAgentName}-{digest}.py");
 

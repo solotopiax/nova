@@ -42,6 +42,8 @@ ASSETS = {
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/style.css": ("style.css", "text/css; charset=utf-8"),
 }
+USAGE_DESCRIPTIONS = ROOT / "usage-descriptions.json"
+UNITY_USAGE_DESCRIPTIONS = ROOT / "unity-usage-descriptions.json"
 
 
 def load_web_assets():
@@ -50,7 +52,7 @@ def load_web_assets():
             for route, (filename, content_type) in ASSETS.items()}
 
 
-def runtime_revision(assets=None):
+def runtime_revision(assets=None, descriptions=None):
     """用服务端源码和实际加载的 Web 内容生成可核对的版本标识。"""
     digest = hashlib.sha256()
     for name in ("serve.py", "database.py", "protocol.py", "registries.py"):
@@ -59,7 +61,26 @@ def runtime_revision(assets=None):
         assets = load_web_assets()
     for content, _ in assets.values():
         digest.update(hashlib.sha256(content).digest())
+    if descriptions is None:
+        descriptions = load_usage_descriptions()
+    digest.update(hashlib.sha256(json.dumps(descriptions, sort_keys=True).encode("utf-8")).digest())
     return digest.hexdigest()
+
+
+def load_usage_descriptions():
+    """读取随服务部署的 Nova 与 Unity CLI 说明。"""
+    return json.loads(USAGE_DESCRIPTIONS.read_bytes()) | json.loads(UNITY_USAGE_DESCRIPTIONS.read_bytes())
+
+
+def usage_description(row, descriptions):
+    """按操作编号查找用途，自定义命令展示已知的调用入口。"""
+    operation = row["operation"]
+    if operation in descriptions:
+        return descriptions[operation]
+    if row["entry"] == "unity-cli" and operation.startswith("unity."):
+        command = " ".join(operation.removeprefix("unity.").rsplit(".", 1))
+        return f"通过 Unity CLI 调用「{command}」。具体用途由提供该命令的项目或包定义。"
+    return ""
 
 
 def password_hash(password, salt):
@@ -136,7 +157,8 @@ class NovaIssuesServer(HTTPServer):
         self.slots = threading.BoundedSemaphore(32)
         self.pool = ThreadPoolExecutor(max_workers=32)
         self.assets = load_web_assets()
-        self.revision = runtime_revision(self.assets)
+        self.usage_descriptions = load_usage_descriptions()
+        self.revision = runtime_revision(self.assets, self.usage_descriptions)
         super().__init__(address, Handler)
 
     def process_request(self, request, client_address):
@@ -286,7 +308,8 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, {"status": "ok", "service": "nova-issues-server", "protocol": 1,
                              "automatic_reporting": self.allows_automatic_reporting(), "codex_telemetry": True,
                              "project_snapshot_details": True, "git_user_name_reporting": True,
-                             "hook_activity": True, "revision": self.server.revision})
+                             "hook_activity": True, "implementation_tracking": True,
+                             "execution_evidence": True, "revision": self.server.revision})
         elif method == "POST" and path == "/api/session":
             self.login()
         elif method == "GET" and path == "/api/session":
@@ -351,7 +374,10 @@ class Handler(BaseHTTPRequestHandler):
             days = parse_qs(url.query).get("days", ["14"])[0]
             if not days.isdecimal() or len(days) > 3:
                 raise InvalidInput("时间范围无效。")
-            self.reply(200, db.overview(int_range(int(days), 1, 365)))
+            overview = db.overview(int_range(int(days), 1, 365))
+            for row in overview["usage"]:
+                row["description"] = usage_description(row, self.server.usage_descriptions)
+            self.reply(200, overview)
         elif method == "GET" and path == "issues":
             query = parse_qs(url.query)
             project = query.get("project", [""])[0]

@@ -15,34 +15,26 @@ namespace NovaFramework.Editor
 {
     /// <summary>
     /// Nova 包版本更新提示窗口，展示所有已安装包中存在新版本的条目。
-    /// 支持启动时自动弹出（由 EditorUtil.CheckUpdate 钩子触发）和手动打开两种入口。
+    /// 支持启动及跨日自动弹出，也支持手动打开。
     /// </summary>
     public sealed partial class CheckUpdateWindow : EditorWindow
     {
         /// <summary>
-        /// 窗口启用时重置 DontShowAgain 状态。
+        /// 窗口启用时清空暂未保存的跳过选择。
         /// </summary>
         private void OnEnable()
         {
-            m_DontShowAgain = false;
+            m_SkipDay = default;
         }
 
         /// <summary>
-        /// 窗口关闭时若已勾选"启动时不再提示"，将当前列表写入跳过配置。
+        /// 窗口关闭或禁用时提交所显示的两个来源列表，按勾选日保存跳过记录。
         /// </summary>
         private void OnDisable()
         {
-            if (m_DontShowAgain)
+            if (m_SkipDay != default && (m_ExternalItems?.Count > 0 || m_InternalItems?.Count > 0))
             {
-                if (m_ExternalItems != null && m_ExternalItems.Count > 0)
-                {
-                    EditorUtil.CheckUpdate.MarkSkip(m_ExternalItems, false);
-                }
-
-                if (m_InternalItems != null && m_InternalItems.Count > 0)
-                {
-                    EditorUtil.CheckUpdate.MarkSkip(m_InternalItems, true);
-                }
+                EditorUtil.CheckUpdate.MarkSkip(m_ExternalItems, m_InternalItems, m_SkipDay);
             }
         }
 

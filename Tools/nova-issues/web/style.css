@@ -97,6 +97,23 @@ input, select, textarea { font-weight: 400; }
 }
 .sidebar nav button:hover, .account button:hover { background: #254743; }
 .sidebar nav button[aria-current] { background: #2c5149; color: #f5fffa; font-weight: 650; }
+.sidebar nav button { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.nav-unread {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: max-content;
+  min-inline-size: 1.5rem;
+  aspect-ratio: 1;
+  padding-inline: .28rem;
+  border-radius: 50%;
+  background: #c92032;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
 .account { display: flex; flex-wrap: wrap; gap: .48rem; align-items: center; margin-top: auto; padding: .8rem .25rem 0; border-top: 1px solid #49605c; font-size: .9rem; }
 .account button { margin-left: auto; }
 .main { width: 100%; max-width: 1700px; padding: clamp(1.08rem, 3.25vw, 3rem); margin-inline: auto; min-width: 0; }
@@ -129,6 +146,7 @@ tbody tr:last-child td { border-bottom: 0; }
 tbody tr:hover { background: #f7faf9; }
 td.mono, code, .token { font-family: ui-monospace, Menlo, Consolas, monospace; }
 td.mono { font-size: .84rem; }
+.usage-operation { cursor: help; text-decoration: underline dotted; text-underline-offset: .2em; }
 .pill { display: inline-block; padding: .1rem .48rem; white-space: nowrap; border-radius: 5px; color: #245951; background: var(--tint); font-size: .84rem; font-weight: 620; }
 .pill.success { color: #155939; background: #dff3e7; }
 .pill.urgent { color: #8b181c; background: #fce9e8; }

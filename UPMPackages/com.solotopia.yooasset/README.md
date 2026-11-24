@@ -1,13 +1,15 @@
 # YooAsset
 
 > 包名：`com.solotopia.yooasset`
-> 当前版本：`1.2.2`
+> 当前版本：`1.2.3`
 
-Unity 资源管理与热更新解决方案。Core 基线为官方 YooAsset `3.0.6`（commit `3b4cfb36cc2e81b9558ab74d65fee2cf2eac2804`），私包版本为 `1.2.2`。
+Unity 资源管理与热更新解决方案。上游基线为官方 YooAsset `3.0.7`（commit `8cb910de899050d95b01644e7a3bd7a643f226c0`）。包内 `coreVersion` 为 `3.0.7-m1`，表示基于该版本保留了 Nova 适配。
 
 保留 Nova 的 Settings 显式注入、配置路径提供器、BundleCollector 缓存重置及 `NovaFramework.Editor` 友元扩展；原生下载在缓存校验最终结果后通知 URL 策略，保持内容校验失败时的主备重试。Scriptable Build Pipeline 使用上游自动版本适配，当前依赖为 `4.0.1`。
 
-升级到 3.0.6 的自定义异步操作须将 `InternalAbort()` 清理逻辑迁移到 `InternalDispose()`。
+通过 YooAsset 友元程序集自定义下载后端时，将请求推进逻辑移入 `IDownloadRequest.UpdateRequest()`，让 `IsDone` 只返回状态，并移除 `IDownloadBackend.Update()` 的实现。
+
+可选 `Mini Game` 示例在 Android 启用 `GOOGLE_PLAY` 后存在构造函数编译错误，详见 [上游问题 #776](https://github.com/tuyoogame/YooAsset/issues/776)。
 
 Bundle Builder 的三个加解密下拉通过 `EditorAssemblyUtility.GetBuildServiceTypes` 只列出可公开无参实例化的具体类型，None 优先，其余按全类型名排序；Nova/Pipify 共用该入口。构建直接实例化所选类型，不提供旧类名映射或附加筛选注册，不依赖 Nova 类型。该 Editor 本地补丁升级 Core 时须保留。
 
@@ -17,7 +19,7 @@ Bundle Builder 的三个加解密下拉通过 `EditorAssemblyUtility.GetBuildSer
 
 ```json
 "dependencies": {
-  "com.solotopia.yooasset": "1.2.2"
+  "com.solotopia.yooasset": "1.2.3"
 }
 ```
 

@@ -91,9 +91,11 @@ CREATE TABLE IF NOT EXISTS outbox (
 CREATE INDEX IF NOT EXISTS ready_reports ON outbox(accepted, ready_at);
 """
 
-# 与 Unity Editor 的待发查询一致，旧版缺少回执的自动入口遗漏保留在本机。
+# 与 Unity Editor 的待发查询一致，已停用的试验记录和缺少回执的自动入口遗漏保留在本机。
 SENDABLE_REPORT_FILTER = f"""
-    json_extract(payload,'$.kind')!='task' AND (
+    json_extract(payload,'$.kind')!='task'
+    AND COALESCE(json_extract(payload,'$.data.stage'),'')!='sdk-device'
+    AND (
         COALESCE(json_extract(payload,'$.data.source'),'')!='codex'
         OR COALESCE(json_extract(payload,'$.data.code'),'') NOT GLOB 'missing-nova-route.*'
         OR EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.evidence') AS evidence
@@ -868,7 +870,7 @@ def editor_event(root, db, payload):
             save(db, "sdk", {})
         if kind == "sdk-finished":
             enqueue(db, "usage", {"module": "sdk", "operation": "editor.preload.sdk", "outcome": "success",
-                                  "framework": framework}, event_id("sdk-finished", identifier))
+                                  "framework": framework, "source": "editor"}, event_id("sdk-finished", identifier))
 
 
 def inspect_pending(db):
@@ -1084,7 +1086,9 @@ def work(root, folder, worker_id, *, single=False):
                        json_extract(payload,'$.data.source') AS source,
                        COALESCE(json_type(payload,'$.data.codex_hooks'),
                                 json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS has_project_details,
-                       json_type(payload,'$.data.git_user_name') IS NOT NULL AS has_git_user_name
+                       json_type(payload,'$.data.git_user_name') IS NOT NULL AS has_git_user_name,
+                       json_extract(payload,'$.data.stage') IN
+                           ('editor-module','startup-stage','framework-upgrade') AS has_execution_evidence
                 FROM outbox WHERE accepted IS NULL AND ready_at<=?
                 AND {SENDABLE_REPORT_FILTER}
                 ORDER BY json_extract(payload,'$.kind')!='issue',ready_at,rowid LIMIT 8
@@ -1095,6 +1099,10 @@ def work(root, folder, worker_id, *, single=False):
             if not health:
                 received, error = None, "service-unavailable"
             elif item["kind"] == "hook_activity" and health.get("hook_activity") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["kind"] == "implementation" and health.get("implementation_tracking") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["has_execution_evidence"] and health.get("execution_evidence") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["kind"] == "usage" and item["source"] and health.get("codex_telemetry") is not True:
                 received, error = None, "server-upgrade-required"

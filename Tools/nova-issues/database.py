@@ -214,9 +214,10 @@ class Database:
         return issue_id
 
     def overview(self, days):
-        """按发生时间汇总真实的 Codex 轮次和模块来源，保留旧用量记录。"""
+        """汇总维护台数据，并从同一份数据库快照读取未读计数基线。"""
         since = now() - days * 86400
         with self.connect() as db:
+            db.execute("BEGIN")
             projects = db.execute("""
                 SELECT p.id, p.name, p.team, p.created_at, p.last_seen, h.last_hook_run
                 FROM projects AS p LEFT JOIN (
@@ -234,14 +235,39 @@ class Database:
                     FROM reports WHERE kind='snapshot'
                 ) WHERE n=1 ORDER BY received_at DESC
                 """)
-            usage = db.execute("""
-                SELECT project_id, json_extract(payload,'$.module') AS module,
-                       json_extract(payload,'$.operation') AS operation,
-                       json_extract(payload,'$.outcome') AS outcome,
+            implementation = db.execute("""
+                SELECT project_id,workspace,observed_at,received_at,
+                       json_extract(payload,'$.tools') AS tools,
                        json_extract(payload,'$.framework') AS framework,
-                       COALESCE(json_extract(payload,'$.source'),'legacy') AS source,
-                       COALESCE(json_extract(payload,'$.entry'),'') AS entry, COUNT(*) AS count
-                FROM reports WHERE kind='usage' AND observed_at>=?
+                       json_extract(payload,'$.requested_framework') AS requested_framework,
+                       json_extract(payload,'$.editor_framework') AS editor_framework
+                FROM (
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY project_id,workspace ORDER BY observed_at DESC,received_at DESC,rowid DESC
+                    ) AS n FROM reports WHERE kind='implementation' AND json_extract(payload,'$.stage')='workspace'
+                ) WHERE n=1 ORDER BY observed_at DESC
+                """)
+            usage = db.execute("""
+                WITH recorded AS (
+                    SELECT project_id, json_extract(payload,'$.module') AS module,
+                           json_extract(payload,'$.operation') AS operation,
+                           json_extract(payload,'$.outcome') AS outcome,
+                           json_extract(payload,'$.framework') AS framework,
+                           json_extract(payload,'$.source') AS recorded_source,
+                           json_extract(payload,'$.entry') AS recorded_entry
+                    FROM reports WHERE kind='usage' AND observed_at>=?
+                ), editor_entries AS (
+                    -- 旧版 Editor 回执和 SDK 预加载有固定格式，原报告保持原样。
+                    SELECT *, CASE
+                        WHEN recorded_entry IS NOT NULL OR COALESCE(recorded_source,'editor')!='editor' THEN NULL
+                        WHEN operation GLOB ('nova.project.' || module || '.?*') AND outcome!='executed' THEN 'action'
+                        WHEN module='sdk' AND operation='editor.preload.sdk' AND outcome='success' THEN 'preload'
+                    END AS editor_entry FROM recorded
+                )
+                SELECT project_id, module, operation, outcome, framework,
+                       COALESCE(recorded_source, CASE WHEN editor_entry IS NOT NULL THEN 'editor' ELSE 'legacy' END) AS source,
+                       COALESCE(recorded_entry, editor_entry, '') AS entry, COUNT(*) AS count
+                FROM editor_entries
                 GROUP BY project_id,module,operation,outcome,framework,source,entry ORDER BY count DESC LIMIT 500
                 """, (since,))
             codex_activity = db.execute("""
@@ -262,9 +288,28 @@ class Database:
                 SELECT COUNT(*) AS active, COUNT(CASE WHEN priority='P0' THEN 1 END) AS p0
                 FROM issues WHERE status NOT IN ('closed', 'duplicate')
                 """).fetchone()
+            activity_totals = db.execute("""
+                WITH counts AS (
+                    SELECT project_id, MIN(rowid) AS first_report,
+                           COUNT(CASE WHEN kind='issue' THEN 1 END) AS issues,
+                           COUNT(CASE WHEN kind IN ('snapshot', 'hook_activity') THEN 1 END) AS project_reports,
+                           COUNT(CASE WHEN kind='usage' THEN 1 END) AS usage
+                    FROM reports GROUP BY project_id
+                )
+                -- 首次环境或钩子上报同时自动登记项目时，项目栏目只计一次。
+                SELECT COALESCE(SUM(c.issues), 0) AS issues,
+                       COUNT(*) + COALESCE(SUM(c.project_reports), 0) - COUNT(CASE
+                           WHEN r.kind IN ('snapshot', 'hook_activity') AND EXISTS (
+                               SELECT 1 FROM automatic_workspaces WHERE project_id=p.id
+                           ) THEN 1 END) AS projects,
+                       COALESCE(SUM(c.usage), 0) AS usage
+                FROM projects p LEFT JOIN counts c ON c.project_id=p.id
+                LEFT JOIN reports r ON r.rowid=c.first_report
+                """).fetchone()
             return {"projects": list(map(dict, projects)), "workspaces": list(map(dict, latest)),
+                    "implementation": [{**dict(item), "tools": json.loads(item["tools"])} for item in implementation],
                     "usage": list(map(dict, usage)), "issues": self.issue_rows(db),
-                    "issue_counts": dict(issue_counts),
+                    "issue_counts": dict(issue_counts), "activity_totals": dict(activity_totals),
                     "codex_activity": list(map(dict, codex_activity)), "codex_modules": list(map(dict, codex_modules)),
                     "server_time": now(), "days": days}
 
@@ -332,8 +377,64 @@ class Database:
                     ) AS n FROM reports WHERE project_id=? AND kind='hook_activity'
                 ) WHERE n=1 ORDER BY last_run DESC, workspace
                 """, (project_id,))
+            implementation = db.execute("""
+                WITH facts AS (
+                    SELECT rowid,workspace,observed_at,received_at,payload,
+                           json_extract(payload,'$.stage') AS stage
+                    FROM reports WHERE project_id=? AND kind='implementation'
+                      AND json_extract(payload,'$.stage')!='sdk-device'
+                ), ranked AS (
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY workspace,stage,
+                           CASE WHEN stage NOT IN ('workspace','framework-upgrade') THEN json_extract(payload,'$.framework') END,
+                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.unity') END,
+                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.platform') END,
+                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.channel') END,
+                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.mode') END,
+                           CASE WHEN stage IN ('plugpals-query','editor-module','startup-stage','framework-upgrade')
+                                THEN json_extract(payload,'$.step') END,
+                           json_extract(payload,'$.attempt'),
+                           json_extract(payload,'$.build_kind'),json_extract(payload,'$.development')
+                        ORDER BY json_extract(payload,'$.sequence') DESC,observed_at DESC,
+                            CASE json_extract(payload,'$.outcome') WHEN 'running' THEN 0 WHEN 'waiting' THEN 1 ELSE 2 END DESC,
+                            received_at DESC,rowid DESC
+                    ) AS n FROM facts
+                )
+                SELECT workspace,observed_at,received_at,payload FROM ranked WHERE n=1
+                ORDER BY stage!='workspace',observed_at DESC,received_at DESC,rowid DESC LIMIT 400
+                """, (project_id,))
+            modules = db.execute("""
+                WITH events AS (
+                    SELECT workspace,observed_at,received_at,json_extract(payload,'$.framework') AS framework,
+                           json_extract(payload,'$.module') AS module,json_extract(payload,'$.outcome') AS outcome,
+                           0 AS play_session
+                    FROM reports WHERE project_id=? AND kind='usage' AND observed_at>=?
+                      AND COALESCE(json_extract(payload,'$.entry'),'')!='skill'
+                    UNION ALL
+                    SELECT workspace,observed_at,received_at,json_extract(payload,'$.framework'),
+                           json_extract(payload,'$.step'),'success',1
+                    FROM reports WHERE project_id=? AND kind='implementation' AND observed_at>=?
+                      AND json_extract(payload,'$.stage')='editor-module'
+                )
+                SELECT workspace,framework,module,SUM(1-play_session) AS count,SUM(play_session) AS play_sessions,
+                       MAX(observed_at) AS last_use,
+                       MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
+                       SUM(CASE WHEN outcome IN ('failed','blocked') THEN 1 ELSE 0 END) AS problems
+                FROM events GROUP BY workspace,framework,module ORDER BY last_use DESC LIMIT 500
+                """, (project_id, now() - 30 * 86400, project_id, now() - 30 * 86400))
+            upgrade_issues = db.execute("""
+                SELECT workspace,observed_at,received_at,issue_id,payload FROM (
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY workspace,json_extract(payload,'$.framework')
+                        ORDER BY observed_at DESC,received_at DESC,rowid DESC
+                    ) AS n FROM reports WHERE project_id=? AND kind='issue'
+                        AND json_extract(payload,'$.area') IN ('editor-compilation','package-import')
+                ) WHERE n=1 ORDER BY observed_at DESC LIMIT 100
+                """, (project_id,))
             return {"project": dict(project), "snapshots": list(map(self.decode, snapshots)),
-                    "tasks": list(map(self.decode, tasks)), "hook_activity": list(map(dict, hook_activity))}
+                    "tasks": list(map(self.decode, tasks)), "hook_activity": list(map(dict, hook_activity)),
+                    "implementation": list(map(self.decode, implementation)), "module_evidence": list(map(dict, modules)),
+                    "upgrade_issues": list(map(self.decode, upgrade_issues))}
 
     def project_snapshot(self, project_id, report_id):
         """读取归属当前项目的单份环境快照。"""

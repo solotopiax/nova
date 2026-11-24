@@ -61,7 +61,7 @@ namespace NovaFramework.Editor
                     if (IsBatchRunning) throw new InvalidOperationException($"{c_LogPrefix} 已有 Batch 正在执行，不能并发启动第二个 Batch。");
                     Registry.EnsureAllStepsRegistered(batch);
                     if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(
-                            out _, out string frozenMasterGuid, out _, out string masterError))
+                            out ConfigMasterSO frozenMaster, out string frozenMasterGuid, out _, out string masterError))
                     {
                         throw new InvalidOperationException($"{c_LogPrefix} {masterError}");
                     }
@@ -73,7 +73,11 @@ namespace NovaFramework.Editor
 
                     Stopwatch total = Stopwatch.StartNew();
                     reporter.BeginBatch(batch.Name, batch.Items.Count);
-                    bool success = false;
+                    bool success = false, cancelled = false, ranStep = false;
+                    string platform = EditorUserBuildSettings.activeBuildTarget.ToString();
+                    string channel = frozenMaster.CurrentChannel.ToString();
+                    string mode = frozenMaster.CurrentDevelopMode.ToString();
+                    string currentStep = null;
                     var buildState = new PipifyBuildState { LatestArtifact = checkpoint?.RestoreArtifact() };
                     s_IsRunning = true;
                     // 不冻结 Domain Reload 也不进入 Asset Editing：
@@ -92,6 +96,7 @@ namespace NovaFramework.Editor
                             ct.ThrowIfCancellationRequested();
                             ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
                             BatchItem item = batch.Items[i];
+                            currentStep = item.StepId;
                             PipifyStepInfo info = Registry.FindById(item.StepId);
                             if (info == null) throw new InvalidOperationException(string.Format("{0} 未注册的 StepId：{1}", c_LogPrefix, item.StepId));
 
@@ -146,6 +151,10 @@ namespace NovaFramework.Editor
                                     await invoked;
                                     ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
                                     sw.Stop();
+                                    ranStep = true;
+                                    if (item.StepId == "bundlebuilder.build")
+                                        NovaIssues.ObserveImplementation("bundle-build", "success", platform, channel, mode,
+                                            item.StepId, sw.Elapsed);
                                     reporter.EndStep(i, true, sw.Elapsed, null);
                                 }
                                 catch (TargetInvocationException tie)
@@ -173,6 +182,11 @@ namespace NovaFramework.Editor
                         }
                         success = true;
                     }
+                    catch (OperationCanceledException)
+                    {
+                        cancelled = true;
+                        throw;
+                    }
                     finally
                     {
                         // 故意不在这里调 AssetDatabase.Refresh()：Refresh 会立刻触发 C# 编译 + Domain Reload，
@@ -181,6 +195,9 @@ namespace NovaFramework.Editor
                         total.Stop();
                         s_IsRunning = false;
                         ClearWindowUploadCheckpoint();
+                        if (!success || ranStep)
+                            NovaIssues.ObserveImplementation("pipify-batch", success ? "success" : cancelled ? "cancelled" : "failed",
+                                platform, channel, mode, success ? null : currentStep, total.Elapsed);
                         reporter.EndBatch(success, total.Elapsed);
                     }
                 }

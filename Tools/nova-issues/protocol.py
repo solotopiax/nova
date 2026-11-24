@@ -12,6 +12,7 @@ STATUSES = ("open", "triaged", "working", "awaiting_verification", "closed", "du
 PRIORITIES = ("P0", "P1", "P2", "P3")
 KEY = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\Z")
 UUID = re.compile(r"[a-f0-9]{32}\Z")
+VERSION = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9.+-]{0,79}\Z")
 APPLICATION_IDENTIFIER = re.compile(r"[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)+\Z")
 PRIVATE_TEXT = re.compile(
     r"(?i)(\b(?:https?|ssh|file)://|\b[A-Z]:[\\/]|/(?:Users|home|private|tmp)/|"
@@ -129,6 +130,80 @@ def validate_hook_activity(data):
     label(data["framework"], 80)
 
 
+def validate_implementation(data):
+    """工程实施事实只携带状态、版本、可核对的入口和结果。"""
+    base = ("framework", "unity", "stage")
+    coordinate = ("platform", "channel", "mode")
+    stage = enum(data.get("stage") if isinstance(data, dict) else None, (
+        "workspace", "config-export", "config-load", "pipify-batch", "plugpals-query",
+        "bundle-build", "player-build", "sdk-preload",
+        "editor-module", "startup-stage", "framework-upgrade",
+    ))
+    if stage == "workspace":
+        obj(data, base + ("tools", "editor_framework", "sdk_packages", "sdk_configs"), coordinate + ("requested_framework",))
+        obj(data["tools"], ("config", "pipify", "plugpals"))
+        for state in data["tools"].values():
+            enum(state, ("configured", "pending"))
+        label(data["editor_framework"], 80)
+        if "requested_framework" in data:
+            label(data["requested_framework"], 80)
+        for item in records(data["sdk_packages"], 100):
+            obj(item, ("id", "version"))
+            key(item["id"])
+            if not item["id"].startswith("com.solotopia.nova.framework.sdk."):
+                raise InvalidInput("SDK 包标识不属于 Nova。")
+            label(item["version"], 80)
+        for config in records(data["sdk_configs"], 100):
+            key(config)
+    elif stage == "editor-module":
+        obj(data, base + ("step", "outcome"), coordinate)
+        enum(data["step"], ("asset", "procedure", "table"))
+        enum(data["outcome"], ("success",))
+    elif stage == "startup-stage":
+        obj(data, base + ("step", "outcome", "attempt", "sequence", "milliseconds"), coordinate)
+        enum(data["step"], ("splash", "version-check", "app-download", "hotfix", "load-dll",
+                            "persist", "localization", "network", "sdk", "table", "ui", "sound", "vibration"))
+        enum(data["outcome"], ("running", "waiting", "advanced", "success", "failed", "cancelled"))
+        key(data["attempt"], UUID)
+        int_range(data["milliseconds"], 0, 86400000)
+    elif stage == "framework-upgrade":
+        obj(data, base + ("attempt", "step", "outcome", "sequence", "from_framework", "requested_framework", "milliseconds"),
+            ("reason",))
+        key(data["attempt"], UUID)
+        phase = enum(data["step"], ("request", "resolve", "compile", "load"))
+        outcomes = {
+            "request": ("running",),
+            "resolve": ("success", "failed", "waiting", "cancelled"),
+            "compile": ("running", "success", "failed", "cancelled"),
+            "load": ("success", "recovered", "waiting", "cancelled"),
+        }
+        enum(data["outcome"], outcomes[phase])
+        key(data["from_framework"], VERSION)
+        key(data["requested_framework"], VERSION)
+        int_range(data["milliseconds"], 0, 86400000)
+        if "reason" in data:
+            enum(data["reason"], ("upm-package-error", "compiler-error", "request-changed"))
+    else:
+        build = ("build_kind", "development") if stage == "player-build" else ()
+        obj(data, base + ("outcome",) + build, coordinate + ("step", "milliseconds"))
+        enum(data["outcome"], ("success", "failed", "cancelled", "blocked"))
+        if stage == "player-build":
+            enum(data["build_kind"], ("player", "project", "scripts"))
+            if type(data["development"]) is not bool:
+                raise InvalidInput("开发构建标记无效。")
+        if "step" in data:
+            key(data["step"])
+        if "milliseconds" in data:
+            int_range(data["milliseconds"], 0, 86400000)
+    for field in coordinate:
+        if field in data:
+            key(data[field])
+    for field in ("framework", "unity"):
+        label(data[field], 80)
+    if "sequence" in data:
+        int_range(data["sequence"], 1, 2147483647)
+
+
 def validate_issue(data):
     obj(data, ("code", "area", "title", "summary", "expected", "actual", "priority",
                "framework", "evidence", "source"), ("workaround", "version", "steps"))
@@ -157,7 +232,8 @@ def validate_event(value):
     key(value["workspace"], UUID)
     int_range(value["observed_at"], 1, int(time.time()) + 86400)
     validators = {"snapshot": validate_snapshot, "usage": validate_usage, "issue": validate_issue,
-                  "task": validate_task, "hook_activity": validate_hook_activity}
+                  "task": validate_task, "hook_activity": validate_hook_activity,
+                  "implementation": validate_implementation}
     kind = enum(value["kind"], validators)
     validators[kind](value["data"])
     return value

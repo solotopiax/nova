@@ -76,8 +76,8 @@ namespace YooAsset
 
                 // 注意：不主动调用 _downloadFileOp.UpdateOperation()
                 // 注意：下载任务由 DownloadSchedulerOperation 统一驱动，此处仅读取状态。
-                Progress = _downloadFileOp.Progress;
                 Report = _downloadFileOp.LatestReport;
+                Progress = _downloadFileOp.Progress;
                 if (_downloadFileOp.IsDone == false)
                     return;
 

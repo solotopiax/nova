@@ -1,7 +1,7 @@
 版本源
 https://github.com/tuyoogame/YooAsset
-coreVersion: 3.0.5
-packageVersion: 1.1.0
+coreVersion: 3.0.7-m1
+packageVersion: 1.2.3
 
 
-Nova 框架层针对 YooAsset 的额外封装预留位（暂无）。
+上游版本和 Nova 适配说明见包根目录的 THIRD_PARTY_NOTICES.md。

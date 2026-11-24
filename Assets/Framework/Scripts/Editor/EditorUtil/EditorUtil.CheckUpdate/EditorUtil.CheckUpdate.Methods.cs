@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -33,7 +34,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// Editor 启动时只查询一次更新，把结果交给安全展示队列；不从异步回调直接打开窗口。
+            /// 为启动或跨日的自动检查查询一次更新，把结果交给安全展示队列。
             /// 等待展示及域重载复用已取得的列表，跳过配置和本地安装版本在真正展示前重新读取。
             /// </summary>
             internal static async Task CheckOnStartupAsync()
@@ -48,13 +49,14 @@ namespace NovaFramework.Editor
                     if (s_AutomaticStopping) return;
                     if ((externalUpdates == null || externalUpdates.Count == 0) && (internalUpdates == null || internalUpdates.Count == 0))
                     {
-                        CompleteAutomaticPresentation();
+                        CompleteAutomaticPresentation(DateTime.Today);
                         return;
                     }
                     QueueAutomaticPresentation(externalUpdates, internalUpdates);
                 }
                 catch (Exception e)
                 {
+                    FinishAutomaticCheckForDay(DateTime.Today);
                     SetAutomaticCheckState("blocked", "本轮自动更新查询未完成；保留已有跳过记录，可从菜单手动检查。");
                     Log.Warning(LogTag.Editor, "CheckUpdate.CheckOnStartupAsync 检查更新失败: {0}", e.Message);
                 }
@@ -65,23 +67,32 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 将指定包的当前最新版本标记为"跳过"，写入持久化配置。
+            /// 暂停指定外网包的当前最新版本的自动提醒，有效期为本地当天。
             /// </summary>
-            /// <param name="items">要跳过的更新列表。</param>
+            /// <param name="items">今天要跳过的外网仓库更新列表。</param>
             public static void MarkSkip(IEnumerable<UpdateInfo> items)
             {
-                MarkSkip(items, false);
+                MarkSkip(items, null, DateTime.Today);
             }
 
             /// <summary>
-            /// 将指定仓库的当前最新版本标记为"跳过"，写入持久化配置。
+            /// 一次保存两个仓库的当天选择。窗口跨日后关闭时，昨天的选择已经过期。
             /// </summary>
-            internal static void MarkSkip(IEnumerable<UpdateInfo> items, bool isInternal)
+            /// <param name="externalItems">今天要跳过的外网仓库更新列表。</param>
+            /// <param name="internalItems">今天要跳过的内部云仓库更新列表。</param>
+            /// <param name="selectedDay">勾选时的本地自然日。</param>
+            internal static void MarkSkip(IEnumerable<UpdateInfo> externalItems, IEnumerable<UpdateInfo> internalItems, DateTime selectedDay)
             {
-                SkipConfig config = LoadConfig();
-                foreach (UpdateInfo info in items)
+                if (selectedDay != DateTime.Today) return;
+
+                SkipConfig config = LoadConfigForDay(selectedDay);
+                foreach (UpdateInfo info in externalItems ?? Array.Empty<UpdateInfo>())
                 {
-                    config.SkipVersions[BuildSkipKey(info.PackageName, isInternal)] = info.LatestVersion;
+                    config.SkipVersions[BuildSkipKey(info.PackageName, false)] = info.LatestVersion;
+                }
+                foreach (UpdateInfo info in internalItems ?? Array.Empty<UpdateInfo>())
+                {
+                    config.SkipVersions[BuildSkipKey(info.PackageName, true)] = info.LatestVersion;
                 }
 
                 SaveConfig(config);
@@ -262,28 +273,29 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 从磁盘读取跳过配置；文件不存在时返回空配置不报错。
+            /// 读取指定本地自然日的跳过配置；缺少日期、日期不同或记录无效时返回当天的空配置。
             /// </summary>
-            /// <returns>跳过配置实例。</returns>
-            private static SkipConfig LoadConfig()
+            /// <param name="day">要读取的本地自然日。</param>
+            /// <returns>可应用于该日的跳过配置。</returns>
+            private static SkipConfig LoadConfigForDay(DateTime day)
             {
+                string localDate = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 string fullPath = GetConfigFullPath();
-                if (!Util.SysIO.File.Exists(fullPath))
-                {
-                    return new SkipConfig();
-                }
-
                 try
                 {
-                    string json = Util.SysIO.File.ReadAllTextSync(fullPath);
-                    SkipConfig config = Util.Json.Deserialize<SkipConfig>(json);
-                    return config ?? new SkipConfig();
+                    if (Util.SysIO.File.Exists(fullPath))
+                    {
+                        string json = Util.SysIO.File.ReadAllTextSync(fullPath);
+                        SkipConfig config = Util.Json.Deserialize<SkipConfig>(json);
+                        if (config?.LocalDate == localDate && config.SkipVersions != null) return config;
+                    }
                 }
                 catch (Exception e)
                 {
-                    Log.Warning(LogTag.Editor, "CheckUpdate.LoadConfig 读取配置失败: {0}", e.Message);
-                    return new SkipConfig();
+                    Log.Warning(LogTag.Editor, "CheckUpdate.LoadConfigForDay 读取配置失败: {0}", e.Message);
                 }
+
+                return new SkipConfig { LocalDate = localDate };
             }
 
             /// <summary>

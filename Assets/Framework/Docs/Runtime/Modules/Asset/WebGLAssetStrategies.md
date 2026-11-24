@@ -139,7 +139,7 @@ WebGL 不使用“单文件字节流入超时”。`WebGLBundleRequestTimeout`�
 
 ## 微信小游戏原生预下载
 
-安装微信 Kit 与 YooAsset 私包 `1.2.0`（Core `3.0.6`）后，`YooAsset.Custom` 程序集在 WebGL Player 场景加载前检查真实小游戏容器并注册平台策略。不依赖项目手工添加微信宏，不需要业务注册，也不等待微信 Plugin 的初始化；普通浏览器及 Editor 不注册。
+安装微信小游戏 SDK 和配套 `com.solotopia.yooasset` 后，`YooAsset.Custom` 程序集在 WebGL Player 场景加载前检查微信小游戏容器并注册平台策略。SDK 通过 `IWebPreloadStrategy` 提供带微信预下载头的请求，由 YooAsset 负责推进请求和报告进度。普通浏览器及 Editor 不注册。
 
 | 策略 | 微信 Host 行为 | 内存所有权 |
 |---|---|---|

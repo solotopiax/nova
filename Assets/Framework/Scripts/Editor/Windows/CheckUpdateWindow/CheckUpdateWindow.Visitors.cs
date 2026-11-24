@@ -8,6 +8,7 @@
  * descrip:   CheckUpdate 窗口字段声明
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -79,7 +80,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// Footer 勾选项文案。
         /// </summary>
-        private const string c_FooterToggleLabel = "不再提示这些版本";
+        private const string c_FooterToggleLabel = "今日不再提示这些版本";
 
         /// <summary>
         /// Footer 勾选项文字宽度之外的额外像素（勾选框 + 内边距）。
@@ -127,9 +128,9 @@ namespace NovaFramework.Editor
         private Vector2 m_Scroll;
 
         /// <summary>
-        /// 是否勾选"不再提示这些版本"。
+        /// 勾选「今日不再提示这些版本」时的本地日期，未勾选时为默认值。
         /// </summary>
-        private bool m_DontShowAgain;
+        private DateTime m_SkipDay;
 
         /// <summary>
         /// 表头/行样式缓存（避免每帧重建）。

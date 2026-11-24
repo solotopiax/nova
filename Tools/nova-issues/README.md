@@ -50,9 +50,11 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 「总览」按数据库中的待处理问题统计总数和 P0 数量。「问题」页可按项目筛选，并同时使用搜索、状态和优先级。同一个问题涉及多个项目时，在每个相关项目的结果中都能找到。
 
+「问题」「项目与版本」「使用记录」的红色数字表示刷新时发现的未读数量。问题和使用记录按收到的上报计数，项目与版本计入新增项目及环境、钩子上报。点击栏目后清除该栏已显示的数字。同一浏览器按账号保留已读进度，首次登录从当时的数据开始计数。
+
 「项目与版本」显示 Framework、Unity 版本和最近环境上报时间。点击团队列的「设置团队」或「修改」保存便于识别的团队名称，留空即可清除。自动登记的新项目团队留空。服务升级时清空旧自动登记项目的默认团队占位。
 
-项目详情的环境快照显示游戏包名和「钩子追加」，各工作区的历史快照各自保留对应的版本及状态。包名来自 Unity Player Settings，钩子状态按上报工作区使用的 Nova 版本核对项目配置及脚本。配置齐全、尚未加入及部分缺失或过期分别显示「已加全」「待追加」「不完整」。成员仍在 Codex 中自行审查授权。旧快照缺少这两项时显示「待上报」。
+项目详情的环境快照显示游戏包名和「钩子追加」，各工作区的历史快照各自保留对应的版本及状态。包名来自 Unity Player Settings。反馈配置和绑定脚本齐备、尚未加入及部分缺失或校验失败分别显示「已加全」「待追加」「不完整」。升级会沿用完整的既有定义及脚本，成员的授权状态仍在 Codex 中查看。旧快照缺少这两项时显示「待上报」。
 
 每个工作区的最新环境快照会在「钩子追加」内附上最近实际运行时间和对应的 Framework 版本。工作区首次成功运行时立即安排上报，之后有新运行时每小时最多刷新一次。维护台按客户端的实际运行时间取最新记录。
 
@@ -64,7 +66,9 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 绿色表示当前版本已经是查到的最新版本，橙色表示版本不同。内置包显示「随 Unity」，缺少可核实版本的包显示横线。成功的仓库查询缓存五分钟。展开历史快照时会按该快照的 Unity 版本查询，已有上报可直接使用。
 
-环境首次识别，或 Framework、Unity 版本、游戏包名、项目钩子状态、Git 名称发生变化时上报。信息未变时，按工作站本地自然日在同一工作区首次 Editor 编译完成后上报一次。「使用记录」按项目、模块和发生时间汇总 Codex 调用及 Skill 查阅。工作区队列从工程 Library 后台发送，服务暂不可用时按原编号补发。
+环境首次识别，或 Framework、Unity 版本、游戏包名、项目钩子状态、Git 名称发生变化时上报。信息未变时，按工作站本地自然日在同一工作区首次 Editor 编译完成后上报一次。工作区队列从工程 Library 后台发送，服务暂不可用时按原编号补发。
+
+「使用记录」按项目、模块和发生时间汇总。来源显示观察到操作的一方。`Editor` 记录来自执行回执或 SDK 预加载，`Codex` 记录来自已启用的反馈钩子。能按操作标识和结果识别的历史 Editor 记录也会显示对应入口，其他缺少来源的历史记录显示「未标注」。将鼠标停在带点线的操作名称上即可查看用途。
 
 ## 接口
 
@@ -84,11 +88,19 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 新版环境快照可携带 `application_identifiers`、`codex_hooks` 和 `git_user_name`。服务升级并声明支持对应字段前，携带这些字段的快照保留在本机队列，服务就绪后按原编号补发。
 
-新版工作站通过 `snapshot` 上报基础环境，并通过 `usage` 上报带 `source=codex` 和入口类型 `entry` 的实际调用。服务端继续兼容旧版 `task` 报告。旧版服务未声明 `codex_telemetry` 时，带来源的使用记录留在本地待补发。
+新版工作站通过 `snapshot` 上报基础环境。`usage` 中的 Codex 调用带 `source=codex` 和入口类型 `entry`，Editor 回执带 `source=editor` 和 `entry=action`，SDK 预加载带 `source=editor`。服务端继续兼容旧版 `task` 报告。旧版服务未声明 `codex_telemetry` 时，带来源的使用记录留在本地待补发。
+
+`implementation` 记录工作区配置、Framework 请求／解析／载入阶段和实际工具终态。「项目与版本」列表显示配置概况，项目详情按工作区展示发生时间、收到时间、最近执行结果和模块使用证据。「SDK 接入与构建」显示已安装 SDK 包、启用配置和项目级平台构建结果。旧版服务缺少 `implementation_tracking` 时，新报告留在工程本地待补发。
+
+支持 `execution_evidence` 的服务会接收 Editor Play 模块、启动阶段和 Framework 升级阶段。模块表同时展示近 30 天工具调用与观察到的 Play 次数。项目详情随维护台 15 秒刷新发现新上报，继续保留已展开的快照和包版本结果。缺少该能力的服务仍可接收现有格式，新增执行证据在本地等候升级。
 
 `hook_activity` 对应实际运行。`data` 仅包含 `framework`，工作区和运行时间使用信封里的 `workspace`、`observed_at`。服务就绪并在 `/health` 声明支持 `hook_activity` 后，工作区按原编号送出待发记录。
 
 ## 验证
+
+操作提示随服务目录部署。[Nova 操作说明](usage-descriptions.json) 来自 Project Action 声明、Skill 目录和现有上报入口。[Unity CLI 操作说明](unity-usage-descriptions.json) 预置当前 Unity Pipeline 自带命令及 Unity Editor 弹窗命令。项目或第三方包自行扩展的 Unity CLI 命令显示已知的调用入口，具体用途以提供方的定义为准。
+
+修改 Nova Action 或 Skill 的说明后，从 Nova 开发仓运行 `python3 -B Tools/nova-issues/build_usage_descriptions.py` 更新目录。升级 Unity Pipeline 后，可在同一命令后加 `--unity-project .`，从已打开的 Nova Editor 补齐新增官方命令，同时保留已有中文说明和历史操作。两份说明文件一同纳入服务运行版本。
 
 ```sh
 python3 -B -m unittest discover -s Tools/nova-issues -p 'test_*.py' -v

@@ -164,7 +164,12 @@ namespace NovaFramework.Runtime
         /// <returns>表实例，不存在时返回 null。</returns>
         public override T GetTable<T>()
         {
-            return m_Tables.TryGetValue(typeof(T), out ITable table) ? table as T : null;
+            var result = m_Tables.TryGetValue(typeof(T), out ITable table) ? table as T : null;
+#if UNITY_EDITOR
+            if (result != null)
+                EditorPlayEvidence.Use(EditorPlayModule.Table);
+#endif
+            return result;
         }
 
         /// <summary>
@@ -174,7 +179,13 @@ namespace NovaFramework.Runtime
         /// <returns>表实例，不存在时返回 null。</returns>
         public override object GetTable(Type type)
         {
-            return type != null && m_Tables.TryGetValue(type, out ITable table) ? table : null;
+            if (type == null || !m_Tables.TryGetValue(type, out ITable table))
+                return null;
+#if UNITY_EDITOR
+            if (table != null)
+                EditorPlayEvidence.Use(EditorPlayModule.Table);
+#endif
+            return table;
         }
 
         /// <summary>

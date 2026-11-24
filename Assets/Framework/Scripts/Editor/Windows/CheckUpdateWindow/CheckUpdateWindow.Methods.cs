@@ -8,6 +8,7 @@
  * descrip:   CheckUpdate 窗口私有方法
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using NovaFramework.Runtime;
@@ -35,7 +36,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 带参数打开：启动钩子传入已知更新列表，直接展示无需再次拉取。
+        /// 直接展示传入的外网仓库更新列表，无需再次拉取。
         /// </summary>
         /// <param name="items">待展示的更新列表。</param>
         public static void Open(List<EditorUtil.CheckUpdate.UpdateInfo> items)
@@ -44,7 +45,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 带参数打开：启动钩子传入已知更新列表，直接展示无需再次拉取。
+        /// 直接展示传入的两来源更新列表，无需再次拉取。
         /// </summary>
         public static void Open(List<EditorUtil.CheckUpdate.UpdateInfo> externalItems, List<EditorUtil.CheckUpdate.UpdateInfo> internalItems)
         {
@@ -54,7 +55,7 @@ namespace NovaFramework.Editor
             s_Instance.m_InternalItems = internalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
             s_Instance.m_Items = MergeItems(s_Instance.m_ExternalItems, s_Instance.m_InternalItems);
             s_Instance.m_IsChecking = false;
-            s_Instance.m_DontShowAgain = false;
+            s_Instance.m_SkipDay = default;
             s_Instance.Repaint();
         }
 
@@ -72,7 +73,7 @@ namespace NovaFramework.Editor
             window.m_InternalItems = internalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
             window.m_Items = MergeItems(window.m_ExternalItems, window.m_InternalItems);
             window.m_IsChecking = false;
-            window.m_DontShowAgain = false;
+            window.m_SkipDay = default;
             s_Instance = window;
             try { window.Show(); }
             catch
@@ -101,7 +102,7 @@ namespace NovaFramework.Editor
                 s_Instance.m_ExternalItems = externalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
                 s_Instance.m_InternalItems = internalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
                 s_Instance.m_Items = MergeItems(s_Instance.m_ExternalItems, s_Instance.m_InternalItems);
-                s_Instance.m_DontShowAgain = false;
+                s_Instance.m_SkipDay = default;
             }
             catch (System.Exception e)
             {
@@ -357,7 +358,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制底部 Footer（启动时不再提示勾选框，右对齐）。
+        /// 绘制底部的今日跳过勾选框，日期改变后显示为未勾选。
         /// </summary>
         private void DrawFooter()
         {
@@ -374,7 +375,8 @@ namespace NovaFramework.Editor
                     toggleWidth,
                     EditorGUIUtility.singleLineHeight,
                     GUILayout.Width(toggleWidth));
-                m_DontShowAgain = EditorGUI.ToggleLeft(toggleRect, toggleContent, m_DontShowAgain);
+                DateTime today = DateTime.Today;
+                m_SkipDay = EditorGUI.ToggleLeft(toggleRect, toggleContent, m_SkipDay == today) ? today : default;
                 EditorUtil.Draw.Space(4f);
             });
         }

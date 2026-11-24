@@ -1,12 +1,14 @@
 # CheckUpdateWindow
 
-启动时的自动提示由[更新检查工具](../EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md)排队：编译、导入、当前工具链安装及重要声明人工确认期间等待，已查询结果跨重载恢复，真正显示前再读取当前版本和跳过记录。自动入口 `TryOpenAutomatic` 只创建普通非模态 `Show` 窗口；已有更新窗口时继续等待，不覆盖用户选择。手动 `Open()` 与带结果的 `Open(...)` 保持原有语义，窗口关闭时才保存用户明确勾选的跳过选择。
+勾选「今日不再提示这些版本」并关闭窗口后，列表里的版本当天不会再次自动弹出。第二天如果这些包仍有可用更新，Unity 会在可以显示窗口时再次提醒，编辑器连续开着也会检查。可随时通过 `Nova → Open Check Update` 手动查看全部可用更新。
+
+自动提示由[更新检查工具](../EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md)排队。编译、导入、当前工具链安装及重要声明人工确认期间等待，已查询结果跨重载恢复，真正显示前再读取当前版本和当天的跳过记录。自动入口 `TryOpenAutomatic` 通过普通非模态 `Show` 展示，已有更新窗口时等待其关闭。
 
 **类签名**：`public sealed partial class CheckUpdateWindow : EditorWindow`
 **命名空间**：`NovaFramework.Editor`
 **菜单入口**：`Nova/Open Check Update`
 
-Nova 包版本更新提示窗口，以表格形式展示所有已安装包中存在新版本的条目，支持启动自动弹出和手动打开两种入口。当前窗口会同时展示外网仓库与内部云仓库的更新项。
+Nova 包版本更新提示窗口以表格形式展示外网仓库与内部云仓库中已安装包的可用更新。
 
 ---
 
@@ -49,7 +51,7 @@ UnityEditor.EditorWindow
 | `m_InternalItems` | `List<EditorUtil.CheckUpdate.UpdateInfo>` | `null` | 内部云仓库更新列表 |
 | `m_IsChecking` | `bool` | `false` | 是否正在异步拉取中 |
 | `m_Scroll` | `Vector2` | `default` | 滚动位置 |
-| `m_DontShowAgain` | `bool` | `false` | 是否勾选"不再提示这些版本" |
+| `m_SkipDay` | `DateTime` | `default` | 勾选「今日不再提示这些版本」时的本地日期 |
 | `m_HeaderStyle` | `GUIStyle` | `null` | 标题样式（懒初始化，`EnsureStyles` 标志） |
 | `m_EmptyStyle` | `GUIStyle` | `null` | 空态提示文本样式（居中灰色） |
 
@@ -64,7 +66,7 @@ UnityEditor.EditorWindow
 public static void Open()
 
 /// <summary>
-/// 带参数打开：启动钩子传入已知更新列表，直接展示无需再次拉取。
+/// 带参数打开：直接展示传入的更新列表。
 /// </summary>
 /// <param name="items">待展示的更新列表。</param>
 public static void Open(List<EditorUtil.CheckUpdate.UpdateInfo> items)
@@ -88,17 +90,15 @@ public static void Open(
       └─ 失败 → m_Items = 空列表，m_IsChecking = false → [展示"无更新"空态]
 
 [窗口未打开]
-      │  Open(items) — 启动钩子传参打开
+      │  Open(items) — 已有结果直接打开
       ▼
 [m_Items = items，m_IsChecking = false → 直接展示列表]
 
 [OnEnable]
-      └─ m_DontShowAgain = false（重置勾选状态）
+      └─ m_SkipDay = default
 
 [OnDisable]
-      └─ m_DontShowAgain == true
-           ├─ 外网列表 → EditorUtil.CheckUpdate.MarkSkip(externalItems, false)
-           └─ 内部列表 → EditorUtil.CheckUpdate.MarkSkip(internalItems, true)
+      └─ 已勾选且有更新 → EditorUtil.CheckUpdate.MarkSkip(externalItems, internalItems, m_SkipDay)
 
 [OnDestroy]
       └─ s_Instance = null
@@ -125,23 +125,16 @@ Open() — 手动入口
   ├─ m_Items = null，m_IsChecking = true，Repaint()
   └─ StartCheckAsync()
 
-Open(items) — 启动钩子入口
+Open(items) — 已有结果的入口
   ├─ GetWindow<CheckUpdateWindow>(utility: true, ...)
   ├─ m_ExternalItems / m_InternalItems 赋值
   ├─ MergeItems(...) → m_Items
-  └─ m_DontShowAgain = false，Repaint()
+  └─ m_SkipDay = default，Repaint()
 ```
 
 ---
 
 ## §11 使用示例
-
-### 启动钩子自动弹出（框架内部）
-
-```csharp
-// EditorUtil.CheckUpdate 内部调用（无需外部显式调用）
-CheckUpdateWindow.Open(filteredExternalUpdates, filteredInternalUpdates);
-```
 
 ### 手动打开（菜单或代码）
 
@@ -157,7 +150,7 @@ CheckUpdateWindow.Open();
 
 | 场景 | 说明 |
 |------|------|
-| `m_DontShowAgain` 生效时机 | 勾选后在窗口禁用（包括关闭、域重载）时触发 `OnDisable` 写入 `MarkSkip`；直接点击 Close 调用 `Close()` 会触发 `OnDisable` |
+| 今日跳过生效时机 | 勾选后在关闭或域重载触发 `OnDisable` 时保存当天的选择。跨日后关闭时，前一天的勾选已过期 |
 | 重复打开防抖 | `Open()` 检查 `m_IsChecking`，若正在拉取则仅 Focus 不重新发起请求 |
 | Latest 列颜色含义 | 仅当前版本确实低于远端版本时，版本号以缓慢、平滑的彩虹色循环提示升级；其他条目保持普通文本色 |
 | 包名排序规则 | 外网与内部云仓库条目合并后统一按**包名**字母升序展示，不按仓库分组顺序绘制 |
@@ -179,4 +172,4 @@ CheckUpdateWindow.Open();
 
 检查仅在 await 后核 singleton 非空，不绑定原窗口实例或请求身份；关闭再打开、或直接 Open(items) 后，旧检查仍可能覆盖新列表。Open(items) 不取消旧请求。日志按钮点击时重读当前 registry 配置，并按条目引用是否属于内部列表选来源，未知引用默认外网；展示期间换仓会让旧条目查询新 URL。所有查询使用 None token，无窗口关闭取消。
 
-“不再提示”在 OnDisable 保存，域重载/禁用也可能触发，并非只点关闭。两个来源分别存盘，后一步失败不回滚前一步；点击打开 PlugPals 后关闭同样会保存勾选。失败被下层转为空时会显示无更新，不能据此验收网络或版本检查。窄窗列宽、滚动区及部分颜色/缩进恢复没有完整异常保护，属于显示边界，不改变安装状态。
+「今日不再提示这些版本」通过 `OnDisable` 一次保存两个来源，点击打开 PlugPals 使窗口关闭时也会提交当天的选择。失败被下层转为空时会显示无更新，不能据此验收网络或版本检查。窄窗列宽、滚动区及部分颜色/缩进恢复没有完整异常保护，属于显示边界，不改变安装状态。

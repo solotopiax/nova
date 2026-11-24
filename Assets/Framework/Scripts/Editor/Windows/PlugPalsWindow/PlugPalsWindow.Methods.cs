@@ -206,6 +206,8 @@ namespace NovaFramework.Editor
                 Log.Warning(LogTag.Editor, "PlugPalsWindow.FetchRegistryAsync {0}请求失败: {1}", repoDisplayName, e.Message);
             }
 
+            EditorUtil.NovaIssues.ObserveImplementation("plugpals-query",
+                result.ErrorMessage == null ? "success" : "failed", step: isInternal ? "internal" : "external");
             return result;
         }
 
@@ -475,7 +477,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制顶部工具栏：左侧公网/内网仓库地址输入框 + 保存；右侧搜索框（缩短）+ 刷新。
+        /// 绘制顶部工具栏，提供仓库地址配置、搜索、清空搜索和刷新。
         /// </summary>
         private void DrawToolbar()
         {
@@ -497,7 +499,15 @@ namespace NovaFramework.Editor
                 GUILayout.FlexibleSpace();
 
                 EditorUtil.Draw.Label("搜索", EditorStyles.boldLabel, false, GUILayout.Width(40f));
-                string newSearch = EditorUtil.Draw.TextField(m_SearchText ?? "", false, GUILayout.Width(220f));
+                string newSearch = EditorUtil.Draw.TextField(m_SearchText ?? "", false, GUILayout.Width(194f));
+                EditorUtil.Draw.DisabledGroup(string.IsNullOrEmpty(newSearch), () =>
+                {
+                    EditorUtil.Draw.Button("×", disableOnPlaying: false, exitGUI: false, onClick: () =>
+                    {
+                        GUI.FocusControl(null);
+                        newSearch = string.Empty;
+                    }, GUILayout.Width(22f));
+                });
                 if (newSearch != m_SearchText)
                 {
                     m_SearchText = newSearch;

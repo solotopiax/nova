@@ -28,7 +28,7 @@ description: Use when Nova 项目组要把当前 direct Nova Framework 从既有
 
 ## 结果与不可越界项
 
-目标 Framework 含 Nova 自动反馈机制时，编译稳定后按 [审查检查](../../../Docs/Onboarding/NOVA_ISSUES.md#在-codex-任务开始时检查审查状态) 核对本机准备状态。首次生成或更新了 Nova 钩子定义时，在当前对话的升级结果里主动给出审查入口。建议启用时使用同页的[提示文案](../../../Docs/Onboarding/NOVA_ISSUES.md#建议启用反馈的提示文案)。遇到准备受阻，说明当前状态并指向 Unity Console。升级按原有验收条件收尾。普通项目任务开始时会再查实际审查状态。
+目标 Framework 含 Nova 自动反馈机制时，编译稳定后用新解析包的 [审查检查](../../../Docs/Onboarding/NOVA_ISSUES.md#在-codex-任务开始时检查审查状态) 加 `--task-start` 核对当前项目。返回 `blocked` 时暂停本次升级收尾，保留已完成的安装及验收结果，按[提示文案](../../../Docs/Onboarding/NOVA_ISSUES.md#建议启用反馈的提示文案) 等成员完成授权并开启，或明确选择暂不授权、继续停用。按审查检查说明复核后，从已安装版本继续收尾。遇到准备受阻时说明当前状态并指向 Unity Console。
 
 目标 Framework 含重要升级提示能力时，重载稳定后会从实际安装包的 [CHANGELOG.md（当前包定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) 正式版本提取 `### Important` 并自动弹窗；跨版本声明按版本分组。外部宿主没有传入显式批次时按同步升级补查处理，不推断用户点击范围。窗口等待人工确认不等于 UPM 卡死；Agent 不得自动确认或修改 [Library/Nova/ImportantUpdates（定位）](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，不得为关闭窗口重放升级。仅需解释时读取目标包 [Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md](../../../Docs/Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md)，分别报告安装核验与人工阅读状态。
 

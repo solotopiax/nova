@@ -81,15 +81,9 @@ namespace NovaFramework.Editor
             /// </summary>
             public static RegistriesConfig LoadRegistries()
             {
-                string path = GetRegistriesPath();
-                if (!File.Exists(path))
-                {
-                    return NormalizeRegistries(null, false);
-                }
-
                 try
                 {
-                    RegistriesConfig raw = JsonUtility.FromJson<RegistriesConfig>(File.ReadAllText(path));
+                    RegistriesConfig raw = ReadPersistedRegistries();
                     return raw == null
                         ? NormalizeRegistries(null, false)
                         : NormalizeRegistries(raw, true);
@@ -100,6 +94,29 @@ namespace NovaFramework.Editor
                     return NormalizeRegistries(null, false);
                 }
             }
+
+            /// <summary>核对已有配置中是否存在有效仓库，默认地址不计为持久配置。</summary>
+            internal static bool HasPersistedRegistry()
+            {
+                try
+                {
+                    RegistriesConfig config = ReadPersistedRegistries();
+                    return IsRegistryUrl(config?.externalUrl) || IsRegistryUrl(config?.internalUrl);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
+            private static RegistriesConfig ReadPersistedRegistries()
+            {
+                string path = GetRegistriesPath();
+                return File.Exists(path) ? JsonUtility.FromJson<RegistriesConfig>(File.ReadAllText(path)) : null;
+            }
+
+            private static bool IsRegistryUrl(string value) => Uri.TryCreate(value?.Trim(), UriKind.Absolute, out Uri uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 
             /// <summary>
             /// 原子写入 registry 配置到 ProjectSettings/Nova/PlugPalsRegistries.json。

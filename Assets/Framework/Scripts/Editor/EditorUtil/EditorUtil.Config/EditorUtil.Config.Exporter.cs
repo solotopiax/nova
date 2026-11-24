@@ -149,6 +149,8 @@ namespace NovaFramework.Editor
                         AssetDatabase.SaveAssets();
                         AssetDatabase.Refresh();
                     }
+                    if (target != null)
+                        NovaIssues.ObserveImplementation("config-export", "success", platform.ToString(), channel.ToString(), mode.ToString());
                     return target;
                 }
 

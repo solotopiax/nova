@@ -43,6 +43,8 @@ namespace NovaFramework.Editor
                     "{0} 开始打包：target={1}, output={2}, dev={3}, mode={4}",
                     c_LogPrefix, target, outputPath, developmentBuild, buildMode);
                 BuildReport report;
+                bool exportsProject = target == BuildTarget.iOS ||
+                    target == BuildTarget.Android && EditorUserBuildSettings.exportAsGoogleAndroidProject;
                 bool previousDevelopmentBuild = EditorUserBuildSettings.development;
                 try
                 {
@@ -51,6 +53,7 @@ namespace NovaFramework.Editor
                     EditorUserBuildSettings.development = developmentBuild;
                     HybridCLR.ValidateMethodBridgeDevelopmentBuild(developmentBuild);
                     report = BuildPipeline.BuildPlayer(opts);
+                    NovaIssues.ObservePlayerBuild(report.summary, exportsProject);
                     if (report.summary.result == BuildResult.Failed)
                     {
                         throw new InvalidOperationException(string.Format("{0} 打包失败：{1}", c_LogPrefix, report.summary.result));

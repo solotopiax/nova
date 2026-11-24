@@ -5,7 +5,7 @@ description: Use when 处理 Nova 消费项目的日常任务，包括普通代�
 
 # Nova 项目任务路由
 
-触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。定位已接入的工程后执行任务启动检查，按返回状态处理待审查条目和升级提醒。
+触发后先读取当前 Framework 的 [Docs/START_HERE.md](../../../Docs/START_HERE.md)，作为所有 `nova-project-*` Skill 的共同底线。定位已接入的工程后检查 Nova 自动反馈。返回 `blocked` 时暂停当前任务，按反馈说明等成员完成授权和开启，或明确选择当天暂缓，再继续路由。
 
 再读取 [references/contract.json](references/contract.json)，然后只读当前消费项目和 Framework 包内 [Docs/INDEX.md](../../../Docs/INDEX.md)。目标是产出可执行的边界与下一步，而不是直接修改项目。
 

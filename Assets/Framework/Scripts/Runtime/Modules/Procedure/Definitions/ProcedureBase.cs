@@ -50,6 +50,9 @@ namespace NovaFramework.Runtime
             base.OnEnter(procedureOwner);
             m_Cts?.Dispose();
             m_Cts = new CancellationTokenSource();
+#if UNITY_EDITOR
+            EditorPlayEvidence.Enter(this);
+#endif
         }
 
         /// <summary>

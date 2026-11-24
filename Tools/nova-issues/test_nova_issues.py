@@ -18,19 +18,70 @@ import unittest
 from unittest.mock import patch
 import uuid
 
+from build_usage_descriptions import FRAMEWORK_ROOT, build_descriptions
 from database import Database
 from registries import APPLOVIN_REGISTRY, OPENUPM_REGISTRY, REGISTRIES, UNITY_REGISTRY
-from serve import ACCOUNTS, NovaIssuesServer, backup, password_hash
+from serve import ACCOUNTS, UNITY_USAGE_DESCRIPTIONS, USAGE_DESCRIPTIONS, NovaIssuesServer, backup, password_hash
 
 
 AGENT_FILE = Path(__file__).resolve().parents[2] / "Assets/Framework/Agents/Tools/nova_issues_agent.py"
 SPEC = importlib.util.spec_from_file_location("nova_issues_agent_under_test", AGENT_FILE)
 agent = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(agent)
+REVIEW_SPEC = importlib.util.spec_from_file_location("nova_hook_review_under_test", AGENT_FILE.with_name("nova_hook_review.py"))
+hook_review = importlib.util.module_from_spec(REVIEW_SPEC)
+with patch.dict(sys.modules, {"nova_issues_agent": agent}):
+    REVIEW_SPEC.loader.exec_module(hook_review)
 
 
 def git(root, *arguments):
     return subprocess.check_output(["git", "--no-optional-locks", *arguments], cwd=root, stderr=subprocess.DEVNULL)
+
+
+class HookReviewTest(unittest.TestCase):
+    def test_feedback_reminder_blocks_until_decision_and_repeats_on_later_days_or_upgrade(self):
+        """暂缓只放行当日的当前版本，未收到决定、跨天和升级都继续阻塞。"""
+        definitions = {"sessionStart": [{"nova start"}], "stop": [{"nova stop"}]}
+        start = {"eventName": "sessionStart", "command": "nova start", "isManaged": False, "enabled": True,
+                 "trustStatus": "trusted"}
+        stop = start | {"eventName": "stop", "command": "nova stop"}
+        unrelated = start | {"command": "another hook", "trustStatus": "untrusted"}
+        cases = (
+            ([start, stop | {"trustStatus": "modified"}], 1, 0, 1),
+            ([start, stop | {"enabled": False}], 0, 1, 0),
+            ([start, stop | {"enabled": False, "trustStatus": "untrusted"}], 0, 1, 1),
+            (None, 0, 2, None),
+        )
+        for rows, pending, disabled, unapproved in cases:
+            with (self.subTest(pending=pending, disabled=disabled, unapproved=unapproved),
+                  tempfile.TemporaryDirectory() as temporary, patch.object(hook_review, "read_json") as metadata,
+                  patch.object(hook_review, "date") as clock):
+                folder = Path(temporary)
+                metadata.return_value = {"name": agent.FRAMEWORK, "version": "0.7.15"}
+                trusted = hook_review.classify_hooks([start, stop, unrelated], definitions)
+                self.assertEqual(hook_review.task_review(trusted, folder), trusted)
+                self.assertEqual(trusted["unapproved"], 0)
+                self.assertFalse((folder / hook_review.REVIEW_DB).exists())
+                inactive = hook_review.classify_hooks(rows, definitions)
+                token = None
+                for day in (24, 25, 26):
+                    today = datetime(2026, 11, day).date()
+                    clock.today.return_value = today
+                    first = hook_review.task_review(inactive, folder)
+                    self.assertEqual((first["status"], first["reason"], first["localDay"]),
+                                     ("blocked", "feedback_reminder", today.isoformat()))
+                    self.assertEqual((first["pending"], first["disabled"], first["unapproved"]),
+                                     (pending, disabled, unapproved))
+                    self.assertEqual(hook_review.task_review(inactive, folder, defer_token=token), first)
+                    token = first["reminderToken"]
+                    deferred = hook_review.task_review(inactive, folder, defer_token=token)
+                    self.assertEqual((deferred["status"], deferred["reason"]), ("ready", "feedback_deferred"))
+                    self.assertEqual(hook_review.task_review(inactive, folder), deferred)
+                metadata.return_value["version"] = "0.7.16"
+                upgraded = hook_review.task_review(inactive, folder, defer_token=token)
+                self.assertEqual((upgraded["status"], upgraded["frameworkVersion"]), ("blocked", "0.7.16"))
+                self.assertNotEqual(upgraded["reminderToken"], token)
+                self.assertEqual(hook_review.task_review(trusted, folder), trusted)
 
 
 class IssuesTest(unittest.TestCase):
@@ -112,6 +163,112 @@ class IssuesTest(unittest.TestCase):
 
     def event(self, name, turn="test-turn", **fields):
         return {"hook_event_name": name, "session_id": "test-session", "turn_id": turn} | fields
+
+    def test_retired_device_sdk_reports_are_neither_sent_nor_displayed(self):
+        root, folder = self.fixture_project()
+        stamp = int(time.time()) - 10
+        data = {"stage": "sdk-device", "framework": "0.7.15", "unity": "6000.4.2f1",
+                "platform": "Android", "sdk": "Nova.Sdk.Sample", "build": uuid.uuid4().hex,
+                "attempt": uuid.uuid4().hex, "outcome": "success", "milliseconds": 50}
+        report_id = uuid.uuid4().hex
+        with agent.ledger(folder) as db:
+            agent.enqueue(db, "implementation", data, report_id, stamp)
+            cached = db.execute("SELECT payload FROM outbox WHERE id=?", (report_id,)).fetchone()["payload"]
+            self.assertFalse(agent.has_pending_reports(db))
+        with patch.object(agent, "automatic_report_health") as health, patch.object(agent, "deliver") as send:
+            agent.work(root, folder, "", single=True)
+            health.assert_not_called()
+            send.assert_not_called()
+        with agent.ledger(folder) as db:
+            self.assertEqual(cached, db.execute("SELECT payload FROM outbox WHERE id=?", (report_id,)).fetchone()["payload"])
+        report = json.loads(cached)
+        self.assertEqual(self.ingest(report)[0], 400)
+        # 模拟旧版服务器已有的记录，确认新版查询不再展示。
+        self.database.ingest("project-a", report, self.project_token)
+        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=self.login())
+        self.assertEqual(status, 200)
+        self.assertEqual(detail["implementation"], [])
+
+    def test_editor_play_and_upgrade_keep_independent_execution_evidence(self):
+        self.assertTrue(self.http("/health")[1]["execution_evidence"])
+        stamp = int(time.time())
+        workspace, play, upgrade = (uuid.uuid4().hex for _ in range(3))
+
+        def record(stage, observed_at, **data):
+            return self.ingest({"version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
+                                "observed_at": observed_at, "kind": "implementation", "data": {
+                                    "stage": stage, "framework": "0.7.15", "unity": "6000.4.2f1", **data}})[0]
+
+        for offset in (2, 1):
+            self.assertEqual(record("editor-module", stamp - offset, step="table", outcome="success"), 201)
+        for phase, result, offset, sequence in (("sdk", "waiting", 8, 2), ("sdk", "success", 1, 2),
+                                                 ("load-dll", "advanced", 10, 1)):
+            self.assertEqual(record("startup-stage", stamp - offset, step=phase, outcome=result, attempt=play,
+                                    sequence=sequence, milliseconds=18000), 201)
+        for sequence, (phase, result, version) in enumerate((
+            ("request", "running", "0.7.15"), ("compile", "failed", "0.7.15"),
+            ("compile", "success", "0.7.16"), ("load", "recovered", "0.7.16"),
+        ), 1):
+            self.assertEqual(record("framework-upgrade", stamp, step=phase, outcome=result, framework=version,
+                                    attempt=upgrade, from_framework="0.7.15", requested_framework="0.7.16",
+                                    sequence=sequence, milliseconds=1000), 201)
+        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=self.login())
+        self.assertEqual(status, 200)
+        self.assertEqual(detail["module_evidence"][0]["play_sessions"], 2)
+        self.assertEqual(detail["module_evidence"][0]["count"], 0)
+        events = [(row["data"]["stage"], row["data"]["step"], row["data"]["outcome"])
+                  for row in detail["implementation"]]
+        self.assertIn(("startup-stage", "sdk", "success"), events)
+        self.assertNotIn(("startup-stage", "sdk", "waiting"), events)
+        self.assertIn(("framework-upgrade", "load", "recovered"), events)
+        self.assertNotIn(("framework-upgrade", "compile", "failed"), events)
+
+    def test_project_implementation_keeps_actual_stage_workspace_and_time(self):
+        stamp = int(time.time())
+        workspace = uuid.uuid4().hex
+        other_workspace = uuid.uuid4().hex
+
+        def report(kind, observed_at, **data):
+            return {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace, "observed_at": observed_at,
+                    "kind": kind, "data": {"framework": "0.7.15"} | data}
+
+        baseline = report("implementation", stamp - 10, unity="6000.4.2f1", platform="Android", stage="workspace",
+                          requested_framework="0.7.16", editor_framework="0.7.15",
+                          tools={"config": "configured", "pipify": "configured", "plugpals": "pending"},
+                          sdk_packages=[{"id": agent.FRAMEWORK + ".sdk.firebase", "version": "0.1.2"}],
+                          sdk_configs=["Nova.Firebase.Config"])
+        batch = report("implementation", stamp - 5, stage="pipify-batch", unity="6000.4.2f1",
+                       platform="Android", outcome="failed", step="export.config", milliseconds=1500)
+        late = report("implementation", stamp - 60, stage="pipify-batch", unity="6000.4.2f1",
+                      platform="Android", outcome="success")
+        xcode = report("implementation", stamp - 3, stage="player-build", unity="6000.4.2f1",
+                       platform="iOS", build_kind="project", development=True, outcome="success")
+        secondary = report("implementation", stamp - 2, stage="player-build", unity="6000.4.2f1",
+                           platform="Android", build_kind="player", development=True, outcome="success")
+        secondary["workspace"] = other_workspace
+        for event in (baseline, batch, late, xcode, secondary):
+            self.assertEqual(self.ingest(event)[0], 201)
+        for entry in ("skill", "action"):
+            self.assertEqual(self.ingest(report("usage", stamp, module="config", operation="config.apply",
+                                                source="codex", entry=entry, outcome="success"))[0], 201)
+        forbidden = report("implementation", stamp, stage="player-build", unity="6000.4.2f1",
+                           outcome="success", build_kind="player", development=True, sdk_verified=True)
+        self.assertEqual(self.ingest(forbidden)[0], 400)
+        self.assertTrue(self.http("/health")[1]["implementation_tracking"])
+
+        headers = self.login()
+        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=headers)
+        self.assertEqual(status, 200)
+        facts = detail["implementation"]
+        self.assertEqual(len(facts), 4)
+        current_batch = next(fact for fact in facts if fact["data"]["stage"] == "pipify-batch")
+        self.assertEqual((current_batch["observed_at"], current_batch["data"]["outcome"]), (stamp - 5, "failed"))
+        self.assertGreaterEqual(current_batch["received_at"], current_batch["observed_at"])
+        self.assertEqual(sorted(fact["data"]["build_kind"] for fact in facts if fact["data"]["stage"] == "player-build"),
+                         ["player", "project"])
+        self.assertEqual(detail["module_evidence"][0]["count"], 1)
+        _, overview, _ = self.http("/api/maintainer/overview", headers=headers)
+        self.assertEqual(overview["implementation"][0]["requested_framework"], "0.7.16")
 
     def test_two_accounts_and_protected_routes(self):
         status, html, _ = self.http("/")
@@ -337,6 +494,55 @@ class IssuesTest(unittest.TestCase):
         detail = self.http(f"/api/maintainer/projects/{project}", headers=session)[1]
         self.assertEqual(detail["tasks"], [])
         self.assertEqual(detail["snapshots"], [])
+
+    def test_usage_history_identifies_editor_receipts_and_adds_operation_descriptions(self):
+        action = "nova.project.hotfix.refresh-game-dlls"
+        receipt = {"module": "hotfix", "operation": action, "framework": "0.7.14", "outcome": "success"}
+        skill = {"module": "router", "operation": "nova-project-router", "framework": "0.7.15",
+                 "outcome": "executed", "source": "codex", "entry": "skill"}
+        preload = {"module": "sdk", "operation": "editor.preload.sdk", "framework": "0.7.14", "outcome": "success"}
+        unknown = {"module": "other", "operation": "other.method", "framework": "0.7.14", "outcome": "success"}
+        unity = {"module": "unity-cli", "framework": "0.7.15", "outcome": "success",
+                 "source": "codex", "entry": "unity-cli"}
+        workspace = uuid.uuid4().hex
+        events = []
+        for data in (receipt, receipt | {"source": "editor", "entry": "action"},
+                     receipt | {"source": "codex", "entry": "action"}, skill,
+                     preload, preload | {"source": "editor"}, unknown,
+                     unity | {"operation": "unity.capture.screenshot"}, unity | {"operation": "unity.custom.refresh"}):
+            event = {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
+                     "observed_at": int(time.time()), "kind": "usage", "data": data}
+            self.assertEqual(self.ingest(event)[0], 201)
+            events.append(event)
+
+        status, overview, _ = self.http("/api/maintainer/overview", headers=self.login())
+        self.assertEqual(status, 200)
+        rows = {(row["operation"], row["source"]): row for row in overview["usage"]}
+        editor_action = rows[(action, "editor")]
+        self.assertEqual((editor_action["entry"], editor_action["count"]), ("action", 2))
+        self.assertIn("编译并刷新当前构建目标对应的业务热更 DLL", editor_action["description"])
+        self.assertEqual(rows[(action, "codex")]["count"], 1)
+        self.assertIn("Nova 项目任务路由", rows[(skill["operation"], "codex")]["description"])
+        sdk = rows[(preload["operation"], "editor")]
+        self.assertEqual((sdk["entry"], sdk["count"]), ("preload", 2))
+        legacy = rows[(unknown["operation"], "legacy")]
+        self.assertEqual((legacy["entry"], legacy["description"]), ("", ""))
+        self.assertIn("截取 Scene 或 Game", rows[("unity.capture.screenshot", "codex")]["description"])
+        self.assertIn("custom refresh", rows[("unity.custom.refresh", "codex")]["description"])
+        self.assertEqual(self.ingest(events[0])[0], 200)
+        with self.database.connect() as db:
+            original = db.execute("SELECT payload FROM reports WHERE id=?", (events[0]["id"],)).fetchone()
+        self.assertEqual(json.loads(original["payload"]), receipt)
+
+    def test_usage_descriptions_follow_action_and_skill_sources(self):
+        published = json.loads(USAGE_DESCRIPTIONS.read_text(encoding="utf-8"))
+        for operation, description in build_descriptions(FRAMEWORK_ROOT).items():
+            self.assertEqual(published.get(operation), description, operation)
+        for script, (_, commands) in agent.NOVA_CLI.items():
+            for command in commands:
+                self.assertTrue(published[f"{Path(script).stem}.{command}"])
+        unity = json.loads(UNITY_USAGE_DESCRIPTIONS.read_text(encoding="utf-8"))
+        self.assertTrue(all(name.startswith("unity.") and text for name, text in unity.items()))
 
     def test_hook_activity_is_immediate_and_hourly_with_compatible_retry(self):
         root, folder = self.fixture_project()

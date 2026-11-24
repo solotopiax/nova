@@ -3,6 +3,7 @@
 
 import argparse
 from contextlib import closing
+from datetime import date
 import json
 import os
 from pathlib import Path
@@ -84,7 +85,7 @@ def feedback_definitions(root):
             for handler in handlers:
                 commands = feedback_commands(handler, root / WORKDIR)
                 if commands:
-                    definitions.setdefault(native_event, set()).update(commands)
+                    definitions.setdefault(native_event, []).append(commands)
     return definitions
 
 
@@ -172,43 +173,55 @@ def review_status(state, pending=0, **details):
     return {"status": state, "pending": pending, **details}
 
 
-def first_review_for_version(folder, framework_version):
+def reminder_deferred(folder, scope, *, record):
+    """只保存成员明确暂缓的当天决定，旧版本的首次检查记录继续保留。"""
     database = folder / REVIEW_DB
     for suffix in ("", "-journal", "-wal", "-shm"):
         path = folder / (REVIEW_DB + suffix)
         if path.is_symlink() or (path.exists() and not path.is_file()):
             raise OSError("unsafe hook review storage")
 
-    configured_home = os.environ.get("CODEX_HOME")
-    codex_home = Path(configured_home) if configured_home else Path.home() / ".codex"
-    profile = event_id(os.path.normcase(str(codex_home.resolve())))
-    # Atomically claim the first task check for this version, even across App and CLI processes.
+    if not record and not database.is_file():
+        return False
+
     with closing(sqlite3.connect(database, isolation_level=None, timeout=0.5)) as db:
-        db.execute("CREATE TABLE IF NOT EXISTS checked_version (profile TEXT PRIMARY KEY, version TEXT NOT NULL)")
-        result = db.execute(
-            "INSERT INTO checked_version (profile, version) VALUES (?, ?) "
-            "ON CONFLICT(profile) DO UPDATE SET version = excluded.version WHERE version <> excluded.version",
-            (profile, framework_version),
-        )
-        return result.rowcount == 1
+        db.execute("""CREATE TABLE IF NOT EXISTS deferred_reminders (
+            profile TEXT NOT NULL, version TEXT NOT NULL, local_day TEXT NOT NULL,
+            PRIMARY KEY (profile, version, local_day)
+        )""")
+        if record:
+            db.execute("INSERT OR IGNORE INTO deferred_reminders VALUES (?, ?, ?)", scope)
+            return True
+        return db.execute("""SELECT 1 FROM deferred_reminders
+            WHERE profile=? AND version=? AND local_day=?""", scope).fetchone() is not None
 
 
-def task_review(result, folder):
+def task_review(result, folder, *, defer_token=None):
+    """阻塞待审查或停用的任务，只接受本工作区当天、当前版本的暂缓决定。"""
+    if not result["pending"] and not result.get("disabled"):
+        return result
     metadata = read_json(Path(__file__).resolve().parents[2] / "package.json", 96 << 10)
     framework_version = version(metadata.get("version"))
     if metadata.get("name") != FRAMEWORK or framework_version == "unknown":
-        return result if result["pending"] else review_status("unknown", reason="framework_version_unavailable")
+        return dict(result, status="blocked", reason="framework_version_unavailable")
+    local_day = date.today().isoformat()
+    configured_home = os.environ.get("CODEX_HOME")
+    codex_home = Path(configured_home) if configured_home else Path.home() / ".codex"
+    profile = event_id(os.path.normcase(str(codex_home.resolve())))
+    scope = (profile, framework_version, local_day)
+    token = event_id(str(folder.resolve()), *scope)
+    reminder = dict(result, status="blocked", reason="feedback_reminder", frameworkVersion=framework_version,
+                    localDay=local_day, reminderToken=token)
+    deferring = defer_token == token
     try:
-        first_check = first_review_for_version(folder, framework_version)
+        if reminder_deferred(folder, scope, record=deferring):
+            return dict(result, status="ready", reason="feedback_deferred")
     except (OSError, sqlite3.Error):
-        return result if result["pending"] else review_status("unknown", reason="reminder_unavailable")
-    if first_check and result.get("disabled") and not result["pending"]:
-        return review_status("blocked", reason="framework_update", frameworkVersion=framework_version,
-                             disabled=result["disabled"])
-    return result
+        return dict(reminder, status="ready" if deferring else "blocked", reason="reminder_unavailable")
+    return reminder
 
 
-def review(project, *, task_start=False):
+def review(project, *, task_start=False, defer_token=None):
     root = nova_project(project.resolve())
     if root is None:
         return review_status("not_applicable")
@@ -225,44 +238,59 @@ def review(project, *, task_start=False):
     with tempfile.TemporaryDirectory(prefix="hook-review-", dir=folder) as scratch:
         hooks = native_hooks(root, codex, scratch)
     result = classify_hooks(hooks, definitions)
-    if task_start and result["status"] in ("ready", "blocked"):
-        return task_review(result, folder)
+    if (task_start or defer_token is not None) and result["status"] in ("ready", "blocked"):
+        return task_review(result, folder, defer_token=defer_token)
     return result
 
 
 def classify_hooks(hooks, definitions):
+    """按宿主的实际授权判定，区分已授权但停用和停用时仍未授权的条目。"""
     if hooks is None:
-        return review_status("ready", disabled=len(definitions))
-    resolved = set()
+        return review_status("ready", disabled=sum(map(len, definitions.values())), unapproved=None)
+    remaining = {event: groups.copy() for event, groups in definitions.items()}
     pending = 0
     disabled = 0
+    unapproved = 0
     for row in hooks:
         event = row.get("eventName")
-        if not isinstance(event, str) or row.get("command") not in definitions.get(event, ()):
+        groups = remaining.get(event) if isinstance(event, str) else None
+        if not groups:
             continue
+        command = row.get("command")
+        index = next((i for i, commands in enumerate(groups) if command in commands), None)
+        if index is None:
+            continue
+
         trust = row.get("trustStatus")
         enabled = row.get("enabled")
+        needs_trust = trust in ("untrusted", "modified") and row.get("isManaged") is False
         if enabled is False:
             disabled += 1
-            resolved.add(event)
+            unapproved += int(needs_trust)
         elif enabled is True and trust in ("trusted", "managed"):
-            resolved.add(event)
-        elif enabled is True and trust in ("untrusted", "modified") and row.get("isManaged") is False:
+            pass
+        elif enabled is True and needs_trust:
             pending += 1
+            unapproved += 1
+        else:
+            continue
+        groups.pop(index)
     if pending:
-        return review_status("blocked", pending, disabled=disabled)
-    if resolved == definitions.keys():
-        return review_status("ready", disabled=disabled)
+        return review_status("blocked", pending, disabled=disabled, unapproved=unapproved)
+    if not any(remaining.values()):
+        return review_status("ready", disabled=disabled, unapproved=unapproved)
     return review_status("unknown", reason="not_discovered")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", type=Path, required=True)
-    parser.add_argument("--task-start", action="store_true", help="apply the first-task reminder for the installed Framework version")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--task-start", action="store_true", help="check for pending or disabled hooks before continuing the task")
+    mode.add_argument("--defer-reminder", metavar="TOKEN", help="record the member's decision to defer today's reminder")
     args = parser.parse_args()
     try:
-        result = review(args.project, task_start=args.task_start)
+        result = review(args.project, task_start=args.task_start, defer_token=args.defer_reminder)
     except (OSError, ValueError, KeyError, TypeError, RuntimeError):
         result = review_status("unknown", reason="probe_failed")
     print(compact(result))

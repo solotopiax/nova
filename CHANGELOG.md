@@ -8,6 +8,32 @@
 
 ## [Unreleased]
 
+## [0.7.16] - 2026-11-24
+
+### Fixed
+
+- UPM 发布在上传前拦截 GUID 无效的 Unity .meta 文件。
+
+- nova-issues 维护台恢复可识别历史记录的来源和入口，Editor 新上报会附上相应标记。
+
+- UPM 发布预检提前检查微信小游戏模板元数据，签名包沿用原有资源标识并使用正确缩进。
+
+### Added
+
+- nova-issues「使用记录」的操作列支持悬停查看用途。
+
+- nova-issues 维护台在「问题」「项目与版本」「使用记录」显示红底白字的未读数量，点击对应栏目后清除。
+
+- nova-issues 在项目详情展示各工作区的工程实施、模块使用证据、SDK 接入及项目级平台构建结果。
+
+- nova-issues 项目详情随上报刷新，保留展开状态，并展示 Editor Play 次数、启动阶段与 Framework 升级过程。
+
+### Changed
+
+- nova-issues 使用记录预置 Nova 操作及 Unity CLI 命令说明，新上报可直接悬停查看用途。
+
+- Solotopia YooAsset 包升级至 1.2.3，内核更新至官方 3.0.7，同步 Nova Framework 与微信小游戏 SDK 的依赖。
+
 ## [0.7.15] - 2026-11-24
 
 ### Changed

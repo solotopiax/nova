@@ -10,26 +10,30 @@ const outcomeNames = {
   failed: "失败", cancelled: "已取消",
 };
 const usageSources = { codex: "Codex", editor: "Editor", legacy: "未标注" };
-const usageEntries = { action: "Nova Action", skill: "Skill 查阅", "unity-cli": "Unity CLI", "nova-cli": "Nova CLI" };
+const usageEntries = { action: "Nova Action", skill: "Skill 查阅", "unity-cli": "Unity CLI", "nova-cli": "Nova CLI", preload: "Editor 预加载" };
 const coverageNames = {
   observed: "已观察", waiting: "待采集", registered: "已注册", not_observed: "未验证",
   connected: "已连接", installed: "已安装", unavailable: "未获得证据", ready: "可用",
   static: "静态证据", interrupted: "已中断", pending: "待分析",
 };
 const hookStatuses = {
-  complete: ["已加全", "success", "当前 Nova 版本的项目钩子和脚本已就绪，可在 Codex 中审查授权。启用反馈机制后，项目可以照常开发、构建和运行，请放心使用。"],
+  complete: ["已加全", "success", "项目钩子和绑定脚本已就绪。授权状态可在 Codex 中查看。"],
   pending: ["待追加", "warning", "工作区中还没有 Nova 自动反馈钩子。"],
-  incomplete: ["不完整", "urgent", "工作区的钩子或脚本与当前 Nova 版本要求不一致。"],
+  incomplete: ["不完整", "urgent", "工作区的反馈钩子或绑定脚本缺失，或校验未通过。"],
 };
 const titles = { overview: "总览", issues: "问题", projects: "项目与版本", usage: "使用记录" };
+const readStoragePrefix = "nova-issues.read.v1:";
 const date = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" });
 let session = null;
 let data = null;
+let readTotals = {};
+let readOnLoad = null;
 let view = "overview";
 let loadCounter = 0;
 let days = 14;
 let paintIssues = null;
 let paintUsage = null;
+let projectLive = null;
 const filters = { search: "", issueProject: "", status: "", priority: "", project: "", module: "", usageSource: "codex" };
 
 function node(tag, text, className) {
@@ -73,14 +77,48 @@ async function request(path, body) {
   return result;
 }
 
+/** 按账号保存各栏已读总量，首次打开维护台时以当前数据为起点。 */
+function updateUnread(readView) {
+  for (const badge of byId("nav").querySelectorAll(".nav-unread")) {
+    const item = badge.parentElement;
+    const section = item.dataset.view;
+    const total = data?.activity_totals?.[section];
+    let count = 0;
+    if (session && Number.isSafeInteger(total)) {
+      const key = `${readStoragePrefix}${session.username}:${section}`;
+      let seen = readTotals[section] ?? -1;
+      try {
+        const saved = Number(localStorage.getItem(key) ?? -1);
+        if (Number.isSafeInteger(saved)) seen = Math.max(seen, saved);
+      } catch {
+        // 浏览器禁用存储时，在当前页面内保留已读进度。
+      }
+      if (seen < 0 || (readView === section && total > seen)) {
+        seen = total;
+        try { localStorage.setItem(key, String(seen)); } catch { /* 继续使用页面内的进度。 */ }
+      }
+      readTotals[section] = seen;
+      count = Math.max(0, total - seen);
+    }
+    badge.textContent = count || "";
+    badge.hidden = count === 0;
+    if (count) item.setAttribute("aria-label", `${titles[section]}，${count} 条未读`);
+    else item.removeAttribute("aria-label");
+  }
+}
+
+/** 清除上一会话的页面数据与临时已读进度。 */
 function setSession(value) {
   session = value;
   data = null;
+  readTotals = {};
+  readOnLoad = null;
   loadCounter++;
   byId("login").hidden = Boolean(value);
   byId("workspace").hidden = !value;
   byId("account").textContent = value?.username || "";
   byId("content").replaceChildren();
+  updateUnread();
   if (!value && byId("details").open) byId("details").close();
 }
 
@@ -157,16 +195,29 @@ function teamControl(project, returnToProject = false) {
 }
 
 function projectRows(projects, editable = false) {
-  return table(["项目", "团队", "Framework", "Unity", "最近环境上报", "最近上报"], projects.map((project) => {
+  const implementation = new Map();
+  for (const item of data.implementation || []) {
+    if (!implementation.has(item.project_id)) implementation.set(item.project_id, item);
+  }
+  return table(["项目", "团队", "Framework", "Unity", ...(editable ? ["实施状态"] : []), "最近环境上报", "最近上报"], projects.map((project) => {
     const workspaces = data.workspaces.filter((item) => item.project_id === project.id);
     const versions = [...new Set(workspaces.map((item) => item.framework))].join("、");
     const unity = [...new Set(workspaces.map((item) => item.unity).filter(Boolean))].join("、");
     return [
       button(project.name, () => openProject(project.id), "link"), editable ? teamControl(project) : project.team || "—",
       versions || "暂无", unity || "暂无",
+      ...(editable ? [implementationSummary(implementation.get(project.id))] : []),
       stamp(Math.max(0, ...workspaces.map((item) => item.received_at))), stamp(project.last_seen),
     ];
   }));
+}
+
+function implementationSummary(item) {
+  if (!item) return "待上报";
+  const configured = Object.values(item.tools).filter((state) => state === "configured").length;
+  const upgrade = item.requested_framework && item.requested_framework !== item.framework ? "待解析" :
+    item.editor_framework === item.framework ? "Editor 已载入" : "待载入";
+  return `三工具已配置 ${configured}/3 · ${upgrade}`;
 }
 
 function overview() {
@@ -247,9 +298,13 @@ function usagePage() {
   function paint() {
     const details = table(["项目", "模块", "操作", "来源", "入口", "Framework", "结果", "次数"], data.usage
       .filter((item) => selected(item) && (!filters.usageSource || item.source === filters.usageSource))
-      .map((item) => [projectName(item.project_id), item.module, node("code", item.operation),
-        usageSources[item.source] || "未标注", usageEntries[item.entry] || "—", item.framework,
-        outcomeNames[item.outcome] || item.outcome, item.count]));
+      .map((item) => {
+        const operation = node("code", item.operation, "usage-operation");
+        operation.title = item.description || "暂无该操作的说明。";
+        return [projectName(item.project_id), item.module, operation,
+          usageSources[item.source] || "未标注", usageEntries[item.entry] || "—", item.framework,
+          outcomeNames[item.outcome] || item.outcome, item.count];
+      }));
     results.replaceChildren();
     if (filters.usageSource === "codex") {
       results.append(node("h2", "项目模块调用"),
@@ -287,6 +342,7 @@ function render() {
   byId("content").replaceChildren(...(Array.isArray(content) ? content : [content]));
 }
 
+/** 刷新维护台及各栏未读数量，保留正在使用的筛选控件。 */
 async function refresh(force = false) {
   if (!session) return;
   const run = ++loadCounter;
@@ -294,18 +350,22 @@ async function refresh(force = false) {
     const latest = await request(`/api/maintainer/overview?days=${days}`);
     if (run !== loadCounter) return;
     data = latest;
+    updateUnread(readOnLoad);
+    readOnLoad = null;
     showError(byId("page-error"), "");
     const formControl = byId("content").contains(document.activeElement) &&
       ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName);
     if (force || !formControl) render();
     else if (view === "issues") paintIssues?.(0, false);
     else if (view === "usage") paintUsage?.();
+    void refreshProjectDetail();
   } catch (error) {
     if (session && run === loadCounter) showError(byId("page-error"), error.message);
   }
 }
 
 function openDialog(title, children) {
+  projectLive = null;
   byId("detail-title").textContent = title;
   byId("detail-body").replaceChildren(...children);
   if (!byId("details").open) byId("details").showModal();
@@ -458,9 +518,159 @@ function packageTable(packages, versions) {
   return list;
 }
 
+const implementationStages = {
+  "config-export": "Config 导出", "config-load": "Editor 读取 Config",
+  "pipify-batch": "Pipify Batch", "plugpals-query": "PlugPals 仓库查询",
+  "bundle-build": "Bundle 构建", "player-build": "目标平台构建", "sdk-preload": "Editor SDK 预加载",
+};
+const implementationModules = {
+  config: "Config", pipify: "Pipify", upm: "包管理", procedure: "流程", asset: "资源",
+  table: "表", localization: "本地化", ui: "UI", network: "网络", sdk: "SDK",
+};
+const buildKinds = { player: "Player", project: "平台工程", scripts: "仅脚本" };
+const startupStages = {
+  splash: "启动画面", "version-check": "版本检查", "app-download": "应用更新", hotfix: "热更新",
+  "load-dll": "配置与业务程序集", persist: "存档", localization: "本地化", network: "网络配置",
+  sdk: "SDK", table: "数据表", ui: "UI 配置", sound: "声音", vibration: "振动",
+};
+const observedOutcomes = {
+  running: "未收到结束记录", waiting: "仍在等待", advanced: "已推进",
+  recovered: "已恢复并载入",
+};
+
+function implementationResult(fact) {
+  const item = fact.data;
+  if (item.stage === "sdk-preload" && item.outcome === "success") return "已进入后续预加载";
+  return observedOutcomes[item.outcome] || outcomeNames[item.outcome] || item.outcome;
+}
+
+function evidenceSection(key, title, body) {
+  const section = node("details");
+  section.dataset.evidenceKey = key;
+  section.append(node("summary", title), body);
+  return section;
+}
+
+function elapsed(item) {
+  return Number.isFinite(item.milliseconds) ? `${(item.milliseconds / 1000).toFixed(1)} 秒` : "—";
+}
+
+function playStartup(report, rows) {
+  const latest = rows.find((row) => row.data.stage === "startup-stage");
+  if (!latest) return null;
+  const phases = rows.filter((row) => row.data.stage === "startup-stage" && row.data.attempt === latest.data.attempt);
+  const order = Object.keys(startupStages);
+  phases.sort((left, right) => order.indexOf(left.data.step) - order.indexOf(right.data.step));
+  return evidenceSection(`${report.workspace}:startup`, "Editor 启动阶段",
+    table(["阶段", "最近结果", "经过时间", "发生时间"], phases.map((row) =>
+      [startupStages[row.data.step], implementationResult(row), elapsed(row.data), stamp(row.observed_at)])));
+}
+
+function frameworkUpgrades(report, rows) {
+  const attempts = new Map();
+  for (const row of rows.filter((entry) => entry.data.stage === "framework-upgrade")) {
+    if (!attempts.has(row.data.attempt)) attempts.set(row.data.attempt, []);
+    attempts.get(row.data.attempt).push(row);
+  }
+  if (!attempts.size) return null;
+  const phases = { request: "提交", resolve: "UPM 解析", compile: "编译", load: "Editor 载入" };
+  const reasons = { "upm-package-error": "目标包返回错误", "compiler-error": "工程编译错误", "request-changed": "请求版本已变更" };
+  const order = Object.keys(phases);
+  const detail = node("div");
+  for (const attempt of [...attempts.values()].slice(0, 3)) {
+    attempt.sort((left, right) => order.indexOf(left.data.step) - order.indexOf(right.data.step));
+    const item = attempt[0].data;
+    detail.append(node("h4", `${item.from_framework} → ${item.requested_framework}`),
+      table(["阶段", "结果", "经过时间", "发生时间"], attempt.map((row) => [
+        phases[row.data.step], [row.data.step === "request" ? "已提交" : implementationResult(row),
+          reasons[row.data.reason]].filter(Boolean).join(" · "), elapsed(row.data), stamp(row.observed_at),
+      ])));
+  }
+  return evidenceSection(`${report.workspace}:upgrade`, "Framework 升级过程", detail);
+}
+
+function workspaceImplementation(report, result) {
+  const current = report.data;
+  const sameVersion = (row) => row.workspace === report.workspace && row.data.framework === current.framework;
+  const workspaceEvents = result.implementation.filter((row) => row.workspace === report.workspace &&
+    row.data.stage !== "workspace");
+  const events = workspaceEvents.filter((row) => sameVersion(row) && row.data.unity === current.unity &&
+    Object.hasOwn(implementationStages, row.data.stage));
+  const issue = (result.upgrade_issues || []).find(sameVersion);
+  const usage = new Map((result.module_evidence || [])
+    .filter((row) => row.workspace === report.workspace && row.framework === current.framework)
+    .map((row) => [row.module, row]));
+  const moduleIds = new Set([...Object.keys(implementationModules), ...usage.keys()]);
+  const observedStages = { config: ["config-load", "config-export"], pipify: ["pipify-batch"],
+    upm: ["plugpals-query"], asset: ["bundle-build"], sdk: ["sdk-preload"] };
+  const scopeName = (item) => [item.platform, item.channel, item.mode].filter(Boolean).join(" · ") || "工程级";
+  const received = Math.max(report.received_at, ...workspaceEvents.map((item) => item.received_at), issue?.received_at || 0);
+  const observed = Math.max(report.observed_at, ...workspaceEvents.map((item) => item.observed_at), issue?.observed_at || 0);
+  const section = node("details");
+  section.dataset.evidenceKey = report.workspace;
+  const sdk = node("details");
+  sdk.dataset.evidenceKey = `${report.workspace}:sdk`;
+  const mobileBuilds = ["Android", "iOS"].map((platform) => events.find((row) =>
+    row.data.stage === "player-build" && row.data.platform === platform && row.data.build_kind !== "scripts")).filter(Boolean);
+  sdk.append(node("summary", "SDK 接入与构建"),
+    fields([["已安装 SDK 包", current.sdk_packages.map((item) => `${item.id}@${item.version}`).join("、") || "暂无"],
+      ["已启用 SDK 配置类型", current.sdk_configs.join("、") || "暂无"],
+      ["Android／iOS 项目构建", mobileBuilds.map((row) => `${row.data.platform} ${buildKinds[row.data.build_kind]} · ${implementationResult(row)}`).join("、") || "暂无构建记录"]]));
+  const history = [playStartup(report, workspaceEvents),
+    frameworkUpgrades(report, workspaceEvents)].filter(Boolean);
+  section.append(node("summary", `工作区 ${report.workspace.slice(0, 8)} · Framework ${current.framework} · Unity ${current.unity}`),
+    fields([["当前坐标", scopeName(current)], ["Framework 请求版本", current.requested_framework],
+      ["Framework 已解析", current.framework],
+      ["Editor 已载入版本", current.editor_framework],
+      ["实施证据最近发生", stamp(observed)], ["实施证据最近收到", stamp(received)],
+      ["最近编译或导入异常", issue ? button(`#${issue.issue_id} · ${stamp(issue.observed_at)}`,
+        () => openIssue(issue.issue_id), "link") : "暂无记录"]]),
+    table(["工具", "配置", "最近执行证据"], [["config", "Config", ["config-load", "config-export"]],
+      ["pipify", "Pipify", ["pipify-batch"]], ["plugpals", "PlugPals", ["plugpals-query"]]].map(([id, label, stages]) => {
+      const evidence = events.find((row) => stages.includes(row.data.stage));
+      return [label, current.tools[id] === "configured" ? "已配置" : "待检查",
+        evidence ? `${implementationStages[evidence.data.stage]} · ${implementationResult(evidence)} · ${stamp(evidence.observed_at)}` : "待验证"];
+    })),
+    sdk,
+    ...history,
+    panel("最近执行结果", events.length ? table(["操作", "目标 / 坐标", "结果", "耗时", "发生时间", "收到时间"],
+      events.map((row) => {
+        const item = row.data;
+        const context = [scopeName(item), buildKinds[item.build_kind],
+          item.build_kind ? (item.development ? "开发构建" : "普通构建") : null].filter(Boolean).join(" · ");
+        const step = item.stage === "plugpals-query" ? ({ internal: "内网", external: "外网" }[item.step]) : item.step;
+        return [[implementationStages[item.stage], step].filter(Boolean).join(" · "), context, implementationResult(row),
+          elapsed(item),
+          stamp(row.observed_at), stamp(row.received_at)];
+      })) : node("p", "等待工具执行结果。", "empty")),
+    panel("模块使用证据（近 30 天）", table(["模块", "状态", "工具调用", "Editor Play 次数", "阻塞或失败", "最近成功"],
+      [...moduleIds].map((id) => {
+        const evidence = usage.get(id);
+        const actual = events.find((row) => observedStages[id]?.includes(row.data.stage) &&
+          row.observed_at >= data.server_time - 30 * 86400);
+        const successful = events.find((row) => observedStages[id]?.includes(row.data.stage) &&
+          row.data.outcome === "success" && row.observed_at >= data.server_time - 30 * 86400);
+        return [implementationModules[id] || id, actual ? implementationStages[actual.data.stage] : evidence ? "已观测使用" : "未观测",
+          evidence?.count ?? "—", evidence?.play_sessions || "—", evidence?.problems ?? "—",
+          stamp(Math.max(evidence?.last_success || 0, successful?.observed_at || 0))];
+      }))));
+  return section;
+}
+
+function implementationPanel(result) {
+  const workspaces = (result.implementation || []).filter((item) => item.data.stage === "workspace");
+  if (!workspaces.length) return panel("工程实施", node("p", "等待支持实施反馈的工作区首次上报。", "empty"));
+  const sections = workspaces.map((item) => workspaceImplementation(item, result));
+  sections[0].open = true;
+  return panel("工程实施", ...sections);
+}
+
 function snapshotPanel(snapshot, path, hookRun) {
   const snap = snapshot.data;
   const section = node("details");
+  const feedback = node("div");
+  feedback.dataset.hookFeedback = "";
+  feedback.append(hookStatus(snap, hookRun));
   const packages = node("div");
   let loading = false;
   let complete = false;
@@ -496,13 +706,78 @@ function snapshotPanel(snapshot, path, hookRun) {
   });
   section.append(node("summary", `${snap.framework} · ${snap.unity} · ${stamp(snapshot.received_at)}`),
     fields([["上报人", snap.git_user_name || "暂无 Git 名称"],
-      ["游戏包名", gamePackageNames(snap.application_identifiers)], ["钩子追加", hookStatus(snap, hookRun)],
+      ["游戏包名", gamePackageNames(snap.application_identifiers)], ["钩子追加", feedback],
       ["已启用", snap.enabled?.join("、")],
       ...Object.entries(snap.coverage).map(([name, state]) => [`${name} 采集`, coverageNames[state] || state]),
       ...Object.entries(snap.tools).filter(([name]) => name !== "mcp" && name !== "pipeline")
         .map(([name, item]) => [name, `${item.version || ""} ${coverageNames[item.state] || item.state}`.trim()])]),
     packages);
   return section;
+}
+
+function updateProjectSnapshots(current, result) {
+  const hookRuns = new Map((result.hook_activity || []).map((run) => [run.workspace, run]));
+  const existing = new Map([...current.snapshots.children].map((section) => [section.dataset.snapshot, section]));
+  result.snapshots.forEach((snapshot, index) => {
+    const run = hookRuns.get(snapshot.workspace);
+    hookRuns.delete(snapshot.workspace);
+    const previous = existing.get(snapshot.id);
+    const section = previous || snapshotPanel(snapshot, current.path, run);
+    section.dataset.snapshot = snapshot.id;
+    const feedback = section.querySelector("[data-hook-feedback]");
+    const signature = JSON.stringify([snapshot.data.codex_hooks, run?.last_run, run?.framework]);
+    if (feedback.dataset.value !== signature) {
+      feedback.replaceChildren(hookStatus(snapshot.data, run));
+      feedback.dataset.value = signature;
+    }
+    if (section !== current.snapshots.children[index]) {
+      current.snapshots.insertBefore(section, current.snapshots.children[index] || null);
+    }
+    existing.delete(snapshot.id);
+    if (!previous && index === 0 && !current.snapshots.querySelector("details[open]")) section.open = true;
+  });
+  for (const section of existing.values()) section.remove();
+  if (!result.snapshots.length) current.snapshots.append(node("p", "等待该项目的首次上报。", "empty"));
+}
+
+async function refreshProjectDetail() {
+  const current = projectLive;
+  if (!current || current.pending || !current.implementation.isConnected || !byId("details").open) return;
+  const summary = data?.projects.find((project) => project.id === current.id);
+  if (!summary || (summary.last_seen === current.lastSeen && summary.team === current.team &&
+      data.server_time - current.refreshedAt < 60)) return;
+  current.pending = true;
+  try {
+    const result = await request(current.path);
+    if (projectLive !== current || !session || !byId("details").open) return;
+    const evidence = JSON.stringify([result.implementation, result.module_evidence, result.upgrade_issues]);
+    if (evidence !== current.evidence) {
+      const open = new Map([...current.implementation.querySelectorAll("details[data-evidence-key]")]
+        .map((section) => [section.dataset.evidenceKey, section.open]));
+      const active = current.implementation.contains(document.activeElement)
+        ? document.activeElement.closest("details")?.dataset.evidenceKey : null;
+      const next = implementationPanel(result);
+      for (const section of next.querySelectorAll("details[data-evidence-key]")) {
+        if (open.has(section.dataset.evidenceKey)) section.open = open.get(section.dataset.evidenceKey);
+      }
+      current.implementation.replaceWith(next);
+      current.implementation = next;
+      for (const section of next.querySelectorAll("details[data-evidence-key]")) {
+        if (section.dataset.evidenceKey === active) section.querySelector("summary")?.focus({ preventScroll: true });
+      }
+      current.evidence = evidence;
+    }
+    updateProjectSnapshots(current, result);
+    current.lastReport.textContent = stamp(result.project.last_seen);
+    if (current.team !== result.project.team) current.teamField.replaceChildren(teamControl(result.project, true));
+    current.team = result.project.team;
+    current.lastSeen = result.project.last_seen;
+    current.refreshedAt = data.server_time;
+  } catch {
+    // 短暂断线时保留当前详情，下一轮刷新继续读取。
+  } finally {
+    current.pending = false;
+  }
 }
 
 async function openProject(id) {
@@ -530,19 +805,21 @@ async function openProject(id) {
       actions.append(save, button("返回", () => openProject(id)));
       openDialog("轮换上报凭据", [node("p", "轮换后旧凭据立即失效。请在维护端更新该项目的接入配置。"), error, actions]);
     });
-    const hookRuns = new Map((result.hook_activity || []).map((run) => [run.workspace, run]));
-    const snapshots = result.snapshots.map((snapshot) => {
-      const run = hookRuns.get(snapshot.workspace);
-      hookRuns.delete(snapshot.workspace);
-      return snapshotPanel(snapshot, path, run);
-    });
-    if (snapshots.length) snapshots[0].open = true;
+    const current = {
+      id, path, lastSeen: result.project.last_seen, team: result.project.team, refreshedAt: data?.server_time || 0,
+      implementation: implementationPanel(result), snapshots: node("div"),
+      lastReport: node("span", stamp(result.project.last_seen)), teamField: node("span"),
+      evidence: JSON.stringify([result.implementation, result.module_evidence, result.upgrade_issues]),
+    };
+    current.teamField.append(teamControl(result.project, true));
+    updateProjectSnapshots(current, result);
     openDialog(result.project.name, [
-      fields([["标识", id], ["团队", teamControl(result.project, true)],
-        ["最近上报", stamp(result.project.last_seen)]]),
-      panel("环境快照", ...(snapshots.length ? snapshots : [node("p", "等待该项目的首次上报。", "empty")])),
+      fields([["标识", id], ["团队", current.teamField], ["最近上报", current.lastReport]]),
+      current.implementation,
+      panel("环境快照", current.snapshots),
       rotate,
     ]);
+    projectLive = current;
   } catch (failure) {
     if (session && loading.isConnected && byId("details").open) {
       openDialog("读取项目失败", [node("p", failure.message, "error")]);
@@ -634,12 +911,19 @@ async function openIssue(id) {
   }
 }
 
+// 主动打开栏目时只清除当前已拉取的数据，后续刷新仍会提示新的上报。
 byId("nav").addEventListener("click", (event) => {
   const next = event.target.closest("button")?.dataset.view;
   if (next && titles[next]) {
     view = next;
+    if (data) updateUnread(next);
+    else readOnLoad = next;
     render();
   }
+});
+
+window.addEventListener("storage", (event) => {
+  if (event.key?.startsWith(readStoragePrefix)) updateUnread();
 });
 
 byId("login-form").addEventListener("submit", async (event) => {

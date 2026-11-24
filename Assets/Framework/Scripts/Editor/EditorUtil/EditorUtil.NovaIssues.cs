@@ -26,6 +26,7 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Compilation;
 using UnityEngine;
+using EditorPlayEvidence = NovaFramework.Runtime.EditorPlayEvidence;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 using PackageEvents = UnityEditor.PackageManager.Events;
 
@@ -67,16 +68,24 @@ namespace NovaFramework.Editor
 
                 EditorApplication.update += Update;
                 PackageEvents.registeredPackages += _ => s_NextSnapshot = 0;
+                PackageEvents.registeringPackages += ObserveUpgradeRegistration;
+                PackageEvents.registeredPackages += ObserveUpgradeRegistration;
+                CompilationPipeline.compilationStarted += ObserveUpgradeCompileStarted;
+                CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompilationFinished;
                 CompilationPipeline.compilationFinished += OnCompilationFinished;
                 Application.logMessageReceived += ObservePreload;
+                EditorPlayEvidence.ModuleUsed += ObservePlayModule;
+                EditorPlayEvidence.ProcedureEntered += ObserveProcedureEntry;
+                EditorPlayEvidence.ProcedureFailed += ObserveProcedureFailure;
                 EditorApplication.playModeStateChanged += OnPlayModeChanged;
-                AssemblyReloadEvents.beforeAssemblyReload += EndPreloadObservation;
-                EditorApplication.quitting += EndPreloadObservation;
+                AssemblyReloadEvents.beforeAssemblyReload += EndPlayObservation;
+                EditorApplication.quitting += EndPlayObservation;
             }
 
             /// <summary>保存本次编译日期，重载脚本后仍可用已就绪的 Editor 生成环境快照。</summary>
             private static void OnCompilationFinished(object _)
             {
+                ObserveUpgradeCompileFinished();
                 SessionState.SetString(c_CompilationDayKey, LocalDay(Now()));
                 s_NextSnapshot = 0;
             }
@@ -85,23 +94,44 @@ namespace NovaFramework.Editor
             private static void Update()
             {
                 double stamp = EditorApplication.timeSinceStartup;
+                PollStartupStage(stamp);
+                PollFrameworkUpgrade(stamp);
+                if (s_FrameworkRoot != null)
+                    PollEditorDiagnostics(stamp);
                 if (stamp < s_NextSnapshot || EditorApplication.isCompiling || EditorApplication.isUpdating)
                     return;
 
                 s_NextSnapshot = stamp + 30;
-                var framework = PackageInfo.FindForAssembly(typeof(EditorUtil).Assembly);
-                if (framework?.name != c_Framework || string.IsNullOrEmpty(framework.resolvedPath))
+                if (!BindFrameworkPackage())
                     return;
 
-                s_FrameworkRoot = Path.GetFullPath(framework.resolvedPath);
-                s_FrameworkVersion = ReadVersion(framework.version);
-                JObject snapshot = CaptureSnapshot(PackageInfo.GetAllRegisteredPackages());
+                PackageInfo[] packages = PackageInfo.GetAllRegisteredPackages();
+                PollEditorDiagnostics(stamp);
+                JObject snapshot = CaptureSnapshot(packages, out var master);
+                try { snapshot["implementation"] = CaptureImplementationWorkspace(packages, master); }
+                catch (Exception) { /* 实施采集失败时仍可上报原有环境快照。 */ }
                 snapshot["compilation_day"] = SessionState.GetString(c_CompilationDayKey, string.Empty);
                 Queue(snapshot);
             }
 
+            /// <summary>以实际安装的 Framework 识别消费工程，供快照和编译结果共用。</summary>
+            private static bool BindFrameworkPackage()
+            {
+                var framework = PackageInfo.FindForAssembly(typeof(EditorUtil).Assembly);
+                if (framework?.name != c_Framework || string.IsNullOrEmpty(framework.resolvedPath))
+                {
+                    s_FrameworkRoot = null;
+                    s_FrameworkVersion = null;
+                    return false;
+                }
+
+                s_FrameworkRoot = Path.GetFullPath(framework.resolvedPath);
+                s_FrameworkVersion = ReadVersion(framework.version);
+                return true;
+            }
+
             /// <summary>将允许上报的字段复制到普通 JSON，避免采集资产内容和诊断原文。</summary>
-            private static JObject CaptureSnapshot(PackageInfo[] packages)
+            private static JObject CaptureSnapshot(PackageInfo[] packages, out ConfigMasterSO master)
             {
                 var registered = (packages ?? Array.Empty<PackageInfo>())
                     .Where(package => package != null && IsKey(package.name) && !package.name.StartsWith("com.unity.modules.", StringComparison.Ordinal)
@@ -147,7 +177,7 @@ namespace NovaFramework.Editor
                     ["application_identifiers"] = CaptureApplicationIdentifiers(),
                     ["sdk_attempt"] = s_SdkAttempt ?? string.Empty
                 };
-                if (Config.WorkspaceActive.TryGetPersistedConfigMaster(out var master, out _, out _, out _))
+                if (Config.WorkspaceActive.TryGetPersistedConfigMaster(out master, out _, out _, out _))
                 {
                     result["channel"] = master.CurrentChannel.ToString();
                     result["mode"] = master.CurrentDevelopMode.ToString();
@@ -179,11 +209,15 @@ namespace NovaFramework.Editor
             /// <summary>从已有预加载日志提取阶段事件，不保留完整日志。</summary>
             private static void ObservePreload(string message, string stackTrace, LogType type)
             {
-                if (!EditorApplication.isPlaying || s_FrameworkRoot == null || message == null)
+                if (!EditorApplication.isPlaying || message == null)
+                    return;
+                ObservePreloadStage(message, type);
+                if (s_FrameworkRoot == null)
                     return;
 
                 if (message.Contains("[Procedure] Preload Step 4/8 — 初始化 SDK。"))
                 {
+                    ObserveRuntimeConfig();
                     EndPreloadObservation();
                     s_SdkAttempt = Guid.NewGuid().ToString("N");
                     Observe("sdk-start", s_SdkAttempt);
@@ -191,6 +225,7 @@ namespace NovaFramework.Editor
                 else if (s_SdkAttempt != null && message.Contains("[Procedure] Preload Step 5/8 — 加载数据表。"))
                 {
                     Observe("sdk-finished", s_SdkAttempt);
+                    ObserveImplementation("sdk-preload", "success", EditorUserBuildSettings.activeBuildTarget.ToString());
                     s_SdkAttempt = null;
                 }
             }
@@ -198,8 +233,22 @@ namespace NovaFramework.Editor
             /// <summary>离开 Play 时结束该次 SDK 等待观察。</summary>
             private static void OnPlayModeChanged(PlayModeStateChange change)
             {
-                if (change == PlayModeStateChange.ExitingPlayMode)
-                    EndPreloadObservation();
+                if (change == PlayModeStateChange.ExitingEditMode)
+                {
+                    SessionState.EraseString(c_PlayAttemptKey);
+                    SessionState.EraseInt(c_PlaySequenceKey);
+                    EditorPlayEvidence.ResetModules();
+                }
+                else if (change == PlayModeStateChange.ExitingPlayMode)
+                    EndPlayObservation();
+            }
+
+            private static void EndPlayObservation()
+            {
+                FinishStartupStage("cancelled");
+                s_PlayAttempt = null;
+                s_StartupSequence = 0;
+                EndPreloadObservation();
             }
 
             /// <summary>记录已结束的预加载观察，避免跨 Play 会话判断。</summary>
@@ -226,7 +275,7 @@ namespace NovaFramework.Editor
                 input["framework_root"] = s_FrameworkRoot;
                 input["product"] = PlayerSettings.productGUID.ToString();
                 input["name"] = SafeName(Application.productName);
-                input["observed_at"] = Now();
+                input["observed_at"] ??= Now();
                 s_Pending.Enqueue(input);
                 StartDrain();
             }
@@ -243,11 +292,12 @@ namespace NovaFramework.Editor
                     try
                     {
                         var storage = LedgerPath();
-                        if (s_Pending.TryPeek(out JObject first))
+                        if (s_Pending.TryPeek(out JObject first) && (string)first["event"] != "editor-diagnostic")
                             PrepareCodexHooksIfNeeded(s_Project, first, storage);
                         if (storage.Path == null)
                         {
-                            while (s_Pending.TryDequeue(out _)) { }
+                            if (!storage.Retryable)
+                                while (s_Pending.TryDequeue(out _)) { }
                             return;
                         }
 
@@ -373,8 +423,16 @@ namespace NovaFramework.Editor
                 string id = (string)input["id"];
                 switch ((string)input["event"])
                 {
+                    case "implementation":
+                        RecordImplementation(db, input["implementation"] as JObject, workspace, id, stamp);
+                        break;
+                    case "editor-diagnostic":
+                        var issue = (JObject)input["issue"];
+                        AppendReport(db, workspace, EventId("editor-diagnostic", workspace, id), stamp, "issue", issue);
+                        break;
                     case "snapshot":
                         RecordSnapshot(db, input, workspace, (string)project["id"], stamp);
+                        RecordImplementation(db, input["implementation"] as JObject, workspace, id, stamp);
                         break;
                     case "sdk-start":
                         SaveState(db, "sdk", new JObject { ["id"] = id, ["started"] = stamp, ["framework"] = framework });
@@ -445,7 +503,7 @@ namespace NovaFramework.Editor
                 SaveState(db, "sdk", sdk);
             }
 
-            /// <summary>仅从已有 Nova Project Action 回执提炼用量，同一回执与 Codex 共用上报编号。</summary>
+            /// <summary>从已有 Nova Project Action 回执记录 Editor 用量，与本地 Python Agent 的回执补发复用同一编号。</summary>
             private static void RecordActionReceipts(SQLiteConnection db, string workspace, string framework, long now)
             {
                 string directory = Path.Combine(s_Project, "Library/Nova/AgentActions/Operations");
@@ -467,8 +525,9 @@ namespace NovaFramework.Editor
                             outcome is not ("success" or "partial" or "blocked" or "failed" or "cancelled")) continue;
                         if (DateTimeOffset.TryParse((string)item["UpdatedAtUtc"], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var updated))
                             stamp = updated.ToUnixTimeSeconds();
-                        AppendReport(db, workspace, EventId("action", action, operation), stamp, "usage",
-                            Usage(action.Split('.')[2], action, outcome, framework));
+                        JObject usage = Usage(action.Split('.')[2], action, outcome, framework);
+                        usage["entry"] = "action";
+                        AppendReport(db, workspace, EventId("action", action, operation), stamp, "usage", usage);
                     }
                     catch (IOException) { }
                     catch (JsonException) { }
@@ -489,12 +548,15 @@ namespace NovaFramework.Editor
             /// <summary>把完整的本地报告发往固定目标，服务端确认后保留回执。</summary>
             private static void SendPending(SQLiteConnection db)
             {
-                // 与 Python Agent 的待发查询一致，旧版缺少回执的自动入口遗漏保留在本机。
+                // 与 Python Agent 的待发查询一致，已停用的试验记录和缺少回执的自动入口遗漏保留在本机。
                 var reports = db.Query<PendingReport>(@"SELECT id AS Id,payload AS Payload,attempts AS Attempts,json_extract(payload,'$.kind') AS Kind,
+                    json_type(payload,'$.data.source') IS NOT NULL AS HasSource,
                     COALESCE(json_type(payload,'$.data.codex_hooks'), json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS HasProjectDetails,
-                    json_type(payload,'$.data.git_user_name') IS NOT NULL AS HasGitUserName
+                    json_type(payload,'$.data.git_user_name') IS NOT NULL AS HasGitUserName,
+                    json_extract(payload,'$.data.stage') IN ('editor-module','startup-stage','framework-upgrade') AS HasExecutionEvidence
                     FROM outbox
                     WHERE accepted IS NULL AND ready_at<=? AND json_extract(payload,'$.kind')!='task'
+                    AND COALESCE(json_extract(payload,'$.data.stage'),'')!='sdk-device'
                     AND (COALESCE(json_extract(payload,'$.data.source'),'')!='codex'
                          OR COALESCE(json_extract(payload,'$.data.code'),'') NOT GLOB 'missing-nova-route.*'
                          OR EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.evidence') AS evidence
@@ -508,6 +570,9 @@ namespace NovaFramework.Editor
                 foreach (var report in reports)
                 {
                     bool needsUpgrade = (report.Kind == "hook_activity" && (bool?)health?["hook_activity"] != true) ||
+                        (report.Kind == "implementation" && (bool?)health?["implementation_tracking"] != true) ||
+                        (report.HasExecutionEvidence != 0 && (bool?)health?["execution_evidence"] != true) ||
+                        (report.Kind == "usage" && report.HasSource != 0 && (bool?)health?["codex_telemetry"] != true) ||
                         (report.HasProjectDetails != 0 && (bool?)health?["project_snapshot_details"] != true) ||
                         (report.HasGitUserName != 0 && (bool?)health?["git_user_name_reporting"] != true);
                     JObject receipt = ready && !needsUpgrade ? Request(HttpMethod.Post, "/api/v1/auto-reports", (string)project["id"], token,
@@ -551,13 +616,15 @@ namespace NovaFramework.Editor
                 public string Payload { get; set; }
                 public string Kind { get; set; }
                 public int Attempts { get; set; }
+                public int HasSource { get; set; }
                 public int HasProjectDetails { get; set; }
                 public int HasGitUserName { get; set; }
+                public int HasExecutionEvidence { get; set; }
             }
 
-            /// <summary>按同一格式生成 Nova 用量记录。</summary>
+            /// <summary>生成由 Editor 观察的用量记录；Action 回执由调用方另写入口，SDK 预加载由维护台按操作标识识别。</summary>
             private static JObject Usage(string module, string operation, string outcome, string framework) =>
-                new() { ["module"] = module, ["operation"] = operation, ["outcome"] = outcome, ["framework"] = framework };
+                new() { ["module"] = module, ["operation"] = operation, ["outcome"] = outcome, ["framework"] = framework, ["source"] = "editor" };
 
             /// <summary>读取共享状态中的原始 SQLite 文本。</summary>
             private static string RawState(SQLiteConnection db, string key) => db.ExecuteScalar<string>("SELECT value FROM state WHERE key=?", key);

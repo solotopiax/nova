@@ -18,7 +18,7 @@
 | [`EditorUtil.ScriptingDefineSymbols/`](EditorUtil.ScriptingDefineSymbols/EditorUtil.ScriptingDefineSymbols.md) | `EditorUtil.ScriptingDefineSymbols` | 脚本宏定义增删查工具（跨平台批量操作，`NamedBuildTarget` API） |
 | [`EditorUtil.TypeCache/`](EditorUtil.TypeCache/EditorUtil.TypeCache.md) | `EditorUtil.TypeCache` | 编辑器类型缓存（反射收集实现类名称，编译后自动刷新） |
 | [`EditorUtil.PlugPals/`](EditorUtil.PlugPals/EditorUtil.PlugPals.md) | `EditorUtil.PlugPals` | 私有 Verdaccio 仓库 UPM 包管理工具层（远程包拉取、manifest 读写、包安装/卸载、CHANGELOG 拉取） |
-| [`EditorUtil.CheckUpdate/`](EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | `EditorUtil.CheckUpdate` | UPM 包版本检查工具（启动自动检查 + MarkSkip 持久化，复用 PlugPals 网络层） |
+| [`EditorUtil.CheckUpdate/`](EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | `EditorUtil.CheckUpdate` | UPM 包版本检查工具（启动与跨日自动检查，支持当天跳过更新提醒） |
 | [`EditorUtil.AndroidResolver/`](EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | `EditorUtil.AndroidResolver` | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**） |
 | [`EditorUtil.FileWatcher/`](EditorUtil.FileWatcher/EditorUtil.FileWatcher.md) | `EditorUtil.FileWatcher` | 编辑器侧目录监控工具，供各 Inspector 监听 `_configs/` 或源目录变更 |
 | [`EditorUtil.CsvExporter/`](EditorUtil.CsvExporter/EditorUtil.CsvExporter.md) | `EditorUtil.CsvExporter` | 将结构化数据导出为 CSV 文件 |

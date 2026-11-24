@@ -86,6 +86,7 @@ namespace YooAsset
 
             if (_steps == ESteps.CheckRequest)
             {
+                _downloadBytesRequest.UpdateRequest();
                 Progress = _downloadBytesRequest.DownloadProgress;
                 if (_downloadBytesRequest.IsDone == false)
                     return;
