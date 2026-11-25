@@ -8,7 +8,7 @@ class InvalidInput(ValueError):
     pass
 
 
-STATUSES = ("open", "triaged", "working", "awaiting_verification", "closed", "duplicate")
+MAINTAINER_ISSUE_STATES = ("open", "closed")
 PRIORITIES = ("P0", "P1", "P2", "P3")
 KEY = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\Z")
 UUID = re.compile(r"[a-f0-9]{32}\Z")
@@ -60,17 +60,19 @@ def records(value, limit):
 
 
 def validate_snapshot(data):
+    """接收环境快照，历史包来源证据标签仍可随旧客户端提交。"""
     obj(data, ("framework", "unity", "packages", "tools", "coverage"),
         ("platform", "channel", "mode", "enabled", "coordinate_source", "application_identifiers", "codex_hooks", "git_user_name"))
     for name in ("framework", "unity", "platform", "channel", "mode", "coordinate_source"):
         if name in data:
             label(data[name], 80, empty=name not in ("framework", "unity"))
     for package in records(data["packages"], 350):
-        obj(package, ("id", "version", "source", "evidence"))
+        obj(package, ("id", "version", "source"), ("evidence",))
         key(package["id"])
         label(package["version"], 80)
         enum(package["source"], ("registry", "local", "embedded", "git", "builtin", "unknown"))
-        enum(package["evidence"], ("registered", "resolved", "declared"))
+        if "evidence" in package:
+            enum(package["evidence"], ("registered", "resolved", "declared"))
     for entry in records(data.get("enabled", []), 100):
         key(entry)
     if "codex_hooks" in data:
@@ -205,15 +207,17 @@ def validate_implementation(data):
 
 
 def validate_issue(data):
-    obj(data, ("code", "area", "title", "summary", "expected", "actual", "priority",
-               "framework", "evidence", "source"), ("workaround", "version", "steps"))
+    """接收已确认的问题和证据，优先级字段只为旧客户端兼容。"""
+    obj(data, ("code", "area", "title", "summary", "expected", "actual",
+               "framework", "evidence", "source"), ("workaround", "version", "steps", "priority"))
     for name in ("code", "area", "source"):
         key(data[name])
     label(data["title"], 150)
     for name in ("summary", "expected", "actual", "workaround", "steps"):
         if name in data:
             label(data[name], 1400, empty=name in ("workaround", "steps"))
-    enum(data["priority"], PRIORITIES)
+    if "priority" in data:
+        enum(data["priority"], PRIORITIES)
     label(data["framework"], 80)
     if "version" in data:
         label(data["version"], 80, empty=True)

@@ -228,6 +228,7 @@ namespace NovaFramework.Editor
 
                 internal string ObservationId => EventId(_issueCode, _framework, _version);
 
+                /// <summary>保留归因位置和扩展包版本，避免重复发送错误正文和版本字段。</summary>
                 internal JObject ToIssue()
                 {
                     string title = _import ? "Nova 包资源 GUID 无效" : $"Nova 编译错误 {_code}";
@@ -236,12 +237,11 @@ namespace NovaFramework.Editor
                     {
                         ["code"] = _issueCode, ["area"] = _import ? "package-import" : "editor-compilation", ["title"] = title,
                         ["summary"] = _location, ["expected"] = _import ? "Nova 包资源应正常导入。" : "Nova 包代码应正常编译。",
-                        ["actual"] = actual, ["priority"] = "P1", ["source"] = "editor",
-                        ["framework"] = _framework, ["version"] = _version,
+                        ["actual"] = actual, ["source"] = "editor", ["framework"] = _framework,
                         ["evidence"] = new JArray(new JObject
                         {
                             ["source"] = _import ? "unity.package-import" : "unity.compiler",
-                            ["detail"] = $"{_location}。{actual}"
+                            ["detail"] = $"包版本 {_version}。"
                         })
                     };
                 }

@@ -3650,7 +3650,7 @@
         {
           "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status",
           "kind": "cli",
-          "when": "排查当前工作区的任务归因、钩子运行报告和其他上报的队列状态。项目成员在 Codex 中自行审查反馈授权"
+          "when": "排查当前工作区的任务归因、待发队列及最近送达回执。项目成员在 Codex 中自行审查反馈授权"
         },
         {
           "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",

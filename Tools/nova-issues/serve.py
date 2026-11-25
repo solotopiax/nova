@@ -25,7 +25,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from database import Conflict, Database, EnrollmentLimit
 from protocol import (
-    InvalidInput, PRIORITIES, STATUSES, UUID, enum, int_range, key, label, obj, validate_event,
+    InvalidInput, MAINTAINER_ISSUE_STATES, UUID, enum, int_range, key, label, obj, validate_event,
 )
 from registries import RegistryVersions
 
@@ -309,7 +309,7 @@ class Handler(BaseHTTPRequestHandler):
                              "automatic_reporting": self.allows_automatic_reporting(), "codex_telemetry": True,
                              "project_snapshot_details": True, "git_user_name_reporting": True,
                              "hook_activity": True, "implementation_tracking": True,
-                             "execution_evidence": True, "revision": self.server.revision})
+                             "execution_evidence": True, "compact_reports": True, "revision": self.server.revision})
         elif method == "POST" and path == "/api/session":
             self.login()
         elif method == "GET" and path == "/api/session":
@@ -368,26 +368,37 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(200, result)
 
     def maintainer(self, method, url, actor):
+        """处理使用维护账号会话授权的查询和修改。"""
         db = self.server.database
         path = url.path.removeprefix("/api/maintainer/")
-        if method == "GET" and path == "overview":
-            days = parse_qs(url.query).get("days", ["14"])[0]
-            if not days.isdecimal() or len(days) > 3:
+        if method == "GET" and path in ("overview", "usage"):
+            query = parse_qs(url.query)
+            days_value = query.get("days", ["14"])[0]
+            if not days_value.isdecimal() or len(days_value) > 3:
                 raise InvalidInput("时间范围无效。")
-            overview = db.overview(int_range(int(days), 1, 365))
-            for row in overview["usage"]:
+            days = int_range(int(days_value), 1, 365)
+            if path == "overview":
+                result = db.overview(days)
+            else:
+                project = query.get("project", [""])[0]
+                module = query.get("module", [""])[0]
+                result = {"usage": db.list_usage(
+                    days, project_id=key(project) if project else "", module=key(module) if module else "",
+                    source=enum(query.get("source", [""])[0], ("", "codex", "editor", "legacy")),
+                    sort=enum(query.get("sort", ["count"])[0], ("count", "latest")),
+                )}
+            for row in result["usage"]:
                 row["description"] = usage_description(row, self.server.usage_descriptions)
-            self.reply(200, overview)
+            self.reply(200, result)
         elif method == "GET" and path == "issues":
             query = parse_qs(url.query)
             project = query.get("project", [""])[0]
             status = query.get("status", [""])[0]
-            priority = query.get("priority", [""])[0]
             issues = db.list_issues(
                 project_id=key(project) if project else "",
-                status=enum(status, STATUSES) if status else "",
-                priority=enum(priority, PRIORITIES) if priority else "",
+                status=enum(status, MAINTAINER_ISSUE_STATES) if status else "",
                 search=query.get("q", [""])[0].strip(),
+                sort=enum(query.get("sort", [""])[0], ("", "latest", "count")),
             )
             self.reply(200, {"issues": issues})
         elif method == "POST" and path == "projects":
@@ -420,21 +431,21 @@ class Handler(BaseHTTPRequestHandler):
                     raise HttpError(404, "没有找到对应记录。")
                 packages = {package["id"] for snapshot in detail["snapshots"] for package in snapshot["data"]["packages"]}
                 self.reply(200, {"packages": self.server.registry_versions.for_packages(packages)})
+        elif method == "GET" and (match := re.fullmatch(r"issues/([0-9]{1,15})/projects", path)):
+            self.reply_found(db.issue_projects(int(match[1])))
         elif (match := re.fullmatch(r"issues/([0-9]{1,15})", path)):
             issue_id = int(match[1])
             if method == "GET":
-                self.reply_found(db.issue_detail(issue_id))
+                detail = db.issue_detail(issue_id)
+                self.reply_found(None if detail is None else detail | {"assignees": sorted(self.server.accounts)})
             else:
-                data = obj(self.body(), ("revision", "status", "priority", "assignee", "fixed_version", "note"),
-                           ("duplicate_of",))
+                data = obj(self.body(), ("revision", "status", "assignee", "note"))
                 int_range(data["revision"], 1, 1000000000)
-                status = enum(data["status"], STATUSES)
-                enum(data["priority"], PRIORITIES)
-                label(data["assignee"], 80, empty=True)
-                label(data["fixed_version"], 80, empty=status != "awaiting_verification")
-                label(data["note"], 1000, empty=status != "closed")
-                if status == "duplicate":
-                    int_range(data.get("duplicate_of"), 1, 10 ** 15 - 1)
+                enum(data["status"], MAINTAINER_ISSUE_STATES)
+                data["assignee"] = label(data["assignee"], 80, empty=True)
+                if data["assignee"] and data["assignee"] not in self.server.accounts:
+                    raise InvalidInput("请从现有账号中选择负责人。")
+                data["note"] = label(data["note"], 1000, empty=True)
                 if not db.update_issue(issue_id, data, actor):
                     raise HttpError(404, "没有找到对应 Issue。")
                 self.reply(200, {"updated": True})

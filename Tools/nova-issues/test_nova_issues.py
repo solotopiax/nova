@@ -21,7 +21,7 @@ import uuid
 from build_usage_descriptions import FRAMEWORK_ROOT, build_descriptions
 from database import Database
 from registries import APPLOVIN_REGISTRY, OPENUPM_REGISTRY, REGISTRIES, UNITY_REGISTRY
-from serve import ACCOUNTS, UNITY_USAGE_DESCRIPTIONS, USAGE_DESCRIPTIONS, NovaIssuesServer, backup, password_hash
+from serve import ACCOUNTS, UNITY_USAGE_DESCRIPTIONS, USAGE_DESCRIPTIONS, Handler, NovaIssuesServer, backup, password_hash
 
 
 AGENT_FILE = Path(__file__).resolve().parents[2] / "Assets/Framework/Agents/Tools/nova_issues_agent.py"
@@ -270,6 +270,46 @@ class IssuesTest(unittest.TestCase):
         _, overview, _ = self.http("/api/maintainer/overview", headers=headers)
         self.assertEqual(overview["implementation"][0]["requested_framework"], "0.7.16")
 
+    def test_project_implementation_keeps_verified_progress_across_workspaces(self):
+        stamp = int(time.time())
+        historical = stamp - 31 * 86400
+        first, second = uuid.uuid4().hex, uuid.uuid4().hex
+
+        def record(workspace, stage, observed_at, **data):
+            report = {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
+                      "observed_at": observed_at, "kind": "implementation", "data": {
+                          "stage": stage, "framework": "0.7.16" if workspace == first else "0.7.17",
+                          "unity": "6000.4.2f1", **data}}
+            self.assertEqual(self.ingest(report)[0], 201)
+
+        record(first, "workspace", historical, editor_framework="0.7.16", sdk_packages=[], sdk_configs=[],
+               tools={"config": "configured", "pipify": "pending", "plugpals": "pending"})
+        record(first, "config-export", historical, outcome="success", platform="Android")
+        record(first, "editor-module", historical, outcome="success", step="asset")
+        record(second, "workspace", stamp - 5, editor_framework="0.7.17", sdk_packages=[], sdk_configs=[],
+               tools={"config": "pending", "pipify": "configured", "plugpals": "pending"})
+
+        headers = self.login()
+        path = "/api/maintainer/projects/project-a"
+        _, detail, _ = self.http(path, headers=headers)
+        self.assertEqual(detail["configured_tools"], ["config", "pipify"])
+        export = next(row for row in detail["implementation_outcomes"] if row["data"]["stage"] == "config-export")
+        self.assertEqual((export["workspace"], export["data"]["outcome"]), (first, "success"))
+
+        record(first, "config-export", stamp - 2, outcome="failed", platform="Android")
+        record(second, "config-export", stamp - 15, outcome="blocked", platform="Android")
+        record(first, "editor-module", stamp - 4, outcome="success", step="table")
+        record(second, "editor-module", stamp - 3, outcome="success", step="table")
+        _, detail, _ = self.http(path, headers=headers)
+        exports = [row for row in detail["implementation_outcomes"] if row["data"]["stage"] == "config-export"]
+        self.assertEqual([(row["data"]["outcome"], row["observed_at"]) for row in exports],
+                         [("failed", stamp - 2), ("success", historical)])
+        modules = {row["module"]: row for row in detail["project_module_evidence"]}
+        self.assertEqual((modules["asset"]["play_sessions"], modules["asset"]["last_success"]), (0, historical))
+        self.assertEqual((modules["table"]["play_sessions"], modules["table"]["last_success"]), (2, stamp - 3))
+        _, overview, _ = self.http("/api/maintainer/overview", headers=headers)
+        self.assertEqual(overview["configured_tools"]["project-a"], detail["configured_tools"])
+
     def test_two_accounts_and_protected_routes(self):
         status, html, _ = self.http("/")
         self.assertEqual(status, 200)
@@ -286,6 +326,7 @@ class IssuesTest(unittest.TestCase):
             self.assertEqual(self.http("/api/maintainer/overview", headers=session)[0], 401)
 
     def test_idempotent_delivery_concurrent_projects_and_backup(self):
+        """重复上报只保留一份，快速处理保护旧备注与其他维护者的修改。"""
         event = self.sample_issue()
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
             results = list(pool.map(self.ingest, [event] * 4))
@@ -296,33 +337,56 @@ class IssuesTest(unittest.TestCase):
         second = self.database.register("project-b", "项目乙", "QA")
         self.assertEqual(self.ingest(self.sample_issue(), "project-b")[0], 401)
         self.assertEqual(self.ingest(self.sample_issue(), "project-b", second)[1]["issue_id"], issue)
+        with self.database.connect() as db:
+            db.execute("UPDATE issues SET status='awaiting_verification',fixed_version='0.7.14' WHERE id=?", (issue,))
+            db.execute("INSERT INTO history (issue_id,actor,status,note,created_at) VALUES (?,?,?,?,?)",
+                       (issue, "taoye", "awaiting_verification", "旧版记录：待复验。", event["observed_at"]))
         session = self.login()
-        record = self.http(f"/api/maintainer/issues/{issue}", headers=session)[1]
+        route = f"/api/maintainer/issues/{issue}"
+        record = self.http(route, headers=session)[1]
         self.assertEqual(len(record["occurrences"]), 2)
-        edit = {"revision": 1, "status": "awaiting_verification", "priority": "P1", "assignee": "维护组",
-                "fixed_version": "0.7.14", "note": "等待项目组在指定版本复验。"}
-        self.assertEqual(self.http(f"/api/maintainer/issues/{issue}", edit, session)[0], 200)
-        self.assertEqual(self.http(f"/api/maintainer/issues/{issue}", edit, session)[0], 409)
+        self.assertEqual(record["assignees"], sorted(ACCOUNTS))
+        self.assertEqual(record["issue"]["status"], "open")
+        self.assertNotIn("fixed_version", record["issue"])
+        edit = {"revision": 1, "status": "closed", "assignee": "yingzheng", "note": ""}
+        self.assertEqual(self.http(route, edit | {"assignee": "维护组"}, session)[0], 400)
+        self.assertEqual(self.http(route, edit | {"status": "working"}, session)[0], 400)
+        self.assertEqual(self.http(route, edit, session)[0], 200)
+        self.assertEqual(self.http(route, edit, session)[0], 409)
+        note = "已核对。\n补充处理依据。"
+        self.assertEqual(self.http(route, edit | {"revision": 2, "note": note}, self.login("yingzheng"))[0], 200)
+        record = self.http(route, headers=session)[1]
+        self.assertEqual((record["issue"]["status"], record["issue"]["assignee"]), ("closed", "yingzheng"))
+        self.assertEqual([(item["actor"], item["status"], item["note"]) for item in record["history"]], [
+            ("yingzheng", "closed", note), ("taoye", "closed", ""), ("taoye", "open", "旧版记录：待复验。"),
+        ])
+        legacy_headers = {"X-Nova-Project": "project-a", "Authorization": "Bearer " + self.project_token}
+        self.assertEqual(self.http(f"/api/v1/issues/{issue}", headers=legacy_headers)[1]["fixed_version"], "0.7.14")
         copied = self.base / "backup.sqlite3"
         backup(self.database.path, copied)
         with sqlite3.connect(copied) as db:
             self.assertEqual(db.execute("SELECT COUNT(*) FROM reports").fetchone()[0], 2)
 
     def test_issue_project_filter_combines_with_search_and_finds_older_issues(self):
+        """筛选和排序都在截取列表前生效，影响项目数保留全部项目。"""
         second = self.database.register("project-b", "项目乙", "QA")
         self.database.register("project-empty", "尚未上报", "QA")
-        shared = self.ingest(self.sample_issue("sdk-shared"))[1]["issue_id"]
-        self.assertEqual(self.ingest(self.sample_issue("sdk-shared"), "project-b", second)[1]["issue_id"], shared)
-        only_a = self.ingest(self.sample_issue("sdk-project-a"))[1]["issue_id"]
-        only_b = self.ingest(self.sample_issue("sdk-project-b"), "project-b", second)[1]["issue_id"]
-
-        # 让优先级更高的问题占满总览列表，验证先筛选再取结果。
         stamp = int(time.time())
+        shared = self.ingest(self.sample_issue("sdk-shared") | {"observed_at": stamp - 10})[1]["issue_id"]
+        self.assertEqual(self.ingest(self.sample_issue("sdk-shared") | {"observed_at": stamp - 5},
+                                     "project-b", second)[1]["issue_id"], shared)
+        self.assertEqual(self.ingest(self.sample_issue("sdk-shared") | {"observed_at": stamp - 15})[1]["issue_id"], shared)
+        only_a = self.ingest(self.sample_issue("sdk-project-a") | {"observed_at": stamp})[1]["issue_id"]
+        only_b = self.ingest(self.sample_issue("sdk-project-b") | {"observed_at": stamp - 1},
+                             "project-b", second)[1]["issue_id"]
+
+        # 用发生时间更晚的问题占满总览列表，即使旧上报把它们标成 P3。
         with self.database.connect() as db:
+            db.execute("UPDATE issues SET status='working' WHERE id=?", (shared,))
             db.executemany("""
                 INSERT INTO issues (fingerprint,code,area,title,priority,first_seen,last_seen)
-                VALUES (?, ?, 'sdk', '启动阻塞', 'P0', ?, ?)
-                """, ((f"blocking-{i}", f"blocking-{i}", stamp, stamp) for i in range(502)))
+                VALUES (?, ?, 'sdk', '启动阻塞', 'P3', ?, ?)
+                """, ((f"blocking-{i}", f"blocking-{i}", stamp + 1, stamp + 1) for i in range(502)))
             db.executemany("""
                 INSERT INTO issues (fingerprint,code,area,title,priority,status,first_seen,last_seen)
                 VALUES (?, ?, 'sdk', '启动阻塞', 'P0', ?, ?, ?)
@@ -330,10 +394,12 @@ class IssuesTest(unittest.TestCase):
 
         route = "/api/maintainer/issues"
         self.assertEqual(self.http(f"{route}?project=project-a")[0], 401)
+        projects_route = f"{route}/{shared}/projects"
+        self.assertEqual(self.http(projects_route)[0], 401)
         session = self.login()
         overview = self.http("/api/maintainer/overview", headers=session)[1]
         self.assertEqual(len(overview["issues"]), 500)
-        self.assertEqual(overview["issue_counts"], {"active": 505, "p0": 502})
+        self.assertEqual(overview["issue_counts"], {"active": 505, "handled": 2})
         self.assertNotIn(shared, {item["id"] for item in overview["issues"]})
 
         def issues_for(query):
@@ -344,11 +410,65 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual({item["id"] for item in issues_for("project=project-a")}, {shared, only_a})
         self.assertEqual({item["id"] for item in issues_for("project=project-b")}, {shared, only_b})
         self.assertEqual(issues_for("project=project-empty"), [])
-        query = "project=project-a&status=open&priority=P1"
+        query = "project=project-a&status=open"
+        self.assertEqual([item["id"] for item in issues_for(f"{query}&sort=latest")], [only_a, shared])
+        self.assertEqual([item["id"] for item in issues_for(f"{query}&sort=count")], [shared, only_a])
+        self.assertEqual([item["id"] for item in issues_for("sort=count")[:3]], [shared, only_a, only_b])
+        self.assertEqual(self.http(f"{route}?sort=unsupported", headers=session)[0], 400)
         matches = issues_for(f"{query}&q=SDK-SHARED")
-        self.assertEqual([(item["id"], item["projects"], item["occurrences"]) for item in matches], [(shared, 2, 2)])
+        self.assertEqual([(item["id"], item["projects"], item["occurrences"]) for item in matches], [(shared, 2, 3)])
+        self.assertEqual(matches[0]["status"], "open")
         self.assertEqual(issues_for(f"{query}&q=sdk-project-b"), [])
-        self.assertEqual(issues_for("project=project-a&status=closed&priority=P1"), [])
+        self.assertEqual(issues_for("project=project-a&status=closed"), [])
+        self.assertEqual([item["status"] for item in issues_for("status=closed")], ["closed", "closed"])
+        status, payload, _ = self.http(projects_route, headers=session)
+        self.assertEqual(status, 200)
+        self.assertEqual({(project["id"], project["name"]) for project in payload["projects"]},
+                         {("project-a", "项目甲"), ("project-b", "项目乙")})
+
+    def test_issue_package_and_log_follow_the_reported_occurrence(self):
+        """旧上报和精简上报都能定位所属包，迟到记录不覆盖最近发生的版本。"""
+        stamp = int(time.time())
+        sdk = agent.FRAMEWORK + ".sdk.ad"
+        location = f"Packages/{sdk}/Scripts/Editor/AdSettings.cs(13,8)"
+        sdk_issue = {"area": "editor-compilation", "summary": location, "framework": "0.7.16",
+                     "actual": "Unity 编译器报告 CS0117。"}
+        latest = self.sample_issue("unity.CS0117.same-location") | {"observed_at": stamp}
+        latest["data"].update(sdk_issue | {"evidence": [{"source": "unity.compiler", "detail": "包版本 0.3.1。"}]})
+        status, receipt, _ = self.ingest(latest)
+        self.assertEqual(status, 201, receipt)
+        sdk_id = receipt["issue_id"]
+
+        earlier = self.sample_issue("unity.CS0117.same-location") | {"observed_at": stamp - 10}
+        detail_line = "编译器记录的附加信息。"
+        earlier["data"].update(sdk_issue | {"version": "0.3.0",
+            "evidence": [{"source": "unity.compiler", "detail": detail_line}]})
+        self.assertEqual(self.ingest(earlier)[1]["issue_id"], sdk_id)
+
+        meta = f"Packages/{agent.FRAMEWORK}/Agents/Tools/nova_hook_review.py.meta"
+        guid = self.sample_issue("unity.invalid-meta-guid.hook-review")
+        guid["data"].update({"area": "package-import", "summary": meta, "framework": "0.7.15",
+                             "version": "0.7.15", "actual": "Unity 忽略了对应资源。",
+                             "evidence": [{"source": "unity.package-import", "detail": f"{meta}。Unity 忽略了对应资源。"}]})
+        guid_id = self.ingest(guid)[1]["issue_id"]
+        unrelated_id = self.ingest(self.sample_issue())[1]["issue_id"]
+
+        session = self.login()
+        route = "/api/maintainer/issues"
+        issues = {row["id"]: row for row in self.http(route, headers=session)[1]["issues"]}
+        self.assertEqual(issues[sdk_id]["package"], {"id": sdk, "version": "0.3.1"})
+        self.assertEqual(issues[guid_id]["package"], {"id": agent.FRAMEWORK, "version": "0.7.15"})
+        self.assertIsNone(issues[unrelated_id]["package"])
+
+        detail = self.http(f"{route}/{sdk_id}", headers=session)[1]
+        self.assertEqual(detail["issue"]["package"], issues[sdk_id]["package"])
+        by_version = {row["package"]["version"]: row["error_log"]["text"] for row in detail["occurrences"]}
+        self.assertEqual(by_version, {"0.3.1": f"{location}\nCS0117: Unity 编译器报告 CS0117。",
+                                      "0.3.0": f"{location}\nCS0117: Unity 编译器报告 CS0117。\n{detail_line}"})
+        guid_occurrence = self.http(f"{route}/{guid_id}", headers=session)[1]["occurrences"][0]
+        self.assertEqual(guid_occurrence["error_log"]["text"], f"{meta}\ninvalid-meta-guid: Unity 忽略了对应资源。")
+        unrelated = self.http(f"{route}/{unrelated_id}", headers=session)[1]["occurrences"][0]
+        self.assertIsNone(unrelated["error_log"])
 
     def test_prompt_missed_route_is_local_then_reported(self):
         root, folder = self.fixture_project()
@@ -515,7 +635,8 @@ class IssuesTest(unittest.TestCase):
             self.assertEqual(self.ingest(event)[0], 201)
             events.append(event)
 
-        status, overview, _ = self.http("/api/maintainer/overview", headers=self.login())
+        session = self.login()
+        status, overview, _ = self.http("/api/maintainer/overview", headers=session)
         self.assertEqual(status, 200)
         rows = {(row["operation"], row["source"]): row for row in overview["usage"]}
         editor_action = rows[(action, "editor")]
@@ -529,10 +650,63 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual((legacy["entry"], legacy["description"]), ("", ""))
         self.assertIn("截取 Scene 或 Game", rows[("unity.capture.screenshot", "codex")]["description"])
         self.assertIn("custom refresh", rows[("unity.custom.refresh", "codex")]["description"])
+        status, result, _ = self.http("/api/maintainer/usage?source=editor&module=hotfix", headers=session)
+        self.assertEqual(status, 200, result)
+        self.assertEqual([(row["operation"], row["source"], row["count"]) for row in result["usage"]],
+                         [(action, "editor", 2)])
+        self.assertEqual(result["usage"][0]["description"], editor_action["description"])
         self.assertEqual(self.ingest(events[0])[0], 200)
         with self.database.connect() as db:
             original = db.execute("SELECT payload FROM reports WHERE id=?", (events[0]["id"],)).fetchone()
         self.assertEqual(json.loads(original["payload"]), receipt)
+
+    def test_usage_sort_uses_observation_time_and_applies_before_limit(self):
+        """低频的新记录可排到前面，晚到的旧上报仍按实际发生时间排序。"""
+        self.database.register("project-b", "项目乙", "QA")
+        stamp = int(time.time())
+        workspace = uuid.uuid4().hex
+
+        def report_row(project, operation, observed_at, received_at):
+            """用固定发生与接收时间填充使用记录，保持原有聚合维度。"""
+            payload = {"module": "hotfix", "operation": operation, "framework": "0.7.15",
+                       "outcome": "success", "source": "editor", "entry": "action"}
+            return (project, uuid.uuid4().hex, workspace, json.dumps(payload), observed_at, received_at)
+
+        with self.database.connect() as db:
+            insert = """
+                INSERT INTO reports (project_id,id,workspace,kind,digest,payload,observed_at,received_at)
+                VALUES (?, ?, ?, 'usage', 'fixture', ?, ?, ?)
+                """
+            db.executemany(insert, (
+                report_row("project-a", f"fixture.operation-{index}", stamp - age, stamp - age)
+                for index in range(500) for age in (100, 200)
+            ))
+            db.executemany(insert, (
+                report_row("project-b", "fixture.recent", stamp - 5, stamp - 4),
+                report_row("project-a", "fixture.frequent", stamp - 10, stamp - 9),
+                report_row("project-a", "fixture.frequent", stamp - 20, stamp - 8),
+                report_row("project-a", "fixture.frequent", stamp - 30, stamp),
+            ))
+
+        route = "/api/maintainer/usage"
+        self.assertEqual(self.http(route)[0], 401)
+        session = self.login()
+
+        def usage_for(query):
+            """读取待检查的维护台列表。"""
+            status, payload, _ = self.http(f"{route}?{query}", headers=session)
+            self.assertEqual(status, 200, payload)
+            return payload["usage"]
+
+        by_count = usage_for("days=14")
+        self.assertEqual(len(by_count), 500)
+        self.assertEqual((by_count[0]["operation"], by_count[0]["count"]), ("fixture.frequent", 3))
+        self.assertNotIn("fixture.recent", {row["operation"] for row in by_count})
+        by_latest = usage_for("days=14&sort=latest")
+        self.assertEqual([(row["operation"], row["last_used"]) for row in by_latest[:2]],
+                         [("fixture.recent", stamp - 5), ("fixture.frequent", stamp - 10)])
+        self.assertEqual(usage_for("days=14&sort=count&project=project-b"), [by_latest[0]])
+        self.assertEqual(self.http(f"{route}?sort=unsupported", headers=session)[0], 400)
 
     def test_usage_descriptions_follow_action_and_skill_sources(self):
         published = json.loads(USAGE_DESCRIPTIONS.read_text(encoding="utf-8"))
@@ -716,7 +890,7 @@ class IssuesTest(unittest.TestCase):
                 agent.work(root, folder, "", single=True)
             with agent.ledger(folder) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 3)
-                self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE accepted IS NOT NULL").fetchone()[0], 1)
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM report_receipts").fetchone()[0], 1)
                 db.execute("UPDATE outbox SET ready_at=0")
             with patch.object(agent, "REPORT_SERVER", self.url):
                 agent.work(root, folder, "", single=True)
@@ -725,6 +899,120 @@ class IssuesTest(unittest.TestCase):
         snapshots = self.http(f"/api/maintainer/projects/{project}", headers=self.login())[1]["snapshots"]
         self.assertEqual([item["data"].get("git_user_name") for item in snapshots],
                          [None, "新的配置名", "工程配置名", "全局配置名"])
+
+    def test_compact_reports_preserve_data_used_by_maintainers(self):
+        """后台确认能力后，环境和问题只提交有用字段，旧待发正文保持原样。"""
+        root, folder = self.fixture_project()
+        git(root, "config", "--local", "user.name", "快照上报人")
+        snapshot = {
+            "event": "snapshot", "codex_hooks": "pending",
+            "packages": [{"id": agent.FRAMEWORK, "version": "0.7.13", "source": "registry"}],
+            "application_identifiers": {"Android": "com.fixture.game"}, "enabled": ["NovaFramework.SDK.Example"],
+            "platform": "Android", "channel": "Store", "mode": "Debug", "coordinate_source": "ConfigMaster",
+            "tools": {"unity-cli": {"state": "connected"}, "mcp": {"state": "installed"},
+                      "pipeline": {"state": "registered"}},
+        }
+        with agent.ledger(folder) as db:
+            agent.editor_event(root, db, snapshot)
+            legacy = json.loads(db.execute("SELECT payload FROM outbox").fetchone()[0])
+        self.assertEqual(legacy["data"]["packages"][0]["evidence"], "registered")
+        _, health, _ = self.http("/health")
+        self.assertIs(health["compact_reports"], True)
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
+        with agent.ledger(folder) as db:
+            self.assertIs(agent.state(db, agent.COMPACT_REPORTS_KEY), True)
+            agent.editor_event(root, db, snapshot | {"codex_hooks": "complete"})
+            issue = self.sample_issue("compact-report")["data"]
+            agent.enqueue(db, "issue", issue)
+            waiting = db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall()
+        current = json.loads(waiting[0]["payload"])["data"]
+        self.assertEqual(set(current), {"framework", "unity", "packages", "tools", "coverage", "enabled",
+                                       "application_identifiers", "codex_hooks", "git_user_name"})
+        self.assertEqual(current["packages"], snapshot["packages"])
+        self.assertEqual(set(current["tools"]), {"unity-cli"})
+        self.assertEqual(current["application_identifiers"], snapshot["application_identifiers"])
+        self.assertEqual(current["enabled"], snapshot["enabled"])
+        self.assertEqual(current["git_user_name"], "快照上报人")
+        self.assertEqual(json.loads(waiting[1]["payload"])["data"],
+                         {key: value for key, value in issue.items() if key != "priority"})
+
+        health.pop("compact_reports")
+        with patch.object(agent, "automatic_report_health", return_value=health), patch.object(agent, "deliver") as send:
+            agent.work(root, folder, "", single=True)
+            send.assert_not_called()
+        with agent.ledger(folder) as db:
+            self.assertEqual(db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall(), waiting)
+            self.assertEqual(db.execute("SELECT DISTINCT error FROM outbox").fetchone()[0], "server-upgrade-required")
+            db.execute("UPDATE outbox SET ready_at=0")
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
+        project = self.database.project_detail("auto-1234567890abcdef1234567890abcdef")
+        self.assertEqual({row["id"]: row["data"] for row in project["snapshots"]}, {
+            legacy["id"]: legacy["data"], waiting[0]["id"]: current,
+        })
+        self.assertEqual(self.database.overview(14)["issues"][0]["occurrences"], 1)
+
+    def test_only_matching_receipt_removes_payload_and_retry_is_idempotent(self):
+        """已落库但返回了错误编号时保留正文，下次补发使用服务端原回执。"""
+        root, folder = self.fixture_project()
+        report_id = uuid.uuid4().hex
+        issue = self.sample_issue()["data"]
+        with agent.ledger(folder) as db:
+            agent.enqueue(db, "issue", issue, report_id)
+            payload = db.execute("SELECT payload FROM outbox").fetchone()[0]
+
+        def wrong_receipt(handler, _event, result):
+            """模拟服务已落库，却返回了另一个上报编号。"""
+            handler.reply(201, {"accepted": True, "id": uuid.uuid4().hex, "issue_id": result[1]})
+
+        with patch.object(agent, "REPORT_SERVER", self.url), patch.object(Handler, "report_receipt", wrong_receipt):
+            agent.work(root, folder, "", single=True)
+        with agent.ledger(folder) as db:
+            self.assertEqual(tuple(db.execute("SELECT payload,error FROM outbox").fetchone()),
+                             (payload, "invalid-receipt"))
+            self.assertIsNone(db.execute("SELECT id FROM report_receipts").fetchone())
+            db.execute("UPDATE outbox SET ready_at=0")
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
+
+        issues = self.database.overview(14)["issues"]
+        self.assertEqual(issues[0]["occurrences"], 1)
+        with agent.ledger(folder) as db:
+            agent.enqueue(db, "issue", issue, report_id, agent.now() + 1)
+            self.assertIsNone(db.execute("SELECT id FROM outbox").fetchone())
+            self.assertEqual(tuple(db.execute("SELECT id,kind,issue_id FROM report_receipts").fetchone()),
+                             (report_id, "issue", issues[0]["id"]))
+        status = json.loads(subprocess.check_output(
+            [sys.executable, "-B", str(AGENT_FILE), "--project", str(root), "status"], timeout=5))
+        self.assertEqual(status["outbox"], [])
+        self.assertEqual(status["receipts"][0]["id"], report_id)
+
+    def test_legacy_cache_migration_reclaims_file_and_keeps_pending_payload(self):
+        """旧版成功缓存可以回收磁盘页，未来待发的记录仍保持原样。"""
+        root, folder = self.fixture_project()
+        path = folder / "agent.sqlite3"
+        stamp = agent.now()
+        with sqlite3.connect(path) as db:
+            db.executescript(agent.SCHEMA)
+            db.execute("DROP TRIGGER discard_delivered_report")
+            payload = json.dumps({"kind": "snapshot", "data": "x" * (1 << 17)})
+            db.executemany("INSERT INTO outbox (id,payload,ready_at,accepted) VALUES (?,?,?,?)", [
+                (uuid.uuid4().hex, payload, stamp, stamp if index else stamp - agent.RECEIPT_RETENTION_SECONDS - 60)
+                for index in range(16)
+            ])
+            pending = json.dumps({"kind": "usage", "data": {"module": "table"}})
+            db.execute("INSERT INTO outbox (id,payload,ready_at) VALUES ('pending',?,?)", (pending, stamp + 300))
+        db.close()
+        before = path.stat().st_size
+        with patch.object(agent, "automatic_report_health") as health:
+            agent.work(root, folder, "", single=True)
+            health.assert_not_called()
+        with agent.ledger(folder) as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM report_receipts").fetchone()[0], 15)
+            self.assertEqual(tuple(db.execute("SELECT id,payload,accepted FROM outbox").fetchone()),
+                             ("pending", pending, None))
+        self.assertLess(path.stat().st_size, before // 2)
 
     def test_project_package_versions_and_older_snapshots(self):
         public, internal, third_party = "com.solotopia.framework", "com.fixture.internal", "com.thirdparty.sdk"

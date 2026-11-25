@@ -48,11 +48,15 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 在单独复制的服务目录运行此命令时，用 `--agent-source` 指向 Framework 包内的 `Agents/Tools/nova_issues_agent.py`。通过 `--python` 指定钩子所用的 Python。
 
-「总览」按数据库中的待处理问题统计总数和 P0 数量。「问题」页可按项目筛选，并同时使用搜索、状态和优先级。同一个问题涉及多个项目时，在每个相关项目的结果中都能找到。
+「总览」显示待处理和已处理的问题数量。「问题」页默认显示待处理问题，按最新发生时间排列。「排序」可切换为按发生次数从多到少排列，也可组合项目、状态和关键词筛选。点击「影响项目」列的数字可查看项目名称。查看项目详情时，点击弹窗外的空白即可关闭。
 
-「问题」「项目与版本」「使用记录」的红色数字表示刷新时发现的未读数量。问题和使用记录按收到的上报计数，项目与版本计入新增项目及环境、钩子上报。点击栏目后清除该栏已显示的数字。同一浏览器按账号保留已读进度，首次登录从当时的数据开始计数。
+「所属包 / 版本」显示最近一次发生记录确认的包名和版本。问题详情中的「发生记录」显示各次实际版本，编译和导入问题的「错误日志」展示已上报的包内位置、错误编号及诊断内容。
 
-「项目与版本」显示 Framework、Unity 版本和最近环境上报时间。点击团队列的「设置团队」或「修改」保存便于识别的团队名称，留空即可清除。自动登记的新项目团队留空。服务升级时清空旧自动登记项目的默认团队占位。
+打开问题即可快速处理。状态可选「待处理」或「已处理」，负责人从现有维护账号中选择，也可设为「未分配」。每次保存都会追加一条处理记录，备注选填。旧记录中的已关闭和已合并归为「已处理」，其余归为「待处理」。已合并的问题仍可跳到原合并目标查看。
+
+「项目」「问题」「使用记录」的红色数字表示刷新时发现的未读数量。问题和使用记录按收到的上报计数，项目计入新增项目及环境、钩子上报。点击栏目后清除该栏已显示的数字。同一浏览器按账号保留已读进度，首次登录从当时的数据开始计数。
+
+「项目」显示「Framework版本」、Unity 版本和最近环境上报时间。「Framework版本」取 Unity Editor 实际载入的版本，缺少该记录时显示「待上报」。点击团队列的「设置团队」或「修改」保存便于识别的团队名称，留空即可清除。自动登记的新项目团队留空。服务升级时清空旧自动登记项目的默认团队占位。
 
 项目详情的环境快照显示游戏包名和「钩子追加」，各工作区的历史快照各自保留对应的版本及状态。包名来自 Unity Player Settings。反馈配置和绑定脚本齐备、尚未加入及部分缺失或校验失败分别显示「已加全」「待追加」「不完整」。升级会沿用完整的既有定义及脚本，成员的授权状态仍在 Codex 中查看。旧快照缺少这两项时显示「待上报」。
 
@@ -62,24 +66,30 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 环境快照的「上报人」取该工程执行 `git config --get user.name` 的结果。工程级设置优先，没有覆盖时沿用生效的全局设置。快照缺少可显示名称时显示「暂无 Git 名称」。
 
+环境快照的「已启用」以多列展示 SDK 和 Kit 的模块名称，例如 TGA、Ad 和 GameLogin。
+
 包清单先显示查到最新版本的包，其中版本不同的条目置顶。随后是「随 Unity」的包，最后是最新版本显示「—」的包。各组按 `com.solotopia.*`、内网仓库包、其它包的顺序排列，同类按包名排序。Solotopia 仓库版本来自 `dist-tags.latest`。第三方注册包可从 Unity 官方仓库、AppLovin 和 OpenUPM 补查。维护台用快照中的 Unity 版本匹配包清单声明的最低要求，选择可用的最高版本。已使用预发布版的包也检查兼容的预发布版。项目安装时由 Unity Package Manager 解析实际依赖。
 
 绿色表示当前版本已经是查到的最新版本，橙色表示版本不同。内置包显示「随 Unity」，缺少可核实版本的包显示横线。成功的仓库查询缓存五分钟。展开历史快照时会按该快照的 Unity 版本查询，已有上报可直接使用。
 
 环境首次识别，或 Framework、Unity 版本、游戏包名、项目钩子状态、Git 名称发生变化时上报。信息未变时，按工作站本地自然日在同一工作区首次 Editor 编译完成后上报一次。工作区队列从工程 Library 后台发送，服务暂不可用时按原编号补发。
 
-「使用记录」按项目、模块和发生时间汇总。来源显示观察到操作的一方。`Editor` 记录来自执行回执或 SDK 预加载，`Codex` 记录来自已启用的反馈钩子。能按操作标识和结果识别的历史 Editor 记录也会显示对应入口，其他缺少来源的历史记录显示「未标注」。将鼠标停在带点线的操作名称上即可查看用途。
+「使用记录」默认显示全部来源，按触发次数从多到少排列。「排序」切换到「最新时间」时，按每组操作最近一次实际触发的时间排列。来源显示观察到操作的一方。`Editor` 记录来自执行回执或 SDK 预加载，`Codex` 记录来自已启用的反馈钩子。能按操作标识和结果识别的历史 Editor 记录也会显示对应入口，其他缺少来源的历史记录显示「未标注」。将鼠标停在带点线的操作名称上即可查看用途。
 
 ## 接口
 
 | 接口 | 用途 |
 |---|---|
-| `GET /health` | 查看服务、协议版本、自动上报能力、项目详情字段支持 `project_snapshot_details`、Git 名称支持 `git_user_name_reporting`、钩子运行报告支持 `hook_activity` 及当前运行版本 `revision`。 |
+| `GET /health` | 查看服务、协议版本、自动上报能力和当前运行版本 `revision`。`project_snapshot_details`、`git_user_name_reporting`、`hook_activity`、`compact_reports` 分别表示支持项目详情、Git 名称、钩子运行和精简报告。 |
 | `POST /api/v1/auto-reports` | 接收工作区上报。请求包含项目名和 `report` 信封，首次成功时自动登记项目和工作区。 |
 | `POST /api/v1/reports` | 接收旧版客户端或接入方凭项目令牌提交的报告。 |
 | `GET /api/v1/issues/<id>` | 用项目令牌查询该项目已上报问题的处理状态及修复版本。 |
 | `POST /api/session` | 浏览器登录。维护接口使用会话 Cookie，变更请求校验来源和 CSRF。 |
-| `GET /api/maintainer/issues` | 登录后按项目标识 `project`、状态 `status`、优先级 `priority` 和搜索词 `q` 查询问题。 |
+| `GET /api/maintainer/issues` | 登录后按 `project`、`status` 和 `q` 筛选问题。`sort=latest` 按最近发生时间排序，`sort=count` 按发生次数排序。 |
+| `GET /api/maintainer/usage` | 登录后按 `days`、`project`、`module` 和 `source` 筛选使用记录。`sort=count` 按触发次数排序，`sort=latest` 按最近使用时间排序。 |
+| `GET /api/maintainer/issues/<id>/projects` | 登录后读取该问题影响的全部项目名称和标识。 |
+| `GET /api/maintainer/issues/<id>` | 登录后读取问题详情、发生记录、处理记录及可选的负责人账号。 |
+| `POST /api/maintainer/issues/<id>` | 登录后用 `revision` 保存 `status`、`assignee` 和 `note`。留空 `assignee` 表示未分配，留空 `note` 表示本次没有备注。 |
 | `GET /api/maintainer/projects/<id>` | 登录后读取项目详情，包括环境快照及各工作区最新的钩子运行记录。 |
 | `POST /api/maintainer/projects/<id>/team` | 登录后保存项目团队名称 `team`，用编辑时读到的 `previous_team` 校验并发修改。 |
 | `GET /api/maintainer/projects/<id>/package-versions` | 登录后读取 Solotopia 包版本。传 `snapshot=<id>` 时按该环境快照补查第三方包的兼容版本，`pending` 表示还有查询进行中。 |
@@ -88,11 +98,15 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 新版环境快照可携带 `application_identifiers`、`codex_hooks` 和 `git_user_name`。服务升级并声明支持对应字段前，携带这些字段的快照保留在本机队列，服务就绪后按原编号补发。
 
+服务声明 `compact_reports` 后，新报告的包清单只携带标识、版本和来源，问题省去旧优先级，工作区实施快照以实际载入版本为准。升级过程仍携带请求目标版本。旧客户端原有格式继续可用，失败重试沿用已入队的原编号和正文。服务确认编号后，本地删掉正文并保留短回执供去重。
+
 新版工作站通过 `snapshot` 上报基础环境。`usage` 中的 Codex 调用带 `source=codex` 和入口类型 `entry`，Editor 回执带 `source=editor` 和 `entry=action`，SDK 预加载带 `source=editor`。服务端继续兼容旧版 `task` 报告。旧版服务未声明 `codex_telemetry` 时，带来源的使用记录留在本地待补发。
 
-`implementation` 记录工作区配置、Framework 请求／解析／载入阶段和实际工具终态。「项目与版本」列表显示配置概况，项目详情按工作区展示发生时间、收到时间、最近执行结果和模块使用证据。「SDK 接入与构建」显示已安装 SDK 包、启用配置和项目级平台构建结果。旧版服务缺少 `implementation_tracking` 时，新报告留在工程本地待补发。
+`implementation` 记录本地工程配置、Framework 请求／解析／载入阶段和实际工具终态。「项目」列表和「工程实施」按项目汇总已确认的工具配置。项目收到一条成功结果后，该项持续标记为「已验证」，最近结果按实际发生时间更新。将鼠标移到验证标记可查看成功的时间、版本和来源。旧版服务缺少 `implementation_tracking` 时，新报告留在工程本地待补发。
 
-支持 `execution_evidence` 的服务会接收 Editor Play 模块、启动阶段和 Framework 升级阶段。模块表同时展示近 30 天工具调用与观察到的 Play 次数。项目详情随维护台 15 秒刷新发现新上报，继续保留已展开的快照和包版本结果。缺少该能力的服务仍可接收现有格式，新增执行证据在本地等候升级。
+「SDK 接入与构建」汇总各本地工程最新上报的 SDK 清单。任一清单同时显示 SDK 已安装、独立配置已启用时，标为绿色「是」，其余显示黄色「否」。广告渠道和 IAP 商店由主包配置管理，适配包悬停显示配置归属。Android／iOS 构建按平台、构建类型和开发构建设置显示验证状态和最近结果。
+
+支持 `execution_evidence` 的服务会接收 Editor Play 模块、启动阶段和 Framework 升级阶段。模块表合计整个项目近 30 天的调用、Play 和阻塞或失败次数，历史成功持续用于验证状态。手动点击 Unity Play 后，实际加载资源、进入 Procedure 或取到数据表也会留下证据，每次 Play 对每个模块计一次。手动导出 Config、执行 Pipify Batch 和通过 PlugPals 查询仓库也会记录各自的执行结果。项目详情随维护台 15 秒刷新发现新上报，继续保留已展开的快照和包版本结果。缺少该能力的服务仍可接收现有格式，新增执行证据在本地等候升级。
 
 `hook_activity` 对应实际运行。`data` 仅包含 `framework`，工作区和运行时间使用信封里的 `workspace`、`observed_at`。服务就绪并在 `/health` 声明支持 `hook_activity` 后，工作区按原编号送出待发记录。
 

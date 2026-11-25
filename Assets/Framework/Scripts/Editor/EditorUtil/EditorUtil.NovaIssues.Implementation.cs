@@ -25,7 +25,7 @@ namespace NovaFramework.Editor
         {
             private const string c_WorkspaceImplementation = "implementation_workspace";
 
-            /// <summary>保存三工具的持久绑定和 SDK 清单，避免用窗口或模拟执行推断实施结果。</summary>
+            /// <summary>采集三工具的持久绑定、实际载入的 Framework 版本及 SDK 清单。</summary>
             private static JObject CaptureImplementationWorkspace(PackageInfo[] packages, ConfigMasterSO master)
             {
                 var data = ImplementationData("workspace", EditorUserBuildSettings.activeBuildTarget.ToString(),
@@ -39,11 +39,6 @@ namespace NovaFramework.Editor
                     ["plugpals"] = PlugPals.HasPersistedRegistry() ? "configured" : "pending"
                 };
                 data["editor_framework"] = ReadVersion(global::NovaFramework.Runtime.Nova.Version);
-                string manifest = System.IO.Path.Combine(s_Project, "Packages", "manifest.json");
-                var dependencies = File.Exists(manifest) ? PlugPals.ReadManifest(manifest)?.dependencies : null;
-                if (dependencies != null && dependencies.TryGetValue(c_Framework, out string requested) &&
-                    System.Version.TryParse(requested, out System.Version requestedVersion) && requestedVersion.Build >= 0)
-                    data["requested_framework"] = requested;
                 data["sdk_packages"] = new JArray((packages ?? Array.Empty<PackageInfo>())
                     .Where(item => item != null && IsKey(item.name) &&
                                    item.name.StartsWith(c_Framework + ".sdk.", StringComparison.Ordinal) &&
@@ -133,7 +128,7 @@ namespace NovaFramework.Editor
                 return frame;
             }
 
-            /// <summary>基础实施只在状态变化时写入；执行终态保留各自的观察时间。</summary>
+            /// <summary>基础实施只在状态变化时入队，旧维护台仍可读取其展示的请求版本。</summary>
             private static void RecordImplementation(SqlCipher4Unity3D.SQLiteConnection db, JObject data, string workspace,
                 string id, long stamp)
             {
@@ -141,6 +136,18 @@ namespace NovaFramework.Editor
                     return;
                 if ((string)data["stage"] == "workspace")
                 {
+                    if (SupportsCompactReports(db))
+                    {
+                        data.Remove("requested_framework");
+                    }
+                    else
+                    {
+                        string manifest = System.IO.Path.Combine(s_Project, "Packages", "manifest.json");
+                        var dependencies = File.Exists(manifest) ? PlugPals.ReadManifest(manifest)?.dependencies : null;
+                        if (dependencies != null && dependencies.TryGetValue(c_Framework, out string requested) &&
+                            Version.TryParse(requested, out Version requestedVersion) && requestedVersion.Build >= 0)
+                            data["requested_framework"] = requested;
+                    }
                     string signature = EventId(data.ToString(Formatting.None));
                     var previous = ReadState(db, c_WorkspaceImplementation);
                     if ((string)previous == signature)

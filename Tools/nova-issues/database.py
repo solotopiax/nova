@@ -5,10 +5,23 @@ import hashlib
 import hmac
 import json
 from pathlib import Path
+import re
 import secrets
 import sqlite3
 import time
 
+from protocol import VERSION
+
+
+# 维护台按两种状态读取历史记录，旧版上报和项目查询继续使用原有字段。
+MAINTAINER_ISSUE_STATUS = "CASE WHEN status IN ('closed', 'duplicate') THEN 'closed' ELSE 'open' END"
+FRAMEWORK_PACKAGE = "com.solotopia.nova.framework"
+ISSUE_PACKAGE_LOCATION = re.compile(rf"Packages/({re.escape(FRAMEWORK_PACKAGE)}(?:\.[a-z0-9_.-]+)?)/[^\r\n]+")
+ISSUE_PACKAGE_VERSION = re.compile(r"包版本 ([a-zA-Z0-9.+-]+)。")
+ISSUE_LATEST_PAYLOAD = """(
+    SELECT r.payload FROM reports r WHERE r.issue_id=i.id AND r.kind='issue'
+    ORDER BY r.observed_at DESC,r.received_at DESC,r.rowid DESC LIMIT 1
+)"""
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS projects (
@@ -65,6 +78,44 @@ def now():
 
 def encoded(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+
+
+def issue_report_details(data):
+    """从新旧报告保留的归因中读取包版本和可展示的诊断内容。"""
+    diagnostic = next((entry for entry in data["evidence"]
+                       if entry["source"] in ("unity.compiler", "unity.package-import")), None)
+    package = None
+    version = None
+    error_log = None
+    if diagnostic:
+        location = data["summary"]
+        path = ISSUE_PACKAGE_LOCATION.fullmatch(location)
+        if path:
+            package = path[1]
+            compact_version = ISSUE_PACKAGE_VERSION.fullmatch(diagnostic["detail"])
+            version = compact_version[1] if compact_version else data.get("version")
+            code = data["code"].split(".", 2)
+            error = code[1] if len(code) == 3 and code[0] == "unity" else data["code"]
+            actual = data["actual"]
+            text = f"{location}\n{error}: {actual}"
+            if not compact_version and diagnostic["detail"] != f"{location}。{actual}":
+                text += f"\n{diagnostic['detail']}"
+            error_log = {"source": diagnostic["source"], "text": text}
+    elif any(entry["source"] == "framework.source" for entry in data["evidence"]):
+        package = FRAMEWORK_PACKAGE
+
+    if package == FRAMEWORK_PACKAGE and version in (None, "", "unknown"):
+        version = data["framework"]
+    known_version = version if version and version != "unknown" and VERSION.fullmatch(version) else None
+    return ({"id": package, "version": known_version} if package else None), error_log
+
+
+def issue_summary(row):
+    """列表和详情头部显示最近发生记录确认的包。"""
+    issue = dict(row)
+    payload = issue.pop("latest_payload")
+    issue["package"] = issue_report_details(json.loads(payload))[0] if payload else None
+    return issue
 
 
 class Database:
@@ -198,6 +249,7 @@ class Database:
 
     @staticmethod
     def attach_issue(db, event):
+        """按稳定的问题归属合并发生记录；旧表的优先级列对新版报告使用默认值。"""
         item = event["data"]
         timestamp = event["observed_at"]
         fingerprint = digest(encoded([item["area"], item["code"]]))
@@ -206,7 +258,7 @@ class Database:
             result = db.execute(
                 """INSERT INTO issues (fingerprint, code, area, title, priority, first_seen, last_seen)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (fingerprint, item["code"], item["area"], item["title"], item["priority"], timestamp, timestamp))
+                (fingerprint, item["code"], item["area"], item["title"], item.get("priority", "P2"), timestamp, timestamp))
             return result.lastrowid
         issue_id = row["duplicate_of"] or row["id"]
         db.execute("UPDATE issues SET first_seen=MIN(first_seen,?), last_seen=MAX(last_seen,?) WHERE id=?",
@@ -245,30 +297,11 @@ class Database:
                     SELECT *, ROW_NUMBER() OVER (
                         PARTITION BY project_id,workspace ORDER BY observed_at DESC,received_at DESC,rowid DESC
                     ) AS n FROM reports WHERE kind='implementation' AND json_extract(payload,'$.stage')='workspace'
-                ) WHERE n=1 ORDER BY observed_at DESC
+                ) WHERE n=1 ORDER BY observed_at DESC,received_at DESC,project_id,workspace
                 """)
-            usage = db.execute("""
-                WITH recorded AS (
-                    SELECT project_id, json_extract(payload,'$.module') AS module,
-                           json_extract(payload,'$.operation') AS operation,
-                           json_extract(payload,'$.outcome') AS outcome,
-                           json_extract(payload,'$.framework') AS framework,
-                           json_extract(payload,'$.source') AS recorded_source,
-                           json_extract(payload,'$.entry') AS recorded_entry
-                    FROM reports WHERE kind='usage' AND observed_at>=?
-                ), editor_entries AS (
-                    -- 旧版 Editor 回执和 SDK 预加载有固定格式，原报告保持原样。
-                    SELECT *, CASE
-                        WHEN recorded_entry IS NOT NULL OR COALESCE(recorded_source,'editor')!='editor' THEN NULL
-                        WHEN operation GLOB ('nova.project.' || module || '.?*') AND outcome!='executed' THEN 'action'
-                        WHEN module='sdk' AND operation='editor.preload.sdk' AND outcome='success' THEN 'preload'
-                    END AS editor_entry FROM recorded
-                )
-                SELECT project_id, module, operation, outcome, framework,
-                       COALESCE(recorded_source, CASE WHEN editor_entry IS NOT NULL THEN 'editor' ELSE 'legacy' END) AS source,
-                       COALESCE(recorded_entry, editor_entry, '') AS entry, COUNT(*) AS count
-                FROM editor_entries
-                GROUP BY project_id,module,operation,outcome,framework,source,entry ORDER BY count DESC LIMIT 500
+            usage_modules = db.execute("""
+                SELECT DISTINCT json_extract(payload,'$.module') AS module
+                FROM reports WHERE kind='usage' AND observed_at>=? ORDER BY module
                 """, (since,))
             codex_activity = db.execute("""
                 SELECT project_id, COUNT(*) AS turns, COUNT(DISTINCT workspace) AS workspaces,
@@ -284,9 +317,10 @@ class Database:
                 FROM reports WHERE kind='usage' AND observed_at>=? AND json_extract(payload,'$.source')='codex'
                 GROUP BY project_id,module ORDER BY calls DESC,skill_turns DESC,module,project_id
                 """, (since,))
-            issue_counts = db.execute("""
-                SELECT COUNT(*) AS active, COUNT(CASE WHEN priority='P0' THEN 1 END) AS p0
-                FROM issues WHERE status NOT IN ('closed', 'duplicate')
+            issue_counts = db.execute(f"""
+                SELECT COUNT(CASE WHEN status='open' THEN 1 END) AS active,
+                       COUNT(CASE WHEN status='closed' THEN 1 END) AS handled
+                FROM (SELECT {MAINTAINER_ISSUE_STATUS} AS status FROM issues)
                 """).fetchone()
             activity_totals = db.execute("""
                 WITH counts AS (
@@ -308,18 +342,62 @@ class Database:
                 """).fetchone()
             return {"projects": list(map(dict, projects)), "workspaces": list(map(dict, latest)),
                     "implementation": [{**dict(item), "tools": json.loads(item["tools"])} for item in implementation],
-                    "usage": list(map(dict, usage)), "issues": self.issue_rows(db),
+                    "configured_tools": self.configured_implementation_tools(db),
+                    "usage": self.usage_rows(db, since), "usage_modules": [row["module"] for row in usage_modules],
+                    "issues": self.issue_rows(db),
                     "issue_counts": dict(issue_counts), "activity_totals": dict(activity_totals),
                     "codex_activity": list(map(dict, codex_activity)), "codex_modules": list(map(dict, codex_modules)),
                     "server_time": now(), "days": days}
 
-    def list_issues(self, *, project_id="", status="", priority="", search=""):
-        """按维护台的筛选条件读取问题列表。"""
+    def list_usage(self, days, *, project_id="", module="", source="", sort="count"):
+        """读取选定时间范围及筛选条件下的使用汇总。"""
         with self.connect() as db:
-            return self.issue_rows(db, project_id, status, priority, search)
+            return self.usage_rows(db, now() - days * 86400, project_id=project_id, module=module,
+                                   source=source, sort=sort)
 
     @staticmethod
-    def issue_rows(db, project_id="", status="", priority="", search=""):
+    def usage_rows(db, since, *, project_id="", module="", source="", sort="count"):
+        """按实际发生时间计算每组的最后一次触发，筛选和排序后取前 500 组。"""
+        order = "last_used DESC, count DESC" if sort == "latest" else "count DESC, last_used DESC"
+        rows = db.execute(f"""
+            WITH recorded AS (
+                SELECT project_id, json_extract(payload,'$.module') AS module,
+                       json_extract(payload,'$.operation') AS operation,
+                       json_extract(payload,'$.outcome') AS outcome,
+                       json_extract(payload,'$.framework') AS framework,
+                       json_extract(payload,'$.source') AS recorded_source,
+                       json_extract(payload,'$.entry') AS recorded_entry, observed_at
+                FROM reports WHERE kind='usage' AND observed_at>=:since
+                  AND (:project='' OR project_id=:project)
+                  AND (:module='' OR json_extract(payload,'$.module')=:module)
+            ), editor_entries AS (
+                -- 旧版 Editor 回执和 SDK 预加载有固定格式，原报告保持原样。
+                SELECT *, CASE
+                    WHEN recorded_entry IS NOT NULL OR COALESCE(recorded_source,'editor')!='editor' THEN NULL
+                    WHEN operation GLOB ('nova.project.' || module || '.?*') AND outcome!='executed' THEN 'action'
+                    WHEN module='sdk' AND operation='editor.preload.sdk' AND outcome='success' THEN 'preload'
+                END AS editor_entry FROM recorded
+            ), classified AS (
+                SELECT project_id,module,operation,outcome,framework,observed_at,
+                       COALESCE(recorded_source, CASE WHEN editor_entry IS NOT NULL THEN 'editor' ELSE 'legacy' END) AS source,
+                       COALESCE(recorded_entry, editor_entry, '') AS entry
+                FROM editor_entries
+            )
+            SELECT project_id,module,operation,outcome,framework,source,entry,
+                   COUNT(*) AS count, MAX(observed_at) AS last_used
+            FROM classified WHERE (:source='' OR source=:source)
+            GROUP BY project_id,module,operation,outcome,framework,source,entry
+            ORDER BY {order}, project_id,module,operation,outcome,framework,source,entry LIMIT 500
+            """, {"since": since, "project": project_id, "module": module, "source": source})
+        return list(map(dict, rows))
+
+    def list_issues(self, *, project_id="", status="", search="", sort=""):
+        """按维护台选择的筛选与排序读取问题列表。"""
+        with self.connect() as db:
+            return self.issue_rows(db, project_id, status, search, sort)
+
+    @staticmethod
+    def issue_rows(db, project_id="", status="", search="", sort=""):
         """按项目的发生记录筛选问题，再统计匹配问题的全部发生次数。"""
         conditions = []
         values = []
@@ -327,26 +405,36 @@ class Database:
             conditions.append("i.id IN (SELECT issue_id FROM reports WHERE project_id=? AND kind='issue')")
             values.append(project_id)
         if status:
-            conditions.append("i.status=?")
+            conditions.append(f"({MAINTAINER_ISSUE_STATUS})=?")
             values.append(status)
-        if priority:
-            conditions.append("i.priority=?")
-            values.append(priority)
         if search:
             db.create_function("issue_text_lower", 1, str.lower, deterministic=True)
             conditions.append("instr(issue_text_lower('#' || i.id || ' ' || i.area || ' ' || i.title || ' ' || i.code), ?) > 0")
             values.append(search.lower())
         where = "WHERE " + " AND ".join(conditions) if conditions else ""
+        order = {"latest": "i.last_seen DESC", "count": "occurrences DESC, i.last_seen DESC"}.get(
+            sort, f"({MAINTAINER_ISSUE_STATUS})='closed', i.last_seen DESC")
         rows = db.execute(f"""
-            SELECT i.id,i.code,i.area,i.title,i.priority,i.status,i.assignee,i.fixed_version,
+            SELECT i.id,i.code,i.area,i.title,{MAINTAINER_ISSUE_STATUS} AS status,i.assignee,
                    i.first_seen,i.last_seen,i.duplicate_of,
-                   COUNT(r.id) AS occurrences, COUNT(DISTINCT r.project_id) AS projects
+                   COUNT(r.id) AS occurrences, COUNT(DISTINCT r.project_id) AS projects,
+                   {ISSUE_LATEST_PAYLOAD} AS latest_payload
             FROM issues i LEFT JOIN reports r ON r.issue_id=i.id {where}
             GROUP BY i.id
-            ORDER BY CASE i.status WHEN 'closed' THEN 1 WHEN 'duplicate' THEN 2 ELSE 0 END,
-                     i.priority,i.last_seen DESC LIMIT 500
+            ORDER BY {order}, i.id DESC LIMIT 500
             """, values)
-        return list(map(dict, rows))
+        return list(map(issue_summary, rows))
+
+    def issue_projects(self, issue_id):
+        """读取该问题全部发生记录对应的去重项目，包含较早的上报。"""
+        with self.connect() as db:
+            rows = db.execute("""
+                SELECT DISTINCT p.id,p.name FROM issues i
+                LEFT JOIN reports r ON r.issue_id=i.id
+                LEFT JOIN projects p ON p.id=r.project_id
+                WHERE i.id=? ORDER BY p.name COLLATE NOCASE,p.id
+                """, (issue_id,)).fetchall()
+            return {"projects": [dict(row) for row in rows if row["id"] is not None]} if rows else None
 
     @staticmethod
     def decode(row):
@@ -354,9 +442,27 @@ class Database:
         item["data"] = json.loads(item.pop("payload"))
         return item
 
+    @staticmethod
+    def configured_implementation_tools(db, project_id=None):
+        """按项目保留各工具已经上报的配置证据。"""
+        scope = "AND project_id=?" if project_id is not None else ""
+        params = (project_id,) if project_id is not None else ()
+        rows = db.execute(f"""
+            SELECT project_id, tool.key AS tool
+            FROM reports, json_each(reports.payload, '$.tools') AS tool
+            WHERE kind='implementation' AND json_extract(payload,'$.stage')='workspace'
+              AND tool.value='configured' {scope}
+            GROUP BY project_id, tool.key ORDER BY project_id, tool.key
+            """, params)
+        configured = {}
+        for row in rows:
+            configured.setdefault(row["project_id"], []).append(row["tool"])
+        return configured
+
     def project_detail(self, project_id):
-        """返回项目环境、各工作区最近的钩子运行和历史任务基础信息。"""
+        """从同一份数据库快照读取项目环境、实施进展和上报来源。"""
         with self.connect() as db:
+            db.execute("BEGIN")
             project = db.execute("SELECT id,name,team,created_at,last_seen FROM projects WHERE id=?",
                                  (project_id,)).fetchone()
             if project is None:
@@ -388,7 +494,8 @@ class Database:
                         PARTITION BY workspace,stage,
                            CASE WHEN stage NOT IN ('workspace','framework-upgrade') THEN json_extract(payload,'$.framework') END,
                            CASE WHEN stage!='workspace' THEN json_extract(payload,'$.unity') END,
-                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.platform') END,
+                           CASE WHEN stage IN ('config-export','config-load','pipify-batch','plugpals-query',
+                               'bundle-build','player-build','sdk-preload') THEN json_extract(payload,'$.platform') END,
                            CASE WHEN stage!='workspace' THEN json_extract(payload,'$.channel') END,
                            CASE WHEN stage!='workspace' THEN json_extract(payload,'$.mode') END,
                            CASE WHEN stage IN ('plugpals-query','editor-module','startup-stage','framework-upgrade')
@@ -403,25 +510,56 @@ class Database:
                 SELECT workspace,observed_at,received_at,payload FROM ranked WHERE n=1
                 ORDER BY stage!='workspace',observed_at DESC,received_at DESC,rowid DESC LIMIT 400
                 """, (project_id,))
-            modules = db.execute("""
+            # 成功和其余结果各取最近一条，保留早于当前结果的验证证据。
+            outcomes = db.execute("""
+                WITH facts AS (
+                    SELECT rowid,workspace,observed_at,received_at,payload,
+                           json_extract(payload,'$.stage') AS stage,
+                           json_extract(payload,'$.outcome')='success' AS succeeded
+                    FROM reports WHERE project_id=? AND kind='implementation'
+                      AND json_extract(payload,'$.stage') IN ('config-export','config-load','pipify-batch',
+                          'plugpals-query','bundle-build','player-build','sdk-preload','editor-module')
+                )
+                SELECT workspace,observed_at,received_at,payload FROM (
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY stage,succeeded,
+                            CASE WHEN stage IN ('player-build','bundle-build') THEN json_extract(payload,'$.platform') END,
+                            CASE WHEN stage IN ('plugpals-query','editor-module') THEN json_extract(payload,'$.step') END,
+                            json_extract(payload,'$.build_kind'),json_extract(payload,'$.development')
+                        ORDER BY observed_at DESC,received_at DESC,rowid DESC
+                    ) AS n FROM facts
+                ) WHERE n=1 ORDER BY observed_at DESC,received_at DESC,rowid DESC
+                """, (project_id,))
+            modules = list(map(dict, db.execute("""
                 WITH events AS (
-                    SELECT workspace,observed_at,received_at,json_extract(payload,'$.framework') AS framework,
+                    SELECT workspace,observed_at,json_extract(payload,'$.framework') AS framework,
                            json_extract(payload,'$.module') AS module,json_extract(payload,'$.outcome') AS outcome,
                            0 AS play_session
-                    FROM reports WHERE project_id=? AND kind='usage' AND observed_at>=?
+                    FROM reports WHERE project_id=:project AND kind='usage'
                       AND COALESCE(json_extract(payload,'$.entry'),'')!='skill'
                     UNION ALL
-                    SELECT workspace,observed_at,received_at,json_extract(payload,'$.framework'),
+                    SELECT workspace,observed_at,json_extract(payload,'$.framework'),
                            json_extract(payload,'$.step'),'success',1
-                    FROM reports WHERE project_id=? AND kind='implementation' AND observed_at>=?
+                    FROM reports WHERE project_id=:project AND kind='implementation'
                       AND json_extract(payload,'$.stage')='editor-module'
+                ), recent AS (
+                    SELECT workspace,framework,module,SUM(1-play_session) AS count,SUM(play_session) AS play_sessions,
+                           MAX(observed_at) AS last_use,
+                           MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
+                           SUM(CASE WHEN outcome IN ('failed','blocked') THEN 1 ELSE 0 END) AS problems
+                    FROM events WHERE observed_at>=:since
+                    GROUP BY workspace,framework,module ORDER BY last_use DESC LIMIT 500
                 )
-                SELECT workspace,framework,module,SUM(1-play_session) AS count,SUM(play_session) AS play_sessions,
+                SELECT * FROM recent
+                UNION ALL
+                SELECT NULL,NULL,module,
+                       SUM(CASE WHEN observed_at>=:since THEN 1-play_session ELSE 0 END),
+                       SUM(CASE WHEN observed_at>=:since THEN play_session ELSE 0 END),
                        MAX(observed_at) AS last_use,
                        MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
-                       SUM(CASE WHEN outcome IN ('failed','blocked') THEN 1 ELSE 0 END) AS problems
-                FROM events GROUP BY workspace,framework,module ORDER BY last_use DESC LIMIT 500
-                """, (project_id, now() - 30 * 86400, project_id, now() - 30 * 86400))
+                       SUM(CASE WHEN observed_at>=:since AND outcome IN ('failed','blocked') THEN 1 ELSE 0 END)
+                FROM events GROUP BY module
+                """, {"project": project_id, "since": now() - 30 * 86400})))
             upgrade_issues = db.execute("""
                 SELECT workspace,observed_at,received_at,issue_id,payload FROM (
                     SELECT *, ROW_NUMBER() OVER (
@@ -433,7 +571,11 @@ class Database:
                 """, (project_id,))
             return {"project": dict(project), "snapshots": list(map(self.decode, snapshots)),
                     "tasks": list(map(self.decode, tasks)), "hook_activity": list(map(dict, hook_activity)),
-                    "implementation": list(map(self.decode, implementation)), "module_evidence": list(map(dict, modules)),
+                    "implementation": list(map(self.decode, implementation)),
+                    "configured_tools": self.configured_implementation_tools(db, project_id).get(project_id, []),
+                    "implementation_outcomes": list(map(self.decode, outcomes)),
+                    "module_evidence": [row for row in modules if row["workspace"] is not None],
+                    "project_module_evidence": [row for row in modules if row["workspace"] is None],
                     "upgrade_issues": list(map(self.decode, upgrade_issues))}
 
     def project_snapshot(self, project_id, report_id):
@@ -444,8 +586,14 @@ class Database:
             return json.loads(row["payload"]) if row is not None else None
 
     def issue_detail(self, issue_id):
+        """从同一数据库快照读取维护状态、发生记录和处理备注。"""
         with self.connect() as db:
-            issue = db.execute("SELECT * FROM issues WHERE id=?", (issue_id,)).fetchone()
+            db.execute("BEGIN")
+            issue = db.execute(f"""
+                SELECT id,area,title,{MAINTAINER_ISSUE_STATUS} AS status,assignee,duplicate_of,
+                       revision,first_seen,last_seen,{ISSUE_LATEST_PAYLOAD} AS latest_payload
+                FROM issues i WHERE id=?
+                """, (issue_id,)).fetchone()
             if issue is None:
                 return None
             reports = db.execute("""
@@ -453,9 +601,14 @@ class Database:
                 FROM reports r JOIN projects p ON p.id=r.project_id WHERE r.issue_id=?
                 ORDER BY r.received_at DESC, r.rowid DESC LIMIT 200
                 """, (issue_id,))
-            history = db.execute("SELECT actor,status,note,created_at FROM history WHERE issue_id=? "
-                                 "ORDER BY id DESC LIMIT 100", (issue_id,))
-            return {"issue": dict(issue), "occurrences": list(map(self.decode, reports)),
+            history = db.execute(f"""
+                SELECT actor,{MAINTAINER_ISSUE_STATUS} AS status,note,created_at FROM history
+                WHERE issue_id=? ORDER BY id DESC LIMIT 100
+                """, (issue_id,))
+            occurrences = list(map(self.decode, reports))
+            for occurrence in occurrences:
+                occurrence["package"], occurrence["error_log"] = issue_report_details(occurrence["data"])
+            return {"issue": issue_summary(issue), "occurrences": occurrences,
                     "history": list(map(dict, history))}
 
     def project_issue(self, project_id, issue_id):
@@ -468,35 +621,19 @@ class Database:
             return dict(row) if row is not None else None
 
     def update_issue(self, issue_id, update, actor):
+        """校验编辑版本，在同一事务内保存处理状态、负责人和追加记录。"""
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            row = db.execute("SELECT status,revision FROM issues WHERE id=?", (issue_id,)).fetchone()
+            row = db.execute("SELECT duplicate_of,revision FROM issues WHERE id=?", (issue_id,)).fetchone()
             if row is None:
                 return False
             if row["revision"] != update["revision"]:
                 raise Conflict("Issue 已被更新，请刷新后重试。")
-            if row["status"] == "duplicate":
+            if row["duplicate_of"] is not None:
                 raise Conflict("请在归并后的 Issue 上继续管理。")
-            target = update.get("duplicate_of")
-            if update["status"] == "duplicate":
-                other = db.execute("SELECT status,first_seen,last_seen FROM issues WHERE id=?", (target,)).fetchone()
-                if target == issue_id or other is None or other["status"] == "duplicate":
-                    raise Conflict("请选择另一个有效 Issue。")
-                db.execute("UPDATE reports SET issue_id=? WHERE issue_id=?", (target, issue_id))
-                db.execute("UPDATE issues SET duplicate_of=?,revision=revision+1 WHERE duplicate_of=?",
-                           (target, issue_id))
-                db.execute("""
-                    UPDATE issues SET first_seen=MIN(first_seen,(SELECT first_seen FROM issues WHERE id=?)),
-                    last_seen=MAX(last_seen,(SELECT last_seen FROM issues WHERE id=?)), revision=revision+1
-                    WHERE id=?
-                    """, (issue_id, issue_id, target))
-                db.execute("INSERT INTO history (issue_id,actor,status,note,created_at) VALUES (?,?,?,?,?)",
-                           (target, actor, other["status"], f"归并了 Issue #{issue_id}。", now()))
             db.execute("""
-                UPDATE issues SET status=?,priority=?,assignee=?,fixed_version=?,duplicate_of=?,
-                                  revision=revision+1 WHERE id=?
-                """, (update["status"], update["priority"], update["assignee"], update["fixed_version"],
-                      target if update["status"] == "duplicate" else None, issue_id))
+                UPDATE issues SET status=?,assignee=?,revision=revision+1 WHERE id=?
+                """, (update["status"], update["assignee"], issue_id))
             db.execute("INSERT INTO history (issue_id,actor,status,note,created_at) VALUES (?,?,?,?,?)",
                        (issue_id, actor, update["status"], update["note"], now()))
         return True

@@ -56,7 +56,7 @@ Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外�
 | [catalog.json](catalog.json) | 全量 Skill 清单、能力分组、用户旅程、副作用、最低证据与机器可选项 |
 | [coverage.json](coverage.json) | 功能族、Docs、既有工具与用户任务的导航；任务引用真实 Skill/入口，不维护第二份安全契约或 Action Catalog |
 | [api-index.jsonl（定位）](../Docs/Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) | 发布器自动生成的便携符号/输入定位索引；开发快照与 SQLite 缓存只放 [Library/Nova/AgentIndex/（定位）](../Docs/Onboarding/NATURAL_LANGUAGE_DEVELOPMENT.md) |
-| [Tools/nova_issues_agent.py](Tools/nova_issues_agent.py) | 处理 Codex 已授权的钩子事件和业务 Agent 提供的证据，与 Editor 使用同一工作区队列及固定上报地址。自动确认入口遗漏需要同轮执行成功的回执。授权入口和证据格式见 [Nova 问题自动反馈](../Docs/Onboarding/NOVA_ISSUES.md)。 |
+| [Tools/nova_issues_agent.py](Tools/nova_issues_agent.py) | 处理 Codex 已授权的钩子事件和业务 Agent 提供的证据，与 Editor 共用工作区队列。自动确认入口遗漏需要同轮执行成功的回执。收到服务确认后清理本地正文，使用 `status` 查看待发状态和最近回执。授权入口和证据格式见 [Nova 问题自动反馈](../Docs/Onboarding/NOVA_ISSUES.md)。 |
 | [Schemas/](Schemas/) | Catalog、Skill 与任务覆盖的可校验结构 |
 
 框架根的 [Agents/](./) 只管理项目组消费态的 `nova-project-*` 命名空间；框架开发态 Skill 继续留在 Nova 开发仓根 [.agents/skills/（项目发现入口）](../Docs/START_HERE.md#先确定框架位置与文档入口) 的既有 `nova-*` 命名空间，不进入 Catalog 或 UPM 包。开发仓与消费项目使用同一 Catalog 和同一份 Skill 内容：前者用于快速验证，后者是正式项目组使用路径。

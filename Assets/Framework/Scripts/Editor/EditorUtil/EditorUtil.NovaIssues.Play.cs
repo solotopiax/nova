@@ -31,8 +31,8 @@ namespace NovaFramework.Editor
             private static void ObservePlayModule(EditorPlayModule module)
             {
                 string step = module.ToString().ToLowerInvariant();
-                ObserveImplementation("editor-module", "success", EditorUserBuildSettings.activeBuildTarget.ToString(),
-                    step: step, reportId: EventId("editor-play-module", CurrentPlayAttempt(), step));
+                ObserveImplementation("editor-module", "success", step: step,
+                    reportId: EventId("editor-play-module", CurrentPlayAttempt(), step));
             }
 
             private static string CurrentPlayAttempt()
@@ -115,10 +115,11 @@ namespace NovaFramework.Editor
                 s_StartupStage = null;
             }
 
+            /// <summary>上报当前启动尝试和阶段耗时，按 Play 会话关联推进结果。</summary>
             private static void ReportStartupStage(string outcome, double seconds)
             {
-                ObserveImplementation("startup-stage", outcome, EditorUserBuildSettings.activeBuildTarget.ToString(),
-                    step: s_StartupStage, elapsed: TimeSpan.FromSeconds(seconds), attempt: s_PlayAttempt,
+                ObserveImplementation("startup-stage", outcome, step: s_StartupStage,
+                    elapsed: TimeSpan.FromSeconds(seconds), attempt: s_PlayAttempt,
                     sequence: s_StartupSequence);
             }
         }

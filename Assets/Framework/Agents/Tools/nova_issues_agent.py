@@ -22,12 +22,15 @@ import uuid
 
 
 FRAMEWORK = "com.solotopia.nova.framework"
-MCP = FRAMEWORK + ".mcp"
 WORKDIR = Path("Library/Nova/Issues")
 REPORT_SERVER = "http://172.16.22.175:8787"
 ENVIRONMENT_REPORT_KEY = "editor_environment_report"
 HOOK_ACTIVITY_REPORT_KEY = "codex_hook_activity_report"
 HOOK_ACTIVITY_INTERVAL = 3600
+# 共享队列只按已确认的服务能力产生新版正文，已入队的报告按原内容重试。
+COMPACT_REPORTS_KEY = "compact_reports"
+RECEIPT_RETENTION_SECONDS = 30 * 86400
+MINIMUM_RECLAIM_BYTES = 1 << 20
 MAX_INPUT = 4 << 20
 ID = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}\Z")
 VERSION = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9.\-+]{0,79}\Z")
@@ -57,7 +60,7 @@ DEFERRED = re.compile(r"(?:请|需要)你(?:确认|提供|选择|执行)|尚未(
                       r"仅(?:检查|定位|验证|分析)|建议(?:先|你)|\b(?:unable to|not executed|for your approval)\b", re.I)
 DETOUR = re.compile(r"手工|临时绕|绕行|规避|workaround", re.I)
 FRAMEWORK_FINDING = re.compile(r"Nova.{0,14}(?:框架|协作体系|工具链).{0,20}(?:缺陷|缺口|遗漏|异常|不一致)", re.I)
-OBSERVED_TOOLS = ("codex", "unity-cli", "mcp", "pipeline")
+OBSERVED_TOOLS = ("codex", "unity-cli")
 HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "PostToolUse", "Stop", "Interrupt"}
 ACTION_ID = re.compile(r"nova\.project\.([a-z0-9][a-z0-9-]*)\.[a-z0-9][a-z0-9_.-]*\Z")
 SKILL_ID = re.compile(r"nova-project-[a-z0-9-]+\Z")
@@ -89,6 +92,22 @@ CREATE TABLE IF NOT EXISTS outbox (
     ready_at INTEGER NOT NULL, accepted INTEGER, issue_id INTEGER, error TEXT
 );
 CREATE INDEX IF NOT EXISTS ready_reports ON outbox(accepted, ready_at);
+CREATE TABLE IF NOT EXISTS report_receipts (
+    id TEXT PRIMARY KEY, kind TEXT NOT NULL, accepted INTEGER NOT NULL, issue_id INTEGER
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS report_receipts_by_time ON report_receipts(accepted);
+CREATE TRIGGER IF NOT EXISTS skip_delivered_report BEFORE INSERT ON outbox
+WHEN EXISTS (SELECT 1 FROM report_receipts WHERE id=NEW.id)
+BEGIN
+    SELECT RAISE(IGNORE);
+END;
+CREATE TRIGGER IF NOT EXISTS discard_delivered_report AFTER UPDATE OF accepted ON outbox
+WHEN NEW.accepted IS NOT NULL
+BEGIN
+    INSERT OR IGNORE INTO report_receipts (id,kind,accepted,issue_id)
+        VALUES (NEW.id,COALESCE(json_extract(NEW.payload,'$.kind'),'unknown'),NEW.accepted,NEW.issue_id);
+    DELETE FROM outbox WHERE id=NEW.id;
+END;
 """
 
 # 与 Unity Editor 的待发查询一致，已停用的试验记录和缺少回执的自动入口遗漏保留在本机。
@@ -275,11 +294,37 @@ def automatic_credentials(root, db):
 
 
 def enqueue(db, kind, value, report_id=None, observed_at=None):
+    """写入固定的上报正文，只有兼容旧服务时才附带旧必填字段。"""
+    if kind == "snapshot" and state(db, COMPACT_REPORTS_KEY) is True:
+        value = {**value, "packages": [
+            {key: item[key] for key in ("id", "version", "source")} for item in value["packages"]
+        ]}
+    elif kind == "issue" and state(db, COMPACT_REPORTS_KEY) is True:
+        value = {key: item for key, item in value.items() if key != "priority"}
+
     identifier = report_id or uuid.uuid4().hex
     event = {"version": 1, "id": identifier, "workspace": state(db, "workspace"),
              "observed_at": observed_at or now(), "kind": kind, "data": value}
     db.execute("INSERT OR IGNORE INTO outbox (id,payload,ready_at) VALUES (?,?,?)",
                (identifier, compact(event), now()))
+
+
+def prune_delivered_reports(db):
+    """把旧版已确认正文迁为短回执，并清理到期的回执。"""
+    db.execute("UPDATE outbox SET accepted=accepted WHERE accepted IS NOT NULL")
+    db.execute("DELETE FROM report_receipts WHERE accepted<?", (now() - RECEIPT_RETENTION_SECONDS,))
+
+
+def reclaim_ledger_space(db):
+    """在事务之外归还积累的空闲页，遇到并发访问时留待下次。"""
+    try:
+        free_pages = db.execute("PRAGMA freelist_count").fetchone()[0]
+        if (free_pages * db.execute("PRAGMA page_size").fetchone()[0] >= MINIMUM_RECLAIM_BYTES
+                and free_pages * 2 >= db.execute("PRAGMA page_count").fetchone()[0]):
+            db.execute("VACUUM")
+            db.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+    except sqlite3.OperationalError:
+        pass
 
 
 def package_data(root):
@@ -357,6 +402,7 @@ def observed_framework(root, db):
 
 
 def snapshot(root, db):
+    """用注册包和本地包清单生成环境快照，只采集维护台会展示的模块和工具。"""
     manifest, locked = package_data(root)
     editor = state(db, "editor", {})
     packages = {}
@@ -383,12 +429,9 @@ def snapshot(root, db):
     framework = packages.get(FRAMEWORK, {}).get("version", "unknown")
     if FRAMEWORK not in packages:
         return None
-    tools = dict(editor.get("tools", {})) if match else {}
-    if "mcp" not in tools:
-        tools["mcp"] = {"version": packages.get(MCP, {}).get("version", "unknown"),
-                        "state": "installed" if MCP in packages else "not_observed"}
+    tools = {name: item for name, item in editor.get("tools", {}).items() if name in OBSERVED_TOOLS} if match else {}
     for name, recorded in state(db, "codex_tools", {}).items():
-        if now() - recorded["at"] < 1800:
+        if name in OBSERVED_TOOLS and now() - recorded["at"] < 1800:
             tools[name] = tools.get(name, {}) | recorded["tool"]
     for name, installed in state(db, "cli_versions", {}).items():
         tools.setdefault(name, {"state": "installed"})["version"] = installed
@@ -398,8 +441,7 @@ def snapshot(root, db):
                                           "codex": "observed" if now() - state(db, "codex_seen", 0) < 1800 else "waiting",
                                           "editor": "observed" if now() - editor.get("at", 0) < 1800 else "waiting"}}
     if match:
-        result.update({name: editor[name] for name in ("platform", "channel", "mode", "enabled", "coordinate_source",
-                                                       "application_identifiers", "codex_hooks")
+        result.update({name: editor[name] for name in ("enabled", "application_identifiers", "codex_hooks")
                        if name in editor})
     return result
 
@@ -700,14 +742,13 @@ def observed_skills(root, db, event, tool_name, command, framework, identifier):
 def routing_issue(route, framework, had_workaround):
     """使用本轮真实执行回执生成经过本地核对的入口遗漏报告。"""
     skill, module, action, _ = route
-    return {
+    issue = {
         "code": f"missing-nova-route.{module}", "area": "routing", "priority": "P2",
         "title": f"{module} 任务完成时未观察到应走的 Nova 入口",
         "summary": "本地 Agent 在任务开始时匹配到 Nova 操作，在同一轮任务结束时核对了工具调用和交付结果。",
         "expected": f"在已接入 Nova 的工程中使用 {skill} 或 {action}。",
         "actual": "本轮有执行命令成功退出的回执，未观察到对应的 Nova 入口。",
         "framework": framework, "source": "codex",
-        "workaround": "同一轮任务记录提到采用了绕行。" if had_workaround else "",
         "steps": "在已接入 Nova 的消费工程提出对应功能的实际执行请求，核对本轮调用及完成回执。",
         "evidence": [
             {"source": "codex.UserPromptSubmit", "detail": f"提交时匹配任务 {skill}。"},
@@ -715,6 +756,9 @@ def routing_issue(route, framework, had_workaround):
             {"source": "codex.Stop", "detail": "同一轮任务以已完成的交付表述结束。"},
         ],
     }
+    if had_workaround:
+        issue["workaround"] = "同一轮任务记录提到采用了绕行。"
+    return issue
 
 
 def relevant_hook(event):
@@ -783,10 +827,6 @@ def handle_hook(root, db, event):
             if turn["actual"] != VERIFIED_EXECUTION and verified_execution(event, tool_name, command):
                 db.execute("UPDATE turns SET actual=?,updated=? WHERE id=?", (VERIFIED_EXECUTION, stamp, identifier))
         if action:
-            tools = state(db, "codex_tools", {})
-            if stamp - tools.get("mcp", {}).get("at", 0) >= 60:
-                tools["mcp"] = {"at": stamp, "tool": {"state": "connected"}}
-                save(db, "codex_tools", tools)
             pending |= observed_action_usage(db, event, framework, identifier, action, operation)
         elif tool_name in SHELL_TOOLS:
             pending |= observed_cli_usage(root, db, event, command, framework, identifier)
@@ -827,10 +867,6 @@ def editor_snapshot(root, db, payload):
             packages.append({"id": name, "version": version(item.get("version")),
                              "source": package_type(item.get("source")), "evidence": "registered"})
     result = {"packages": packages, "at": now(), "enabled": [], "tools": {}}
-    for name in ("platform", "channel", "mode", "coordinate_source"):
-        value = text_field(payload.get(name), 80)
-        if value:
-            result[name] = value
     identifiers = payload.get("application_identifiers")
     if isinstance(identifiers, dict) and len(identifiers) <= 3:
         result["application_identifiers"] = {name: value for name, value in identifiers.items()
@@ -901,7 +937,7 @@ def inspect_pending(db):
 
 
 def finding(root, db, payload):
-    """Accept a locally attributed framework issue and recheck its source anchor."""
+    """核对包内证据锚点，提交已确认的问题并忽略空白的可选描述。"""
     framework, path = resolved_framework(root, db)
     anchor = payload.get("anchor")
     if not isinstance(anchor, dict) or path is None:
@@ -927,7 +963,9 @@ def finding(root, db, payload):
     if not all(issue.values()):
         return False
     for name in ("workaround", "steps"):
-        issue[name] = text_field(payload.get(name), 1400)
+        value = text_field(payload.get(name), 1400)
+        if value:
+            issue[name] = value
     issue.update({"code": code, "area": area, "framework": framework, "source": "local-agent",
                   "priority": payload.get("priority") if payload.get("priority") in ("P0", "P1", "P2", "P3") else "P2",
                   "evidence": [{"source": "framework.source",
@@ -1064,8 +1102,9 @@ def has_pending_reports(db):
 
 
 def work(root, folder, worker_id, *, single=False):
-    """读取同一工作区的队列和凭据，按原上报编号重试。"""
+    """按原上报编号和正文重试，确认后在同一事务内转为短回执。"""
     idle_since = now()
+    next_maintenance = 0
     while True:
         if nova_project(root) != root or project_folder(root) != folder:
             return
@@ -1076,6 +1115,11 @@ def work(root, folder, worker_id, *, single=False):
                 save(db, "worker", {"id": worker_id, "lease": now() + 60})
             project, token = automatic_credentials(root, db)
             workspace = state(db, "workspace")
+            maintenance = now() >= next_maintenance
+            if maintenance:
+                prune_delivered_reports(db)
+                db.execute("DELETE FROM turns WHERE updated<?", (now() - RECEIPT_RETENTION_SECONDS,))
+                next_maintenance = now() + 600
             inspect_pending(db)
             if now() - state(db, "last_reconciled", 0) >= 30:
                 reconcile_receipts(root, db)
@@ -1087,6 +1131,10 @@ def work(root, folder, worker_id, *, single=False):
                        COALESCE(json_type(payload,'$.data.codex_hooks'),
                                 json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS has_project_details,
                        json_type(payload,'$.data.git_user_name') IS NOT NULL AS has_git_user_name,
+                       ((json_extract(payload,'$.kind')='issue' AND json_type(payload,'$.data.priority') IS NULL)
+                        OR (json_extract(payload,'$.kind')='snapshot'
+                            AND EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.packages') AS package
+                                        WHERE json_type(package.value,'$.evidence') IS NULL))) AS requires_compact_reports,
                        json_extract(payload,'$.data.stage') IN
                            ('editor-module','startup-stage','framework-upgrade') AS has_execution_evidence
                 FROM outbox WHERE accepted IS NULL AND ready_at<=?
@@ -1095,6 +1143,14 @@ def work(root, folder, worker_id, *, single=False):
                 """, (now(),)).fetchall()
             pending = has_pending_reports(db)
         health = automatic_report_health() if ready else {}
+        compact_reports = health.get(COMPACT_REPORTS_KEY) is True
+        if health:
+            with ledger(folder) as db:
+                if state(db, "workspace") != workspace:
+                    return
+                if (state(db, COMPACT_REPORTS_KEY) is True) != compact_reports:
+                    save(db, COMPACT_REPORTS_KEY, compact_reports)
+        delivered = False
         for item in ready:
             if not health:
                 received, error = None, "service-unavailable"
@@ -1110,6 +1166,8 @@ def work(root, folder, worker_id, *, single=False):
                 received, error = None, "server-upgrade-required"
             elif item["has_git_user_name"] and health.get("git_user_name_reporting") is not True:
                 received, error = None, "server-upgrade-required"
+            elif item["requires_compact_reports"] and not compact_reports:
+                received, error = None, "server-upgrade-required"
             else:
                 received, error = deliver(project, token, item)
             if project_folder(root) != folder:
@@ -1120,6 +1178,7 @@ def work(root, folder, worker_id, *, single=False):
                 if received:
                     db.execute("UPDATE outbox SET accepted=?,issue_id=?,error=NULL WHERE id=?",
                                (now(), received.get("issue_id"), item["id"]))
+                    delivered = True
                 else:
                     delay = min(300, 2 ** min(item["attempts"] + 1, 9))
                     if error in ("http-400", "http-401", "http-403", "http-409"):
@@ -1128,6 +1187,9 @@ def work(root, folder, worker_id, *, single=False):
                         delay = 30
                     db.execute("UPDATE outbox SET attempts=attempts+1,error=?,ready_at=? WHERE id=? AND accepted IS NULL",
                                (error, now() + delay, item["id"]))
+        if maintenance or delivered:
+            with ledger(folder) as db:
+                reclaim_ledger_space(db)
         if probe:
             versions = probe_versions(root)
             with ledger(folder) as db:
@@ -1135,8 +1197,6 @@ def work(root, folder, worker_id, *, single=False):
                     return
                 save(db, "cli_versions", versions)
                 save(db, "version_probe_at", now())
-                db.execute("DELETE FROM outbox WHERE accepted IS NOT NULL AND accepted<?", (now() - 30 * 86400,))
-                db.execute("DELETE FROM turns WHERE updated<?", (now() - 30 * 86400,))
         if single:
             return
         if ready or pending:
@@ -1208,7 +1268,11 @@ def main():
                     "SELECT id,route,status,updated FROM turns ORDER BY updated DESC LIMIT 30")],
                     "outbox": [dict(row) for row in db.execute(
                         "SELECT id,json_extract(payload,'$.kind') AS kind,attempts,accepted,issue_id,error "
-                        "FROM outbox ORDER BY rowid DESC LIMIT 30")],
+                        "FROM outbox WHERE accepted IS NULL ORDER BY rowid DESC LIMIT 30")],
+                    "receipts": [dict(row) for row in db.execute(
+                        "SELECT id,kind,accepted,issue_id FROM report_receipts "
+                        "UNION ALL SELECT id,json_extract(payload,'$.kind'),accepted,issue_id "
+                        "FROM outbox WHERE accepted IS NOT NULL ORDER BY accepted DESC LIMIT 30")],
                     "sdk": state(db, "sdk", {})}))
             if should_wake and state(db, "worker", {}).get("lease", 0) > now():
                 should_wake = False

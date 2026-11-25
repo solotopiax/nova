@@ -41,7 +41,7 @@
     {
       "kind": "cli",
       "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status",
-      "when": "新版本已准备本地反馈队列且用户需要排查时，查询当前工作区最近的任务归因和上报状态。项目成员在 Codex 中自行审查反馈授权"
+      "when": "新版本已准备本地反馈队列且用户需要排查时，查询当前工作区的任务归因、待发队列及最近送达回执。项目成员在 Codex 中自行审查反馈授权"
     },
     {
       "kind": "unity-editor-automation",
