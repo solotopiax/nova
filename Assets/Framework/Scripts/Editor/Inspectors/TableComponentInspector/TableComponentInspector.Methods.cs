@@ -61,9 +61,9 @@ namespace NovaFramework.Editor
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
-                EditorUtil.Draw.Button("导出代码", true, () => RunExport(EditorUtil.Table.Exporter.ExportCode));
-                EditorUtil.Draw.Button("导出数据", true, () => RunExport(EditorUtil.Table.Exporter.ExportData));
-                EditorUtil.Draw.Button("导出代码和数据", true, () => RunExport(EditorUtil.Table.Exporter.ExportAll));
+                EditorUtil.Draw.Button("导出代码", true, () => RunExport(EditorUtil.Table.Exporter.ExportCode, "code"));
+                EditorUtil.Draw.Button("导出数据", true, () => RunExport(EditorUtil.Table.Exporter.ExportData, "data"));
+                EditorUtil.Draw.Button("导出代码和数据", true, () => RunExport(EditorUtil.Table.Exporter.ExportAll, "all"));
             });
         }
 
@@ -887,11 +887,14 @@ namespace NovaFramework.Editor
         /// 在应用 Inspector 修改后执行全部已启用导出描述，并刷新加载映射。
         /// </summary>
         /// <param name="export">Table 导出入口。</param>
-        private void RunExport(Func<TableSettings, bool> export)
+        /// <param name="scope">按钮对应的导出范围，用于记录实际操作。</param>
+        private void RunExport(Func<TableSettings, bool> export, string scope)
         {
             serializedObject.ApplyModifiedProperties();
             TableSettings settings = GetTableSettings();
-            if (settings != null && export(settings))
+            bool succeeded = EditorUtil.NovaIssues.RunManualExport("table", scope,
+                () => settings == null ? null : export(settings));
+            if (succeeded)
             {
                 serializedObject.Update();
                 RefreshAllLoadDescriptions();

@@ -32,7 +32,7 @@ namespace NovaFramework.Editor
         {
             /// <summary>
             /// 异步从 Verdaccio 仓库拉取远程包信息列表。
-            /// 使用 HttpClient 避免 UnityWebRequest 的 HTTP 不安全连接限制。
+            /// 包清单共用同仓库在途请求及条件缓存，取消仅结束当前调用的等待。
             /// </summary>
             /// <param name="registryUrl">Verdaccio 仓库根地址。</param>
             /// <param name="apiPath">包列表 API 路径（如 /-/verdaccio/data/packages）。</param>
@@ -44,7 +44,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 拉取包列表，并按需补充各版本的发布时间；关闭补充时保持原有单次列表查询。
+            /// 拉取包列表，并按需补充各版本的发布时间。关闭补充时只查询包清单。
             /// 时间查询失败只影响时间展示，不阻断包列表及既有安装判断。
             /// </summary>
             /// <param name="registryUrl">Verdaccio 仓库根地址。</param>
@@ -54,11 +54,17 @@ namespace NovaFramework.Editor
             /// <returns>远程包信息数组，时间缺失的版本保持未知。</returns>
             public static async Task<VerdaccioPackageInfo[]> FetchRemotePackagesAsync(string registryUrl, string apiPath, CancellationToken token, bool includeReleaseTimes)
             {
-                using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, registryUrl + apiPath);
-                using HttpResponseMessage response = await s_HttpClient.SendAsync(request, token);
-                response.EnsureSuccessStatusCode();
-                token.ThrowIfCancellationRequested();
-                string json = await response.Content.ReadAsStringAsync();
+                string json;
+                if (apiPath == c_RegistryApiPath)
+                    json = await FetchRegistryCatalogAsync(registryUrl, token);
+                else
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Get, registryUrl + apiPath);
+                    using HttpResponseMessage response = await s_HttpClient.SendAsync(request, token);
+                    response.EnsureSuccessStatusCode();
+                    token.ThrowIfCancellationRequested();
+                    json = await response.Content.ReadAsStringAsync();
+                }
                 token.ThrowIfCancellationRequested();
 
                 VerdaccioPackageInfo[] packages = Util.Json.Deserialize<VerdaccioPackageInfo[]>(json);

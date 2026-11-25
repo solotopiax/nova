@@ -246,8 +246,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportHostKeys(
-                    hostKeySettings, NetworkExporter.ExportMode.Data, GetDataFormat(), unitSetting);
+                EditorUtil.NovaIssues.RunManualExport("network", "hostkey-data", () => NetworkExporter.ExportHostKeys(
+                    hostKeySettings, NetworkExporter.ExportMode.Data, GetDataFormat(), unitSetting));
                 return;
             }
 
@@ -259,8 +259,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportNetCmds(
-                    netCmdSettings, NetworkExporter.ExportMode.Data, GetDataFormat(), unitSetting);
+                EditorUtil.NovaIssues.RunManualExport("network", "netcmd-data", () => NetworkExporter.ExportNetCmds(
+                    netCmdSettings, NetworkExporter.ExportMode.Data, GetDataFormat(), unitSetting));
             }
         }
 
@@ -293,8 +293,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportHostKeys(
-                    hostKeySettings, NetworkExporter.ExportMode.Code, GetDataFormat(), unitSetting);
+                EditorUtil.NovaIssues.RunManualExport("network", "hostkey-code", () => NetworkExporter.ExportHostKeys(
+                    hostKeySettings, NetworkExporter.ExportMode.Code, GetDataFormat(), unitSetting));
                 return;
             }
 
@@ -306,8 +306,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportNetCmds(
-                    netCmdSettings, NetworkExporter.ExportMode.Code, GetDataFormat(), unitSetting);
+                EditorUtil.NovaIssues.RunManualExport("network", "netcmd-code", () => NetworkExporter.ExportNetCmds(
+                    netCmdSettings, NetworkExporter.ExportMode.Code, GetDataFormat(), unitSetting));
             }
         }
 
@@ -335,7 +335,8 @@ namespace NovaFramework.Editor
             bool success = false;
             if (settingsPropertyName == "HostKeySettings")
             {
-                success = EditorUtil.Network.HostKeyExporter.ExportHostKeyAll(ns.HostKeySettings, ns.DataFormat);
+                success = EditorUtil.NovaIssues.RunManualExport("network", "hostkey-all", () =>
+                    EditorUtil.Network.HostKeyExporter.ExportHostKeyAll(ns.HostKeySettings, ns.DataFormat));
                 if (success)
                 {
                     m_IsHostKeyLubanConfigExists = true;
@@ -343,7 +344,8 @@ namespace NovaFramework.Editor
             }
             else if (settingsPropertyName == "NetCmdSettings")
             {
-                success = EditorUtil.Network.NetCmdExporter.ExportNetCmdAll(ns.NetCmdSettings, ns.DataFormat);
+                success = EditorUtil.NovaIssues.RunManualExport("network", "netcmd-all", () =>
+                    EditorUtil.Network.NetCmdExporter.ExportNetCmdAll(ns.NetCmdSettings, ns.DataFormat));
                 if (success)
                 {
                     m_IsNetCmdLubanConfigExists = true;
@@ -783,7 +785,8 @@ namespace NovaFramework.Editor
                             string exportPath = csharpExportProp.stringValue;
                             if (!string.IsNullOrEmpty(exportPath))
                             {
-                                EditorUtil.Proto.CliRunner.CompileSingle(filePath, protoDir.TrimEnd('/', '\\'), exportPath);
+                                EditorUtil.NovaIssues.RunManualExport("network", "proto-file", () =>
+                                    EditorUtil.Proto.CliRunner.CompileSingle(filePath, protoDir.TrimEnd('/', '\\'), exportPath));
                                 AssetDatabase.Refresh();
                             }
                         }
@@ -840,7 +843,11 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Button("导出所有协议类型", true, () =>
                 {
                     NetworkComponent networkComponent = (NetworkComponent)target;
-                    EditorUtil.Network.ProtoExporter.ExportAllProtos(networkComponent.ProtoSettings);
+                    EditorUtil.NovaIssues.RunManualExport("network", "proto-all", () =>
+                    {
+                        bool success = EditorUtil.Network.ProtoExporter.ExportAllProtos(networkComponent.ProtoSettings, out bool attempted);
+                        return success && !attempted ? null : success;
+                    });
                 });
             });
         }

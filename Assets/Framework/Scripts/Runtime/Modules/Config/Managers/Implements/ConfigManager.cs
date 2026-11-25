@@ -225,6 +225,9 @@ namespace NovaFramework.Runtime
                 }
             }
 
+#if UNITY_EDITOR
+            EditorPlayEvidence.FinishConfigLoad(failure == null ? m_Runtime : null, failure);
+#endif
             if (failure == null)
             {
                 completion.TrySetResult();

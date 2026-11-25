@@ -36,6 +36,13 @@ namespace NovaFramework.Editor
             /// <returns>YooAsset 构建结果。</returns>
             public static BuildResult BuildAssetBundle(AssetBundleBuildArgs args)
             {
+                BuildTarget target = ResolveObservationTarget(args?.Target);
+                return ObserveBundleBuild(target, "bundlebuilder.build", () => BuildAssetBundleCore(args, target));
+            }
+
+            /// <summary>执行标准资源包构建，构建平台沿用入口冻结的目标。</summary>
+            private static BuildResult BuildAssetBundleCore(AssetBundleBuildArgs args, BuildTarget target)
+            {
                 if (args == null)
                 {
                     throw new ArgumentNullException(nameof(args));
@@ -45,7 +52,6 @@ namespace NovaFramework.Editor
                     throw new ArgumentException(string.Format("{0} PackageName 不能为空", c_LogPrefix));
                 }
 
-                BuildTarget target = args.Target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : args.Target;
                 ValidateSampleDllTargets(args.PackageName, target);
                 string version = string.IsNullOrEmpty(args.BuildVersion) ? GetDefaultPackageVersion() : args.BuildVersion;
                 ResolveBundledCopy(
@@ -102,6 +108,13 @@ namespace NovaFramework.Editor
             /// <returns>YooAsset 构建结果。</returns>
             public static BuildResult BuildRawFileBundle(RawFileBuildArgs args)
             {
+                BuildTarget target = ResolveObservationTarget(args?.Target);
+                return ObserveBundleBuild(target, "bundlebuilder.build_raw_file", () => BuildRawFileBundleCore(args, target));
+            }
+
+            /// <summary>执行原生文件包构建，沿用原有结果和异常语义。</summary>
+            private static BuildResult BuildRawFileBundleCore(RawFileBuildArgs args, BuildTarget target)
+            {
                 if (args == null)
                 {
                     throw new ArgumentNullException(nameof(args));
@@ -111,7 +124,6 @@ namespace NovaFramework.Editor
                     throw new ArgumentException(string.Format("{0} PackageName 不能为空", c_LogPrefix));
                 }
 
-                BuildTarget target = args.Target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : args.Target;
                 string version = string.IsNullOrEmpty(args.BuildVersion) ? GetDefaultPackageVersion() : args.BuildVersion;
                 ResolveBundledCopy(
                     target,
@@ -155,6 +167,34 @@ namespace NovaFramework.Editor
                 FinalizeWebGLBundledCopy(target, args.PackageName, bundledCopyOption);
                 Log.Debug(LogTag.Editor, "{0} RawFile 构建成功：{1}", c_LogPrefix, result.OutputPackageDirectory);
                 return result;
+            }
+
+            /// <summary>使用构建参数的目标，缺省时使用当前 Editor 构建平台。</summary>
+            private static BuildTarget ResolveObservationTarget(BuildTarget? target) =>
+                target == null || target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : target.Value;
+
+            /// <summary>在共用构建入口观察实际结果，Pipify 与单独发起的构建沿用同一处。</summary>
+            private static BuildResult ObserveBundleBuild(BuildTarget target, string step, Func<BuildResult> execute)
+            {
+                var (channel, mode) = NovaIssues.CaptureBundleCoordinates(target);
+                var timer = System.Diagnostics.Stopwatch.StartNew();
+                string outcome = "failed";
+                try
+                {
+                    BuildResult result = execute();
+                    outcome = result.Success ? "success" : "failed";
+                    return result;
+                }
+                catch (OperationCanceledException)
+                {
+                    outcome = "cancelled";
+                    throw;
+                }
+                finally
+                {
+                    NovaIssues.ObserveImplementation("bundle-build", outcome, target.ToString(), channel, mode,
+                        step: step, elapsed: timer.Elapsed);
+                }
             }
 
             /// <summary>

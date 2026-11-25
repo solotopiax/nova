@@ -48,11 +48,13 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 在单独复制的服务目录运行此命令时，用 `--agent-source` 指向 Framework 包内的 `Agents/Tools/nova_issues_agent.py`。通过 `--python` 指定钩子所用的 Python。
 
-「总览」显示待处理和已处理的问题数量。「问题」页默认显示待处理问题，按最新发生时间排列。「排序」可切换为按发生次数从多到少排列，也可组合项目、状态和关键词筛选。点击「影响项目」列的数字可查看项目名称。查看项目详情时，点击弹窗外的空白即可关闭。
+「总览」显示待处理和已处理的问题数量。「问题」页默认显示待处理问题，按最新发生时间排列。「排序」可切换为按发生次数从多到少排列，也可组合项目、状态和关键词筛选。点击「影响项目」列的数字可查看项目名单，再点击名称打开项目详情。点击项目详情、问题详情或影响项目名单外的空白即可关闭。问题详情有未保存的修改时，关闭前会确认是否放弃。
 
 「所属包 / 版本」显示最近一次发生记录确认的包名和版本。问题详情中的「发生记录」显示各次实际版本，编译和导入问题的「错误日志」展示已上报的包内位置、错误编号及诊断内容。
 
 打开问题即可快速处理。状态可选「待处理」或「已处理」，负责人从现有维护账号中选择，也可设为「未分配」。每次保存都会追加一条处理记录，备注选填。旧记录中的已关闭和已合并归为「已处理」，其余归为「待处理」。已合并的问题仍可跳到原合并目标查看。
+
+项目和问题详情底部都有红色「删除」按钮。确认后直接删除服务端记录。删除问题会一并清理发生记录和处理记录。删除项目会清理该项目的工作区和全部上报，仅由该项目上报的问题也会删除。共同上报的问题按剩余记录重新统计。删除后的自动登记项目仍可由新的自动上报重新登记。
 
 「项目」「问题」「使用记录」的红色数字表示刷新时发现的未读数量。问题和使用记录按收到的上报计数，项目计入新增项目及环境、钩子上报。点击栏目后清除该栏已显示的数字。同一浏览器按账号保留已读进度，首次登录从当时的数据开始计数。
 
@@ -74,7 +76,7 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 环境首次识别，或 Framework、Unity 版本、游戏包名、项目钩子状态、Git 名称发生变化时上报。信息未变时，按工作站本地自然日在同一工作区首次 Editor 编译完成后上报一次。工作区队列从工程 Library 后台发送，服务暂不可用时按原编号补发。
 
-「使用记录」默认显示全部来源，按触发次数从多到少排列。「排序」切换到「最新时间」时，按每组操作最近一次实际触发的时间排列。来源显示观察到操作的一方。`Editor` 记录来自执行回执或 SDK 预加载，`Codex` 记录来自已启用的反馈钩子。能按操作标识和结果识别的历史 Editor 记录也会显示对应入口，其他缺少来源的历史记录显示「未标注」。将鼠标停在带点线的操作名称上即可查看用途。
+「使用记录」默认显示全部来源，按每组操作最近一次实际触发的时间排列。「排序」可切换为按触发次数从多到少排列。`Editor` 记录来自实际执行或手动导出，`Codex` 记录来自已启用的反馈钩子。同一 Action 同时被两侧观察时只计一次，使用 Editor 执行结果并保留 Codex 入口。能按标识识别的历史记录显示对应入口，缺少来源的历史记录显示「未标注」。将鼠标停在带点线的操作名称上即可查看用途。
 
 ## 接口
 
@@ -90,7 +92,9 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 | `GET /api/maintainer/issues/<id>/projects` | 登录后读取该问题影响的全部项目名称和标识。 |
 | `GET /api/maintainer/issues/<id>` | 登录后读取问题详情、发生记录、处理记录及可选的负责人账号。 |
 | `POST /api/maintainer/issues/<id>` | 登录后用 `revision` 保存 `status`、`assignee` 和 `note`。留空 `assignee` 表示未分配，留空 `note` 表示本次没有备注。 |
+| `DELETE /api/maintainer/issues/<id>` | 登录后删除问题及其发生记录和处理记录。 |
 | `GET /api/maintainer/projects/<id>` | 登录后读取项目详情，包括环境快照及各工作区最新的钩子运行记录。 |
+| `DELETE /api/maintainer/projects/<id>` | 登录后删除项目及关联工作区和上报。 |
 | `POST /api/maintainer/projects/<id>/team` | 登录后保存项目团队名称 `team`，用编辑时读到的 `previous_team` 校验并发修改。 |
 | `GET /api/maintainer/projects/<id>/package-versions` | 登录后读取 Solotopia 包版本。传 `snapshot=<id>` 时按该环境快照补查第三方包的兼容版本，`pending` 表示还有查询进行中。 |
 
@@ -100,13 +104,15 @@ python3 -B provision.py --output /absolute/managed/nova-issues
 
 服务声明 `compact_reports` 后，新报告的包清单只携带标识、版本和来源，问题省去旧优先级，工作区实施快照以实际载入版本为准。升级过程仍携带请求目标版本。旧客户端原有格式继续可用，失败重试沿用已入队的原编号和正文。服务确认编号后，本地删掉正文并保留短回执供去重。
 
-新版工作站通过 `snapshot` 上报基础环境。`usage` 中的 Codex 调用带 `source=codex` 和入口类型 `entry`，Editor 回执带 `source=editor` 和 `entry=action`，SDK 预加载带 `source=editor`。服务端继续兼容旧版 `task` 报告。旧版服务未声明 `codex_telemetry` 时，带来源的使用记录留在本地待补发。
+新版工作站通过 `snapshot` 上报基础环境。`usage` 中的 Codex 调用带 `source=codex` 和入口类型 `entry`，Editor 回执带 `source=editor` 和 `entry=action`。可关联的 Action 带 `action_operation` 摘要，范围为同一项目工作区。服务端继续兼容旧版 `task` 报告。旧版服务未声明 `codex_telemetry` 时，带来源的使用记录留在本地待补发。
 
 `implementation` 记录本地工程配置、Framework 请求／解析／载入阶段和实际工具终态。「项目」列表和「工程实施」按项目汇总已确认的工具配置。项目收到一条成功结果后，该项持续标记为「已验证」，最近结果按实际发生时间更新。将鼠标移到验证标记可查看成功的时间、版本和来源。旧版服务缺少 `implementation_tracking` 时，新报告留在工程本地待补发。
 
 「SDK 接入与构建」汇总各本地工程最新上报的 SDK 清单。任一清单同时显示 SDK 已安装、独立配置已启用时，标为绿色「是」，其余显示黄色「否」。广告渠道和 IAP 商店由主包配置管理，适配包悬停显示配置归属。Android／iOS 构建按平台、构建类型和开发构建设置显示验证状态和最近结果。
 
-支持 `execution_evidence` 的服务会接收 Editor Play 模块、启动阶段和 Framework 升级阶段。模块表合计整个项目近 30 天的调用、Play 和阻塞或失败次数，历史成功持续用于验证状态。手动点击 Unity Play 后，实际加载资源、进入 Procedure 或取到数据表也会留下证据，每次 Play 对每个模块计一次。手动导出 Config、执行 Pipify Batch 和通过 PlugPals 查询仓库也会记录各自的执行结果。项目详情随维护台 15 秒刷新发现新上报，继续保留已展开的快照和包版本结果。缺少该能力的服务仍可接收现有格式，新增执行证据在本地等候升级。
+支持 `execution_evidence` 的服务接收 Editor Play 模块、启动阶段和 Framework 升级阶段。`feedback_timings` 支持 Action 关联、Pipify 步骤、表注册和新增的 Play 模块；需要这些字段的记录在服务升级前保留在本地。「模块接入与使用」汇总近 30 天的开发操作和 Play 使用。手动导出显示为「Editor / Unity 检视面板」，数据表注册显示为「已注册数据表」。项目详情继续保留已展开的快照和包版本结果。
+
+旧客户端发送 SDK 预加载、对应启动阶段或超时问题时，服务确认原编号并跳过记录。已经收到的历史保存在原表，当前维护台统计使用 SDK 安装、配置启用和平台构建证据。
 
 `hook_activity` 对应实际运行。`data` 仅包含 `framework`，工作区和运行时间使用信封里的 `workspace`、`observed_at`。服务就绪并在 `/health` 声明支持 `hook_activity` 后，工作区按原编号送出待发记录。
 

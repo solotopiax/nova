@@ -20,7 +20,7 @@ namespace NovaFramework.Editor
     public sealed partial class CheckUpdateWindow : EditorWindow
     {
         /// <summary>
-        /// 手动打开：窗口自行触发一次 CheckAsync，展示拉取中状态。
+        /// 手动打开并在同一窗口显示两侧仓库的检查结果。
         /// </summary>
         public static void Open()
         {
@@ -86,40 +86,39 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 异步执行版本检查并在主线程刷新窗口。
+        /// 并行检查两侧仓库，查询结束后只更新发起检查的原窗口。
         /// </summary>
         private async void StartCheckAsync()
         {
             try
             {
-                List<EditorUtil.CheckUpdate.UpdateInfo> externalItems = await EditorUtil.CheckUpdate.CheckExternalAsync();
-                List<EditorUtil.CheckUpdate.UpdateInfo> internalItems = await EditorUtil.CheckUpdate.CheckInternalAsync();
-                if (s_Instance == null)
+                var (externalItems, internalItems) = await EditorUtil.CheckUpdate.CheckRegistriesAsync();
+                if (this == null || s_Instance != this)
                 {
                     return;
                 }
 
-                s_Instance.m_ExternalItems = externalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
-                s_Instance.m_InternalItems = internalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
-                s_Instance.m_Items = MergeItems(s_Instance.m_ExternalItems, s_Instance.m_InternalItems);
-                s_Instance.m_SkipDay = default;
+                m_ExternalItems = externalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
+                m_InternalItems = internalItems ?? new List<EditorUtil.CheckUpdate.UpdateInfo>();
+                m_Items = MergeItems(m_ExternalItems, m_InternalItems);
+                m_SkipDay = default;
             }
             catch (System.Exception e)
             {
                 Log.Warning(LogTag.Editor, "CheckUpdateWindow.StartCheckAsync 检查失败: {0}", e.Message);
-                if (s_Instance != null)
+                if (this != null && s_Instance == this)
                 {
-                    s_Instance.m_ExternalItems = new List<EditorUtil.CheckUpdate.UpdateInfo>();
-                    s_Instance.m_InternalItems = new List<EditorUtil.CheckUpdate.UpdateInfo>();
-                    s_Instance.m_Items = new List<EditorUtil.CheckUpdate.UpdateInfo>();
+                    m_ExternalItems = new List<EditorUtil.CheckUpdate.UpdateInfo>();
+                    m_InternalItems = new List<EditorUtil.CheckUpdate.UpdateInfo>();
+                    m_Items = new List<EditorUtil.CheckUpdate.UpdateInfo>();
                 }
             }
             finally
             {
-                if (s_Instance != null)
+                if (this != null && s_Instance == this)
                 {
-                    s_Instance.m_IsChecking = false;
-                    s_Instance.Repaint();
+                    m_IsChecking = false;
+                    Repaint();
                 }
             }
         }

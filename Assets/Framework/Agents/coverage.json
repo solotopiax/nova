@@ -4124,6 +4124,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Automatic.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Definitions.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Supplemental.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.cs"
       ],
@@ -4166,7 +4167,7 @@
       "limitations": [
         "接口语义见所属源码/XML与Docs；查询不执行任务，实际操作按当前Skill及live Action契约验收。",
         "源码声明默认值不能代表项目资产当前值；执行前读取实际配置，MCP Action 以 live describe 为准。",
-        "自动更新检查在启动及跨日后排队；只有当天跳过的同一仓库、包和版本会被自动提示过滤。"
+        "启动和跨日检查沿用当天跳过规则。前台定时和切回补查只提示当天未展示的更高目标版本。"
       ],
       "semanticInputs": [
         "Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md",
@@ -5308,6 +5309,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Definitions.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Methods.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Registries.cs",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RegistryCatalog.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Visitors.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.cs"
@@ -15616,7 +15618,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs#NovaFramework.Editor.EditorUtil.Table.Exporter.ExportAll(TableSettings)",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs#NovaFramework.Editor.EditorUtil.Table.Exporter.ExportAll(TableSettings,params string[])",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs#NovaFramework.Editor.EditorUtil.Table.Exporter.ExportDescription(TableLubanProjectSetting,TableExportDescriptionSetting,ExportScope)",
-        "Assets/Framework/Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs#NovaFramework.Editor.TableComponentInspector.RunExport(Func<TableSettings, bool>)"
+        "Assets/Framework/Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs#NovaFramework.Editor.TableComponentInspector.RunExport(Func<TableSettings, bool>,string)"
       ],
       "execution": {
         "mode": "controlled",
@@ -15651,7 +15653,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs#NovaFramework.Editor.EditorUtil.Table.Exporter.ExportAll(TableSettings)",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs#NovaFramework.Editor.EditorUtil.Table.Exporter.ExportAll(TableSettings,params string[])",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs#NovaFramework.Editor.EditorUtil.Table.Exporter.ExportDescription(TableLubanProjectSetting,TableExportDescriptionSetting,ExportScope)",
-        "Assets/Framework/Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs#NovaFramework.Editor.TableComponentInspector.RunExport(Func<TableSettings, bool>)"
+        "Assets/Framework/Scripts/Editor/Inspectors/TableComponentInspector/TableComponentInspector.Methods.cs#NovaFramework.Editor.TableComponentInspector.RunExport(Func<TableSettings, bool>,string)"
       ],
       "execution": {
         "mode": "controlled",
@@ -17785,7 +17787,7 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.cs#NovaFramework.Editor.EditorUtil.AgentSkills.Reconcile(bool)",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.AgentSkills/EditorUtil.AgentSkills.cs#NovaFramework.Editor.EditorUtil.AgentSkills.ReconcileForProject(string,string,bool)",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs#NovaFramework.Editor.EditorUtil.CheckUpdate.CheckAsync()",
-        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs#NovaFramework.Editor.EditorUtil.CheckUpdate.CheckExternalAsync()",
+        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs#NovaFramework.Editor.EditorUtil.CheckUpdate.CheckRegistriesAsync()",
         "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs#NovaFramework.Editor.CheckUpdateWindow.Open()",
         "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs#NovaFramework.Editor.CheckUpdateWindow.Open(List<EditorUtil.CheckUpdate.UpdateInfo>)",
         "Assets/Framework/Scripts/Editor/Windows/CheckUpdateWindow/CheckUpdateWindow.Methods.cs#NovaFramework.Editor.CheckUpdateWindow.Open(List<EditorUtil.CheckUpdate.UpdateInfo>,List<EditorUtil.CheckUpdate.UpdateInfo>)",

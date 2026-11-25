@@ -71,6 +71,30 @@ namespace NovaFramework.Editor
                     bool saveOnlyTouchedAssets,
                     bool exportResourceKeys = false)
                 {
+                    string outcome = "failed";
+                    try
+                    {
+                        ConfigRuntimeSO target = ExportCore(master, platform, channel, mode, savePath, placeholderTime,
+                            saveOnlyTouchedAssets, exportResourceKeys);
+                        outcome = target != null ? "success" : "blocked";
+                        return target;
+                    }
+                    catch (System.OperationCanceledException)
+                    {
+                        outcome = "cancelled";
+                        throw;
+                    }
+                    finally
+                    {
+                        NovaIssues.ObserveImplementation("config-export", outcome, platform.ToString(), channel.ToString(), mode.ToString());
+                    }
+                }
+
+                /// <summary>解析同一坐标并持久化正式运行配置，沿用调用方选择的资产保存方式。</summary>
+                private static ConfigRuntimeSO ExportCore(
+                    ConfigMasterSO master, PlatformType platform, ChannelType channel, DevelopMode mode,
+                    string savePath, System.DateTime placeholderTime, bool saveOnlyTouchedAssets, bool exportResourceKeys)
+                {
                     if (master == null) return null;
                     if (platform == PlatformType.None || channel == ChannelType.None ||
                         !System.Enum.IsDefined(typeof(PlatformType), platform) ||
@@ -149,8 +173,6 @@ namespace NovaFramework.Editor
                         AssetDatabase.SaveAssets();
                         AssetDatabase.Refresh();
                     }
-                    if (target != null)
-                        NovaIssues.ObserveImplementation("config-export", "success", platform.ToString(), channel.ToString(), mode.ToString());
                     return target;
                 }
 

@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **全局访问**：`EditorUtil.CheckUpdate`
 
-UPM 包版本检查工具支持启动和跨日自动检查，也支持手动检查。当天跳过的版本会在次日仍可升级时重新提醒。查询覆盖外网仓库和内部云仓库，更新项由窗口合并展示。
+UPM 包版本检查在启动、脚本重载和跨日后自动运行，也支持 `Nova → Open Check Update` 手动检查。Unity 在前台并就绪时，每小时额外检查一次，各工程错开最多 5 分钟。切回 Unity 后，距离某仓库上次成功查询已满 30 分钟时补查。所有自动提醒使用同一个 CheckUpdate 窗口。
 
 ---
 
@@ -13,10 +13,11 @@ UPM 包版本检查工具支持启动和跨日自动检查，也支持手动检�
 | 文件 | 类 | 说明 |
 |------|----|------|
 | [EditorUtil.CheckUpdate.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.cs) | `partial EditorUtil.CheckUpdate` | 公有接口：`[InitializeOnLoad]` 启动钩子 `Initializer` 嵌套类 |
-| [EditorUtil.CheckUpdate.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs) | `partial EditorUtil.CheckUpdate` | 常量声明：`c_ConfigPath`、`c_MenuPath`、`c_RegistryUrl`、`c_InternalRegistryUrl`、`c_ApiPath`；菜单入口 `OpenWindow` |
-| [EditorUtil.CheckUpdate.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs) | `partial EditorUtil.CheckUpdate` | 查询与跳过实现：`CheckAsync`、`CheckOnStartupAsync`、`MarkSkip`、`ClearSkip`、`CheckExternalAsync`、`CheckInternalAsync` 及私有辅助方法 |
+| [EditorUtil.CheckUpdate.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Visitors.cs) | `partial EditorUtil.CheckUpdate` | 本地跳过配置路径和手动菜单入口 |
+| [EditorUtil.CheckUpdate.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Methods.cs) | `partial EditorUtil.CheckUpdate` | `CheckAsync`、`CheckOnStartupAsync`、`CheckRegistriesAsync` 和跳过配置 |
 | [EditorUtil.CheckUpdate.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Definitions.cs) | `partial EditorUtil.CheckUpdate` | 嵌套类型：`UpdateInfo`（public）、`SkipConfig`（private） |
 | [EditorUtil.CheckUpdate.Automatic.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Automatic.cs) | `partial EditorUtil.CheckUpdate` | 自动检查排队、跨日触发、待展示结果恢复、当前安装版本复核及等待原因 |
+| [EditorUtil.CheckUpdate.Supplemental.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.Supplemental.cs) | `partial EditorUtil.CheckUpdate` | 前台定时检查、切回补查及额外提醒去重 |
 
 ---
 
@@ -55,7 +56,7 @@ NovaFramework.Editor.EditorUtil (public static partial class)
 public static async Task<List<UpdateInfo>> CheckAsync()
 ```
 
-分别复用 `EditorUtil.PlugPals.FetchRemotePackagesAsync` 拉取外网仓库与内部云仓库的远端包列表，再通过 `PlugPals.ReadInstalledVersions` 读取本地已安装版本，对比后返回 `latestVersion > currentVersion` 的条目。最终结果不去重，合并后统一按**包名**字母升序排序。单边仓库失败不会清空另一边仓库的成功结果。
+两侧仓库并行复用 `EditorUtil.PlugPals.FetchRemotePackagesAsync` 拉取包列表。各自通过 `PlugPals.ReadInstalledVersions` 读取实际安装版本，返回 `latestVersion > currentVersion` 的条目。结果保留来源，合并后按包名字母升序排序。每侧查询失败独立处理，另一侧的成功结果仍可展示。
 
 ### 跳过配置
 
@@ -110,7 +111,7 @@ QueueAutomaticStartupCheck()
       └─ 无待展示列表 → 等待 Editor、当前安装及重要声明处理结束
       ▼
 CheckOnStartupAsync()
-      ├─ CheckExternalAsync() + CheckInternalAsync() → 分别拉取两侧仓库并比对本地版本
+      ├─ CheckRegistriesAsync() → 并行拉取两侧仓库并比对本地版本
       └─ 保存两来源的待展示列表，重新进入 update 队列
       ▼
 TryRunAutomaticStartupCheck()
@@ -119,11 +120,14 @@ TryRunAutomaticStartupCheck()
       └─ 安全时才 TryOpenAutomatic(filteredExternal, filteredInternal)，实际非模态展示后清除列表；已有窗口则保留队列
 
 [本轮处理结束]
-      └─ 每分钟查看本地日期，跨日后重新进入自动检查队列
+      ├─ 每分钟查看本地日期，跨日后重新进入启动检查队列
+      └─ 前台就绪且仓库到期 → 额外查询 → 复用同一展示队列
 
 [CheckUpdateWindow 关闭，已勾选今日跳过且有更新]
       └─ EditorUtil.CheckUpdate.MarkSkip(externalItems, internalItems, selectedDay) → SaveConfig()
 ```
+
+额外检查只提示今天尚未展示的更高目标版本，且展示前按 PlugPals 的实际安装状态再次核对升级资格。启动、跨日、手动检查和「今日不再提示这些版本」沿用现有规则。额外检查的待展示结果属于本次查询的仓库配置，跨日由新一天的检查接手。
 
 ---
 
@@ -147,12 +151,8 @@ OnDelayedStart()（初始化钩子注册后）
   └─ QueueAutomaticStartupCheck()：恢复待展示结果，或在安全时机查询
 
 CheckOnStartupAsync()
-  ├─ CheckExternalAsync()
-  │    ├─ PlugPals.FetchRemotePackagesAsync(c_RegistryUrl, c_ApiPath, CancellationToken.None)
-  │    └─ PlugPals.ReadInstalledVersions()
-  ├─ CheckInternalAsync()
-  │    ├─ PlugPals.FetchRemotePackagesAsync(c_InternalRegistryUrl, c_ApiPath, CancellationToken.None)
-  │    └─ PlugPals.ReadInstalledVersions()
+  ├─ CheckRegistriesAsync()：读取当前配置并行查询
+  │    └─ 每侧调用 PlugPals.FetchRemotePackagesAsync() 和 PlugPals.ReadInstalledVersions()
   └─ QueueAutomaticPresentation()：缓存结果，按 §6 的展示队列重新检查时机、当前版本和跳过记录
 ```
 
@@ -227,10 +227,10 @@ EditorUtil.CheckUpdate.ClearSkip();
 
 ## §12 注意事项
 
-- `c_RegistryUrl` 与 `c_InternalRegistryUrl` 现已拆分为两个固定地址；后续如仓库迁移，只需替换 Visitors 常量。
-- 双仓库检查采用“单边失败不阻断另一边成功结果”的策略；日志中会分别记录失败仓库地址。
+- 仓库地址以 PlugPals 已保存的配置为准。清空某一侧地址即可关闭该仓库的查询。
+- 同一仓库的并发查询合并。清单及其 `ETag` 随 Editor 会话跨脚本重载，收到 `304` 时沿用已验证清单。窗口手动打开可立即发起或加入查询。
+- 失败仓库独立按 5、15、30 分钟补查，持续失败后每 60 分钟尝试一次。前台状态和编辑器门禁就绪后才执行。
 - `Library/Nova/CheckUpdate.json` 不受版本控制，多人协作时跳过配置不同步。
-- `[InitializeOnLoad]` 在脚本域加载时注册自动检查。编辑器持续打开时，空闲的检查队列会每分钟查看一次本地日期，发现跨日后安排下一轮检查。
 
 ---
 

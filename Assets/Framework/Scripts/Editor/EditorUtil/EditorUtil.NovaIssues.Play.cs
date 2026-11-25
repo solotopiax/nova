@@ -19,15 +19,16 @@ namespace NovaFramework.Editor
         {
             private const string c_PlayAttemptKey = "Nova.Issues.EditorPlay";
             private const string c_PlaySequenceKey = "Nova.Issues.EditorPlaySequence";
+            // 保留 MainDemo 已发布的步骤编号。第 4 步只结束前一阶段，不启动 Editor 观察。
             private static readonly string[] s_PreloadSteps =
-                { "persist", "localization", "network", "sdk", "table", "ui", "sound", "vibration" };
+                { "persist", "localization", "network", null, "table", "ui", "sound", "vibration" };
             private static string s_PlayAttempt;
             private static int s_StartupSequence;
             private static string s_StartupStage;
             private static double s_StartupStageStarted;
             private static bool s_StartupWaitReported;
 
-            /// <summary>从实际的资源、流程和数据表入口记录本次 Play 使用。</summary>
+            /// <summary>从实际运行入口记录本次 Play 使用。</summary>
             private static void ObservePlayModule(EditorPlayModule module)
             {
                 string step = module.ToString().ToLowerInvariant();
@@ -35,6 +36,14 @@ namespace NovaFramework.Editor
                     reportId: EventId("editor-play-module", CurrentPlayAttempt(), step));
             }
 
+            /// <summary>表注册成功属于准备情况，与业务取表使用不同。</summary>
+            private static void ObserveTablesReady()
+            {
+                ObserveImplementation("table-ready", "success",
+                    reportId: EventId("editor-play-table-ready", CurrentPlayAttempt()));
+            }
+
+            /// <summary>同一 Play 在脚本重载前后沿用同一会话编号。</summary>
             private static string CurrentPlayAttempt()
             {
                 if (s_PlayAttempt != null)
@@ -75,13 +84,15 @@ namespace NovaFramework.Editor
                         return;
                     int step = message[digit] - '1';
                     FinishStartupStage(step > 0 && s_StartupStage == s_PreloadSteps[step - 1] ? "success" : "advanced");
-                    BeginStartupStage(s_PreloadSteps[step]);
+                    if (s_PreloadSteps[step] is string phase)
+                        BeginStartupStage(phase);
                 }
                 else if (s_StartupStage == "vibration" && message.Contains("[Procedure] 预加载全部完成。"))
                 {
                     FinishStartupStage("success");
                 }
-                else if (type == LogType.Error && Array.IndexOf(s_PreloadSteps, s_StartupStage) >= 0 &&
+                else if (type == LogType.Error && s_StartupStage != null &&
+                         Array.IndexOf(s_PreloadSteps, s_StartupStage) >= 0 &&
                          message.Contains("[Procedure] 预加载异常:"))
                 {
                     FinishStartupStage("failed");

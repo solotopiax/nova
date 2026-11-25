@@ -33,8 +33,12 @@ namespace NovaFramework.Editor
                 /// </summary>
                 /// <param name="settings">Protobuf 编辑器设置。</param>
                 /// <returns>全部单元编译成功返回 true，任意单元失败返回 false。</returns>
-                public static bool ExportAllProtos(ProtoSettings settings)
+                public static bool ExportAllProtos(ProtoSettings settings) => ExportAllProtos(settings, out _);
+
+                /// <summary>另向 Inspector 区分实际编译与原有的空单元跳过行为。</summary>
+                internal static bool ExportAllProtos(ProtoSettings settings, out bool attempted)
                 {
+                    attempted = false;
                     if (settings == null)
                     {
                         Log.Error(LogTag.Editor, "ProtoSettings 为 null，无法导出 Proto。");
@@ -72,6 +76,7 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
+                        attempted = true;
                         if (!EditorUtil.Proto.CliRunner.CompileSingle(fullProtoPath, rootNorm, unit.CSharpExportPath))
                         {
                             allSuccess = false;

@@ -10,6 +10,8 @@
 
 Nova 包版本更新提示窗口以表格形式展示外网仓库与内部云仓库中已安装包的可用更新。
 
+启动检查、跨日检查和活跃期间发现的新版本都通过这个窗口提示。「今日不再提示这些版本」在关闭窗口时保存，次日仍可升级时会重新提醒。
+
 ---
 
 ## §2 文件表
@@ -85,7 +87,7 @@ public static void Open(
       │  Open() — 手动打开
       ▼
 [m_IsChecking = true，展示 "Checking for updates..."]
-      │  StartCheckAsync()：await EditorUtil.CheckUpdate.CheckExternalAsync() + CheckInternalAsync()
+      │  StartCheckAsync()：await EditorUtil.CheckUpdate.CheckRegistriesAsync()
       ├─ 成功 → m_ExternalItems / m_InternalItems -> MergeItems -> m_Items，m_IsChecking = false → [展示列表]
       └─ 失败 → m_Items = 空列表，m_IsChecking = false → [展示"无更新"空态]
 

@@ -22,6 +22,7 @@
 | [EditorUtil.PlugPals.Visitors.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Visitors.cs) | `partial EditorUtil.PlugPals` | 常量声明：`s_HttpClient`、`c_ManifestRelativePath`、`c_ChangelogCacheRelDir`、`c_TarballCacheRelDir`、`c_ChangelogTarEntry` |
 | [EditorUtil.PlugPals.Methods.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Methods.cs) | `partial EditorUtil.PlugPals` | 私有方法：`ResolveEntryVersion`、`GetCachedPackageVersion`、`IsNonRegistryReference`、`RunTarExtract`、`ExtractScope`、`EnsureScopedRegistry`、`CleanupScopedRegistry` |
 | [EditorUtil.PlugPals.Definitions.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.Definitions.cs) | `partial EditorUtil.PlugPals` | 包、registry、manifest 与 packages-lock 数据模型 |
+| [EditorUtil.PlugPals.RegistryCatalog.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RegistryCatalog.cs) | `partial EditorUtil.PlugPals` | 共享包清单查询、条件请求及各仓库重试时间 |
 | [EditorUtil.PlugPals.AgentOperations.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.AgentOperations.cs) | `partial EditorUtil.PlugPals` | 消费项目 Agent 的单包 `Plan -> Confirm -> Execute -> Verify` Adapter |
 | [EditorUtil.PlugPals.RequiredLibraries.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs) | `partial EditorUtil.PlugPals` | 安装前依赖预检查（`CheckDependencies`）：遍历目标包 `dependencies`，判定 registry 命中与缺失库，缺失时打开 `PlugPalsMissingRequiredLibrariesWindow` 引导并中止安装 |
 
@@ -69,6 +70,8 @@ public static string FormatReleaseTime(string releaseTime)
 /// </summary>
 public static List<PackageDisplayEntry> BuildDisplayEntries(VerdaccioPackageInfo[] remotePackages, string registryUrl)
 ```
+
+包清单查询按仓库合并同时发起的请求，每个调用方可单独取消等待。清单带有 `ETag` 时，下次查询带上该标记，收到 `304` 后使用上次验证的正文。查询失败仍报告失败，保留的清单供下一次条件查询使用。
 
 详情时间统一存为包内 `nova.releaseTime`（UTC ISO 8601，精确到秒，例如 `2026-10-26T08:09:10Z`）。正式发布器在公网、内网签名前记录；消费侧只读，不修改已发布包或用文件修改时间回填。
 

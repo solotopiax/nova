@@ -8,6 +8,26 @@
 
 ## [Unreleased]
 
+## [0.7.18] - 2026-11-25
+
+### Changed
+
+- nova-issues 的「使用记录」默认按最新时间排列。影响项目名单可打开项目详情，点击名单或问题详情外的空白可关闭。问题详情有未保存的修改时，关闭前会确认。
+
+- nova-issues 的「模块接入与使用」按上报展示配置、开发操作和 Editor Play 记录。手动导表记录显示在开发操作中。
+
+### Added
+
+- nova-issues 在项目和问题详情底部提供「删除」。确认后清理对应的服务端记录，多个项目共同上报的问题按剩余记录重新统计。
+
+### Fixed
+
+- nova-issues 停止采集和展示 SDK 在 Editor 中的预加载、等待和运行结果。维护台保留 SDK 安装、配置启用和平台构建信息。
+
+- nova-issues 按实际时机记录配置加载、手动导出、Action、Pipify 与构建结果，并补齐资源、表、本地化、UI 和网络的 Editor 使用证据。
+
+- nova-issues 会在包清单、启用的 SDK 或 Kit、工具状态变化时刷新环境快照。通过 Unity Package Manager 升级 Framework 时，也会展示解析、编译和 Editor 实际载入记录。同一次 Nova Action 的 Editor 和 Codex 记录合计一次。
+
 ## [0.7.17] - 2026-11-25
 
 ### Changed

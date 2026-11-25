@@ -276,6 +276,9 @@ namespace NovaFramework.Runtime
             if (channel.IsDisconnectedSubjectively || connectionVersion != channel.ConnectionVersion) return;
             if (channel.IsConnected)
             {
+#if UNITY_EDITOR
+                EditorPlayEvidence.Use(EditorPlayModule.Network);
+#endif
                 OnConnectSuccess?.Invoke(channelIndex, channel.ServerAddress);
             }
             else

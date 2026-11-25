@@ -23,7 +23,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   outline: 3px solid #209a87;
   outline-offset: 2px;
 }
-button.primary, button.secondary {
+button.primary, button.secondary, button.danger {
   padding: .57rem .9rem;
   border: 1px solid;
   border-radius: 7px;
@@ -33,6 +33,8 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 button.primary:hover { background: #065244; }
 button.secondary { background: #fff; border-color: #bdceca; color: #243b3a; }
 button.secondary:hover { background: #edf5f2; }
+button.danger { background: #a3292d; border-color: #a3292d; color: #fff; }
+button.danger:hover { background: #862025; }
 button.link {
   text-align: left;
   background: transparent;
@@ -143,6 +145,7 @@ thead { background: #edf4f2; color: #324c48; }
 th, td { padding: .69rem .75rem; vertical-align: top; border-bottom: 1px solid #e2eae8; }
 th { white-space: nowrap; font-weight: 680; }
 td { overflow-wrap: anywhere; }
+.module-usage td:first-child, .module-usage td:last-child { white-space: nowrap; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr:hover { background: #f7faf9; }
 td.mono, code, .token { font-family: ui-monospace, Menlo, Consolas, monospace; }
@@ -188,6 +191,8 @@ dialog {
 dialog::backdrop { background: #031818a6; }
 .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .7rem; margin-bottom: 1rem; }
 .dialog-head h2 { margin: .12rem 0 0; flex: 1; font-size: 1.4rem; overflow-wrap: anywhere; }
+.dialog-delete { display: grid; justify-items: start; gap: .65rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.dialog-delete .error { margin: 0; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
 .form-grid { display: grid; gap: .9rem; margin-bottom: 1.2rem; }
 .issue-note { white-space: pre-wrap; }

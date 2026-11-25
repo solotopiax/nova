@@ -107,13 +107,13 @@ class IssuesTest(unittest.TestCase):
         self.url = f"http://127.0.0.1:{self.server.server_port}"
         self.project_token = self.database.register("project-a", "项目甲", "QA")
 
-    def http(self, path, payload=None, headers=None):
+    def http(self, path, payload=None, headers=None, *, method=None):
         conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=5)
         try:
             values = headers.copy() if headers else {}
             if payload is not None:
                 values.setdefault("Content-Type", "application/json")
-            conn.request("GET" if payload is None else "POST", path,
+            conn.request(method or ("GET" if payload is None else "POST"), path,
                          body=None if payload is None else json.dumps(payload), headers=values)
             reply = conn.getresponse()
             content = reply.read()
@@ -164,30 +164,58 @@ class IssuesTest(unittest.TestCase):
     def event(self, name, turn="test-turn", **fields):
         return {"hook_event_name": name, "session_id": "test-session", "turn_id": turn} | fields
 
-    def test_retired_device_sdk_reports_are_neither_sent_nor_displayed(self):
+    def test_retired_sdk_feedback_is_skipped_without_deleting_history(self):
         root, folder = self.fixture_project()
         stamp = int(time.time()) - 10
-        data = {"stage": "sdk-device", "framework": "0.7.15", "unity": "6000.4.2f1",
-                "platform": "Android", "sdk": "Nova.Sdk.Sample", "build": uuid.uuid4().hex,
-                "attempt": uuid.uuid4().hex, "outcome": "success", "milliseconds": 50}
-        report_id = uuid.uuid4().hex
+        issue = self.sample_issue("editor-sdk-preload-exceeds-60-seconds")
+        base = {"framework": "0.7.15", "unity": "6000.4.2f1"}
+        historical = [
+            issue | {"kind": "implementation", "data": base | {
+                "stage": "sdk-device", "platform": "Android", "sdk": "Nova.Sdk.Sample", "build": uuid.uuid4().hex,
+                "attempt": uuid.uuid4().hex, "outcome": "success", "milliseconds": 50}},
+            issue | {"kind": "implementation", "data": base | {"stage": "sdk-preload", "outcome": "success"}},
+            issue | {"kind": "implementation", "data": base | {
+                "stage": "startup-stage", "step": "sdk", "attempt": uuid.uuid4().hex, "sequence": 1,
+                "outcome": "waiting", "milliseconds": 15000}},
+            issue | {"kind": "usage", "data": {"module": "sdk", "operation": "editor.preload.sdk",
+                "outcome": "success", "framework": "0.7.15", "source": "editor"}},
+            issue,
+        ]
+        historical = [item | {"id": uuid.uuid4().hex} for item in historical]
         with agent.ledger(folder) as db:
-            agent.enqueue(db, "implementation", data, report_id, stamp)
-            cached = db.execute("SELECT payload FROM outbox WHERE id=?", (report_id,)).fetchone()["payload"]
+            for item in historical:
+                agent.enqueue(db, item["kind"], item["data"], item["id"], stamp)
+            cached = [row[0] for row in db.execute("SELECT payload FROM outbox ORDER BY rowid")]
             self.assertFalse(agent.has_pending_reports(db))
         with patch.object(agent, "automatic_report_health") as health, patch.object(agent, "deliver") as send:
             agent.work(root, folder, "", single=True)
             health.assert_not_called()
             send.assert_not_called()
         with agent.ledger(folder) as db:
-            self.assertEqual(cached, db.execute("SELECT payload FROM outbox WHERE id=?", (report_id,)).fetchone()["payload"])
-        report = json.loads(cached)
-        self.assertEqual(self.ingest(report)[0], 400)
-        # 模拟旧版服务器已有的记录，确认新版查询不再展示。
-        self.database.ingest("project-a", report, self.project_token)
-        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=self.login())
+            self.assertEqual(cached, [row[0] for row in db.execute("SELECT payload FROM outbox ORDER BY rowid")])
+        self.assertEqual(self.ingest(historical[0])[0], 400)
+        for report in historical[1:]:
+            status, receipt, _ = self.ingest(report)
+            self.assertEqual((status, receipt["id"], receipt["issue_id"]), (200, report["id"], None))
+        # 模拟升级前原表已经收到的报告，覆盖查询和统计的退役口径。
+        with self.database.connect() as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM reports").fetchone()[0], 0)
+            issue_id = Database.attach_issue(db, issue)
+            for report in historical:
+                db.execute("INSERT INTO reports VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    ("project-a", report["id"], report["workspace"], report["kind"], "legacy",
+                     json.dumps(report["data"]), stamp, stamp, issue_id if report["kind"] == "issue" else None))
+        headers = self.login()
+        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=headers)
         self.assertEqual(status, 200)
         self.assertEqual(detail["implementation"], [])
+        self.assertEqual(detail["project_module_evidence"], [])
+        overview = self.http("/api/maintainer/overview", headers=headers)[1]
+        self.assertEqual((overview["usage"], overview["issues"], overview["usage_modules"]), ([], [], []))
+        self.assertEqual((overview["activity_totals"]["usage"], overview["issue_counts"]["active"]), (0, 0))
+        self.assertEqual(self.http(f"/api/maintainer/issues/{issue_id}", headers=headers)[0], 404)
+        with self.database.connect() as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM reports").fetchone()[0], len(historical))
 
     def test_editor_play_and_upgrade_keep_independent_execution_evidence(self):
         self.assertTrue(self.http("/health")[1]["execution_evidence"])
@@ -201,7 +229,7 @@ class IssuesTest(unittest.TestCase):
 
         for offset in (2, 1):
             self.assertEqual(record("editor-module", stamp - offset, step="table", outcome="success"), 201)
-        for phase, result, offset, sequence in (("sdk", "waiting", 8, 2), ("sdk", "success", 1, 2),
+        for phase, result, offset, sequence in (("network", "waiting", 8, 2), ("network", "success", 1, 2),
                                                  ("load-dll", "advanced", 10, 1)):
             self.assertEqual(record("startup-stage", stamp - offset, step=phase, outcome=result, attempt=play,
                                     sequence=sequence, milliseconds=18000), 201)
@@ -218,8 +246,8 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual(detail["module_evidence"][0]["count"], 0)
         events = [(row["data"]["stage"], row["data"]["step"], row["data"]["outcome"])
                   for row in detail["implementation"]]
-        self.assertIn(("startup-stage", "sdk", "success"), events)
-        self.assertNotIn(("startup-stage", "sdk", "waiting"), events)
+        self.assertIn(("startup-stage", "network", "success"), events)
+        self.assertNotIn(("startup-stage", "network", "waiting"), events)
         self.assertIn(("framework-upgrade", "load", "recovered"), events)
         self.assertNotIn(("framework-upgrade", "compile", "failed"), events)
 
@@ -426,6 +454,69 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual({(project["id"], project["name"]) for project in payload["projects"]},
                          {("project-a", "项目甲"), ("project-b", "项目乙")})
 
+    def test_delete_issue_requires_maintainer_and_removes_reports_and_history(self):
+        alias = self.ingest(self.sample_issue("alias"))[1]["issue_id"]
+        issue = self.ingest(self.sample_issue("to-delete"))[1]["issue_id"]
+        route = f"/api/maintainer/issues/{issue}"
+        session = self.login()
+        edit = {"revision": 1, "status": "closed", "assignee": "taoye", "note": "已确认。"}
+        self.assertEqual(self.http(route, edit, session)[0], 200)
+        with self.database.connect() as db:
+            db.execute("UPDATE issues SET status='duplicate',duplicate_of=? WHERE id=?", (issue, alias))
+
+        self.assertEqual(self.http(route, method="DELETE")[0], 401)
+        self.assertEqual(self.http(route, headers=session | {"X-Nova-CSRF": ""}, method="DELETE")[0], 403)
+        self.assertEqual(self.http(route, headers=session | {"Origin": "http://other.test"}, method="DELETE")[0], 403)
+        self.assertEqual(self.http(route, headers=session)[0], 200)
+        self.assertEqual(self.http(route, headers=session, method="DELETE")[:2], (200, {"deleted": True}))
+        self.assertEqual(self.http(route, headers=session)[0], 404)
+        self.assertEqual(self.http(route, headers=session, method="DELETE")[0], 404)
+        with self.database.connect() as db:
+            self.assertIsNone(db.execute("SELECT 1 FROM reports WHERE issue_id=?", (issue,)).fetchone())
+            self.assertIsNone(db.execute("SELECT 1 FROM history WHERE issue_id=?", (issue,)).fetchone())
+        alias_detail = self.http(f"/api/maintainer/issues/{alias}", headers=session)[1]
+        self.assertIsNone(alias_detail["issue"]["duplicate_of"])
+        self.assertEqual(alias_detail["issue"]["status"], "closed")
+        self.assertEqual(len(alias_detail["occurrences"]), 1)
+        new_issue = self.ingest(self.sample_issue("after-delete"))[1]["issue_id"]
+        self.assertGreater(new_issue, issue)
+
+    def test_delete_project_removes_owned_data_and_recomputes_shared_issues(self):
+        project = "auto-" + uuid.uuid4().hex
+        workspace = uuid.uuid4().hex
+        credentials = {"X-Nova-Project": project, "Authorization": "Bearer " + "a" * 64}
+        stamp = int(time.time())
+
+        def report(event):
+            payload = {"name": "示例项目", "report": event | {"workspace": workspace}}
+            status, receipt, _ = self.http("/api/v1/auto-reports", payload, credentials)
+            self.assertEqual(status, 201, receipt)
+            return receipt["issue_id"]
+
+        shared_event = self.sample_issue("shared")
+        shared = self.ingest(shared_event | {"observed_at": stamp - 30})[1]["issue_id"]
+        self.assertEqual(report(self.sample_issue("shared") | {"observed_at": stamp}), shared)
+        exclusive = report(self.sample_issue("exclusive"))
+        report(self.sample_issue() | {
+            "kind": "usage", "data": {"module": "table", "operation": "editor.table.export-all", "outcome": "success",
+                                       "framework": "0.7.17", "source": "editor"},
+        })
+        session = self.login()
+        route = f"/api/maintainer/projects/{project}"
+        self.assertEqual(self.http(route, headers=credentials, method="DELETE")[0], 401)
+        self.assertEqual(self.http(route, headers=session, method="DELETE")[:2], (200, {"deleted": True}))
+        self.assertEqual(self.http(route, headers=session)[0], 404)
+        self.assertEqual(self.http(f"/api/maintainer/issues/{exclusive}", headers=session)[0], 404)
+        shared_detail = self.http(f"/api/maintainer/issues/{shared}", headers=session)[1]
+        self.assertEqual([item["project_id"] for item in shared_detail["occurrences"]], ["project-a"])
+        issue = shared_detail["issue"]
+        self.assertEqual((issue["first_seen"], issue["last_seen"]), (stamp - 30, stamp - 30))
+        with self.database.connect() as db:
+            self.assertIsNone(db.execute("SELECT 1 FROM reports WHERE project_id=?", (project,)).fetchone())
+            self.assertIsNone(db.execute("SELECT 1 FROM automatic_workspaces WHERE project_id=?", (project,)).fetchone())
+        self.assertEqual(report(self.sample_issue("shared")), shared)
+        self.assertEqual(self.http(route, headers=session)[0], 200)
+
     def test_issue_package_and_log_follow_the_reported_occurrence(self):
         """旧上报和精简上报都能定位所属包，迟到记录不覆盖最近发生的版本。"""
         stamp = int(time.time())
@@ -620,7 +711,6 @@ class IssuesTest(unittest.TestCase):
         receipt = {"module": "hotfix", "operation": action, "framework": "0.7.14", "outcome": "success"}
         skill = {"module": "router", "operation": "nova-project-router", "framework": "0.7.15",
                  "outcome": "executed", "source": "codex", "entry": "skill"}
-        preload = {"module": "sdk", "operation": "editor.preload.sdk", "framework": "0.7.14", "outcome": "success"}
         unknown = {"module": "other", "operation": "other.method", "framework": "0.7.14", "outcome": "success"}
         unity = {"module": "unity-cli", "framework": "0.7.15", "outcome": "success",
                  "source": "codex", "entry": "unity-cli"}
@@ -628,7 +718,7 @@ class IssuesTest(unittest.TestCase):
         events = []
         for data in (receipt, receipt | {"source": "editor", "entry": "action"},
                      receipt | {"source": "codex", "entry": "action"}, skill,
-                     preload, preload | {"source": "editor"}, unknown,
+                     unknown,
                      unity | {"operation": "unity.capture.screenshot"}, unity | {"operation": "unity.custom.refresh"}):
             event = {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
                      "observed_at": int(time.time()), "kind": "usage", "data": data}
@@ -644,8 +734,6 @@ class IssuesTest(unittest.TestCase):
         self.assertIn("编译并刷新当前构建目标对应的业务热更 DLL", editor_action["description"])
         self.assertEqual(rows[(action, "codex")]["count"], 1)
         self.assertIn("Nova 项目任务路由", rows[(skill["operation"], "codex")]["description"])
-        sdk = rows[(preload["operation"], "editor")]
-        self.assertEqual((sdk["entry"], sdk["count"]), ("preload", 2))
         legacy = rows[(unknown["operation"], "legacy")]
         self.assertEqual((legacy["entry"], legacy["description"]), ("", ""))
         self.assertIn("截取 Scene 或 Game", rows[("unity.capture.screenshot", "codex")]["description"])
@@ -659,6 +747,97 @@ class IssuesTest(unittest.TestCase):
         with self.database.connect() as db:
             original = db.execute("SELECT payload FROM reports WHERE id=?", (events[0]["id"],)).fetchone()
         self.assertEqual(json.loads(original["payload"]), receipt)
+
+    def test_module_evidence_keeps_manual_table_export_and_play_separate(self):
+        stamp = int(time.time())
+        envelope = self.sample_issue() | {"observed_at": stamp}
+        for module, operation, outcome in (
+            ("table", "editor.table.export-all", "success"),
+            ("table", "editor.table.export-data", "failed"),
+            ("localization", "editor.localization.export-font", "success"),
+            ("ui", "editor.ui.export-data", "success"),
+            ("network", "editor.network.export-proto-all", "blocked"),
+        ):
+            event = envelope | {"id": uuid.uuid4().hex, "kind": "usage", "data": {
+                "module": module, "operation": operation, "outcome": outcome, "framework": "0.7.17", "source": "editor",
+            }}
+            self.assertEqual(self.ingest(event)[0], 201)
+
+        headers = self.login()
+        usage = self.http("/api/maintainer/usage?module=table", headers=headers)[1]["usage"]
+        self.assertEqual({(item["entry"], item["outcome"]) for item in usage},
+                         {("inspector", "success"), ("inspector", "failed")})
+        self.assertTrue(all("手动导出" in item["description"] for item in usage))
+        route = "/api/maintainer/projects/project-a"
+        modules = {row["module"]: row for row in self.http(route, headers=headers)[1]["project_module_evidence"]}
+        self.assertEqual((modules["table"]["manual_exports"], modules["table"]["play_sessions"], modules["table"]["problems"]),
+                         (2, 0, 1))
+        self.assertEqual((modules["network"]["manual_exports"], modules["network"]["problems"]), (1, 1))
+        ready = envelope | {"id": uuid.uuid4().hex, "kind": "implementation", "data": {
+            "stage": "table-ready", "outcome": "success", "framework": "0.7.17", "unity": "6000.4.2f1",
+        }}
+        self.assertEqual(self.ingest(ready)[0], 201)
+        ready_detail = self.http(route, headers=headers)[1]
+        self.assertIn("table-ready", {row["data"]["stage"] for row in ready_detail["implementation_outcomes"]})
+        self.assertTrue(all(row["play_sessions"] == 0 for row in ready_detail["project_module_evidence"]))
+
+        play = envelope | {"id": uuid.uuid4().hex, "kind": "implementation", "data": {
+            "stage": "editor-module", "step": "table", "outcome": "success", "framework": "0.7.17", "unity": "6000.4.2f1",
+        }}
+        self.assertEqual(self.ingest(play)[0], 201)
+        table = next(row for row in self.http(route, headers=headers)[1]["project_module_evidence"] if row["module"] == "table")
+        self.assertEqual((table["manual_exports"], table["play_sessions"]), (2, 1))
+
+    def test_action_uses_editor_result_and_counts_a_shared_invocation_once(self):
+        root, folder = self.fixture_project()
+        operation = uuid.uuid4().hex
+        action = "nova.project.hotfix.refresh-game-dlls"
+        key = agent.event_id("action", action, operation)
+        token = f"nova-action-operation-v1:{operation}"
+        reply = {"operation": "execute", "action_id": action, "status": "partial",
+                 "data": {"recovery_token": token}}
+        event = {"tool_use_id": "tool-1", "tool_response": {"content": [{"text": json.dumps(reply)}]}}
+        with agent.ledger(folder) as db:
+            self.assertTrue(agent.observed_action_usage(db, event, "0.7.17", "turn", action, "execute"))
+            value = db.execute("SELECT payload FROM outbox").fetchone()[0]
+            self.assertNotIn(token, value)
+            codex = json.loads(value)
+        self.assertEqual(codex["data"]["action_operation"], key)
+        editor = codex | {"id": key, "observed_at": codex["observed_at"] - 5,
+                          "data": codex["data"] | {"outcome": "failed", "source": "editor", "framework": "0.7.18"}}
+        self.assertEqual(self.ingest(codex)[0], 201)
+        self.assertEqual(self.ingest(editor)[0], 201)
+        header = self.login()
+        result = self.http("/api/maintainer/overview", headers=header)[1]
+        self.assertEqual(result["activity_totals"]["usage"], 1)
+        usage = result["usage"][0]
+        self.assertEqual((usage["source"], usage["outcome"], usage["framework"], usage["count"], usage["last_used"]),
+                         ("codex", "failed", "0.7.18", 1, editor["observed_at"]))
+        self.assertEqual(result["codex_modules"][0]["problems"], 1)
+        modules = self.http("/api/maintainer/projects/project-a", headers=header)[1]["project_module_evidence"]
+        self.assertEqual((modules[0]["count"], modules[0]["problems"]), (1, 1))
+
+    def test_pipify_same_second_keeps_latest_step_and_prior_batch_success(self):
+        workspace, current, previous = (uuid.uuid4().hex for _ in range(3))
+        stamp = int(time.time())
+
+        def save(stage, attempt, sequence, outcome, **data):
+            event = {"version": 1, "id": uuid.uuid4().hex, "kind": "implementation", "workspace": workspace,
+                     "observed_at": stamp, "data": {"framework": "0.7.17", "unity": "6000.4.2f1", "platform": "Android",
+                         "stage": stage, "attempt": attempt, "sequence": sequence, "milliseconds": 0,
+                         "outcome": outcome, **data}}
+            self.assertEqual(self.ingest(event)[0], 201)
+
+        save("pipify-batch", previous, 5, "success")
+        save("pipify-step", current, 4, "failed", step="googleplay.upload_aab")
+        save("pipify-step", current, 4, "running", step="googleplay.upload_aab")
+        save("pipify-step", current, 3, "waiting", step="googleplay.upload_aab")
+        save("pipify-step", current, 2, "success", step="bundlebuilder.build")
+        save("pipify-batch", current, 5, "failed", step="googleplay.upload_aab")
+        detail = self.http("/api/maintainer/projects/project-a", headers=self.login())[1]
+        steps = [row["data"] for row in detail["implementation"] if row["data"]["stage"] == "pipify-step"]
+        self.assertEqual([(step["sequence"], step["outcome"]) for step in steps], [(4, "failed")])
+        self.assertEqual({row["data"]["outcome"] for row in detail["implementation_outcomes"]}, {"success", "failed"})
 
     def test_usage_sort_uses_observation_time_and_applies_before_limit(self):
         """低频的新记录可排到前面，晚到的旧上报仍按实际发生时间排序。"""
@@ -827,6 +1006,24 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual(overview["workspaces"][0]["unity"], "6000.4.3f1")
         project = self.database.project_detail(overview["workspaces"][0]["project_id"])
         self.assertEqual(len(project["snapshots"]), 5)
+
+    def test_environment_reports_package_enablement_and_tool_changes(self):
+        root, folder = self.fixture_project()
+        packages = [{"id": agent.FRAMEWORK, "version": "0.7.13", "source": "registry"},
+                    {"id": agent.FRAMEWORK + ".sdk.ad", "version": "0.3.0", "source": "registry"}]
+        base = {"event": "snapshot", "packages": packages, "enabled": [], "tools": {}}
+        enabled = base | {"enabled": ["SDK.Ad", "Kit.GameLogin"]}
+        connected = enabled | {"tools": {"unity-cli": {"state": "connected"}}}
+        with agent.ledger(folder) as db:
+            for payload in (base, enabled, connected,
+                            connected | {"packages": packages[::-1], "enabled": enabled["enabled"][::-1]},
+                            connected | {"packages": [packages[0], packages[1] | {"version": "0.3.1"}]}):
+                agent.editor_event(root, db, payload)
+            rows = [json.loads(row[0])["data"] for row in db.execute("SELECT payload FROM outbox ORDER BY rowid")]
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(rows[-1]["enabled"], enabled["enabled"])
+        self.assertEqual(rows[-1]["tools"]["unity-cli"]["state"], "connected")
+        self.assertEqual(rows[-1]["packages"][-1]["version"], "0.3.1")
 
     def test_environment_details_update_and_wait_for_compatible_service(self):
         root, folder = self.fixture_project()
@@ -1134,20 +1331,18 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual((latest["name"], latest["team"]), ("示例项目", "玩法组"))
         self.assertEqual(self.http(route, {"team": "", "previous_team": "玩法组"}, session)[1]["team"], "")
 
-    def test_sdk_wait_requires_a_live_editor_observation(self):
+    def test_legacy_editor_sdk_events_do_not_produce_runtime_reports(self):
         root, folder = self.fixture_project()
         with agent.ledger(folder) as db:
-            agent.editor_event(root, db, {"event": "sdk-start", "id": "play-1"})
-            waiting = agent.state(db, "sdk")
-            waiting["started"] -= 62
-            agent.save(db, "sdk", waiting)
-            agent.inspect_pending(db)
-            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox").fetchone()[0], 0)
+            agent.save(db, "sdk", {"id": "play-1", "started": agent.now() - 62, "framework": "0.7.15"})
+            for kind in ("sdk-start", "sdk-finished", "sdk-ended"):
+                agent.editor_event(root, db, {"event": kind, "id": "play-1"})
             agent.editor_event(root, db, {"event": "snapshot", "sdk_attempt": "play-1", "packages": [],
                                           "tools": {}, "enabled": []})
             agent.inspect_pending(db)
-            agent.inspect_pending(db)
-            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE json_extract(payload,'$.kind')='issue'").fetchone()[0], 1)
+            self.assertNotIn("sdk_attempt", agent.state(db, "editor"))
+            self.assertEqual([row[0] for row in db.execute("SELECT json_extract(payload,'$.kind') FROM outbox")],
+                             ["snapshot"])
 
     def test_git_and_automatic_hook_contract(self):
         """无接入配置的真实 CLI 钩子通过后台 worker 完成首次自动上报。"""

@@ -44,6 +44,7 @@ namespace NovaFramework.Editor
                 public int BatchIndex;
                 public string BatchFingerprint;
                 public int NextStepIndex;
+                public string FeedbackAttempt;
                 public string OutputPath;
                 public string OutputFingerprint;
                 public string UploadPath;
@@ -63,14 +64,14 @@ namespace NovaFramework.Editor
             /// <summary>保存尚未调用的上传位置，主动让 Unity 完成编译与重载；原域的异步链不再启动上传。</summary>
             private static async UniTask HandOffWindowUploadAsync(Batch batch, int nextStepIndex,
                 PipifyBuildArtifact artifact, PipifySteps.GooglePlayUploadInput uploadInput, string masterGuid, string settingsGuid,
-                WindowReporter reporter, CancellationToken ct)
+                WindowReporter reporter, CancellationToken ct, string feedbackAttempt)
             {
                 PipifySettingsSO settings = FindSettingsContaining(batch);
                 var checkpoint = new WindowUploadCheckpoint
                 {
                     MasterGuid = masterGuid, SettingsGuid = settingsGuid,
                     BatchIndex = settings.Batches.IndexOf(batch), BatchFingerprint = GetBatchFingerprint(batch),
-                    NextStepIndex = nextStepIndex, OutputPath = artifact.OutputPath,
+                    NextStepIndex = nextStepIndex, FeedbackAttempt = feedbackAttempt, OutputPath = artifact.OutputPath,
                     OutputFingerprint = GetArtifactFingerprint(artifact.OutputPath), Target = artifact.Target,
                     UploadPath = uploadInput.AabPath, UploadFingerprint = GetArtifactFingerprint(uploadInput.AabPath),
                     DevelopmentBuild = artifact.DevelopmentBuild, PackageName = artifact.PackageName
@@ -130,10 +131,28 @@ namespace NovaFramework.Editor
                 }
                 catch (Exception ex)
                 {
+                    ObservePendingUploadFailure(timer.Elapsed);
                     ClearWindowUploadCheckpoint();
                     EditorUtility.ClearProgressBar();
                     Log.Error(LogTag.Editor, "{0} 窗口上传交接失败：{1}", c_LogPrefix, ex);
                 }
+            }
+
+            /// <summary>记录交接中断，已被 Runner 消费的检查点由 Runner 自己记录终态。</summary>
+            private static void ObservePendingUploadFailure(TimeSpan elapsed)
+            {
+                try
+                {
+                    string raw = SessionState.GetString(c_WindowUploadCheckpointKey, "");
+                    if (string.IsNullOrEmpty(raw))
+                        return;
+                    var checkpoint = JsonUtility.FromJson<WindowUploadCheckpoint>(raw);
+                    if (Guid.TryParseExact(checkpoint?.FeedbackAttempt, "N", out _))
+                        NovaIssues.ObserveImplementation("pipify-batch", "failed", checkpoint.Target.ToString(),
+                            step: "googleplay.upload_aab", elapsed: elapsed, attempt: checkpoint.FeedbackAttempt,
+                            sequence: checkpoint.NextStepIndex * 2 + 2);
+                }
+                catch (Exception) { /* 上报不参与已有的检查点清理。 */ }
             }
 
             /// <summary>恢复前校验原存档和工作区；拒绝变更后的参数、错平台及缺失产物。</summary>

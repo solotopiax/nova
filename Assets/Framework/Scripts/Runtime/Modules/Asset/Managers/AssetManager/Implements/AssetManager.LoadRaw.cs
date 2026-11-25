@@ -68,6 +68,9 @@ namespace NovaFramework.Runtime
                 // EnsureBundleFileOperation 不支持同步等待；同步加载仍可靠提供字节，但底层 bundle 路径为空。
                 adapter.Bind(inner, rawFile, null);
                 inner = null;
+#if UNITY_EDITOR
+                EditorPlayEvidence.Use(EditorPlayModule.Asset);
+#endif
                 return adapter;
             }
             catch
@@ -141,6 +144,9 @@ namespace NovaFramework.Runtime
                 adapter = ReferencePool.Get<YooAssetRawFileHandleAdapter>();
                 adapter.Bind(inner, rawFile, filePath);
                 inner = null;
+#if UNITY_EDITOR
+                EditorPlayEvidence.Use(EditorPlayModule.Asset);
+#endif
                 return adapter;
             }
             catch

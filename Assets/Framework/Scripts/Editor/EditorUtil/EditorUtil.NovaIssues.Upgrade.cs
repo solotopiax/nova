@@ -56,27 +56,35 @@ namespace NovaFramework.Editor
                         return;
                     LoadUpgradeSession();
                     string previous = ReadVersion(global::NovaFramework.Runtime.Nova.Version);
-                    if (previous == target || previous == "unknown")
-                        return;
-                    if (s_Upgrade is { Finished: false })
-                    {
-                        if (s_Upgrade.Requested == target)
-                            return;
-                        EndSupersededUpgrade(EditorApplication.timeSinceStartup);
-                    }
-                    s_Upgrade = new FrameworkUpgrade
-                    {
-                        Id = Guid.NewGuid().ToString("N"),
-                        Previous = previous,
-                        Requested = target,
-                        Started = EditorApplication.timeSinceStartup
-                    };
-                    s_NextUpgradeCheck = 0;
-                    RecordUpgradeStage("request", "running", 0);
+                    StartUpgrade(previous, target, EditorApplication.timeSinceStartup, true);
                 }
                 catch (Exception) { /* 上报不影响已经提交的包请求。 */ }
             }
 
+            /// <summary>有明确请求时记录提交阶段，也支持从实际 UPM 注册开始观察。</summary>
+            private static void StartUpgrade(string previous, string target, double time, bool observedRequest)
+            {
+                if (previous == target || previous == "unknown" || target == "unknown")
+                    return;
+                if (s_Upgrade?.Requested == target &&
+                    (!s_Upgrade.Finished || !observedRequest && s_Upgrade.Previous == previous &&
+                     s_Upgrade.ResolveOutcome == "success"))
+                    return;
+                if (s_Upgrade is { Finished: false })
+                    EndSupersededUpgrade(time);
+                s_Upgrade = new FrameworkUpgrade
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    Previous = previous,
+                    Requested = target,
+                    Started = time
+                };
+                s_NextUpgradeCheck = 0;
+                if (observedRequest)
+                    RecordUpgradeStage("request", "running", 0);
+            }
+
+            /// <summary>读取同一次 Editor 会话里跨程序集重载的升级进度。</summary>
             private static void LoadUpgradeSession()
             {
                 if (s_UpgradeLoaded || !BindFrameworkPackage())
@@ -95,17 +103,37 @@ namespace NovaFramework.Editor
             /// <summary>注册事件在旧程序集仍存活时也能确认目标包的解析结果。</summary>
             private static void ObserveUpgradeRegistration(PackageRegistrationEventArgs args)
             {
-                if (s_Upgrade is not { Finished: false })
-                    return;
                 try
                 {
                     var package = args.added.Concat(args.changedTo).FirstOrDefault(item => item.name == c_Framework);
-                    if (package != null)
-                        ObserveUpgradeResolution(package, EditorApplication.timeSinceStartup);
+                    if (package == null || !BindFrameworkPackage())
+                        return;
+                    LoadUpgradeSession();
+                    double time = EditorApplication.timeSinceStartup;
+                    if (s_Upgrade is not { Finished: false } || package.version != s_Upgrade.Requested)
+                    {
+                        // 原生 Package Manager 首次观测可能已在注册阶段，此时不补造提交记录。
+                        if (!package.isDirectDependency || ReadRequestedFramework() != package.version)
+                            return;
+                        var old = args.changedFrom.FirstOrDefault(item => item.name == c_Framework);
+                        StartUpgrade(ReadVersion(old?.version ?? global::NovaFramework.Runtime.Nova.Version),
+                            ReadVersion(package.version), time, false);
+                    }
+                    if (s_Upgrade is { Finished: false })
+                        ObserveUpgradeResolution(package, time);
                 }
                 catch (Exception) { /* UPM 注册沿用原有行为。 */ }
             }
 
+            /// <summary>读取直接依赖中明确的 Framework 版本，不把本地路径或 Git 地址当成版本。</summary>
+            private static string ReadRequestedFramework()
+            {
+                var manifest = JObject.Parse(File.ReadAllText(Path.Combine(s_Project, "Packages", "manifest.json")));
+                string value = ReadVersion((string)manifest["dependencies"]?[c_Framework]);
+                return char.IsDigit(value[0]) ? value : "unknown";
+            }
+
+            /// <summary>观察原生 UPM 修改的明确版本，并按当前注册包、编译和已加载版本推进。</summary>
             private static void PollFrameworkUpgrade(double time)
             {
                 if (time < s_NextUpgradeCheck || EditorApplication.isCompiling || EditorApplication.isUpdating)
@@ -114,10 +142,15 @@ namespace NovaFramework.Editor
                 try
                 {
                     LoadUpgradeSession();
+                    if (!s_UpgradeLoaded)
+                        return;
+                    string requested = ReadRequestedFramework();
+                    string loaded = ReadVersion(global::NovaFramework.Runtime.Nova.Version);
+                    if (s_Upgrade is not { Finished: false })
+                        StartUpgrade(loaded, requested, time, true);
                     if (s_Upgrade is not { Finished: false })
                         return;
-                    var manifest = JObject.Parse(File.ReadAllText(Path.Combine(s_Project, "Packages", "manifest.json")));
-                    if ((string)manifest["dependencies"]?[c_Framework] != s_Upgrade.Requested)
+                    if (requested != s_Upgrade.Requested)
                     {
                         EndSupersededUpgrade(time);
                         return;

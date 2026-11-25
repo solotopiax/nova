@@ -28,8 +28,7 @@ namespace NovaFramework.Editor
             /// <returns>有可用更新的 UpdateInfo 列表，网络失败时返回空列表。</returns>
             public static async Task<List<UpdateInfo>> CheckAsync()
             {
-                List<UpdateInfo> externalUpdates = await CheckExternalAsync();
-                List<UpdateInfo> internalUpdates = await CheckInternalAsync();
+                var (externalUpdates, internalUpdates) = await CheckRegistriesAsync();
                 return MergeAndSortUpdateInfos(externalUpdates, internalUpdates);
             }
 
@@ -44,8 +43,7 @@ namespace NovaFramework.Editor
                 SetAutomaticCheckState("querying", "正在查询可用更新；查询完成后仍需等待安全展示时机。");
                 try
                 {
-                    List<UpdateInfo> externalUpdates = await CheckExternalAsync();
-                    List<UpdateInfo> internalUpdates = await CheckInternalAsync();
+                    var (externalUpdates, internalUpdates) = await CheckRegistriesAsync();
                     if (s_AutomaticStopping) return;
                     if ((externalUpdates == null || externalUpdates.Count == 0) && (internalUpdates == null || internalUpdates.Count == 0))
                     {
@@ -98,27 +96,19 @@ namespace NovaFramework.Editor
                 SaveConfig(config);
             }
 
-            /// <summary>
-            /// 检查外网仓库更新。
-            /// </summary>
-            internal static async Task<List<UpdateInfo>> CheckExternalAsync()
+            /// <summary>使用同一份仓库配置并行比较两侧版本，保留各自的结果。</summary>
+            internal static Task<(List<UpdateInfo> External, List<UpdateInfo> Internal)> CheckRegistriesAsync()
             {
                 PlugPals.RegistriesConfig registries = PlugPals.LoadRegistries();
-                return await CheckRepoAsync(registries.externalUrl);
+                return CheckRegistriesAsync(registries.externalUrl, registries.internalUrl);
             }
 
-            /// <summary>
-            /// 检查内部云仓库更新。内部云地址未配置时跳过，返回空列表。
-            /// </summary>
-            internal static async Task<List<UpdateInfo>> CheckInternalAsync()
+            /// <summary>并行查询本轮选中的仓库，空地址直接得到空列表。</summary>
+            private static async Task<(List<UpdateInfo> External, List<UpdateInfo> Internal)> CheckRegistriesAsync(
+                string externalUrl, string internalUrl)
             {
-                PlugPals.RegistriesConfig registries = PlugPals.LoadRegistries();
-                if (string.IsNullOrEmpty(registries.internalUrl))
-                {
-                    return new List<UpdateInfo>();
-                }
-
-                return await CheckRepoAsync(registries.internalUrl);
+                var results = await Task.WhenAll(CheckRepoAsync(externalUrl), CheckRepoAsync(internalUrl));
+                return (results[0], results[1]);
             }
 
             /// <summary>

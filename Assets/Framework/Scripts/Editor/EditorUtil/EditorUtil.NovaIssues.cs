@@ -42,6 +42,7 @@ namespace NovaFramework.Editor
             private const string c_Server = "http://172.16.22.175:8787";
             private const string c_WorkDirectory = "Library/Nova/Issues";
             private const string c_CompilationDayKey = "Nova.Issues.CompilationDay";
+            private const string c_PendingReloadKey = "Nova.Issues.PendingObservations";
             private const string c_EnvironmentReportKey = "editor_environment_report";
             // 两个发送端均按服务确认的能力决定新报告的格式，已入队的正文固定不变。
             private const string c_CompactReportsKey = "compact_reports";
@@ -60,7 +61,6 @@ namespace NovaFramework.Editor
             private static readonly string s_Project = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             private static string s_FrameworkRoot;
             private static string s_FrameworkVersion;
-            private static string s_SdkAttempt;
             private static double s_NextSnapshot;
             private static int s_Sending;
 
@@ -78,11 +78,14 @@ namespace NovaFramework.Editor
                 CompilationPipeline.compilationFinished += OnCompilationFinished;
                 Application.logMessageReceived += ObservePreload;
                 EditorPlayEvidence.ModuleUsed += ObservePlayModule;
+                EditorPlayEvidence.TablesReady += ObserveTablesReady;
+                EditorPlayEvidence.ConfigLoadFinished += ObserveRuntimeConfig;
                 EditorPlayEvidence.ProcedureEntered += ObserveProcedureEntry;
                 EditorPlayEvidence.ProcedureFailed += ObserveProcedureFailure;
                 EditorApplication.playModeStateChanged += OnPlayModeChanged;
-                AssemblyReloadEvents.beforeAssemblyReload += EndPlayObservation;
-                EditorApplication.quitting += EndPlayObservation;
+                AssemblyReloadEvents.beforeAssemblyReload += BeforeObservationReload;
+                EditorApplication.quitting += FlushObservationsBeforeQuit;
+                RestoreObservationsAfterReload();
             }
 
             /// <summary>保存本次编译日期，重载脚本后仍可用已就绪的 Editor 生成环境快照。</summary>
@@ -99,6 +102,7 @@ namespace NovaFramework.Editor
                 double stamp = EditorApplication.timeSinceStartup;
                 PollStartupStage(stamp);
                 PollFrameworkUpgrade(stamp);
+                PollPlayerBuild(stamp);
                 if (s_FrameworkRoot != null)
                     PollEditorDiagnostics(stamp);
                 if (stamp < s_NextSnapshot || EditorApplication.isCompiling || EditorApplication.isUpdating)
@@ -170,8 +174,7 @@ namespace NovaFramework.Editor
                     ["packages"] = new JArray(registered),
                     ["tools"] = tools,
                     ["enabled"] = new JArray(),
-                    ["application_identifiers"] = CaptureApplicationIdentifiers(),
-                    ["sdk_attempt"] = s_SdkAttempt ?? string.Empty
+                    ["application_identifiers"] = CaptureApplicationIdentifiers()
                 };
                 if (Config.WorkspaceActive.TryGetPersistedConfigMaster(out master, out _, out _, out _))
                 {
@@ -202,28 +205,11 @@ namespace NovaFramework.Editor
             /// <summary>从已有预加载日志提取阶段事件，不保留完整日志。</summary>
             private static void ObservePreload(string message, string stackTrace, LogType type)
             {
-                if (!EditorApplication.isPlaying || message == null)
-                    return;
-                ObservePreloadStage(message, type);
-                if (s_FrameworkRoot == null)
-                    return;
-
-                if (message.Contains("[Procedure] Preload Step 4/8 — 初始化 SDK。"))
-                {
-                    ObserveRuntimeConfig();
-                    EndPreloadObservation();
-                    s_SdkAttempt = Guid.NewGuid().ToString("N");
-                    Observe("sdk-start", s_SdkAttempt);
-                }
-                else if (s_SdkAttempt != null && message.Contains("[Procedure] Preload Step 5/8 — 加载数据表。"))
-                {
-                    Observe("sdk-finished", s_SdkAttempt);
-                    ObserveImplementation("sdk-preload", "success", EditorUserBuildSettings.activeBuildTarget.ToString());
-                    s_SdkAttempt = null;
-                }
+                if (EditorApplication.isPlaying && message != null)
+                    ObservePreloadStage(message, type);
             }
 
-            /// <summary>离开 Play 时结束该次 SDK 等待观察。</summary>
+            /// <summary>进入 Play 时开启新会话，离开时结束仍在观察的启动阶段。</summary>
             private static void OnPlayModeChanged(PlayModeStateChange change)
             {
                 if (change == PlayModeStateChange.ExitingEditMode)
@@ -236,28 +222,58 @@ namespace NovaFramework.Editor
                     EndPlayObservation();
             }
 
+            /// <summary>结束本次 Play 的启动阶段观察。</summary>
             private static void EndPlayObservation()
             {
                 FinishStartupStage("cancelled");
                 s_PlayAttempt = null;
                 s_StartupSequence = 0;
-                EndPreloadObservation();
             }
 
-            /// <summary>记录已结束的预加载观察，避免跨 Play 会话判断。</summary>
-            private static void EndPreloadObservation()
+            /// <summary>在 Inspector 的原导出入口记录实际终态，空值表示缺少执行条件。</summary>
+            internal static bool RunManualExport(string module, string scope, Func<bool?> export)
             {
-                if (s_SdkAttempt == null)
+                string outcome = "failed";
+                try
+                {
+                    bool? succeeded = export();
+                    outcome = succeeded == null ? "blocked" : succeeded.Value ? "success" : "failed";
+                    return succeeded == true;
+                }
+                catch (OperationCanceledException)
+                {
+                    outcome = "cancelled";
+                    throw;
+                }
+                finally
+                {
+                    ObserveUsage(module, "editor." + module + ".export-" + scope, outcome);
+                }
+            }
+
+            /// <summary>将固定的编辑器操作和真实结果加入本地队列。</summary>
+            private static void ObserveUsage(string module, string operation, string outcome, string actionOperation = null)
+            {
+                if (Application.isBatchMode)
                     return;
-                Observe("sdk-ended", s_SdkAttempt);
-                s_SdkAttempt = null;
-            }
-
-            /// <summary>把编译和预加载阶段事件交给本地队列。</summary>
-            private static void Observe(string eventName, string id)
-            {
-                if (s_FrameworkRoot != null)
-                    Queue(new JObject { ["event"] = eventName, ["id"] = id });
+                try
+                {
+                    if (!BindFrameworkPackage())
+                        return;
+                    JObject data = Usage(module, operation, outcome, s_FrameworkVersion);
+                    var input = new JObject { ["event"] = "usage", ["usage"] = data };
+                    if (actionOperation != null)
+                    {
+                        data["entry"] = "action";
+                        data["action_operation"] = actionOperation;
+                        input["id"] = actionOperation;
+                    }
+                    Queue(input);
+                }
+                catch (Exception)
+                {
+                    // 反馈异常不改变编辑器操作的结果。
+                }
             }
 
             /// <summary>将有限的工作交给后台发送线程，确保 Unity 主线程可以继续。</summary>
@@ -271,6 +287,57 @@ namespace NovaFramework.Editor
                 input["observed_at"] ??= Now();
                 s_Pending.Enqueue(input);
                 StartDrain();
+            }
+
+            /// <summary>把尚未落盘的证据跨域重载保存，保留最初编号和发生时间。</summary>
+            private static void BeforeObservationReload()
+            {
+                EndPlayObservation();
+                JObject[] pending = s_Pending.ToArray();
+                if (pending.Length != 0)
+                    SessionState.SetString(c_PendingReloadKey,
+                        new JArray(pending.Select(item => item.DeepClone())).ToString(Formatting.None));
+            }
+
+            /// <summary>域恢复后重入等待队列，SQLite 按原编号去重。</summary>
+            private static void RestoreObservationsAfterReload()
+            {
+                string cached = SessionState.GetString(c_PendingReloadKey, string.Empty);
+                if (cached.Length == 0)
+                    return;
+                SessionState.EraseString(c_PendingReloadKey);
+                try
+                {
+                    foreach (var item in JArray.Parse(cached).OfType<JObject>())
+                        s_Pending.Enqueue(item);
+                    StartDrain();
+                }
+                catch (JsonException) { /* 无效的会话缓存不会阻止 Editor 启动。 */ }
+            }
+
+            /// <summary>正常退出时仅补写本地账本，不等待服务端或重试网络。</summary>
+            private static void FlushObservationsBeforeQuit()
+            {
+                EndPlayObservation();
+                JObject[] pending = s_Pending.ToArray();
+                if (pending.Length == 0)
+                    return;
+                try
+                {
+                    var storage = LedgerPath();
+                    if (storage.Path == null)
+                        return;
+                    using var db = new SQLiteConnection(storage.Path, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+                    db.BusyTimeout = TimeSpan.FromMilliseconds(250);
+                    InitializeLedger(db);
+                    foreach (var item in pending)
+                    {
+                        // 快照需要后台工具探测，退出时只补写已有确切终态的事件。
+                        if ((string)item["event"] != "snapshot")
+                            db.RunInTransaction(() => Record(db, (JObject)item.DeepClone()));
+                    }
+                }
+                catch (Exception) { /* 退出不会等待争用的账本。 */ }
             }
 
             /// <summary>在后台串行落盘后发送，失败的待发记录留在本地。</summary>
@@ -297,8 +364,10 @@ namespace NovaFramework.Editor
                         using var db = new SQLiteConnection(storage.Path, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
                         InitializeLedger(db);
                         PruneDeliveredReports(db);
-                        while (s_Pending.TryPeek(out JObject input))
+                        while (s_Pending.TryPeek(out JObject pending))
                         {
+                            // 工作线程只编辑副本，重载回执可以同时读取原始证据。
+                            var input = (JObject)pending.DeepClone();
                             if ((string)input["event"] == "snapshot")
                             {
                                 input["codex_hooks"] = ObserveCodexHookStatus(s_Project, Path.GetDirectoryName(storage.Path),
@@ -456,7 +525,6 @@ namespace NovaFramework.Editor
 
                 long stamp = (long)input["observed_at"];
                 if (RawState(db, "enrolled_at") == null) SaveState(db, "enrolled_at", new JValue(stamp));
-                string framework = (string)input["framework"];
                 string id = (string)input["id"];
                 switch ((string)input["event"])
                 {
@@ -471,20 +539,13 @@ namespace NovaFramework.Editor
                         RecordSnapshot(db, input, workspace, (string)project["id"], stamp);
                         RecordImplementation(db, input["implementation"] as JObject, workspace, id, stamp);
                         break;
-                    case "sdk-start":
-                        SaveState(db, "sdk", new JObject { ["id"] = id, ["started"] = stamp, ["framework"] = framework });
-                        break;
-                    case "sdk-finished":
-                        AppendReport(db, workspace, EventId("sdk-finished", id), stamp, "usage",
-                            Usage("sdk", "editor.preload.sdk", "success", framework));
-                        goto case "sdk-ended";
-                    case "sdk-ended":
-                        if ((string)ReadState(db, "sdk")?["id"] == id) SaveState(db, "sdk", new JObject());
+                    case "usage":
+                        AppendReport(db, workspace, id, stamp, "usage", (JObject)input["usage"].DeepClone());
                         break;
                 }
             }
 
-            /// <summary>保存实际注册包快照，随后核对同一 Play 会话中持续等待的 SDK 步骤。</summary>
+            /// <summary>保存实际注册包和工具快照，采集该工作区的操作回执。</summary>
             private static void RecordSnapshot(SQLiteConnection db, JObject input, string workspace, string projectId, long stamp)
             {
                 var data = new JObject();
@@ -495,19 +556,25 @@ namespace NovaFramework.Editor
                 }
                 string gitName = (string)input["git_user_name"];
                 if (gitName != null) data["git_user_name"] = gitName;
-                var source = new JObject { ["at"] = stamp, ["sdk_attempt"] = input["sdk_attempt"].DeepClone() };
+                var source = new JObject { ["at"] = stamp };
                 foreach (var field in data.Properties()) source[field.Name] = field.Value.DeepClone();
                 SaveState(db, "editor", source);
                 SaveState(db, "editor_source", input["framework_root"]);
                 long codexSeen = ReadState(db, "codex_seen")?.Value<long>() ?? 0;
                 data["coverage"] = new JObject { ["agent"] = "observed", ["editor"] = "observed", ["codex"] = stamp - codexSeen < 1800 ? "observed" : "waiting" };
 
-                // 按基础信息和本地自然日去重，工具状态变化仍保留在本地观察记录中。
+                // 与脚本入口共用字段顺序，忽略清单顺序和临时观察状态。
                 JObject previous = ReadState(db, c_EnvironmentReportKey) as JObject;
                 var identifiers = (JObject)data["application_identifiers"];
                 string appSignature = string.Join("|", identifiers.Properties().OrderBy(field => field.Name, StringComparer.Ordinal)
                     .Select(field => field.Name + "=" + (string)field.Value));
-                string[] signatureParts = { projectId, (string)data["framework"], (string)data["unity"], appSignature, (string)data["codex_hooks"] };
+                string packageSignature = string.Join("\n", data["packages"].OrderBy(p => (string)p["id"], StringComparer.Ordinal)
+                    .Select(p => $"{p["id"]}|{p["version"]}|{p["source"]}"));
+                string enabledSignature = string.Join("\n", data["enabled"].Values<string>().Distinct().OrderBy(id => id, StringComparer.Ordinal));
+                string toolSignature = string.Join("\n", ((JObject)data["tools"]).Properties().OrderBy(p => p.Name, StringComparer.Ordinal)
+                    .Select(p => $"{p.Name}|{p.Value["state"]}|{(string)p.Value["version"] ?? "unknown"}"));
+                string[] signatureParts = { projectId, (string)data["framework"], (string)data["unity"], appSignature,
+                    (string)data["codex_hooks"], packageSignature, enabledSignature, toolSignature };
                 if (gitName != null) signatureParts = signatureParts.Append(gitName).ToArray();
                 string signature = EventId(signatureParts);
                 string day = LocalDay(stamp);
@@ -517,58 +584,17 @@ namespace NovaFramework.Editor
                     AppendReport(db, workspace, (string)input["id"], stamp, "snapshot", data);
                     SaveState(db, c_EnvironmentReportKey, new JObject { ["hash"] = signature, ["day"] = day });
                 }
-                RecordActionReceipts(db, workspace, (string)input["framework"], stamp);
-                JObject sdk = ReadState(db, "sdk") as JObject;
-                string id = (string)sdk?["id"];
-                string framework = (string)sdk?["framework"];
-                if (id == null || id != (string)input["sdk_attempt"] || framework == "unknown" ||
-                    (bool?)sdk["reported"] == true || stamp - sdk["started"].Value<long>() < 60) return;
-
-                AppendReport(db, workspace, EventId("sdk-preload", id), stamp, "issue", new JObject
-                {
-                    ["code"] = "editor-sdk-preload-exceeds-60-seconds", ["area"] = "sdk",
-                    ["title"] = "Editor 内 SDK 预加载等待超过 60 秒",
-                    ["summary"] = "本地 Agent 观察到 Nova 预加载进入 SDK 步骤后，同一 Play 会话中的 Editor 仍响应，但步骤持续未完成。",
-                    ["expected"] = "SDK 初始化应得到终态，之后继续执行后续预加载。",
-                    ["actual"] = "同一 SDK 步骤在两个相隔至少 60 秒的 Editor 观察点仍处于等待。",
-                    ["framework"] = framework, ["source"] = "editor",
-                    ["evidence"] = new JArray(
-                        new JObject { ["source"] = "editor.preload", ["detail"] = "已观察到 Nova 预加载开始 SDK 步骤。" },
-                        new JObject { ["source"] = "editor.snapshot", ["detail"] = "60 秒后仍观察到同一个 SDK 步骤。" })
-                });
-                sdk["reported"] = true;
-                SaveState(db, "sdk", sdk);
             }
 
-            /// <summary>从已有 Nova Project Action 回执记录 Editor 用量，与本地 Python Agent 的回执补发复用同一编号。</summary>
-            private static void RecordActionReceipts(SQLiteConnection db, string workspace, string framework, long now)
+            /// <summary>在 Execute 结束时采集，避免随后验证覆盖执行时间或结果。</summary>
+            internal static void ObserveActionExecution(string action, string operation, string outcome)
             {
-                string directory = Path.Combine(s_Project, "Library/Nova/AgentActions/Operations");
-                if (!Directory.Exists(directory)) return;
-                long earliest = Math.Max(now - 600, ReadState(db, "enrolled_at")?.Value<long>() ?? now);
-                foreach (string path in Directory.EnumerateFiles(directory, "*.json"))
-                {
-                    try
-                    {
-                        var info = new FileInfo(path);
-                        long stamp = new DateTimeOffset(info.LastWriteTimeUtc).ToUnixTimeSeconds();
-                        if (stamp < earliest || info.Length > 256 * 1024 || IsLink(path)) continue;
-                        JObject item = JObject.Parse(File.ReadAllText(path));
-                        string action = (string)item["ActionId"];
-                        string operation = (string)item["OperationId"];
-                        string outcome = (string)item["OutcomeStatus"];
-                        if ((string)item["Status"] is not ("executed" or "verified") || !IsKey(operation) || !IsKey(action) ||
-                            !action.StartsWith("nova.project.", StringComparison.Ordinal) ||
-                            outcome is not ("success" or "partial" or "blocked" or "failed" or "cancelled")) continue;
-                        if (DateTimeOffset.TryParse((string)item["UpdatedAtUtc"], CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var updated))
-                            stamp = updated.ToUnixTimeSeconds();
-                        JObject usage = Usage(action.Split('.')[2], action, outcome, framework);
-                        usage["entry"] = "action";
-                        AppendReport(db, workspace, EventId("action", action, operation), stamp, "usage", usage);
-                    }
-                    catch (IOException) { }
-                    catch (JsonException) { }
-                }
+                if (!IsKey(operation) || !IsKey(action) || !action.StartsWith("nova.project.", StringComparison.Ordinal) ||
+                    outcome is not ("success" or "partial" or "blocked" or "failed" or "cancelled"))
+                    return;
+                string[] parts = action.Split('.');
+                if (parts.Length >= 4)
+                    ObserveUsage(parts[2], action, outcome, EventId("action", action, operation));
             }
 
             /// <summary>写入固定上报信封；旧版服务需要的必填字段仅在兼容格式中保留。</summary>
@@ -611,10 +637,20 @@ namespace NovaFramework.Editor
                      OR (json_extract(payload,'$.kind')='snapshot'
                          AND EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.packages') AS package
                                      WHERE json_type(package.value,'$.evidence') IS NULL))) AS RequiresCompactReports,
-                    json_extract(payload,'$.data.stage') IN ('editor-module','startup-stage','framework-upgrade') AS HasExecutionEvidence
+                    json_extract(payload,'$.data.stage') IN ('editor-module','startup-stage','framework-upgrade') AS HasExecutionEvidence,
+                    (json_type(payload,'$.data.action_operation') IS NOT NULL
+                     OR json_extract(payload,'$.data.stage') IN ('pipify-step','table-ready')
+                     OR (json_extract(payload,'$.data.stage')='editor-module'
+                         AND json_extract(payload,'$.data.step') IN ('localization','ui','network'))
+                     OR (json_extract(payload,'$.data.stage')='pipify-batch'
+                         AND json_type(payload,'$.data.attempt') IS NOT NULL)) AS NeedsFeedbackTimings
                     FROM outbox
                     WHERE accepted IS NULL AND ready_at<=? AND json_extract(payload,'$.kind')!='task'
-                    AND COALESCE(json_extract(payload,'$.data.stage'),'')!='sdk-device'
+                    AND COALESCE(json_extract(payload,'$.data.stage'),'') NOT IN ('sdk-device','sdk-preload')
+                    AND NOT (COALESCE(json_extract(payload,'$.data.stage'),'')='startup-stage'
+                             AND COALESCE(json_extract(payload,'$.data.step'),'')='sdk')
+                    AND COALESCE(json_extract(payload,'$.data.operation'),'')!='editor.preload.sdk'
+                    AND COALESCE(json_extract(payload,'$.data.code'),'')!='editor-sdk-preload-exceeds-60-seconds'
                     AND (COALESCE(json_extract(payload,'$.data.source'),'')!='codex'
                          OR COALESCE(json_extract(payload,'$.data.code'),'') NOT GLOB 'missing-nova-route.*'
                          OR EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.evidence') AS evidence
@@ -633,6 +669,7 @@ namespace NovaFramework.Editor
                     bool needsUpgrade = (report.Kind == "hook_activity" && (bool?)health?["hook_activity"] != true) ||
                         (report.Kind == "implementation" && (bool?)health?["implementation_tracking"] != true) ||
                         (report.HasExecutionEvidence != 0 && (bool?)health?["execution_evidence"] != true) ||
+                        (report.NeedsFeedbackTimings != 0 && (bool?)health?["feedback_timings"] != true) ||
                         (report.Kind == "usage" && report.HasSource != 0 && (bool?)health?["codex_telemetry"] != true) ||
                         (report.HasProjectDetails != 0 && (bool?)health?["project_snapshot_details"] != true) ||
                         (report.HasGitUserName != 0 && (bool?)health?["git_user_name_reporting"] != true) ||
@@ -682,10 +719,11 @@ namespace NovaFramework.Editor
                 public int HasProjectDetails { get; set; }
                 public int HasGitUserName { get; set; }
                 public int HasExecutionEvidence { get; set; }
+                public int NeedsFeedbackTimings { get; set; }
                 public int RequiresCompactReports { get; set; }
             }
 
-            /// <summary>生成由 Editor 观察的用量记录；Action 回执由调用方另写入口，SDK 预加载由维护台按操作标识识别。</summary>
+            /// <summary>生成带实际操作标识和结果的 Editor 用量记录。</summary>
             private static JObject Usage(string module, string operation, string outcome, string framework) =>
                 new() { ["module"] = module, ["operation"] = operation, ["outcome"] = outcome, ["framework"] = framework, ["source"] = "editor" };
 

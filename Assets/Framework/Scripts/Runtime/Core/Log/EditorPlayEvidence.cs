@@ -12,30 +12,73 @@ using UnityEngine;
 
 namespace NovaFramework.Runtime
 {
+    [Flags]
     internal enum EditorPlayModule
     {
         Asset = 1,
         Procedure = 2,
-        Table = 4
+        Table = 4,
+        Localization = 8,
+        UI = 16,
+        Network = 32
     }
 
     /// <summary>只在 Play 中通知编辑器。模块使用在同一次 Play 中只通知一次。</summary>
     internal static class EditorPlayEvidence
     {
         private static EditorPlayModule s_Used;
+        private static bool s_TablesReady;
         internal static event Action<EditorPlayModule> ModuleUsed;
+        internal static event Action<string, PlatformType, ChannelType, DevelopMode?> ConfigLoadFinished;
+        internal static event Action TablesReady;
         internal static event Action<string> ProcedureEntered;
         internal static event Action<string> ProcedureFailed;
 
-        internal static void ResetModules() => s_Used = 0;
+        /// <summary>每次进入 Play 重新观察，兼容禁用域重载的项目。</summary>
+        internal static void ResetModules()
+        {
+            s_Used = 0;
+            s_TablesReady = false;
+        }
 
+        /// <summary>每次 Play 只通知指定模块的首次成功使用。</summary>
         internal static void Use(EditorPlayModule module)
         {
-            if ((s_Used & module) != 0 || !Application.isPlaying)
-                return;
-            s_Used |= module;
-            try { ModuleUsed?.Invoke(module); }
+            try
+            {
+                if ((s_Used & module) != 0 || ModuleUsed == null || !Application.isPlaying)
+                    return;
+                s_Used |= module;
+                ModuleUsed.Invoke(module);
+            }
             catch (Exception) { /* 观察不参与运行结果。 */ }
+        }
+
+        /// <summary>已注册真实表数据，独立于业务取表次数。</summary>
+        internal static void RegisterTableEvidence()
+        {
+            try
+            {
+                if (s_TablesReady || TablesReady == null || !Application.isPlaying)
+                    return;
+                s_TablesReady = true;
+                TablesReady.Invoke();
+            }
+            catch (Exception) { /* 观察不参与表注册结果。 */ }
+        }
+
+        /// <summary>在实际加载结算时通知 Editor，仅复制可公开的配置坐标。</summary>
+        internal static void FinishConfigLoad(ConfigRuntimeSO config, Exception failure)
+        {
+            try
+            {
+                if (!Application.isPlaying)
+                    return;
+                string outcome = failure == null ? "success" : failure is OperationCanceledException ? "cancelled" : "failed";
+                ConfigLoadFinished?.Invoke(outcome, config?.Platform ?? PlatformType.None,
+                    config?.Channel ?? ChannelType.None, config?.DevelopMode);
+            }
+            catch (Exception) { /* 观察不参与配置加载结果。 */ }
         }
 
         internal static void Enter(ProcedureBase procedure)

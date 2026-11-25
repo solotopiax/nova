@@ -64,6 +64,11 @@ namespace NovaFramework.Runtime
                 if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在打开钩子期间已结束请求。");
                 uiGroup.Refresh();
                 if (mayContinue != null && !mayContinue()) throw new OperationCanceledException("页面在分组刷新期间已结束请求。");
+#if UNITY_EDITOR
+                if (m_UIViewIndex.TryGetValue(serialID, out var opened) && ReferenceEquals(uiView, opened) &&
+                    (uiView is not UIView observed || observed.InitializationException == null))
+                    EditorPlayEvidence.Use(EditorPlayModule.UI);
+#endif
             }
             catch (Exception exception)
             {

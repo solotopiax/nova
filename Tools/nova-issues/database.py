@@ -10,7 +10,7 @@ import secrets
 import sqlite3
 import time
 
-from protocol import VERSION
+from protocol import RETIRED_SDK_ISSUE, VERSION, retired_sdk_feedback
 
 
 # 维护台按两种状态读取历史记录，旧版上报和项目查询继续使用原有字段。
@@ -19,11 +19,11 @@ FRAMEWORK_PACKAGE = "com.solotopia.nova.framework"
 ISSUE_PACKAGE_LOCATION = re.compile(rf"Packages/({re.escape(FRAMEWORK_PACKAGE)}(?:\.[a-z0-9_.-]+)?)/[^\r\n]+")
 ISSUE_PACKAGE_VERSION = re.compile(r"包版本 ([a-zA-Z0-9.+-]+)。")
 ISSUE_LATEST_PAYLOAD = """(
-    SELECT r.payload FROM reports r WHERE r.issue_id=i.id AND r.kind='issue'
+    SELECT r.payload FROM current_reports r WHERE r.issue_id=i.id AND r.kind='issue'
     ORDER BY r.observed_at DESC,r.received_at DESC,r.rowid DESC LIMIT 1
 )"""
 
-SCHEMA = """
+SCHEMA = f"""
 CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, team TEXT NOT NULL, token_hash TEXT NOT NULL,
     created_at INTEGER NOT NULL, last_seen INTEGER
@@ -39,6 +39,10 @@ CREATE TABLE IF NOT EXISTS issues (
     duplicate_of INTEGER REFERENCES issues(id), revision INTEGER NOT NULL DEFAULT 1,
     first_seen INTEGER NOT NULL, last_seen INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS issue_sequence (
+    singleton INTEGER PRIMARY KEY CHECK (singleton=1), last_id INTEGER NOT NULL
+);
+INSERT OR IGNORE INTO issue_sequence SELECT 1, COALESCE(MAX(id),0) FROM issues;
 CREATE TABLE IF NOT EXISTS reports (
     project_id TEXT NOT NULL REFERENCES projects(id), id TEXT NOT NULL, workspace TEXT NOT NULL,
     kind TEXT NOT NULL, digest TEXT NOT NULL, payload TEXT NOT NULL, observed_at INTEGER NOT NULL,
@@ -49,6 +53,28 @@ CREATE INDEX IF NOT EXISTS reports_project_kind_time ON reports(project_id, kind
 CREATE INDEX IF NOT EXISTS reports_kind_time ON reports(kind, received_at DESC);
 CREATE INDEX IF NOT EXISTS reports_kind_observed ON reports(kind, observed_at DESC);
 CREATE INDEX IF NOT EXISTS reports_issue ON reports(issue_id, received_at DESC);
+-- 历史 SDK 运行记录留在原表，维护台只读取当前支持的证据。
+CREATE VIEW IF NOT EXISTS current_reports AS
+SELECT rowid, * FROM reports WHERE CASE kind
+    WHEN 'usage' THEN COALESCE(json_extract(payload,'$.operation'),'')!='editor.preload.sdk'
+    WHEN 'issue' THEN COALESCE(json_extract(payload,'$.code'),'')!='{RETIRED_SDK_ISSUE}'
+    WHEN 'implementation' THEN COALESCE(json_extract(payload,'$.stage'),'') NOT IN ('sdk-device','sdk-preload')
+        AND NOT (COALESCE(json_extract(payload,'$.stage'),'')='startup-stage'
+                 AND COALESCE(json_extract(payload,'$.step'),'')='sdk')
+    ELSE 1 END;
+-- Codex 与 Editor 观察到同一操作时只展示一条，结果和发生时间采用实际执行者的记录。
+CREATE VIEW IF NOT EXISTS current_usage AS
+SELECT rowid,project_id,workspace,observed_at,received_at,
+       CASE WHEN codex_seen=1 THEN json_set(payload,'$.source','codex','$.entry','action') ELSE payload END AS payload
+FROM (
+    SELECT *, MAX(CASE WHEN json_extract(payload,'$.source')='codex'
+                           AND json_type(payload,'$.action_operation') IS NOT NULL THEN 1 ELSE 0 END)
+                  OVER operation AS codex_seen,
+           ROW_NUMBER() OVER (operation ORDER BY (json_extract(payload,'$.source') IS 'editor') DESC,
+                                 observed_at,received_at,rowid) AS n
+    FROM current_reports WHERE kind='usage'
+    WINDOW operation AS (PARTITION BY project_id,workspace,COALESCE(json_extract(payload,'$.action_operation'),id))
+) WHERE n=1;
 CREATE TABLE IF NOT EXISTS history (
     id INTEGER PRIMARY KEY, issue_id INTEGER NOT NULL REFERENCES issues(id),
     actor TEXT NOT NULL, status TEXT NOT NULL, note TEXT NOT NULL, created_at INTEGER NOT NULL
@@ -177,6 +203,24 @@ class Database:
                 return None
             raise Conflict("团队已被更新，请重新打开后再修改。")
 
+    def delete_project(self, project_id):
+        """删除项目及其上报，按剩余发生记录更新共享问题。"""
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            affected = db.execute("SELECT DISTINCT issue_id FROM reports WHERE project_id=? AND issue_id IS NOT NULL",
+                                  (project_id,)).fetchall()
+            db.execute("DELETE FROM reports WHERE project_id=?", (project_id,))
+            db.execute("DELETE FROM automatic_workspaces WHERE project_id=?", (project_id,))
+            deleted = db.execute("DELETE FROM projects WHERE id=?", (project_id,)).rowcount
+            for (issue_id,) in affected:
+                first, last = db.execute("SELECT MIN(observed_at), MAX(observed_at) FROM reports WHERE issue_id=?",
+                                         (issue_id,)).fetchone()
+                if first is None:
+                    self._delete_issue_records(db, issue_id)
+                else:
+                    db.execute("UPDATE issues SET first_seen=?,last_seen=? WHERE id=?", (first, last, issue_id))
+            return bool(deleted)
+
     def authorize_project(self, project_id, token):
         with self.connect() as db:
             row = db.execute("SELECT token_hash FROM projects WHERE id=?", (project_id,)).fetchone()
@@ -234,6 +278,8 @@ class Database:
                     raise PermissionError()
             else:
                 self.authorize_workspace(db, project_id, event["workspace"], token, automatic_name, allow_registration)
+            if retired_sdk_feedback(event["kind"], event["data"]):
+                return (False, None, stamp)
             existing = db.execute("SELECT digest, issue_id, received_at FROM reports WHERE project_id=? AND id=?",
                                   (project_id, event["id"])).fetchone()
             if existing is not None:
@@ -255,9 +301,11 @@ class Database:
         fingerprint = digest(encoded([item["area"], item["code"]]))
         row = db.execute("SELECT id, duplicate_of FROM issues WHERE fingerprint=?", (fingerprint,)).fetchone()
         if row is None:
+            # 已删除的问题编号不能重新指向不同的问题。旧数据库从当前最大编号继续分配。
+            db.execute("UPDATE issue_sequence SET last_id=MAX(last_id,(SELECT COALESCE(MAX(id),0) FROM issues))+1")
             result = db.execute(
-                """INSERT INTO issues (fingerprint, code, area, title, priority, first_seen, last_seen)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                """INSERT INTO issues (id, fingerprint, code, area, title, priority, first_seen, last_seen)
+                   VALUES ((SELECT last_id FROM issue_sequence), ?, ?, ?, ?, ?, ?, ?)""",
                 (fingerprint, item["code"], item["area"], item["title"], item.get("priority", "P2"), timestamp, timestamp))
             return result.lastrowid
         issue_id = row["duplicate_of"] or row["id"]
@@ -301,7 +349,7 @@ class Database:
                 """)
             usage_modules = db.execute("""
                 SELECT DISTINCT json_extract(payload,'$.module') AS module
-                FROM reports WHERE kind='usage' AND observed_at>=? ORDER BY module
+                FROM current_usage WHERE observed_at>=? ORDER BY module
                 """, (since,))
             codex_activity = db.execute("""
                 SELECT project_id, COUNT(*) AS turns, COUNT(DISTINCT workspace) AS workspaces,
@@ -314,21 +362,20 @@ class Database:
                        COUNT(CASE WHEN json_extract(payload,'$.entry')='skill' THEN 1 END) AS skill_turns,
                        COUNT(CASE WHEN json_extract(payload,'$.outcome') IN ('failed','blocked') THEN 1 END) AS problems,
                        MAX(observed_at) AS last_used
-                FROM reports WHERE kind='usage' AND observed_at>=? AND json_extract(payload,'$.source')='codex'
+                FROM current_usage WHERE observed_at>=? AND json_extract(payload,'$.source')='codex'
                 GROUP BY project_id,module ORDER BY calls DESC,skill_turns DESC,module,project_id
                 """, (since,))
             issue_counts = db.execute(f"""
                 SELECT COUNT(CASE WHEN status='open' THEN 1 END) AS active,
                        COUNT(CASE WHEN status='closed' THEN 1 END) AS handled
-                FROM (SELECT {MAINTAINER_ISSUE_STATUS} AS status FROM issues)
-                """).fetchone()
+                FROM (SELECT {MAINTAINER_ISSUE_STATUS} AS status FROM issues WHERE code!=?)
+                """, (RETIRED_SDK_ISSUE,)).fetchone()
             activity_totals = db.execute("""
                 WITH counts AS (
                     SELECT project_id, MIN(rowid) AS first_report,
                            COUNT(CASE WHEN kind='issue' THEN 1 END) AS issues,
-                           COUNT(CASE WHEN kind IN ('snapshot', 'hook_activity') THEN 1 END) AS project_reports,
-                           COUNT(CASE WHEN kind='usage' THEN 1 END) AS usage
-                    FROM reports GROUP BY project_id
+                           COUNT(CASE WHEN kind IN ('snapshot', 'hook_activity') THEN 1 END) AS project_reports
+                    FROM current_reports GROUP BY project_id
                 )
                 -- 首次环境或钩子上报同时自动登记项目时，项目栏目只计一次。
                 SELECT COALESCE(SUM(c.issues), 0) AS issues,
@@ -336,7 +383,7 @@ class Database:
                            WHEN r.kind IN ('snapshot', 'hook_activity') AND EXISTS (
                                SELECT 1 FROM automatic_workspaces WHERE project_id=p.id
                            ) THEN 1 END) AS projects,
-                       COALESCE(SUM(c.usage), 0) AS usage
+                       (SELECT COUNT(*) FROM current_usage) AS usage
                 FROM projects p LEFT JOIN counts c ON c.project_id=p.id
                 LEFT JOIN reports r ON r.rowid=c.first_report
                 """).fetchone()
@@ -367,15 +414,15 @@ class Database:
                        json_extract(payload,'$.framework') AS framework,
                        json_extract(payload,'$.source') AS recorded_source,
                        json_extract(payload,'$.entry') AS recorded_entry, observed_at
-                FROM reports WHERE kind='usage' AND observed_at>=:since
+                FROM current_usage WHERE observed_at>=:since
                   AND (:project='' OR project_id=:project)
                   AND (:module='' OR json_extract(payload,'$.module')=:module)
             ), editor_entries AS (
-                -- 旧版 Editor 回执和 SDK 预加载有固定格式，原报告保持原样。
+                -- Editor 操作沿用原有上报格式，维护台按稳定操作标识显示实际入口。
                 SELECT *, CASE
                     WHEN recorded_entry IS NOT NULL OR COALESCE(recorded_source,'editor')!='editor' THEN NULL
                     WHEN operation GLOB ('nova.project.' || module || '.?*') AND outcome!='executed' THEN 'action'
-                    WHEN module='sdk' AND operation='editor.preload.sdk' AND outcome='success' THEN 'preload'
+                    WHEN recorded_source='editor' AND operation GLOB ('editor.' || module || '.export-*') THEN 'inspector'
                 END AS editor_entry FROM recorded
             ), classified AS (
                 SELECT project_id,module,operation,outcome,framework,observed_at,
@@ -399,10 +446,10 @@ class Database:
     @staticmethod
     def issue_rows(db, project_id="", status="", search="", sort=""):
         """按项目的发生记录筛选问题，再统计匹配问题的全部发生次数。"""
-        conditions = []
-        values = []
+        conditions = ["i.code!=?"]
+        values = [RETIRED_SDK_ISSUE]
         if project_id:
-            conditions.append("i.id IN (SELECT issue_id FROM reports WHERE project_id=? AND kind='issue')")
+            conditions.append("i.id IN (SELECT issue_id FROM current_reports WHERE project_id=? AND kind='issue')")
             values.append(project_id)
         if status:
             conditions.append(f"({MAINTAINER_ISSUE_STATUS})=?")
@@ -419,7 +466,7 @@ class Database:
                    i.first_seen,i.last_seen,i.duplicate_of,
                    COUNT(r.id) AS occurrences, COUNT(DISTINCT r.project_id) AS projects,
                    {ISSUE_LATEST_PAYLOAD} AS latest_payload
-            FROM issues i LEFT JOIN reports r ON r.issue_id=i.id {where}
+            FROM issues i LEFT JOIN current_reports r ON r.issue_id=i.id {where}
             GROUP BY i.id
             ORDER BY {order}, i.id DESC LIMIT 500
             """, values)
@@ -430,10 +477,10 @@ class Database:
         with self.connect() as db:
             rows = db.execute("""
                 SELECT DISTINCT p.id,p.name FROM issues i
-                LEFT JOIN reports r ON r.issue_id=i.id
+                LEFT JOIN current_reports r ON r.issue_id=i.id
                 LEFT JOIN projects p ON p.id=r.project_id
-                WHERE i.id=? ORDER BY p.name COLLATE NOCASE,p.id
-                """, (issue_id,)).fetchall()
+                WHERE i.id=? AND i.code!=? ORDER BY p.name COLLATE NOCASE,p.id
+                """, (issue_id, RETIRED_SDK_ISSUE)).fetchall()
             return {"projects": [dict(row) for row in rows if row["id"] is not None]} if rows else None
 
     @staticmethod
@@ -487,15 +534,14 @@ class Database:
                 WITH facts AS (
                     SELECT rowid,workspace,observed_at,received_at,payload,
                            json_extract(payload,'$.stage') AS stage
-                    FROM reports WHERE project_id=? AND kind='implementation'
-                      AND json_extract(payload,'$.stage')!='sdk-device'
+                    FROM current_reports WHERE project_id=? AND kind='implementation'
                 ), ranked AS (
                     SELECT *, ROW_NUMBER() OVER (
                         PARTITION BY workspace,stage,
                            CASE WHEN stage NOT IN ('workspace','framework-upgrade') THEN json_extract(payload,'$.framework') END,
                            CASE WHEN stage!='workspace' THEN json_extract(payload,'$.unity') END,
                            CASE WHEN stage IN ('config-export','config-load','pipify-batch','plugpals-query',
-                               'bundle-build','player-build','sdk-preload') THEN json_extract(payload,'$.platform') END,
+                               'bundle-build','player-build','pipify-step') THEN json_extract(payload,'$.platform') END,
                            CASE WHEN stage!='workspace' THEN json_extract(payload,'$.channel') END,
                            CASE WHEN stage!='workspace' THEN json_extract(payload,'$.mode') END,
                            CASE WHEN stage IN ('plugpals-query','editor-module','startup-stage','framework-upgrade')
@@ -516,9 +562,9 @@ class Database:
                     SELECT rowid,workspace,observed_at,received_at,payload,
                            json_extract(payload,'$.stage') AS stage,
                            json_extract(payload,'$.outcome')='success' AS succeeded
-                    FROM reports WHERE project_id=? AND kind='implementation'
+                    FROM current_reports WHERE project_id=? AND kind='implementation'
                       AND json_extract(payload,'$.stage') IN ('config-export','config-load','pipify-batch',
-                          'plugpals-query','bundle-build','player-build','sdk-preload','editor-module')
+                          'plugpals-query','bundle-build','player-build','editor-module','table-ready')
                 )
                 SELECT workspace,observed_at,received_at,payload FROM (
                     SELECT *, ROW_NUMBER() OVER (
@@ -534,19 +580,24 @@ class Database:
                 WITH events AS (
                     SELECT workspace,observed_at,json_extract(payload,'$.framework') AS framework,
                            json_extract(payload,'$.module') AS module,json_extract(payload,'$.outcome') AS outcome,
-                           0 AS play_session
-                    FROM reports WHERE project_id=:project AND kind='usage'
+                           0 AS play_session,
+                           CASE WHEN json_extract(payload,'$.source')='editor'
+                                AND json_extract(payload,'$.operation')
+                                    GLOB ('editor.' || json_extract(payload,'$.module') || '.export-*')
+                                THEN 1 ELSE 0 END AS manual_export
+                    FROM current_usage WHERE project_id=:project
                       AND COALESCE(json_extract(payload,'$.entry'),'')!='skill'
                     UNION ALL
                     SELECT workspace,observed_at,json_extract(payload,'$.framework'),
-                           json_extract(payload,'$.step'),'success',1
-                    FROM reports WHERE project_id=:project AND kind='implementation'
+                           json_extract(payload,'$.step'),'success',1,0
+                    FROM current_reports WHERE project_id=:project AND kind='implementation'
                       AND json_extract(payload,'$.stage')='editor-module'
                 ), recent AS (
                     SELECT workspace,framework,module,SUM(1-play_session) AS count,SUM(play_session) AS play_sessions,
                            MAX(observed_at) AS last_use,
                            MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
-                           SUM(CASE WHEN outcome IN ('failed','blocked') THEN 1 ELSE 0 END) AS problems
+                           SUM(CASE WHEN outcome IN ('failed','blocked') THEN 1 ELSE 0 END) AS problems,
+                           SUM(manual_export) AS manual_exports
                     FROM events WHERE observed_at>=:since
                     GROUP BY workspace,framework,module ORDER BY last_use DESC LIMIT 500
                 )
@@ -557,7 +608,8 @@ class Database:
                        SUM(CASE WHEN observed_at>=:since THEN play_session ELSE 0 END),
                        MAX(observed_at) AS last_use,
                        MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
-                       SUM(CASE WHEN observed_at>=:since AND outcome IN ('failed','blocked') THEN 1 ELSE 0 END)
+                       SUM(CASE WHEN observed_at>=:since AND outcome IN ('failed','blocked') THEN 1 ELSE 0 END),
+                       SUM(CASE WHEN observed_at>=:since THEN manual_export ELSE 0 END)
                 FROM events GROUP BY module
                 """, {"project": project_id, "since": now() - 30 * 86400})))
             upgrade_issues = db.execute("""
@@ -592,13 +644,13 @@ class Database:
             issue = db.execute(f"""
                 SELECT id,area,title,{MAINTAINER_ISSUE_STATUS} AS status,assignee,duplicate_of,
                        revision,first_seen,last_seen,{ISSUE_LATEST_PAYLOAD} AS latest_payload
-                FROM issues i WHERE id=?
-                """, (issue_id,)).fetchone()
+                FROM issues i WHERE id=? AND code!=?
+                """, (issue_id, RETIRED_SDK_ISSUE)).fetchone()
             if issue is None:
                 return None
             reports = db.execute("""
                 SELECT r.project_id, p.name, r.workspace, r.observed_at, r.received_at, r.payload
-                FROM reports r JOIN projects p ON p.id=r.project_id WHERE r.issue_id=?
+                FROM current_reports r JOIN projects p ON p.id=r.project_id WHERE r.issue_id=?
                 ORDER BY r.received_at DESC, r.rowid DESC LIMIT 200
                 """, (issue_id,))
             history = db.execute(f"""
@@ -616,9 +668,27 @@ class Database:
             row = db.execute("""
                 SELECT i.id,target.status,target.fixed_version,i.duplicate_of
                 FROM issues i JOIN issues target ON target.id=COALESCE(i.duplicate_of,i.id)
-                WHERE i.id=? AND EXISTS (SELECT 1 FROM reports r WHERE r.issue_id=target.id AND r.project_id=?)
-                """, (issue_id, project_id)).fetchone()
+                WHERE i.id=? AND i.code!=? AND target.code!=?
+                  AND EXISTS (SELECT 1 FROM current_reports r WHERE r.issue_id=target.id AND r.project_id=?)
+                """, (issue_id, RETIRED_SDK_ISSUE, RETIRED_SDK_ISSUE, project_id)).fetchone()
             return dict(row) if row is not None else None
+
+    def delete_issue(self, issue_id):
+        """在同一事务中删除问题、发生记录及处理记录。"""
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            return self._delete_issue_records(db, issue_id)
+
+    @staticmethod
+    def _delete_issue_records(db, issue_id):
+        """清除指向已删除合并目标的链接，保留其余问题的处理状态。"""
+        db.execute("DELETE FROM reports WHERE issue_id=?", (issue_id,))
+        db.execute("DELETE FROM history WHERE issue_id=?", (issue_id,))
+        db.execute("UPDATE issues SET duplicate_of=NULL,revision=revision+1 WHERE duplicate_of=?", (issue_id,))
+        deleted = db.execute("DELETE FROM issues WHERE id=?", (issue_id,)).rowcount
+        if deleted:
+            db.execute("UPDATE issue_sequence SET last_id=MAX(last_id,?)", (issue_id,))
+        return bool(deleted)
 
     def update_issue(self, issue_id, update, actor):
         """校验编辑版本，在同一事务内保存处理状态、负责人和追加记录。"""

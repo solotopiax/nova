@@ -34,8 +34,15 @@ namespace NovaFramework.Editor
             /// <returns>Unity 构建结果。</returns>
             public static BuildReport BuildPlayer(BuildTarget target, string outputPath, bool developmentBuild, BuildMode buildMode)
             {
+                DateTime startedAt = DateTime.UtcNow;
+                bool exportsProject = target == BuildTarget.iOS ||
+                    target == BuildTarget.Android && EditorUserBuildSettings.exportAsGoogleAndroidProject;
+                BuildOptions requestedOptions = developmentBuild ? BuildOptions.Development : BuildOptions.None;
+                if (buildMode == BuildMode.ForceSkipDataBuild)
+                    requestedOptions |= BuildOptions.BuildScriptsOnly;
                 if (string.IsNullOrEmpty(outputPath))
                 {
+                    NovaIssues.ObservePlayerBuildFailure(target, exportsProject, requestedOptions, startedAt, "blocked");
                     throw new ArgumentException(string.Format("{0} outputPath 不能为空", c_LogPrefix));
                 }
                 BuildPlayerOptions opts = ResolveScenes(target, outputPath, developmentBuild, buildMode);
@@ -43,21 +50,30 @@ namespace NovaFramework.Editor
                     "{0} 开始打包：target={1}, output={2}, dev={3}, mode={4}",
                     c_LogPrefix, target, outputPath, developmentBuild, buildMode);
                 BuildReport report;
-                bool exportsProject = target == BuildTarget.iOS ||
-                    target == BuildTarget.Android && EditorUserBuildSettings.exportAsGoogleAndroidProject;
                 bool previousDevelopmentBuild = EditorUserBuildSettings.development;
+                bool enteredUnityBuild = false;
+                bool hasReport = false;
                 try
                 {
                     // HybridCLR 生成阶段读取全局 EditorUserBuildSettings，而此入口使用显式 BuildOptions。
                     // 构建期间临时镜像并在 finally 恢复，确保两条链路采用相同 ABI 档位。
                     EditorUserBuildSettings.development = developmentBuild;
                     HybridCLR.ValidateMethodBridgeDevelopmentBuild(developmentBuild);
+                    enteredUnityBuild = true;
                     report = BuildPipeline.BuildPlayer(opts);
                     NovaIssues.ObservePlayerBuild(report.summary, exportsProject);
+                    hasReport = true;
                     if (report.summary.result == BuildResult.Failed)
                     {
                         throw new InvalidOperationException(string.Format("{0} 打包失败：{1}", c_LogPrefix, report.summary.result));
                     }
+                }
+                catch (Exception error)
+                {
+                    if (!hasReport && (!enteredUnityBuild || !NovaIssues.TryObserveLatestPlayerBuild(startedAt)))
+                        NovaIssues.ObservePlayerBuildFailure(target, exportsProject, opts.options, startedAt,
+                            error is OperationCanceledException ? "cancelled" : enteredUnityBuild ? "failed" : "blocked");
+                    throw;
                 }
                 finally
                 {

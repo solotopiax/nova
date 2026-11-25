@@ -77,6 +77,17 @@ def usage_description(row, descriptions):
     operation = row["operation"]
     if operation in descriptions:
         return descriptions[operation]
+    if row["entry"] == "inspector":
+        module = row["module"]
+        name = {"table": "Table", "localization": "本地化", "ui": "UI", "network": "网络"}.get(module)
+        scope = operation.removeprefix(f"editor.{module}.export-")
+        label = {"code": "代码", "data": "数据", "all": "代码和数据", "text": "本地化文本",
+                 "font": "本地化字体", "hostkey-code": "域名表代码", "hostkey-data": "域名表数据",
+                 "hostkey-all": "域名表代码和数据", "netcmd-code": "指令表代码", "netcmd-data": "指令表数据",
+                 "netcmd-all": "指令表代码和数据", "proto-file": "单份协议的 C# 类型",
+                 "proto-all": "已配置协议的 C# 类型"}.get(scope)
+        if name and label:
+            return f"在 Unity 的{name}检视面板手动导出{label}。"
     if row["entry"] == "unity-cli" and operation.startswith("unity."):
         command = " ".join(operation.removeprefix("unity.").rsplit(".", 1))
         return f"通过 Unity CLI 调用「{command}」。具体用途由提供该命令的项目或包定义。"
@@ -282,6 +293,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         self.dispatch("POST")
 
+    def do_DELETE(self):
+        self.dispatch("DELETE")
+
     def dispatch(self, method):
         try:
             self.route(method, urlsplit(self.path))
@@ -309,7 +323,8 @@ class Handler(BaseHTTPRequestHandler):
                              "automatic_reporting": self.allows_automatic_reporting(), "codex_telemetry": True,
                              "project_snapshot_details": True, "git_user_name_reporting": True,
                              "hook_activity": True, "implementation_tracking": True,
-                             "execution_evidence": True, "compact_reports": True, "revision": self.server.revision})
+                             "execution_evidence": True, "feedback_timings": True,
+                             "compact_reports": True, "revision": self.server.revision})
         elif method == "POST" and path == "/api/session":
             self.login()
         elif method == "GET" and path == "/api/session":
@@ -330,7 +345,7 @@ class Handler(BaseHTTPRequestHandler):
                 raise HttpError(401, "项目凭据无效。")
             self.reply_found(db.project_issue(project, int(match[1])))
         elif path.startswith("/api/maintainer/"):
-            _, session = self.browser_session(mutation=method == "POST")
+            _, session = self.browser_session(mutation=method != "GET")
             self.maintainer(method, url, session["username"])
         else:
             raise HttpError(404, "找不到请求的入口。")
@@ -416,6 +431,8 @@ class Handler(BaseHTTPRequestHandler):
             self.reply_found(db.update_team(key(match[1]), team, previous))
         elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)", path)):
             self.reply_found(db.project_detail(key(match[1])))
+        elif method == "DELETE" and (match := re.fullmatch(r"projects/([^/]+)", path)):
+            self.reply_found({"deleted": True} if db.delete_project(key(match[1])) else None)
         elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)/package-versions", path)):
             project_id = key(match[1])
             snapshot_ids = parse_qs(url.query, keep_blank_values=True).get("snapshot")
@@ -438,7 +455,9 @@ class Handler(BaseHTTPRequestHandler):
             if method == "GET":
                 detail = db.issue_detail(issue_id)
                 self.reply_found(None if detail is None else detail | {"assignees": sorted(self.server.accounts)})
-            else:
+            elif method == "DELETE":
+                self.reply_found({"deleted": True} if db.delete_issue(issue_id) else None)
+            elif method == "POST":
                 data = obj(self.body(), ("revision", "status", "assignee", "note"))
                 int_range(data["revision"], 1, 1000000000)
                 enum(data["status"], MAINTAINER_ISSUE_STATES)

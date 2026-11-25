@@ -250,6 +250,9 @@ namespace NovaFramework.Runtime
 
             if (m_LanguageTexts.TryGetValue(name, out string value))
             {
+#if UNITY_EDITOR
+                EditorPlayEvidence.Use(EditorPlayModule.Localization);
+#endif
                 return value;
             }
 

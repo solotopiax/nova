@@ -33,7 +33,8 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.UI.Exporter.ExportDataForFile(settings, sourceDirPath, filePath);
+            EditorUtil.NovaIssues.RunManualExport("ui", "data", () =>
+                EditorUtil.UI.Exporter.ExportDataForFile(settings, sourceDirPath, filePath));
         }
 
         /// <summary>
@@ -54,7 +55,8 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.UI.Exporter.ExportCodeForFile(settings, sourceDirPath, filePath, classExportPath);
+            EditorUtil.NovaIssues.RunManualExport("ui", "code", () =>
+                EditorUtil.UI.Exporter.ExportCodeForFile(settings, sourceDirPath, filePath, classExportPath));
         }
 
         /// <summary>
@@ -78,7 +80,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.UI.Exporter.ExportAll(settings, sourceDirPath);
+            EditorUtil.NovaIssues.RunManualExport("ui", "all", () => EditorUtil.UI.Exporter.ExportAll(settings, sourceDirPath));
         }
 
         /// <summary>

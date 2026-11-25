@@ -532,7 +532,7 @@
 | [EditorUtil.Luban.ExportHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md) | Luban 导出辅助工具：构建导出上下文、生成关联文件名、查找单元设置 |
 | [EditorUtil.Luban.DataTypeNameHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md) | internal Excel Sheet 纯扫描器（不访问 SerializedProperty） |
 | [EditorUtil.Draw.SourceFileTree.md](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md) | 数据源文件树绘制与命名空间列表编辑静态工具集 |
-| [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动与跨日自动检查，支持当天跳过） |
+| [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动、跨日、前台定时和手动检查） |
 | [EditorUtil.ImportantUpdates.md](Editor/EditorUtil/EditorUtil.ImportantUpdates/EditorUtil.ImportantUpdates.md) | 已安装包 CHANGELOG Important 提取、本地确认、单包/批量范围与重载补查 |
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate、严格 DLL 拷贝及 Sample Editor 自动同步；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 模板准备与依赖解析（官方模板/开关原子准备；EDM4U 1.2.188/1.2.190 同步 JDK 交接及受控 Resolve 验证） |

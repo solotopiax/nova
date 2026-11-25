@@ -397,6 +397,10 @@ namespace NovaFramework.Runtime
             {
                 totalBytes = downloadedBytes;
             }
+#if UNITY_EDITOR
+            if (isSuccess && request.responseCode > 0)
+                EditorPlayEvidence.Use(EditorPlayModule.Network);
+#endif
             return HttpResponse.Create(
                 ToStatusCode(request.responseCode),
                 body,

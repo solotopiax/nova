@@ -104,7 +104,7 @@ def validate_snapshot(data):
 
 def validate_usage(data):
     """接收历史使用记录以及带来源的 Codex 和 Editor 计数。"""
-    obj(data, ("module", "operation", "outcome", "framework"), ("milliseconds", "source", "entry"))
+    obj(data, ("module", "operation", "outcome", "framework"), ("milliseconds", "source", "entry", "action_operation"))
     key(data["module"])
     key(data["operation"])
     enum(data["outcome"], ("executed", "success", "partial", "blocked", "failed", "cancelled"))
@@ -117,6 +117,10 @@ def validate_usage(data):
         enum(data["entry"], ("action", "skill", "unity-cli", "nova-cli"))
     if data.get("source") == "codex" and "entry" not in data:
         raise InvalidInput("Codex 使用记录缺少调用入口。")
+    if "action_operation" in data:
+        key(data["action_operation"], UUID)
+        if data.get("entry") != "action" or "source" not in data:
+            raise InvalidInput("操作关联编号仅适用于有来源的 Nova Action。")
 
 
 def validate_task(data):
@@ -136,10 +140,11 @@ def validate_implementation(data):
     """工程实施事实只携带状态、版本、可核对的入口和结果。"""
     base = ("framework", "unity", "stage")
     coordinate = ("platform", "channel", "mode")
+    # 仍解析旧客户端的 SDK 预加载信封，以便在完成认证后确认收件而不计入数据。
     stage = enum(data.get("stage") if isinstance(data, dict) else None, (
         "workspace", "config-export", "config-load", "pipify-batch", "plugpals-query",
         "bundle-build", "player-build", "sdk-preload",
-        "editor-module", "startup-stage", "framework-upgrade",
+        "editor-module", "startup-stage", "framework-upgrade", "table-ready", "pipify-step",
     ))
     if stage == "workspace":
         obj(data, base + ("tools", "editor_framework", "sdk_packages", "sdk_configs"), coordinate + ("requested_framework",))
@@ -159,8 +164,17 @@ def validate_implementation(data):
             key(config)
     elif stage == "editor-module":
         obj(data, base + ("step", "outcome"), coordinate)
-        enum(data["step"], ("asset", "procedure", "table"))
+        enum(data["step"], ("asset", "procedure", "table", "localization", "ui", "network"))
         enum(data["outcome"], ("success",))
+    elif stage == "table-ready":
+        obj(data, base + ("outcome",))
+        enum(data["outcome"], ("success",))
+    elif stage == "pipify-step":
+        obj(data, base + ("step", "outcome", "attempt", "sequence", "milliseconds"), coordinate)
+        key(data["step"])
+        key(data["attempt"], UUID)
+        enum(data["outcome"], ("running", "waiting", "success", "failed", "cancelled"))
+        int_range(data["milliseconds"], 0, 86400000)
     elif stage == "startup-stage":
         obj(data, base + ("step", "outcome", "attempt", "sequence", "milliseconds"), coordinate)
         enum(data["step"], ("splash", "version-check", "app-download", "hotfix", "load-dll",
@@ -187,8 +201,12 @@ def validate_implementation(data):
             enum(data["reason"], ("upm-package-error", "compiler-error", "request-changed"))
     else:
         build = ("build_kind", "development") if stage == "player-build" else ()
-        obj(data, base + ("outcome",) + build, coordinate + ("step", "milliseconds"))
+        batch = ("attempt", "sequence") if stage == "pipify-batch" else ()
+        obj(data, base + ("outcome",) + build, coordinate + ("step", "milliseconds") + batch)
         enum(data["outcome"], ("success", "failed", "cancelled", "blocked"))
+        if stage == "pipify-batch" and ("attempt" in data or "sequence" in data):
+            key(data.get("attempt"), UUID)
+            int_range(data.get("sequence"), 1, 2147483647)
         if stage == "player-build":
             enum(data["build_kind"], ("player", "project", "scripts"))
             if type(data["development"]) is not bool:
@@ -241,3 +259,18 @@ def validate_event(value):
     kind = enum(value["kind"], validators)
     validators[kind](value["data"])
     return value
+
+
+RETIRED_SDK_ISSUE = "editor-sdk-preload-exceeds-60-seconds"
+
+
+def retired_sdk_feedback(kind, data):
+    """识别旧客户端的 Editor SDK 运行记录，保留 SDK 接入和构建证据。"""
+    if kind == "usage":
+        return data["operation"] == "editor.preload.sdk"
+    if kind == "issue":
+        return data["code"] == RETIRED_SDK_ISSUE
+    return kind == "implementation" and (
+        data["stage"] in ("sdk-device", "sdk-preload")
+        or (data["stage"] == "startup-stage" and data["step"] == "sdk")
+    )

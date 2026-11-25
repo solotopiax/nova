@@ -316,7 +316,8 @@ namespace NovaFramework.Editor
             string supportedLanguagesExportPath = m_SupportedLanguagesDataExportPath?.stringValue;
             string[] customTemplateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs(EditorUtil.Luban.LubanExportProfiles.LocalizationText.TemplateKey);
 
-            EditorUtil.Localization.TextExporter.ExportTextAll(settings, textDirPath, classExportPath, customTemplateDirs, supportedLanguagesExportPath);
+            EditorUtil.NovaIssues.RunManualExport("localization", "text", () =>
+                EditorUtil.Localization.TextExporter.ExportTextAll(settings, textDirPath, classExportPath, customTemplateDirs, supportedLanguagesExportPath));
         }
 
         /// <summary>
@@ -349,7 +350,8 @@ namespace NovaFramework.Editor
                 }
             }
 
-            EditorUtil.Localization.FontExporter.ExportFontAll(settings, fontDirPath, classExportPath);
+            EditorUtil.NovaIssues.RunManualExport("localization", "font", () =>
+                EditorUtil.Localization.FontExporter.ExportFontAll(settings, fontDirPath, classExportPath));
         }
 
         /// <summary>

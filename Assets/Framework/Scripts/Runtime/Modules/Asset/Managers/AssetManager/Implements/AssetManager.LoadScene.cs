@@ -62,6 +62,10 @@ namespace NovaFramework.Runtime
             {
                 adapter = ReferencePool.Get<YooAssetSceneHandleAdapter>();
                 adapter.Bind(inner);
+#if UNITY_EDITOR
+                if (inner.Status == EOperationStatus.Succeeded)
+                    EditorPlayEvidence.Use(EditorPlayModule.Asset);
+#endif
                 return adapter;
             }
             catch
@@ -122,6 +126,10 @@ namespace NovaFramework.Runtime
             try
             {
                 await UniTask.WaitUntil(() => inner.IsDone, cancellationToken: ct);
+#if UNITY_EDITOR
+                if (inner.Status == EOperationStatus.Succeeded)
+                    EditorPlayEvidence.Use(EditorPlayModule.Asset);
+#endif
                 return adapter;
             }
             catch

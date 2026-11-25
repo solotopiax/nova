@@ -113,7 +113,11 @@ END;
 # 与 Unity Editor 的待发查询一致，已停用的试验记录和缺少回执的自动入口遗漏保留在本机。
 SENDABLE_REPORT_FILTER = f"""
     json_extract(payload,'$.kind')!='task'
-    AND COALESCE(json_extract(payload,'$.data.stage'),'')!='sdk-device'
+    AND COALESCE(json_extract(payload,'$.data.stage'),'') NOT IN ('sdk-device','sdk-preload')
+    AND NOT (COALESCE(json_extract(payload,'$.data.stage'),'')='startup-stage'
+             AND COALESCE(json_extract(payload,'$.data.step'),'')='sdk')
+    AND COALESCE(json_extract(payload,'$.data.operation'),'')!='editor.preload.sdk'
+    AND COALESCE(json_extract(payload,'$.data.code'),'')!='editor-sdk-preload-exceeds-60-seconds'
     AND (
         COALESCE(json_extract(payload,'$.data.source'),'')!='codex'
         OR COALESCE(json_extract(payload,'$.data.code'),'') NOT GLOB 'missing-nova-route.*'
@@ -456,10 +460,16 @@ def report_editor_environment(root, db, *, compilation_day=None):
     day = datetime.fromtimestamp(stamp).date().isoformat()
     previous = state(db, ENVIRONMENT_REPORT_KEY, {})
     fields = [project["id"], data["framework"], data["unity"]]
-    if "application_identifiers" in data or "codex_hooks" in data:
-        identifiers = data.get("application_identifiers", {})
-        fields.extend(("|".join(f"{name}={identifiers[name]}" for name in sorted(identifiers)),
-                       data.get("codex_hooks")))
+    identifiers = data.get("application_identifiers", {})
+    fields.extend((
+        "|".join(f"{name}={identifiers[name]}" for name in sorted(identifiers)),
+        data.get("codex_hooks"),
+        "\n".join(f"{item['id']}|{item['version']}|{item['source']}"
+                  for item in sorted(data["packages"], key=lambda item: item["id"])),
+        "\n".join(sorted(set(data.get("enabled", [])))),
+        "\n".join(f"{name}|{item['state']}|{item.get('version', 'unknown')}"
+                  for name, item in sorted(data["tools"].items())),
+    ))
     git_name = git_user_name(root)
     if git_name:
         data["git_user_name"] = git_name
@@ -522,11 +532,14 @@ def tool_operation(event):
     return tool_name, "", "", command
 
 
-def record_usage(db, identifier, framework, module, operation, entry, outcome, invocation):
+def record_usage(db, identifier, framework, module, operation, entry, outcome, invocation, action_operation=None):
     """只写入结构化标识和结果，用轮次与调用编号防止重复记数。"""
     report_id = event_id("codex-usage", state(db, "workspace"), identifier, entry, invocation)
-    enqueue(db, "usage", {"module": module, "operation": operation, "framework": framework,
-                          "outcome": outcome, "source": "codex", "entry": entry}, report_id)
+    data = {"module": module, "operation": operation, "framework": framework,
+            "outcome": outcome, "source": "codex", "entry": entry}
+    if action_operation:
+        data["action_operation"] = action_operation
+    enqueue(db, "usage", data, report_id)
 
 
 def shell_outcome(event):
@@ -681,11 +694,19 @@ def observed_action_usage(db, event, framework, identifier, action, operation):
     if not tool_id:
         return False
     reply = event.get("tool_response")
-    outcome = response_dict(reply).get("status")
+    response = response_dict(reply)
+    outcome = response.get("status")
     if outcome not in USAGE_OUTCOMES:
         error = isinstance(reply, dict) and (reply.get("isError") is True or reply.get("is_error") is True)
         outcome = "failed" if error else "executed"
-    record_usage(db, identifier, framework, ACTION_ID.fullmatch(action)[1], action, "action", outcome, tool_id)
+    details = response.get("data")
+    token = string(details.get("recovery_token"), 100) if isinstance(details, dict) else ""
+    match = re.fullmatch(r"nova-action-operation-v1:([0-9a-fA-F]{32})", token)
+    # 恢复令牌只用于在本地提取稳定标识，上报值是与 Editor 相同的摘要。
+    same_action = response.get("operation") == "execute" and response.get("action_id") == action
+    action_operation = event_id("action", action, match[1]) if match and same_action else None
+    record_usage(db, identifier, framework, ACTION_ID.fullmatch(action)[1], action, "action", outcome, tool_id,
+                 action_operation)
     return True
 
 
@@ -873,7 +894,6 @@ def editor_snapshot(root, db, payload):
                                              if identity(name) and APPLICATION_IDENTIFIER.fullmatch(string(value, 255))}
     if payload.get("codex_hooks") in ("complete", "pending", "incomplete"):
         result["codex_hooks"] = payload["codex_hooks"]
-    result["sdk_attempt"] = identity(payload.get("sdk_attempt"))
     enabled = payload.get("enabled")
     for value in enabled[:100] if isinstance(enabled, list) else []:
         if identity(value):
@@ -891,47 +911,12 @@ def editor_event(root, db, payload):
     if kind == "snapshot" and isinstance(payload.get("packages"), list) and isinstance(payload.get("tools"), dict):
         editor_snapshot(root, db, payload)
         return
-    identifier = identity(payload.get("id"))
-    if not identifier:
-        return
-    if kind == "compile-finished":
+    if kind == "compile-finished" and identity(payload.get("id")):
         report_editor_environment(root, db, compilation_day=datetime.fromtimestamp(now()).date().isoformat())
-        return
-    framework = observed_framework(root, db)
-    if kind == "sdk-start":
-        save(db, "sdk", {"id": identifier, "started": now(), "framework": framework})
-    elif kind in ("sdk-finished", "sdk-ended"):
-        active = state(db, "sdk", {})
-        if active.get("id") == identifier:
-            save(db, "sdk", {})
-        if kind == "sdk-finished":
-            enqueue(db, "usage", {"module": "sdk", "operation": "editor.preload.sdk", "outcome": "success",
-                                  "framework": framework, "source": "editor"}, event_id("sdk-finished", identifier))
 
 
 def inspect_pending(db):
-    sdk = state(db, "sdk", {})
-    editor = state(db, "editor", {})
-    if sdk and now() - sdk["started"] >= 60:
-        if not sdk.get("observed_stall"):
-            sdk["observed_stall"] = now()
-            save(db, "sdk", sdk)
-        active = editor.get("sdk_attempt") == sdk["id"] and editor.get("at", 0) - sdk["started"] >= 60
-        if active and sdk["framework"] != "unknown" and not sdk.get("reported"):
-            enqueue(db, "issue", {
-                "code": "editor-sdk-preload-exceeds-60-seconds", "area": "sdk", "priority": "P1",
-                "title": "Editor 内 SDK 预加载等待超过 60 秒",
-                "summary": "本地 Agent 观察到 Nova 预加载进入 SDK 步骤后，同一 Play 会话中的 Editor 仍响应，但步骤持续未完成。",
-                "expected": "SDK 初始化应得到终态，之后继续执行后续预加载。",
-                "actual": "同一 SDK 步骤在两个相隔至少 60 秒的 Editor 观察点仍处于等待。",
-                "framework": sdk["framework"], "source": "editor",
-                "evidence": [
-                    {"source": "editor.preload", "detail": "已观察到 Nova 预加载开始 SDK 步骤。"},
-                    {"source": "editor.snapshot", "detail": "60 秒后仍观察到同一个 SDK 步骤。"},
-                ],
-            }, event_id("sdk-preload", sdk["id"]))
-            sdk["reported"] = True
-            save(db, "sdk", sdk)
+    """结束长期未返回执行证据的 Codex 任务观察。"""
     db.execute("UPDATE turns SET status='pending-evidence',updated=? WHERE status='observing' AND started<?",
                (now(), now() - 3600))
 
@@ -1136,7 +1121,13 @@ def work(root, folder, worker_id, *, single=False):
                             AND EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.packages') AS package
                                         WHERE json_type(package.value,'$.evidence') IS NULL))) AS requires_compact_reports,
                        json_extract(payload,'$.data.stage') IN
-                           ('editor-module','startup-stage','framework-upgrade') AS has_execution_evidence
+                           ('editor-module','startup-stage','framework-upgrade') AS has_execution_evidence,
+                       (json_type(payload,'$.data.action_operation') IS NOT NULL
+                        OR json_extract(payload,'$.data.stage') IN ('pipify-step','table-ready')
+                        OR (json_extract(payload,'$.data.stage')='editor-module'
+                            AND json_extract(payload,'$.data.step') IN ('localization','ui','network'))
+                        OR (json_extract(payload,'$.data.stage')='pipify-batch'
+                            AND json_type(payload,'$.data.attempt') IS NOT NULL)) AS needs_feedback_timings
                 FROM outbox WHERE accepted IS NULL AND ready_at<=?
                 AND {SENDABLE_REPORT_FILTER}
                 ORDER BY json_extract(payload,'$.kind')!='issue',ready_at,rowid LIMIT 8
@@ -1159,6 +1150,8 @@ def work(root, folder, worker_id, *, single=False):
             elif item["kind"] == "implementation" and health.get("implementation_tracking") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["has_execution_evidence"] and health.get("execution_evidence") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["needs_feedback_timings"] and health.get("feedback_timings") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["kind"] == "usage" and item["source"] and health.get("codex_telemetry") is not True:
                 received, error = None, "server-upgrade-required"
@@ -1272,8 +1265,7 @@ def main():
                     "receipts": [dict(row) for row in db.execute(
                         "SELECT id,kind,accepted,issue_id FROM report_receipts "
                         "UNION ALL SELECT id,json_extract(payload,'$.kind'),accepted,issue_id "
-                        "FROM outbox WHERE accepted IS NOT NULL ORDER BY accepted DESC LIMIT 30")],
-                    "sdk": state(db, "sdk", {})}))
+                        "FROM outbox WHERE accepted IS NOT NULL ORDER BY accepted DESC LIMIT 30")]}))
             if should_wake and state(db, "worker", {}).get("lease", 0) > now():
                 should_wake = False
         if should_wake:

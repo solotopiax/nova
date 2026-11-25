@@ -24,6 +24,9 @@ namespace NovaFramework.Editor
         internal static partial class NovaIssues
         {
             private const string c_WorkspaceImplementation = "implementation_workspace";
+            private static readonly DateTime s_EditorStartedUtc = DateTime.UtcNow.AddSeconds(-EditorApplication.timeSinceStartup);
+            private static DateTime s_LastBuildReportWrite;
+            private static double s_NextBuildReportCheck;
 
             /// <summary>采集三工具的持久绑定、实际载入的 Framework 版本及 SDK 清单。</summary>
             private static JObject CaptureImplementationWorkspace(PackageInfo[] packages, ConfigMasterSO master)
@@ -54,7 +57,7 @@ namespace NovaFramework.Editor
             internal static void ObserveImplementation(string stage, string outcome, string platform = null,
                 string channel = null, string mode = null, string step = null, TimeSpan? elapsed = null,
                 string buildKind = null, bool development = false, string attempt = null, int sequence = 0,
-                string reportId = null)
+                string reportId = null, long? observedAt = null)
             {
                 if (Application.isBatchMode)
                     return;
@@ -76,6 +79,7 @@ namespace NovaFramework.Editor
                     }
                     var input = new JObject { ["event"] = "implementation", ["implementation"] = data };
                     if (reportId != null) input["id"] = reportId;
+                    if (observedAt.HasValue) input["observed_at"] = observedAt.Value;
                     Queue(input);
                 }
                 catch (Exception)
@@ -94,25 +98,84 @@ namespace NovaFramework.Editor
                     BuildResult.Failed => "failed",
                     _ => "blocked"
                 };
-                string kind = (summary.options & BuildOptions.BuildScriptsOnly) != 0 ? "scripts" :
-                    exportsProject ? "project" : "player";
+                string kind = PlayerBuildKind(summary.options, exportsProject);
+                string id = EventId("player-build", summary.guid.ToString(),
+                    summary.buildStartedAt.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture), summary.platform.ToString());
                 ObserveImplementation("player-build", outcome, summary.platform.ToString(), elapsed: summary.totalTime,
-                    buildKind: kind, development: (summary.options & BuildOptions.Development) != 0);
+                    buildKind: kind, development: (summary.options & BuildOptions.Development) != 0, reportId: id,
+                    observedAt: summary.buildEndedAt > DateTime.UnixEpoch ? new DateTimeOffset(summary.buildEndedAt).ToUnixTimeSeconds() : null);
             }
 
-            /// <summary>在实际预加载中读取已加载的运行时坐标。</summary>
-            private static void ObserveRuntimeConfig()
+            /// <summary>Nova 构建入口在 Unity 没有返回报告时记录可确认的拒绝或失败。</summary>
+            internal static void ObservePlayerBuildFailure(BuildTarget platform, bool exportsProject, BuildOptions options,
+                DateTime startedAt, string outcome)
+            {
+                ObserveImplementation("player-build", outcome, platform.ToString(), elapsed: DateTime.UtcNow - startedAt,
+                    buildKind: PlayerBuildKind(options, exportsProject), development: (options & BuildOptions.Development) != 0);
+            }
+
+            /// <summary>构建目标使用当前绑定工作区的平台时，保留实际渠道和开发模式。</summary>
+            internal static (string Channel, string Mode) CaptureBundleCoordinates(BuildTarget target)
             {
                 try
                 {
-                    var config = global::NovaFramework.Runtime.Nova.Config;
-                    if (config != null && config.Platform != PlatformType.None && config.Channel != ChannelType.None)
-                        ObserveImplementation("config-load", "success", config.Platform.ToString(), config.Channel.ToString());
+                    if (!Application.isBatchMode && target == EditorUserBuildSettings.activeBuildTarget &&
+                        Config.WorkspaceActive.TryGetPersistedConfigMaster(out var master, out _, out _, out _))
+                        return (master.CurrentChannel.ToString(), master.CurrentDevelopMode.ToString());
                 }
-                catch (Exception)
+                catch (Exception) { /* 未取得配置时保留独立的构建平台和结果。 */ }
+                return default;
+            }
+
+            /// <summary>构建结果按实际目标区分仅脚本、平台工程和可安装产物。</summary>
+            private static string PlayerBuildKind(BuildOptions options, bool exportsProject) =>
+                (options & BuildOptions.BuildScriptsOnly) != 0 ? "scripts" : exportsProject ? "project" : "player";
+
+            /// <summary>读取 Unity 保存的已完成报告，覆盖 Build Profiles 和直调 BuildPipeline。</summary>
+            private static void PollPlayerBuild(double time)
+            {
+                if (time < s_NextBuildReportCheck || s_FrameworkRoot == null || BuildPipeline.isBuildingPlayer)
+                    return;
+                s_NextBuildReportCheck = time + 2;
+                try
                 {
-                    // 自定义 ConfigManager 的读取失败交由其原有运行时链路处理。
+                    DateTime written = System.IO.File.GetLastWriteTimeUtc(System.IO.Path.Combine(s_Project, "Library/LastBuild.buildreport"));
+                    if (written == s_LastBuildReportWrite || written < s_EditorStartedUtc)
+                        return;
+                    s_LastBuildReportWrite = written;
+                    TryObserveLatestPlayerBuild(s_EditorStartedUtc);
                 }
+                catch (Exception) { /* 读取异常时下次轮询重试。 */ }
+            }
+
+            /// <summary>只接收本时间窗内的终态 Player 报告，原生构建和 Nova 入口共享去重编号。</summary>
+            internal static bool TryObserveLatestPlayerBuild(DateTime notBefore)
+            {
+                try
+                {
+                    BuildReport report = BuildReport.GetLatestReport();
+                    if (report == null)
+                        return false;
+                    BuildSummary summary = report.summary;
+                    if (summary.buildType != BuildType.Player || summary.buildStartedAt < notBefore ||
+                        summary.result is not (BuildResult.Succeeded or BuildResult.Cancelled or BuildResult.Failed))
+                        return false;
+                    string extension = System.IO.Path.GetExtension(summary.outputPath)?.ToLowerInvariant();
+                    bool project = summary.platform == BuildTarget.iOS ||
+                        summary.platform == BuildTarget.Android &&
+                        ((summary.options & BuildOptions.AcceptExternalModificationsToPlayer) != 0 ||
+                         (!string.IsNullOrEmpty(summary.outputPath) && extension is not (".apk" or ".aab")));
+                    ObservePlayerBuild(summary, project);
+                    return true;
+                }
+                catch (Exception) { return false; }
+            }
+
+            /// <summary>记录 Config 加载实际返回的结果，坐标只来自成功载入的配置。</summary>
+            private static void ObserveRuntimeConfig(string outcome, PlatformType platform, ChannelType channel, DevelopMode? mode)
+            {
+                ObserveImplementation("config-load", outcome, platform == PlatformType.None ? null : platform.ToString(),
+                    channel == ChannelType.None ? null : channel.ToString(), mode?.ToString());
             }
 
             private static JObject ImplementationData(string stage, string platform, string channel, string mode)

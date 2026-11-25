@@ -40,6 +40,9 @@ namespace NovaFramework.Editor
             {
                 public List<UpdateInfo> External = new List<UpdateInfo>();
                 public List<UpdateInfo> Internal = new List<UpdateInfo>();
+                public bool Supplemental;
+                public string ExternalUrl;
+                public string InternalUrl;
             }
 
             /// <summary>恢复会话中的待展示结果；没有已完成结果时才安排一次只读网络查询。</summary>
@@ -61,6 +64,8 @@ namespace NovaFramework.Editor
                 AssemblyReloadEvents.beforeAssemblyReload += StopAutomaticStartupCheck;
                 EditorApplication.quitting -= StopAutomaticStartupCheck;
                 EditorApplication.quitting += StopAutomaticStartupCheck;
+                EditorApplication.focusChanged -= OnAutomaticFocusChanged;
+                EditorApplication.focusChanged += OnAutomaticFocusChanged;
                 AttachAutomaticStartupCheck();
                 SetAutomaticCheckState("queued", s_AutomaticSnapshot == null
                     ? "已安排启动更新检查，等待当前安装和重要声明处理结束。"
@@ -75,7 +80,7 @@ namespace NovaFramework.Editor
                 EditorApplication.update += TryRunAutomaticStartupCheck;
             }
 
-            /// <summary>启动或跨日时等待稳定状态再查询；异步结果经过同一门禁展示，等待期间复用查询结果。</summary>
+            /// <summary>保持启动和跨日检查优先，额外检查也经过同一门禁和窗口展示结果。</summary>
             private static void TryRunAutomaticStartupCheck()
             {
                 if (Application.isBatchMode || s_AutomaticStopping)
@@ -84,17 +89,27 @@ namespace NovaFramework.Editor
                     return;
                 }
                 if (s_AutomaticQueryRunning) return;
+                if (s_AutomaticSnapshot?.Supplemental == true && s_LastAutomaticCheckDay != DateTime.Today)
+                    ClearSupplementalSnapshot();
                 if (!s_AutomaticCheckQueued)
                 {
-                    // 本轮结束后只按分钟查看本地日期，跨日才重新进入检查队列。
                     double now = EditorApplication.timeSinceStartup;
-                    if (now < s_NextAutomaticDayPoll) return;
-                    s_NextAutomaticDayPoll = now + c_AutomaticDayPollIntervalSeconds;
-                    if (s_LastAutomaticCheckDay == DateTime.Today) return;
-
-                    s_AutomaticCheckQueued = true;
-                    SetAutomaticCheckState("queued", "已安排新一天的更新检查，等待编辑器就绪。");
+                    if (now >= s_NextAutomaticDayPoll)
+                    {
+                        s_NextAutomaticDayPoll = now + c_AutomaticDayPollIntervalSeconds;
+                        if (s_LastAutomaticCheckDay != DateTime.Today)
+                        {
+                            s_AutomaticCheckQueued = true;
+                            SetAutomaticCheckState("queued", "已安排新一天的更新检查，等待编辑器就绪。");
+                        }
+                    }
+                    if (!s_AutomaticCheckQueued)
+                    {
+                        TryRunSupplementalCheck(now);
+                        return;
+                    }
                 }
+                if (s_AutomaticSnapshot?.Supplemental == true && !CanAttemptSupplementalPresentation()) return;
                 string reason = AutomaticWindowGate.ReadWaitReason(true);
                 if (!string.IsNullOrEmpty(reason))
                 {
@@ -119,6 +134,13 @@ namespace NovaFramework.Editor
                     SkipConfig config = LoadConfigForDay(presentationDay);
                     List<UpdateInfo> external = FilterSkippedUpdates(RefreshAutomaticUpdateInfos(s_AutomaticSnapshot.External, installed), false, config);
                     List<UpdateInfo> internalItems = FilterSkippedUpdates(RefreshAutomaticUpdateInfos(s_AutomaticSnapshot.Internal, installed), true, config);
+                    if (s_AutomaticSnapshot.Supplemental)
+                    {
+                        PlugPals.RegistriesConfig registries = PlugPals.LoadRegistries();
+                        IReadOnlyDictionary<string, string> presented = PresentedVersionsForDay(presentationDay);
+                        external = FilterSupplementalUpdates(external, false, s_AutomaticSnapshot.ExternalUrl, registries.externalUrl, presented);
+                        internalItems = FilterSupplementalUpdates(internalItems, true, s_AutomaticSnapshot.InternalUrl, registries.internalUrl, presented);
+                    }
                     // 安装和人工窗口状态可能在查询、恢复或本地过滤期间改变，真正展示前最后读取一次。
                     reason = AutomaticWindowGate.ReadWaitReason(true);
                     if (!string.IsNullOrEmpty(reason))
@@ -126,16 +148,21 @@ namespace NovaFramework.Editor
                         SetAutomaticCheckState("waiting", reason);
                         return;
                     }
-                    if ((external.Count > 0 || internalItems.Count > 0) && !CheckUpdateWindow.TryOpenAutomatic(external, internalItems))
+                    if (external.Count > 0 || internalItems.Count > 0)
                     {
-                        SetAutomaticCheckState("waiting", "已有更新窗口正在使用；保留查询结果，等待关闭后再展示，未覆盖窗口中的用户选择。");
-                        return;
+                        if (!CheckUpdateWindow.TryOpenAutomatic(external, internalItems))
+                        {
+                            SetAutomaticCheckState("waiting", "已有更新窗口正在使用；保留查询结果，等待关闭后再展示，未覆盖窗口中的用户选择。");
+                            return;
+                        }
+                        RememberAutomaticPresentation(presentationDay, external, internalItems);
                     }
                     CompleteAutomaticPresentation(presentationDay);
                 }
                 catch (Exception exception)
                 {
-                    FinishAutomaticCheckForDay(presentationDay);
+                    if (s_AutomaticSnapshot?.Supplemental == true) ClearSupplementalSnapshot();
+                    else FinishAutomaticCheckForDay(presentationDay);
                     SetAutomaticCheckState("blocked", "更新结果尚未展示；待修复后可重载恢复或从菜单手动检查，未写入跳过记录。");
                     Log.Warning(LogTag.Editor, "自动更新提示尚未展示：{0}", exception.Message);
                 }
@@ -206,9 +233,13 @@ namespace NovaFramework.Editor
             /// <param name="day">本轮判定是否展示时所用的本地自然日。</param>
             private static void CompleteAutomaticPresentation(DateTime day)
             {
-                s_AutomaticSnapshot = null;
-                SessionState.EraseString(c_AutomaticSnapshotSessionKey);
-                FinishAutomaticCheckForDay(day);
+                if (s_AutomaticSnapshot?.Supplemental == true) ClearSupplementalSnapshot();
+                else
+                {
+                    s_AutomaticSnapshot = null;
+                    SessionState.EraseString(c_AutomaticSnapshotSessionKey);
+                    FinishAutomaticCheckForDay(day);
+                }
                 SetAutomaticCheckState("complete", "本轮自动更新提示处理结束；更新检查不执行包升级。");
             }
 
@@ -225,6 +256,7 @@ namespace NovaFramework.Editor
             {
                 s_AutomaticStopping = true;
                 EditorApplication.update -= TryRunAutomaticStartupCheck;
+                EditorApplication.focusChanged -= OnAutomaticFocusChanged;
                 SetAutomaticCheckState("waiting-editor", "等待脚本重载；已完成查询的待展示结果会恢复。");
             }
 

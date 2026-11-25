@@ -62,6 +62,10 @@ namespace NovaFramework.Runtime
                 RepairLoadedAssetShadersForEditor(handle.SubAssetObjects);
                 adapter = ReferencePool.Get<YooAssetSubAssetsHandleAdapter<T>>();
                 adapter.Bind(handle);
+#if UNITY_EDITOR
+                if (handle.Status == EOperationStatus.Succeeded && handle.SubAssetObjects?.Count > 0)
+                    EditorPlayEvidence.Use(EditorPlayModule.Asset);
+#endif
                 return adapter;
             }
             catch
@@ -123,6 +127,10 @@ namespace NovaFramework.Runtime
                 RepairLoadedAssetShadersForEditor(handle.SubAssetObjects);
                 adapter = ReferencePool.Get<YooAssetSubAssetsHandleAdapter<T>>();
                 adapter.Bind(handle);
+#if UNITY_EDITOR
+                if (handle.Status == EOperationStatus.Succeeded && handle.SubAssetObjects?.Count > 0)
+                    EditorPlayEvidence.Use(EditorPlayModule.Asset);
+#endif
                 return adapter;
             }
             catch

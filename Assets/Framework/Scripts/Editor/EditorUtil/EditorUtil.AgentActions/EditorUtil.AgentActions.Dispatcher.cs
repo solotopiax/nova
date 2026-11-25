@@ -203,21 +203,21 @@ namespace NovaFramework.Editor
                     {
                         const string message = "Action Registry 已变化，旧计划失效。";
                         AgentActionRuntime.OperationStore.TryMarkBlocked(stored.OperationId, message);
-                        return AgentActionResult.Create(descriptor.Id, "blocked", message);
+                        return FinishExecution(AgentActionResult.Create(descriptor.Id, "blocked", message));
                     }
 
                     if (descriptor.RequiresConfirmation && !string.Equals(planId, confirmationToken, StringComparison.Ordinal))
                     {
                         const string message = "确认令牌未与当前一次性 PlanId 绑定。";
                         AgentActionRuntime.OperationStore.TryMarkBlocked(stored.OperationId, message);
-                        return AgentActionResult.Create(descriptor.Id, "blocked", message);
+                        return FinishExecution(AgentActionResult.Create(descriptor.Id, "blocked", message));
                     }
 
                     if (descriptor.RequiresStableEditor && (EditorApplication.isCompiling || EditorApplication.isUpdating))
                     {
                         const string message = "Unity 正在编译或更新，计划已失效，请重新计划。";
                         AgentActionRuntime.OperationStore.TryMarkBlocked(stored.OperationId, message);
-                        return AgentActionResult.Create(descriptor.Id, "blocked", message);
+                        return FinishExecution(AgentActionResult.Create(descriptor.Id, "blocked", message));
                     }
 
 
@@ -225,24 +225,24 @@ namespace NovaFramework.Editor
                     {
                         const string message = "该 Action 只能在 Edit Mode 执行，计划已失效，请退出或取消进入 Play Mode 后重新计划。";
                         AgentActionRuntime.OperationStore.TryMarkBlocked(stored.OperationId, message);
-                        return AgentActionResult.Create(descriptor.Id, "blocked", message);
+                        return FinishExecution(AgentActionResult.Create(descriptor.Id, "blocked", message));
                     }
 
                     if (!AgentActionLockManager.TryAcquire(descriptor.Locks, out IDisposable lease))
                     {
                         const string message = "Action 所需资源正被其它 Action 使用，计划已失效。";
                         AgentActionRuntime.OperationStore.TryMarkBlocked(stored.OperationId, message);
-                        return AgentActionResult.Create(descriptor.Id, "blocked", message);
+                        return FinishExecution(AgentActionResult.Create(descriptor.Id, "blocked", message));
                     }
 
                     using (lease)
                     {
                         if (!AgentActionRuntime.OperationStore.TryMarkExecuting(stored.OperationId))
                         {
-                            return AgentActionResult.Create(
+                            return FinishExecution(AgentActionResult.Create(
                                 descriptor.Id,
                                 "blocked",
-                                "无法在写操作前持久化 executing 状态，已拒绝执行。");
+                                "无法在写操作前持久化 executing 状态，已拒绝执行。"));
                         }
 
                         try
@@ -271,25 +271,34 @@ namespace NovaFramework.Editor
                                 if (result.Status == "success") result.Status = "partial";
                                 result.Warnings.Add("Action 已返回，但持久化 Operation 完成状态失败；不会自动重放。");
                             }
-                            return result;
+                            return FinishExecution(result);
                         }
                         catch (OperationCanceledException)
                         {
                             const string message = "Action 执行已取消；不会自动重放。";
                             AgentActionRuntime.OperationStore.TryMarkInterrupted(stored.OperationId, message);
-                            return CreateExecutionFailure(descriptor, message);
+                            return FinishExecution(CreateExecutionFailure(descriptor, message), "cancelled");
                         }
                         catch (Exception exception)
                         {
                             string message = "Action 执行失败；不会自动重放：" + exception.Message;
                             AgentActionRuntime.OperationStore.TryMarkInterrupted(stored.OperationId, message);
-                            return CreateExecutionFailure(descriptor, message);
+                            return FinishExecution(CreateExecutionFailure(descriptor, message), "failed");
                         }
                     }
                 }
                 finally
                 {
                     if (stored.HandlerState is IDisposable disposable) disposable.Dispose();
+                }
+
+                // 计划已被准确的 Action 消费。复用原有只读恢复令牌关联两侧观察。
+                AgentActionResult FinishExecution(AgentActionResult result, string observedOutcome = null)
+                {
+                    result.RecoveryToken ??= AgentActionOperationStore.RecoveryTokenPrefix + stored.OperationId;
+                    if (AgentActionRuntime.IsMainThread)
+                        NovaIssues.ObserveActionExecution(descriptor.Id, stored.OperationId, observedOutcome ?? result.Status);
+                    return result;
                 }
             }
 

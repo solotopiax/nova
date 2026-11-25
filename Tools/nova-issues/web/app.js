@@ -8,7 +8,10 @@ const outcomeNames = {
 };
 const completedOutcomes = new Set(["executed", "success", "advanced", "recovered"]);
 const usageSources = { codex: "Codex", editor: "Editor", legacy: "未标注" };
-const usageEntries = { action: "Nova Action", skill: "Skill 查阅", "unity-cli": "Unity CLI", "nova-cli": "Nova CLI", preload: "Editor 预加载" };
+const usageEntries = {
+  action: "Nova Action", skill: "Skill 查阅", "unity-cli": "Unity CLI", "nova-cli": "Nova CLI",
+  inspector: "Unity 检视面板",
+};
 const coverageNames = {
   observed: "已观察", waiting: "待采集", registered: "已注册", not_observed: "未验证",
   connected: "已连接", installed: "已安装", unavailable: "未获得证据", ready: "可用",
@@ -34,9 +37,10 @@ let days = 14;
 let paintIssues = null;
 let paintUsage = null;
 let projectLive = null;
+let dialogHasEdits = null;
 const filters = {
   search: "", issueProject: "", status: "open", issueSort: "latest",
-  project: "", module: "", usageSource: "", usageSort: "count",
+  project: "", module: "", usageSource: "", usageSort: "latest",
 };
 
 function node(tag, text, className) {
@@ -66,13 +70,14 @@ function projectName(id) {
   return data.projects.find((project) => project.id === id)?.name || id;
 }
 
-async function request(path, body) {
-  const post = body !== undefined;
+async function request(path, body, method = body === undefined ? "GET" : "POST") {
+  const headers = method === "GET" ? {} : { "X-Nova-CSRF": session?.csrf || "" };
+  if (body !== undefined) headers["Content-Type"] = "application/json";
   const response = await fetch(path, {
-    method: post ? "POST" : "GET",
+    method,
     cache: "no-store",
-    headers: post ? { "Content-Type": "application/json", "X-Nova-CSRF": session?.csrf || "" } : {},
-    body: post ? JSON.stringify(body) : undefined,
+    headers,
+    body: JSON.stringify(body),
   });
   const result = await response.json();
   if (response.status === 401 && session) setSession(null);
@@ -96,7 +101,7 @@ function updateUnread(readView) {
       } catch {
         // 浏览器禁用存储时，在当前页面内保留已读进度。
       }
-      if (seen < 0 || (readView === section && total > seen)) {
+      if (seen < 0 || total < seen || (readView === section && total > seen)) {
         seen = total;
         try { localStorage.setItem(key, String(seen)); } catch { /* 继续使用页面内的进度。 */ }
       }
@@ -204,15 +209,20 @@ function issueRows(issues) {
 async function openIssueProjects(id) {
   const title = `#${id} 受影响的项目`;
   const loading = node("p", "正在读取项目…", "empty");
-  openDialog(title, [loading]);
+  const options = { closeOnBackdrop: true };
+  openDialog(title, [loading], options);
   try {
     const { projects } = await request(`/api/maintainer/issues/${id}/projects`);
     if (!loading.isConnected || !byId("details").open) return;
     const list = node("ul", null, "issue-projects");
-    for (const project of projects) list.append(node("li", project.name));
-    openDialog(title, [projects.length ? list : node("p", "暂无受影响的项目", "empty")]);
+    for (const project of projects) {
+      const item = node("li");
+      item.append(button(project.name, () => openProject(project.id), "link"));
+      list.append(item);
+    }
+    openDialog(title, [projects.length ? list : node("p", "暂无受影响的项目", "empty")], options);
   } catch (failure) {
-    if (loading.isConnected && byId("details").open) openDialog(title, [node("p", failure.message, "error")]);
+    if (loading.isConnected && byId("details").open) openDialog(title, [node("p", failure.message, "error")], options);
   }
 }
 
@@ -327,6 +337,8 @@ function issuesPage() {
 function usagePage() {
   const toolbar = node("div", null, "toolbar usage-toolbar");
   const results = node("div");
+  if (filters.project && !data.projects.some((item) => item.id === filters.project)) filters.project = "";
+  if (filters.module && !data.usage_modules.includes(filters.module)) filters.module = "";
   let latest = 0;
   /** 展示当前筛选结果，并按同一排序选择排列 Codex 的模块汇总。 */
   function show(usage) {
@@ -418,14 +430,43 @@ async function refresh(force = false) {
   }
 }
 
-/** 打开共用弹窗，项目详情可启用点击遮罩关闭。 */
-function openDialog(title, children, { closeOnBackdrop = false } = {}) {
+/** 打开共用弹窗，按当前内容设置遮罩关闭和草稿检查。 */
+function openDialog(title, children, { closeOnBackdrop = false, hasEdits = null } = {}) {
   projectLive = null;
+  dialogHasEdits = hasEdits;
   const dialog = byId("details");
   dialog.toggleAttribute("data-close-on-backdrop", closeOnBackdrop);
   byId("detail-title").textContent = title;
   byId("detail-body").replaceChildren(...children);
   if (!dialog.open) dialog.showModal();
+}
+
+function closeDialog() {
+  if (dialogHasEdits?.() && !window.confirm("有未保存的修改。确定放弃修改并关闭吗？")) return;
+  byId("details").close();
+}
+
+/** 先确认，再删除服务端记录。失败时保留详情和错误提示。 */
+function deleteAction(path, message) {
+  const footer = node("div", null, "dialog-delete");
+  const error = node("p", "", "error");
+  error.hidden = true;
+  error.setAttribute("role", "alert");
+  const remove = button("删除", async () => {
+    if (!window.confirm(message)) return;
+    remove.disabled = true;
+    showError(error, "");
+    try {
+      await request(path, undefined, "DELETE");
+      if (footer.isConnected && byId("details").open) byId("details").close();
+      await refresh(true);
+    } catch (failure) {
+      showError(error, failure.message);
+      remove.disabled = false;
+    }
+  }, "danger");
+  footer.append(remove, error);
+  return footer;
 }
 
 /** 原生 dialog 会把遮罩点击交给自身，按弹窗边界识别外部空位。 */
@@ -589,8 +630,8 @@ function packageTable(packages, versions) {
 
 const implementationStages = {
   "config-export": "Config 导出", "config-load": "Editor 读取 Config",
-  "pipify-batch": "Pipify Batch", "plugpals-query": "PlugPals 仓库查询",
-  "bundle-build": "Bundle 构建", "player-build": "目标平台构建", "sdk-preload": "Editor SDK 预加载",
+  "pipify-batch": "Pipify Batch", "pipify-step": "Pipify 步骤", "plugpals-query": "PlugPals 仓库查询",
+  "bundle-build": "Bundle 构建", "player-build": "目标平台构建",
 };
 const implementationModules = {
   config: "Config", pipify: "Pipify", upm: "包管理", procedure: "流程", asset: "资源",
@@ -600,7 +641,7 @@ const buildKinds = { player: "Player", project: "平台工程", scripts: "仅脚
 const startupStages = {
   splash: "启动画面", "version-check": "版本检查", "app-download": "应用更新", hotfix: "热更新",
   "load-dll": "配置与业务程序集", persist: "存档", localization: "本地化", network: "网络配置",
-  sdk: "SDK", table: "数据表", ui: "UI 配置", sound: "声音", vibration: "振动",
+  table: "数据表", ui: "UI 配置", sound: "声音", vibration: "振动",
 };
 const observedOutcomes = {
   running: "未收到结束记录", waiting: "仍在等待", advanced: "已推进",
@@ -674,8 +715,7 @@ function enabledModuleList(types = []) {
 function implementationResult(fact, reason = "") {
   const item = fact.data;
   const submitted = item.stage === "framework-upgrade" && item.step === "request";
-  const preloaded = item.stage === "sdk-preload" && item.outcome === "success";
-  const label = submitted ? "已提交" : preloaded ? "已进入后续预加载" :
+  const label = submitted ? "已提交" :
     observedOutcomes[item.outcome] || outcomeNames[item.outcome] || item.outcome;
   const status = statusPill(label, submitted || completedOutcomes.has(item.outcome));
   status.title = `Framework ${item.framework} · Unity ${item.unity} · 本地工程 ${fact.workspace.slice(0, 8)}`;
@@ -698,6 +738,19 @@ function timedImplementationResult(row, label = "") {
   const value = node("span", label ? `${label} · ` : null);
   value.append(implementationResult(row), ` · ${stamp(row.observed_at)}`);
   return value;
+}
+
+/** 同一 Batch 内按步骤顺序和终态显示，旧批次的成功仍用于验证状态。 */
+function latestPipifyExecution(events, outcomes) {
+  const latest = events.find(({ data }) => ["pipify-step", "pipify-batch"].includes(data.stage));
+  if (!latest?.data.attempt) return latest || outcomes.find(({ data }) => data.stage === "pipify-batch");
+  return events.filter(({ data, workspace }) => workspace === latest.workspace && data.attempt === latest.data.attempt)
+    .reduce((latestStep, row) => row.data.sequence > latestStep.data.sequence ? row : latestStep, latest);
+}
+
+function implementationLabel({ data }) {
+  const stage = implementationStages[data.stage];
+  return data.step && ["pipify-step", "pipify-batch"].includes(data.stage) ? `${stage} · ${data.step}` : stage;
 }
 
 function mobileBuildResults(outcomes) {
@@ -729,9 +782,10 @@ function elapsed(item) {
 }
 
 function playStartup(rows) {
-  const latest = rows.find((row) => row.data.stage === "startup-stage");
+  const startup = rows.filter((row) => row.data.stage === "startup-stage" && Object.hasOwn(startupStages, row.data.step));
+  const latest = startup[0];
   if (!latest) return null;
-  const phases = rows.filter((row) => row.data.stage === "startup-stage" &&
+  const phases = startup.filter((row) =>
     row.workspace === latest.workspace && row.data.attempt === latest.data.attempt);
   const order = Object.keys(startupStages);
   phases.sort((left, right) => order.indexOf(left.data.step) - order.indexOf(right.data.step));
@@ -765,19 +819,73 @@ function frameworkUpgrades(rows) {
   return evidenceSection("upgrade", "Framework 升级过程", detail);
 }
 
+/** 显示各模块能由当前上报确认的配置、开发操作和 Play 记录。 */
+function moduleUsagePanel(usage, workspaces, configuredTools, outcomes, pipify, sdk) {
+  const modules = new Set([...Object.keys(implementationModules), ...usage.keys()]);
+  const toolKeys = { config: "config", pipify: "pipify", upm: "plugpals" };
+  const developmentStages = { config: "config-export", pipify: "pipify-batch", upm: "plugpals-query", asset: "bundle-build" };
+  const playStages = { config: "config-load" };
+  const playModules = new Set(["asset", "procedure", "table", "localization", "ui", "network"]);
+  const missing = (text) => node("span", text, "muted");
+  const rows = [...modules].map((id) => {
+    const evidence = usage.get(id);
+    const tool = toolKeys[id];
+    const configured = configuredTools.has(tool);
+    let configuration = missing("未采集");
+    if (tool) {
+      configuration = workspaces.length ? statusPill(configured ? "已配置" : "待检查", configured) : missing("暂无上报");
+    } else if (id === "sdk") {
+      configuration = button("查看 SDK 清单", () => {
+        sdk.open = true;
+        sdk.scrollIntoView({ block: "nearest" });
+      }, "link");
+    }
+
+    const development = node("div");
+    const recentTool = id === "pipify" ? pipify : outcomes.find(({ data }) => data.stage === developmentStages[id]);
+    const calls = evidence?.count || 0;
+    if (calls > 0) development.append(node("div", `${calls} 条操作记录`));
+    if (evidence?.manual_exports) development.append(node("div", `其中手动导出 ${evidence.manual_exports} 次`));
+    if (evidence?.problems) development.append(node("div", `阻塞或失败 ${evidence.problems} 条`));
+    if (recentTool) development.append(timedImplementationResult(recentTool, implementationLabel(recentTool)));
+    if (!development.childNodes.length) development.append(missing(id === "sdk" ? "—" : "暂无近期上报"));
+
+    const playUse = outcomes.find(({ data }) => data.stage === "editor-module" && data.step === id);
+    const playStage = outcomes.find(({ data }) => data.stage === playStages[id]);
+    const tablesReady = id === "table" ? outcomes.find(({ data }) => data.stage === "table-ready") : null;
+    let play = missing("未采集实际使用");
+    if (evidence?.play_sessions) play = `${evidence.play_sessions} 次 Play 有使用记录`;
+    else if (playUse) play = `曾在 Play 中使用 · ${stamp(playUse.observed_at)}`;
+    else if (playStage) play = timedImplementationResult(playStage, implementationStages[playStage.data.stage]);
+    else if (id === "sdk") play = "—";
+    else if (playModules.has(id) || playStages[id]) play = missing("暂无上报");
+    if (tablesReady) {
+      const rows = node("div");
+      rows.append(node("div", `已注册数据表 · ${stamp(tablesReady.observed_at)}`),
+        evidence?.play_sessions || playUse ? node("div", play) : missing("暂无取表记录"));
+      play = rows;
+    }
+
+    const latest = Math.max(evidence?.last_use || 0, recentTool?.observed_at || 0,
+      playUse?.observed_at || 0, playStage?.observed_at || 0, tablesReady?.observed_at || 0);
+    return [implementationModules[id] || id, configuration, development, play, stamp(latest)];
+  });
+  const summary = table(["模块", "配置 / 启用", "开发操作", "Editor Play 记录", "最近记录"], rows);
+  summary.classList.add("module-usage");
+  return panel("模块接入与使用", node("p", "按项目汇总已上报的记录，次数统计近 30 天。", "muted"), summary);
+}
+
 /** 汇总项目已取得的实施证据，并保留各次执行的真实结果。 */
 function implementationPanel(result) {
   const facts = result.implementation || [];
   const workspaces = facts.filter((row) => row.data.stage === "workspace").map((row) => row.data);
   const events = facts.filter((row) => Object.hasOwn(implementationStages, row.data.stage));
   const outcomes = result.implementation_outcomes || events;
+  const pipify = latestPipifyExecution(events, outcomes);
   const issue = result.upgrade_issues?.[0];
   const usage = new Map((result.project_module_evidence || []).map((row) => [row.module, row]));
   if (!facts.length && !usage.size && !issue) return panel("工程实施", node("p", "等待项目首次上报实施记录。", "empty"));
   const configuredTools = new Set(result.configured_tools || []);
-  const moduleIds = new Set([...Object.keys(implementationModules), ...usage.keys()]);
-  const observedStages = { config: ["config-load", "config-export"], pipify: ["pipify-batch"],
-    upm: ["plugpals-query"], asset: ["bundle-build"], sdk: ["sdk-preload"] };
   const scopeName = (item) => [item.platform, item.channel, item.mode].filter(Boolean).join(" · ") || "工程级";
   const latestAt = Math.max(0, ...facts.map((item) => item.observed_at), issue?.observed_at || 0);
   const sdk = evidenceSection("sdk", "SDK 接入与构建", sdkPackageTable(workspaces));
@@ -793,11 +901,11 @@ function implementationPanel(result) {
         () => openIssue(issue.issue_id), "link") : "暂无记录"]]),
     table(["工具", "配置", "验证", "最近执行结果"], [["config", "Config", ["config-load", "config-export"]],
       ["pipify", "Pipify", ["pipify-batch"]], ["plugpals", "PlugPals", ["plugpals-query"]]].map(([id, label, stages]) => {
-      const recent = outcomes.find((row) => stages.includes(row.data.stage));
+      const recent = id === "pipify" ? pipify : outcomes.find((row) => stages.includes(row.data.stage));
       const success = outcomes.find((row) => stages.includes(row.data.stage) && row.data.outcome === "success");
       const configured = configuredTools.has(id);
       return [label, statusPill(configured ? "已配置" : "待检查", configured), implementationVerification(success),
-        recent ? timedImplementationResult(recent, implementationStages[recent.data.stage]) : "暂无记录"];
+        recent ? timedImplementationResult(recent, implementationLabel(recent)) : "暂无记录"];
     })),
     sdk,
     ...history,
@@ -810,19 +918,7 @@ function implementationPanel(result) {
         return [[implementationStages[item.stage], step].filter(Boolean).join(" · "), context, implementationResult(row),
           elapsed(item), stamp(row.observed_at)];
       })) : node("p", "等待工具执行结果。", "empty")),
-    panel("模块使用证据", table(["模块", "状态", "近 30 天工具调用", "近 30 天 Editor Play", "近 30 天阻塞或失败", "最近成功"],
-      [...moduleIds].map((id) => {
-        const evidence = usage.get(id);
-        const actual = outcomes.find((row) => observedStages[id]?.includes(row.data.stage));
-        const successful = outcomes.find((row) => observedStages[id]?.includes(row.data.stage) && row.data.outcome === "success");
-        const lastSuccess = Math.max(evidence?.last_success || 0, successful?.observed_at || 0);
-        const observed = Boolean(evidence || actual);
-        const status = lastSuccess ? statusPill("已验证", true) :
-          statusPill(observed ? "已观测使用" : "未观测", observed);
-        return [implementationModules[id] || id, status,
-          evidence?.count ?? "—", evidence?.play_sessions || "—", evidence?.problems ?? "—",
-          stamp(lastSuccess)];
-      }))));
+    moduleUsagePanel(usage, workspaces, configuredTools, outcomes, pipify, sdk));
 }
 
 function implementationEvidence(result) {
@@ -916,7 +1012,7 @@ async function refreshProjectDetail() {
   if (!current || current.pending || !current.implementation.isConnected || !byId("details").open) return;
   const summary = data?.projects.find((project) => project.id === current.id);
   if (!summary || (summary.last_seen === current.lastSeen && summary.team === current.team &&
-      data.server_time - current.refreshedAt < 60)) return;
+      data.server_time - current.refreshedAt < 15)) return;
   current.pending = true;
   try {
     const result = await request(current.path);
@@ -971,6 +1067,7 @@ async function openProject(id) {
       fields([["标识", id], ["团队", current.teamField]]),
       current.implementation,
       panel("环境快照", current.snapshots),
+      deleteAction(path, `确定删除项目「${result.project.name}」吗？项目的上报和仅由该项目上报的问题会一并删除。此操作不可撤销。今后的自动上报仍可重新登记该项目。`),
     ], options);
     projectLive = current;
   } catch (failure) {
@@ -1001,6 +1098,7 @@ function issueForm(issue, assignees) {
   error.hidden = true;
   error.setAttribute("role", "alert");
   form.append(row, noteBox, error, actions);
+  const saved = Object.fromEntries(new FormData(form));
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const payload = Object.fromEntries(new FormData(form));
@@ -1016,7 +1114,7 @@ function issueForm(issue, assignees) {
       save.disabled = false;
     }
   });
-  return form;
+  return { form, hasEdits: () => Object.entries(saved).some(([name, value]) => form.elements[name].value !== value) };
 }
 
 /** 展示单次发生的包版本和已上报的诊断，方便复制错误内容。 */
@@ -1048,13 +1146,15 @@ function occurrence(item) {
 /** 打开快速处理，历史备注与新记录的输入放在一起。 */
 async function openIssue(id) {
   const loading = node("p", "正在读取问题…", "empty");
-  openDialog(`#${id}`, [loading]);
+  const options = { closeOnBackdrop: true };
+  const path = `/api/maintainer/issues/${id}`;
+  openDialog(`#${id}`, [loading], options);
   try {
-    const result = await request(`/api/maintainer/issues/${id}`);
+    const result = await request(path);
     if (!loading.isConnected || !byId("details").open) return;
     const issue = result.issue;
-    const management = issue.duplicate_of ? button(`打开合并目标 #${issue.duplicate_of}`,
-      () => openIssue(issue.duplicate_of)) : issueForm(issue, result.assignees);
+    const editor = issue.duplicate_of ? null : issueForm(issue, result.assignees);
+    const management = editor?.form || button(`打开合并目标 #${issue.duplicate_of}`, () => openIssue(issue.duplicate_of));
     const history = result.history.length ? [table(["时间", "维护者", "状态", "处理记录"], result.history.map((entry) =>
       [stamp(entry.created_at), entry.actor, statusPill(statusNames[entry.status], entry.status === "closed"),
         node("span", entry.note, "issue-note")]))] : [];
@@ -1064,21 +1164,34 @@ async function openIssue(id) {
       panel("快速处理", management, ...history),
       panel("发生记录", ...(result.occurrences.length ? result.occurrences.map(occurrence)
         : [node("p", "暂无发生记录", "empty")])),
-    ]);
+      deleteAction(path, `确定删除问题 #${id}「${issue.title}」吗？发生记录和处理记录会一并删除。此操作不可撤销。`),
+    ], { ...options, hasEdits: editor?.hasEdits });
   } catch (failure) {
     if (loading.isConnected && byId("details").open) {
-      openDialog("读取问题失败", [node("p", failure.message, "error")]);
+      openDialog("读取问题失败", [node("p", failure.message, "error")], options);
     }
   }
 }
 
 // 按下和点击都落在遮罩上时关闭，避免拖选弹窗内文本时误关。
 let pointerDownOnBackdrop = false;
-byId("details").addEventListener("pointerdown", (event) => {
+const detailDialog = byId("details");
+byId("detail-close").addEventListener("click", closeDialog);
+detailDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeDialog();
+});
+detailDialog.addEventListener("close", () => {
+  if (!detailDialog.open) {
+    projectLive = null;
+    dialogHasEdits = null;
+  }
+});
+detailDialog.addEventListener("pointerdown", (event) => {
   pointerDownOnBackdrop = event.isPrimary && event.button === 0 && isDialogBackdrop(event);
 });
-byId("details").addEventListener("click", (event) => {
-  if (pointerDownOnBackdrop && isDialogBackdrop(event)) event.currentTarget.close();
+detailDialog.addEventListener("click", (event) => {
+  if (pointerDownOnBackdrop && isDialogBackdrop(event)) closeDialog();
   pointerDownOnBackdrop = false;
 });
 

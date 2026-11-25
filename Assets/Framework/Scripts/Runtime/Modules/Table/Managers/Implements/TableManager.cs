@@ -134,6 +134,9 @@ namespace NovaFramework.Runtime
                 }
                 m_Tables[table.GetType()] = table;
             }
+#if UNITY_EDITOR
+            EditorPlayEvidence.RegisterTableEvidence();
+#endif
             return true;
         }
 
