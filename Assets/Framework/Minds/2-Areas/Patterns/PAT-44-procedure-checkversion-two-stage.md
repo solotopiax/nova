@@ -21,102 +21,37 @@ related: []
 
 # PAT-44：ProcedureCheckVersion 两阶段编排：App 大版本 → Asset 资源差异，ForcedDownload 短路
 
-## 适用场景（When）
+## 适用场景
 
-启动流程中既有"App 大版本检查"又有"资源补丁检查"，二者**正交但有优先级**：
+启动流程需要独立判断 App 大版本更新、常规资源补丁和 WebGL 启动资源。三者合并决定后续路由。
 
-- App 强更生效时不应再做资源差异检查（用户都得跳商店了，资源差异无意义）
-- App 推荐更新或无更新时，是否执行资源差异检查由 `AssetComponent.EnableHotfix` 决定
-- 两条结论需要联合决定下一个 Procedure 跳转目标
-- WebGL 当前不具备商店或安装包更新路由，因此第一阶段固定为 `NoDownload`，但仍继续执行独立的 Asset Manifest 与 Warmup 流程
+## 核心做法
 
-## 核心做法（What & How）
+### 启动检查分两阶段
 
-### 编排骨架
+1. 先判断 App 大版本更新。强更结果直接进入 `ProcedureAppDownload`。WebGL 的 App 阶段采用 `NoDownload`。
+2. 计算本次需要的启动资源工作。`EnableHotfix` 控制常规资源检查和下载。WebGL 按资源策略另行决定是否加载清单并预热，选用 `TagsOnLaunch` 或 `AllOnLaunch` 时，即使关闭常规资源热更也可进入启动资源流程。
 
-```csharp
-private async UniTaskVoid RunCheckAsync(ProcedureOwner procedureOwner, CancellationToken ct)
-{
-    var appManager = FrameworkManagersGroup.GetManager<IAppManager>();
+### 路由条件
 
-    // 阶段 1：App 大版本检查（异常宽容，详见 [[PAT-43-optional-remote-check-tolerance|PAT-43]]）
-    AppVersionResult appResult = await appManager.CheckAsync(ct);
-
-    // 短路：强更直接跳下载，不查资源差异
-    if (appResult == AppVersionResult.ForcedDownload)
-    {
-        SetData(ProcedureDataKeys.AppVersionResult, appResult);
-        SetData(ProcedureDataKeys.HasAssetPatch, false);
-        m_NextState = typeof(ProcedureAppDownload);
-        m_CheckComplete = true;
-        return;
-    }
-
-    // 阶段 2：EnableHotfix 只控制 Asset 资源清单加载 + 差异检查
-    var assetComponent = FrameworkComponentsGroup.GetComponent<AssetComponent>();
-    if (!assetComponent.EnableHotfix)
-    {
-        SetData(ProcedureDataKeys.AppVersionResult, appResult);
-        SetData(ProcedureDataKeys.HasAssetPatch, false);
-        m_NextState = appResult == AppVersionResult.RecommendedDownload
-            ? typeof(ProcedureAppDownload)
-            : typeof(ProcedureLoadDll);
-        m_CheckComplete = true;
-        return;
-    }
-
-    var assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
-    await assetManager.LoadManifestAsync(null, ct);
-    bool hasPatch = await assetManager.HasPatchAsync(null, ct);
-
-    SetData(ProcedureDataKeys.AppVersionResult, appResult);
-    SetData(ProcedureDataKeys.HasAssetPatch, hasPatch);
-
-    m_NextState = appResult == AppVersionResult.RecommendedDownload
-        ? typeof(ProcedureAppDownload)
-        : hasPatch ? typeof(ProcedureHotfix) : typeof(ProcedureLoadDll);
-    m_CheckComplete = true;
-}
-```
-
-### 路由真值表（5 种情况）
-
-| AppVersionResult | HasAssetPatch | 下一 Procedure |
+| AppVersionResult | RequiresStartupAssetWork | 下一流程 |
 |---|---|---|
-| ForcedDownload | (任意) | ProcedureAppDownload |
-| RecommendedDownload | true | ProcedureAppDownload |
-| RecommendedDownload | false | ProcedureAppDownload |
-| NoDownload | true | ProcedureHotfix |
-| NoDownload | false | ProcedureLoadDll |
+| `ForcedDownload` | 任意 | `ProcedureAppDownload` |
+| `RecommendedDownload` | 任意 | `ProcedureAppDownload` |
+| `NoDownload` | `true` | `ProcedureHotfix` |
+| `NoDownload` | `false` | `ProcedureLoadDll` |
 
-> `RecommendedDownload` 现在也是框架内建弹窗分支。若 `EnableHotfix=true`，用户取消后按 `HasAssetPatch` 继续既有启动链；若 `EnableHotfix=false`，则直接续到 `ProcedureLoadDll`。
+推荐更新取消后也按 `RequiresStartupAssetWork` 继续到 `ProcedureHotfix` 或 `ProcedureLoadDll`。`ProcedureCheckVersion` 将 `AppVersionResult`、`HasAssetPatch` 和 `RequiresStartupAssetWork` 分开记录。`HasAssetPatch` 表示常规补丁判断结果，后续启动路由读取 `RequiresStartupAssetWork`。
 
-### 黑板写两键，不写枚举
+### 接口边界
 
-旧实现把"App 大版本"和"资源补丁"两类语义压扁进单枚举（`LaunchCheckResult.HotfixRequired`），下游 Procedure 必须二次拆包。**新做法用两键互不干扰**：
+- `IAppManager.CheckAsync` 的缺配和远端失败处理见 [[PAT-43-optional-remote-check-tolerance|PAT-43]]。
+- `IAssetManager.LoadManifestAsync` 在启动阶段被重复调用时复用已就绪的清单。
+- 浏览器 WebGL 使用独立的启动预热判断，平台适配可能提供自己的预下载策略，见 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 和 [版本检查](../../../Docs/Runtime/Modules/Procedure/ProcedureCheckVersion.md)。
 
-```csharp
-// ProcedureDataKeys.cs
-public static readonly string AppVersionResult = "ProcedureDataKeys.AppVersionResult";
-public static readonly string HasAssetPatch = "ProcedureDataKeys.HasAssetPatch";
-```
+## 为什么这么做
 
-下游想用哪个用哪个。例如 ProcedureAppDownload 需要 `AppVersionResult` 决定弹窗类型，ProcedureHotfix 不需要 `AppVersionResult`。
-
-### 接口契约要求
-
-- `IAppManager.CheckAsync` 必须**异常宽容**（参 [[PAT-43-optional-remote-check-tolerance|PAT-43]]）
-- `IAssetManager.LoadManifestAsync` 必须**幂等**（HashSet 守护已加载包）
-  - 否则下一个 Procedure（ProcedureLoadDll）再次调用会触发二次网络请求
-- 非 WebGL 的 `IAssetManager.HasPatchAsync` 通过 `CreateResourceDownloader().TotalDownloadCount > 0` 判定差异；WebGL Downloader 不能作为缓存完整性或启动路由依据，按 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 使用独立 Warmup 判断
-
-## 为什么这么做（Why）
-
-1. **职责分离**：App 大版本（更换二进制） vs Asset 资源（替换 AB）是两类完全不同的更新；编排层用枚举混合二者必然回头要拆包。
-2. **强更短路效率**：用户已确定跳商店时，资源差异检查浪费一次网络请求 + 清单加载时间。
-3. **两阶段保持独立**：`EnableHotfix` 只控制 Asset 检查阶段，不反向决定 App 大版本检测是否执行。
-4. **两键黑板**：避免下游 Procedure 必须知道枚举内部布局（耦合）；每个 Procedure 只关心自己需要的键。
-5. **接口幂等是编排可移动的前提**：LoadManifestAsync 从原本只在 LoadDll 调用，前移到 CheckVersion 后，仍然能保证 LoadDll 不二次拉清单——这是把 LoadManifestAsync 设计为幂等的根本原因。
+App 更新和资源工作有各自的目的。强更优先可省去本轮资源检查，推荐更新则需要保留后续分流信息。独立记录补丁结果与资源工作需求，可以表达 WebGL 无常规补丁但仍需预热的场景。
 
 ## 反模式（Anti-patterns）
 

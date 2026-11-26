@@ -38,6 +38,16 @@
       "when": "Windows 在暂停后只读复查 Codex 的当前状态"
     },
     {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> finding",
+      "when": "执行任务的 Agent 已核实当前 Framework 包内证据，且当前任务授权覆盖上报、反馈已授权并开启时，通过标准输入提交脱敏 JSON。填入钩子提供的 turn，保留返回的 report_id。Windows 使用 py -3 -B"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status [--report-id <reportId>]",
+      "when": "查询当前工程的待发记录和回执。任务收尾传入 finding 返回的 report_id 查询对应状态。首次查询可初始化本地记录库。Windows 使用 py -3 -B"
+    },
+    {
       "kind": "unity-editor-automation",
       "entry": "nova_project_action(operation=describe, action_id=<selected action id>)",
       "when": "所选 Skill 引用 Project Action，且需要区分当前 MCP 可执行、传输未就绪或 Action 未开放时；只允许 describe"
@@ -71,22 +81,28 @@
   ],
   "effects": [
     "read",
-    "workspace-write"
+    "workspace-write",
+    "external-write"
   ],
   "writeScope": {
     "allow": [
       "Library/Nova/Issues/hook-review-*/** 临时查询文件，结束时清理",
-      "Library/Nova/Issues/hook-review.sqlite3 及其 SQLite 事务文件，记录成员当日对当前版本的明确暂缓决定"
+      "Library/Nova/Issues/hook-review.sqlite3 及其 SQLite 事务文件，记录成员当日对当前版本的明确暂缓决定",
+      "Library/Nova/Issues/agent.sqlite3 及其 SQLite 事务文件，用于初始化本地记录库、登记已确认问题和保留回执",
+      "经授权提交的脱敏报告由现有发送器发送到 Nova 反馈服务，补传沿用原编号和正文"
     ],
     "deny": [
       "all other project writes"
     ]
   },
-  "locks": ["Library/Nova/Issues/hook-review.sqlite3 的 SQLite 写事务"],
+  "locks": [
+    "Library/Nova/Issues/hook-review.sqlite3 的 SQLite 写事务",
+    "Library/Nova/Issues/agent.sqlite3 的 SQLite 写事务和本地发送器租约"
+  ],
   "idempotency": "ensure-state",
   "confirmation": {
-    "requiredFor": [],
-    "rule": "有待审查或停用条目且当前版本当天未暂缓时，先提示并暂停当前任务。成员完成授权并开启后只读复查，或明确选择暂不授权或继续停用后记录当天决定，再继续。跨天或升级后重新检查。后续业务操作的确认由所选 Skill 执行。"
+    "requiredFor": ["通过 finding 提交脱敏问题并由本地队列发送到现有反馈服务"],
+    "rule": "有待审查或停用条目且当前版本当天未暂缓时，先提示并暂停当前任务。成员完成授权并开启后只读复查，或明确选择暂不授权或继续停用后记录当天决定，再继续。跨天或升级后重新检查。提交问题按当前任务授权和反馈审查状态执行，已有同范围授权继续有效。拿到上报编号后用 status 查回执，待发报告由现有发送器补传。后续业务操作的确认由所选 Skill 执行。"
   },
   "minimumEvidence": "static",
   "resultStates": [
@@ -96,6 +112,7 @@
   ],
   "evidence": [
     "新任务和跨天继续的任务以 --task-start 核查授权和启用状态；返回 blocked 即等待成员决定。完成开启后只读复查，明确暂缓时用本次标记记录后继续。",
+    "提交后按本轮 report_id 查询回执。queued 表示已在本地待补传，delivered 表示后台已确认接收，rejected 或 unknown 时核对证据、编号和工程归属。",
     "当前工程是否使用或明确要求 Nova 的依据；已接入时记录准确包身份、版本、实际包根与匹配入口，待解析不误报为未接入；相同工程未变的已核实上下文可复用。",
     "先选择 Nova 能力及执行路径，再使用通用 Unity Skill/CLI/MCP；引擎操作不替换框架业务入口、配置、生命周期和导出链，缺少工具与缺少框架能力分别报告。",
     "通用编辑器任务按 NA-002 记录目标工程、当前可用命令与交接入口。专项任务使用已选 Skill/contract 声明的执行和验证入口。",

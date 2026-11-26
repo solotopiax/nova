@@ -5,10 +5,9 @@ auto_generated: true
 
 # Nova Knowledge Base — RES 索引
 
-> **本文件由 `$nova-obs health --rebuild-index` 自动生成，请勿手工编辑。**
-> 维护方法：修改对应入库文件的 frontmatter（`summary` / `category` / `title`），重跑命令。
+> **本索引由 Nova 开发仓生成。** 标题、摘要和分类来自各条目的 Markdown。维护入口见 [Minds 工作指引](../AGENTS.md#默认写入策略)。
 
-加载策略：当用户问及 RES 相关内容时再加载本文；命中具体编号后再 `obsidian_get_note` 拉全文。
+按问题查找相关标题或摘要，再打开命中的 Markdown 正文。
 
 ## ai-collab
 

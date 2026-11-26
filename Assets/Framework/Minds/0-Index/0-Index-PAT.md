@@ -5,10 +5,9 @@ auto_generated: true
 
 # Nova Knowledge Base — PAT 索引
 
-> **本文件由 `$nova-obs health --rebuild-index` 自动生成，请勿手工编辑。**
-> 维护方法：修改对应入库文件的 frontmatter（`summary` / `category` / `title`），重跑命令。
+> **本索引由 Nova 开发仓生成。** 标题、摘要和分类来自各条目的 Markdown。维护入口见 [Minds 工作指引](../AGENTS.md#默认写入策略)。
 
-加载策略：当用户问及 PAT 相关内容时再加载本文；命中具体编号后再 `obsidian_get_note` 拉全文。
+按问题查找相关标题或摘要，再打开命中的 Markdown 正文。
 
 ## arch
 
@@ -25,7 +24,7 @@ auto_generated: true
 - [PAT-138 Editor HostPlayMode 跨平台真实包 Shader 重绑排障](../2-Areas/Patterns/PAT-138-editor-hostplaymode-cross-platform-shader-rebind.md) — 真实包洋红块先验shader
 - [PAT-154 Editor 热更缓存重置必须限定沙盒与框架版本记录](../2-Areas/Patterns/PAT-154-editor-hotfix-cache-reset-boundary.md) — 一键重置仅清 Editor 沙盒与 version 文件
 - [PAT-157 YooAsset 本地最新构建只能按完整性与写入时间选择](../2-Areas/Patterns/PAT-157-yooasset-latest-build-selection.md) — 先验证完整构建，再按 version 文件写入时间选最新
-- [PAT-28 Luban DataReceiver 资源对称释放：Build*Delegates + assetLocationMap 反查](../2-Areas/Patterns/PAT-28-luban-load-release-symmetric.md) — Luban Load与Release必须对称释放
+- [PAT-28 Luban 表数据加载与资源句柄释放](../2-Areas/Patterns/PAT-28-luban-load-release-symmetric.md) — 表资源的加载和释放沿同一资源句柄
 - [PAT-37 Runtime 侧禁止在 Asset 模块外直接依赖 YooAsset](../2-Areas/Patterns/PAT-37-no-yooasset-outside-asset-module.md) — YooAsset 细节只留在 Asset 模块
 - [PAT-70 YooAsset PackRule 选型与 PackTopDirectory 陷阱](../2-Areas/Patterns/PAT-70-yooasset-packrule-selection.md) — PackRule 按粒度选；TopDir 需子目录
 
@@ -47,7 +46,7 @@ auto_generated: true
 ## docs
 
 - [PAT-05 L0/L1/L2 三级文档体系 + S 级标准](../2-Areas/Patterns/PAT-05-l0-l1-l2-docs.md) — Docs 采用 L0/L1/L2 分层并保持互不重复
-- [PAT-109 UPM Kit/SDK 包必备 Nova/Docs 文档目录](../2-Areas/Patterns/PAT-109-upm-package-docs-mandatory.md) — Kit/SDK 包必带 Nova/Docs 与 INDEX.md
+- [PAT-109 独立 UPM Kit/SDK 的文档入口与归属](../2-Areas/Patterns/PAT-109-upm-package-docs-mandatory.md) — 独立包文档从实际解析版本的索引进入
 - [PAT-115 CHANGELOG 与项目组文案写人话](../2-Areas/Patterns/PAT-115-changelog-human-readable.md) — 先讲功能作用，明确要求时才添加重要更新，变更分类有正文才出现
 - [PAT-116 cs↔Docs 镜像同步铁律](../2-Areas/Patterns/PAT-116-cs-doc-mirror-sync.md) — 代码事实变化时必须同轮刷新 Docs 镜像
 - [PAT-65 Demo 接口覆盖标准：8 维 + 取舍规则](../2-Areas/Patterns/PAT-65-demo-coverage-standard.md) — 8 维覆盖矩阵 + 重载族折叠 + 模块 12 叶子上限

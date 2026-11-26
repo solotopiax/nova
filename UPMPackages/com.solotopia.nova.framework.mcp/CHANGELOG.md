@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-11-26
+
+### Added
+
+- 提供只读的 Unity Editor 传输状态，区分 Coplay HTTP 已连接与 stdio 已监听。
+
 ## [0.1.9] - 2026-11-13
 
 ### Added

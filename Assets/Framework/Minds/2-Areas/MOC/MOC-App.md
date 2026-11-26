@@ -60,7 +60,7 @@ Nova.App
 - 启动跳转和 `ProcedureAppDownload` 属于 `Procedure`
 - `LauncherUI` 是启动期 UI，不是 App 模块本体
 - `EnableHotfix` 在 `AssetComponent / AssetManagerConfig`，不在 App 模块
-- `ProcedureCheckVersion` 始终先做 App 大版本判断，再按 `EnableHotfix` 决定是否做资源补丁判断
+- `ProcedureCheckVersion` 先处理 App 大版本阶段。非 WebGL 可执行大版本查询，WebGL 采用 `NoDownload`。后续资源工作由 [版本检查](../../../Docs/Runtime/Modules/Procedure/ProcedureCheckVersion.md) 根据项目配置与平台判定。
 - `AppDownloadCheckUrl` 为空时，App 检查直接降级为 `NoDownload` 并继续启动链
 - `ProcedureAppDownload` 是 Procedure，不是 App 模块内部类
 
@@ -69,8 +69,8 @@ Nova.App
 
 ## 导航提醒
 
-- `RecommendedDownload` 已是框架内建弹窗决策点，但取消后仍回到原有热更 / 启动链。
-- `EnableHotfix=false` 不会跳过 App 大版本检测；它只会跳过 Asset 热更检查。
+- `RecommendedDownload` 的弹窗取消后，流程按 `RequiresStartupAssetWork` 决定是否进入启动资源阶段。
+- `EnableHotfix=false` 关闭常规资源热更检查。App 大版本阶段和 WebGL 启动预热沿各自条件处理。
 - 具体实现完备度、下载链路状态与平台差异，应回到 `Docs` 与源码确认。
 - 这页只回答边界与入口，不回答“当前业务是否已经接完”。
 

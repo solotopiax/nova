@@ -3,7 +3,7 @@
 ![Nova](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.18-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.19-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4.x-blue.svg)
 
 **Nova 是 Solotopia 面向 Unity 游戏开发的客户端框架。**
@@ -42,7 +42,7 @@
 <tr><td><code>com.solotopia.sqlcipher4unity3d</code></td><td>10.0.6</td></tr>
 <tr><td><code>com.unity.nuget.newtonsoft-json</code></td><td>3.2.2</td></tr>
 <tr><td><code>com.unity.scriptablebuildpipeline</code></td><td>4.0.1</td></tr>
-<tr><td><code>com.solotopia.nova.framework.mcp</code></td><td>0.1.9</td></tr>
+<tr><td><code>com.solotopia.nova.framework.mcp</code></td><td>0.1.10</td></tr>
 </table>
 </td>
 </tr>

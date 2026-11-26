@@ -2,7 +2,7 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.9`
+> 当前版本：`0.1.10`
 >
 > 当前默认 Provider：`com.coplaydev.unity-mcp@10.3.0`
 
@@ -17,7 +17,9 @@ Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `no
 
 ## 安装与自动衔接
 
-新增界面控件查询与绑定操作需由 Framework `0.7.9` 与本包 `0.1.9` 配套提供。请从 `Nova → Open PlugPals → 外网仓库` 升级 Framework，由 UPM 解析匹配的 MCP 包；新旧版本混装会使整个 Project Action 网关不可用。
+Framework `0.7.19` 依赖 MCP `0.1.10`，用于读取 Coplay 的桥接状态。请从 `Nova → Open PlugPals → 外网仓库` 升级 Framework，由 UPM 解析匹配的 MCP 包。
+
+界面控件查询与绑定自 Framework `0.7.9` 和 MCP `0.1.9` 的配套版本开始提供。混装不兼容的版本会使 Project Action 网关不可用。
 
 消费项目只安装或升级 `com.solotopia.nova.framework`；UPM 应沿 Framework 的显性依赖自动解析本包，再解析：
 

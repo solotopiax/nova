@@ -3588,7 +3588,6 @@
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Compilation.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Implementation.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Play.cs",
-        "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.Upgrade.cs",
         "Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.NovaIssues.CodexHooks.cs",
         "Assets/Framework/Agents/Tools/nova_issues_agent.py",
         "Assets/Framework/Agents/Tools/nova_hook_review.py"
@@ -3648,14 +3647,19 @@
           "when": "按 NA-002 发现目标 Editor 提供的场景层级、Unity 测试和截图命令时"
         },
         {
-          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status",
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> finding",
           "kind": "cli",
-          "when": "排查当前工作区的任务归因、待发队列及最近送达回执。项目成员在 Codex 中自行审查反馈授权"
+          "when": "当前任务已授权并确认框架侧证据时，通过标准输入提交脱敏摘要。传入钩子提供的 turn，用返回的上报编号核对送达状态"
+        },
+        {
+          "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_issues_agent.py\" --project <projectRoot> status [--report-id <reportId>]",
+          "kind": "cli",
+          "when": "按上报编号核对待发或送达回执，或查看当前工作区的任务归因及最近上报。项目成员在 Codex 中自行审查反馈授权"
         },
         {
           "entry": "project .codex/hooks.json + referenced Library/Nova/Issues/nova_issues_agent-*.py",
           "kind": "workspace-inspection",
-          "when": "Nova 升级后或定向排查时核对项目反馈定义和脚本是否齐备，实际授权由 Codex 审查状态决定"
+          "when": "Nova 升级后或定向排查时核对项目反馈定义和脚本是否齐备，Unity MCP 调用统计在 Codex 中单独授权"
         },
         {
           "entry": "python3 -B \"<resolved Framework package>/Agents/Tools/nova_hook_review.py\" --project <projectRoot> --task-start",

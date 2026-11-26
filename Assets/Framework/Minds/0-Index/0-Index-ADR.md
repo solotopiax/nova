@@ -5,10 +5,9 @@ auto_generated: true
 
 # Nova Knowledge Base — ADR 索引
 
-> **本文件由 `$nova-obs health --rebuild-index` 自动生成，请勿手工编辑。**
-> 维护方法：修改对应入库文件的 frontmatter（`summary` / `category` / `title`），重跑命令。
+> **本索引由 Nova 开发仓生成。** 标题、摘要和分类来自各条目的 Markdown。维护入口见 [Minds 工作指引](../AGENTS.md#默认写入策略)。
 
-加载策略：当用户问及 ADR 相关内容时再加载本文；命中具体编号后再 `obsidian_get_note` 拉全文。
+按问题查找相关标题或摘要，再打开命中的 Markdown 正文。
 
 ## arch
 
@@ -85,7 +84,7 @@ auto_generated: true
 - [ADR-043 GameSave 全量/非全量由 proto full 字段显式区分](../2-Areas/ADR/ADR-043-gamesave-full-explicit-flag.md) — 协议 full=true 是全量唯一信号，废弃 keys 空判
 - [ADR-045 SetFullAsync 全量上传 value 复用 datas[0].Value（Key 空串）](../2-Areas/ADR/ADR-045-setfull-value-via-datas0.md) — 全量上传载荷复用 datas[0]，Key 留空串
 - [ADR-046 Sound/Vibrate 模块对外 API 不暴露按行重载](../2-Areas/ADR/ADR-046-sound-vibrate-no-by-row-api.md) — 表配置按名称访问，替代输入显式命名
-- [ADR-047 Editor 激活 ConfigMaster 锚点（Globals.json + GUID + 四段回退）](../2-Areas/ADR/ADR-047-editor-active-master-anchor.md) — Globals.json 锚定 Editor 激活 master
+- [ADR-047 Editor 激活 ConfigMaster 锚点（Globals.json + GUID + 四段回退）](../2-Areas/ADR/ADR-047-editor-active-master-anchor.md) — 哪份 ConfigMaster 在 Editor 里生效
 - [ADR-048 Nova.prefab 跟主框架版本走（amends ADR-033）](../2-Areas/ADR/ADR-048-nova-prefab-follow-framework.md) — sample scene 引用主框架包内 prefab 实例
 - [ADR-049 YooAsset Settings 路径 ConfigMaster 化（含 UPM 包本地 fork）](../2-Areas/ADR/ADR-049-yooasset-settings-via-configmaster.md) — YooAsset 设置路径收口 ConfigMaster
 - [ADR-053 Kit 配置模板化（IKitConfig + ConfigWindow Kit 一级组 + Kit 入口极简收口）](../2-Areas/ADR/ADR-053-kit-config-templating.md) — Kit 固有配置模板化，入口收口为极简形态

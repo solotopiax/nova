@@ -85,7 +85,7 @@ persistentDataPath/Asset/{package}.version
 
 ### 4. WebGL 保持 Host 拓扑并临时回退首包元数据
 
-WebGL Host 在 YooAsset 官方 `BuiltinCatalog.bytes` 可访问时使用 `WebServer + WebNetwork`；Catalog 不存在或探测失败时使用纯 `WebNetwork`。只有前一种拓扑在远端元数据候选全部失败后，才由 Nova 临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`；整个过程不销毁 Host 包，也不切换到依赖本地文件 IO 的 Offline/Sandbox 链：
+WebGL Host 的文件系统选择遵循 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 的首包布局决策。当前 [Player 布局清单](../../../Docs/Runtime/Modules/Asset/WebGLAssetStrategies.md#首包构建布局与运行时文件系统)登记带首包 Catalog 的 Package。远端元数据候选全部失败且当前 Package 带首包 Catalog 时，Nova 临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，全过程沿用当前 Host 包和文件系统拓扑。
 
 - 首包元数据仍通过 YooAsset 与 UnityWebRequest 加载，不使用 `System.IO`。
 - 临时路由只影响版本元数据；Bundle 仍保持 `WebServer + WebNetwork` 文件系统拓扑。
@@ -93,7 +93,7 @@ WebGL Host 在 YooAsset 官方 `BuiltinCatalog.bytes` 可访问时使用 `WebSer
 - 无论回退成功或失败，元数据路由都在 `finally` 中恢复为远端候选。
 - 回退成功的包加入本次启动离线恢复集合，跳过本轮远端热更；它不推进 `LastBootableVersion`。
 
-因此 WebGL 以官方 Catalog 是否存在决定回退边界：有 Catalog 时为远端最新清单 → 首包清单 → 抛出原始远端错误；纯 CDN 没有 Catalog，远端失败后直接抛出原始错误。Nova 不生成额外布局标记。WebNetwork 的 `IsDownloadRequired()` 固定返回 false，不能用它证明已有 Manifest 的启动范围完整，所以 WebGL 不复用非 WebGL 的“当前已激活清单”分支。`LaunchHotfixTags` 只定义 `TagsOnLaunch` 的预热范围，不决定 Pipify 首包布局。该能力不等价于浏览器冷离线启动，HTML/WASM/StreamingAssets 仍需由站点或 Service Worker 提供。
+因此 WebGL 以官方 Catalog 是否存在决定回退边界。有 Catalog 时按远端最新清单、首包清单的顺序尝试，两者均失败时抛出原始远端错误。纯 CDN 没有 Catalog，远端失败后直接抛出原始错误。WebNetwork 的 `IsDownloadRequired()` 固定返回 false，不能用它证明已有 Manifest 的启动范围完整，所以 WebGL 不复用非 WebGL 的“当前已激活清单”分支。`LaunchHotfixTags` 只定义 `TagsOnLaunch` 的预热范围，不决定 Pipify 首包布局。该能力不等价于浏览器冷离线启动，HTML/WASM/StreamingAssets 仍需由站点或 Service Worker 提供。
 
 ### 5. 启动 Tag 是完整性边界，不是业务层硬编码补丁
 

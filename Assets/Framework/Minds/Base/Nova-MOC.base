@@ -20,7 +20,7 @@ properties:
     displayName: 层级
 views:
   - type: table
-    name: 21 张 MOC（按层级分组）
+    name: 模块图谱（按层级分组）
     groupBy:
       property: formula.module_layer
       direction: ASC

@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [0.7.19] - 2026-11-26
+
+### Fixed
+
+- 修正 WebGL 资源指南对首包布局清单的说明。WebGL Player 构建后会生成清单，Host 启动时用它判断资源从哪里加载。
+
+- 更新 Minds 的 SDK 文档定位、启动热更和资源释放说明，并修正模块图谱视图标题。
+
+- 修复 Windows Unity Editor 的 Nova 自动反馈可能无法上报环境和 Framework 版本的问题。升级后会重新采集当前版本，并继续补传已有待发报告。
+
+- 项目任务中确认的框架问题按已有授权及时提交，收尾可按上报编号核对后台回执或待补传状态。
+
+- 任务收尾会核对本轮已确认的框架问题。缺少待发记录或回执时，钩子会要求执行 Agent 复核一次。
+
+### Changed
+
+- Nova 自动反馈停止采集 Editor 启动、Framework 升级和 Pipify 步骤明细。Pipify 上报 Batch 结果，SDK 构建汇总使用 Android 和 iOS 的 Player 或平台工程构建结果。
+
+- Nova 自动反馈按实际成功调用汇总 Editor Play 中的模块使用。调用次数分批上报，旧版按场次记录的数据保留原义。
+
+### Added
+
+- Nova 自动反馈采集工作区的 Unity MCP 桥接状态和上报机器的操作系统。成员可在 Codex 单独启用 Unity MCP 工具调用统计。
+
 ## [0.7.18] - 2026-11-25
 
 ### Added

@@ -1,16 +1,18 @@
 ---
 id: PAT-28
-title: Luban DataReceiver 资源对称释放：Build*Delegates + assetLocationMap 反查
+title: Luban 表数据加载与资源句柄释放
 type: pattern
 status: active
 date: 2026-05-17
-summary: Luban Load与Release必须对称释放
+summary: 表资源的加载和释放沿同一资源句柄
 category: asset
 aliases:
   - PAT-28-luban-load-release-symmetric
 keywords:
   - PAT-28
-  - PAT-28-luban-load-release-symmetric
+  - LubanDataReceiver
+  - IAssetHandle
+  - 表资源释放
 tags:
   - pattern
   - nova
@@ -22,69 +24,32 @@ related:
   - "[[ADR-011-load-unload-and-ireference-pairing|ADR-011]]"
 ---
 
-# PAT-28：Luban DataReceiver 资源对称释放（Build*Delegates + assetLocationMap）
+# PAT-28：Luban 表数据加载与资源句柄释放
 
-## 适用场景（When）
+## 适用场景
 
-任何 Manager 走 `LubanDataReceiver(dataCache, unit, loadFunc, releaseFunc)` 加载 JSON 数据表的场景。已知命中模块：Sound / Vibrate / UI / Localization / Table（Network 待迁移）。
+框架模块通过 `DataReceiver` 读取、解析并缓存表文件。按格式选择 JSON 接收器 `LubanDataReceiver` 或二进制接收器 `LubanBinaryDataReceiver`。Network 的 HostKey 和 NetCmd 已通过 `LubanRuntimeData.CreateReceiver` 按所配置格式选择接收器。
 
-## 核心做法（What & How）
+## 核心做法
 
-**结构铁律：Load 委托和 Release 委托必须由同一个 Build 方法成对产出，绝不允许 load 走顶层闭包、release 走 `_ => { }` 或现场内嵌 lambda。**
+- `IAssetManager.LoadAsync<T>()` 或 `LoadSync<T>()` 返回本次请求的 `IAssetHandle<T>`。持有者从 `handle.Asset` 取资源，通过同一 `handle.Release()` 释放。
+- `DataReceiver` 接收加载委托返回的资源对象。对有效资源会在解析结束后调用所传的 `ReleaseAssetAction`，包括解析抛出异常的路径。
+- 当前 Network 和 Sound 的表加载委托取得 `TextAsset` 后自行释放句柄，再将资源对象交给接收器。在这条链路中，接收器的释放回调为空。复核是否遗漏释放时，应顺着本次实际句柄查释放位置。
+- 接入其他资源读取流程时，按实际使用期限明确谁持有和释放句柄。同一地址的多次加载分别核对各次载入的句柄。
 
-模板（异步路径，同步路径对称）：
+## 为什么这么做
 
-```csharp
-private void Build{Module}DataAsyncDelegates(
-    out DataReceiver.LoadAssetAsyncFunc loadFunc,
-    out DataReceiver.ReleaseAssetAction releaseFunc)
-{
-    IAssetManager assetManager = m_AssetManager;
-    Dictionary<UnityEngine.Object, string> assetLocationMap = new Dictionary<UnityEngine.Object, string>();
+接收器负责消费表内容，资源句柄的持有者掌握释放时机。明确这两份职责，可以同时检查漏释放、重复释放和读取过程中的资源寿命。旧地址反查方式的迁移背景见 [[ADR-042-assetmanager-load-api-all-return-handle|ADR-042]]。
 
-    loadFunc = async (assetLocation) =>
-    {
-        UnityEngine.Object asset = await assetManager.LoadAsync<TextAsset>(assetLocation);
-        if (asset != null)
-        {
-            assetLocationMap[asset] = assetLocation;
-        }
-        return asset;
-    };
+## 反模式
 
-    releaseFunc = rawAsset =>
-    {
-        if (rawAsset is UnityEngine.Object unityAsset
-            && assetLocationMap.TryGetValue(unityAsset, out string location))
-        {
-            assetLocationMap.Remove(unityAsset);
-            assetManager.Release(location);
-        }
-    };
-}
-```
+- 只返回裸资源对象，丢失本次载入的句柄。
+- 按地址猜测应释放的请求。同一个地址可被多个调用方载入。
+- 看见空的释放回调就判断发生泄漏。应先核对加载委托中的实际句柄所有权。
 
-调用侧（在 `LoadAsync` / `LoadSync` 中）一行替换原本的 `_ => { }`：
+## 来源和示例
 
-```csharp
-Build{Module}DataAsyncDelegates(out DataReceiver.LoadAssetAsyncFunc loadFunc, out DataReceiver.ReleaseAssetAction releaseFunc);
-```
-
-## 为什么这么做（Why）
-
-1. **同一条调用链里保存反查关系**：业务只拿到裸 `UnityEngine.Object`，释放时必须能把它对应回 `assetLocation`。
-2. **load 与 release 必须对称**：`assetLocationMap` 在 load 时写入、release 时清理，避免把状态散到外部成员字段。
-3. **闭包 + 局部 Dictionary 优于成员字段**：单次 `LoadAsync` 的生命周期结束后，反查表也应结束生命周期。
-
-## 反模式（Anti-patterns）
-
-| 反模式 | 后果 |
-|---|---|
-| `releaseFunc = _ => { }` + 注释「YooAsset 引用计数自管」 | 真机内存累积泄漏；ADR 已一票否决 |
-| `loadFunc` 在顶层定义、`releaseFunc` 在 `AddTask` 方法内现场内嵌 lambda（捕获循环局部变量 location） | 「load 和 release 姿势不一致，不太好」（用户原话）；不易跨模块复用，闭包变量极易出 bug |
-| 把 `assetLocationMap` 提到成员字段 | 多次 `LoadAsync` 调用之间脏数据累积；清空时机难定 |
-| 用 `WeakReference` / `ConditionalWeakTable` 等"高级"反查 | YooAsset 资产是普通 UnityEngine.Object，不需要弱引用语义；徒增复杂度 |
-
-## 跨项目复用提示
-
-可直接复用到任何「YooAsset + 资产委托加载」场景，不限于 Luban——本质是「load/release 委托必须在同一函数闭包内成对产出 + 用反查表桥接裸资产到 location」的通用资源管理姿势。
+- [DataReceiver](../../../Docs/Runtime/Core/Table/DataReceiver.md) 和 [LubanDataReceiver](../../../Docs/Runtime/Core/Table/LubanDataReceiver.md)
+- [LubanRuntimeData.cs](../../../Scripts/Runtime/Core/Table/LubanRuntimeData.cs)
+- [NetworkManager.cs](../../../Scripts/Runtime/Modules/Network/Managers/NetworkManager/Implements/NetworkManager.cs)
+- [SoundManager.Methods.cs](../../../Scripts/Runtime/Modules/Sound/Managers/Implements/SoundManager.Methods.cs)

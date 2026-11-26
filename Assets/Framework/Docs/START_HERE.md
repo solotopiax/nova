@@ -6,7 +6,7 @@
 
 消费项目在 Codex 开始一项 Nova 工程任务、跨天后继续任务或升级 Framework 后，执行 [Nova 自动反馈审查检查](Onboarding/NOVA_ISSUES.md#在-codex-任务开始时检查审查状态)。有待审查或停用条目时暂停当前任务，等成员开启反馈或明确选择暂缓。当日暂缓仅适用于当前版本，次日或升级后再次检查。所有 Nova 钩子都已授权并开启时直接继续。普通业务源码和文档任务同样适用。
 
-打开 Unity 后，[Nova 问题自动反馈](Onboarding/NOVA_ISSUES.md) 会自动发送允许上报的环境和验证信息。日常任务发现有框架侧证据的问题时，把脱敏证据交给本地 Agent。业务通过绕行完成时也保留已确认的框架问题。
+打开 Unity 后，[Nova 问题自动反馈](Onboarding/NOVA_ISSUES.md) 会自动发送允许上报的环境和验证信息。在任务中确认框架问题时，按[提交和核对回执](Onboarding/NOVA_ISSUES.md#提交已确认的框架问题)处理。普通业务、排查、验证和绕行过程中发现的问题都走这条入口。
 
 进入任意 Nova 研发任务并定位当前 Framework 后，先读取[日常研发的最小原则](Onboarding/DEVELOPMENT_CONSTRAINTS.md#日常研发的最小原则)，再按任务选择相关 NA 条目和具体操作；在展开模块合同、业务日志或源码前完成这一步。相同工程、同一会话中已读取且未变化的共同上下文可以复用。这些原则覆盖所有 Nova 项目 Skill，不需要先触发 `nova-project-development`。
 

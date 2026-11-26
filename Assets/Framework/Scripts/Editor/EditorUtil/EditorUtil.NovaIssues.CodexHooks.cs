@@ -47,6 +47,9 @@ namespace NovaFramework.Editor
                 + "是否启用由你决定，也可以随时在 Codex 中停用。感谢你的支持！";
             private const string c_CodexPostToolMatcher =
                 "^(?:Bash|exec_command|apply_patch|Read|Write|Edit|nova_project_action|mcp__.+__(?:nova_project_action|execute_custom_tool))$";
+            private const string c_CodexUnityMcpTitle = "Nova 记录 Unity MCP 使用";
+            private const string c_CodexUnityMcpMatcher =
+                "^mcp__(?:(?i:unitymcp)|nova_unity_[a-f0-9]{16})__[A-Za-z0-9_.-]+$";
             private static readonly (string Event, string Label)[] s_CodexHookLabels =
             {
                 ("SessionStart", c_CodexFeedbackTitle),
@@ -56,6 +59,7 @@ namespace NovaFramework.Editor
                 ("Interrupt", "Nova 结束本机观察")
             };
             private static readonly Regex s_CodexAgentDigest = new(@"nova_issues_agent-([a-f0-9]{64})\.py' hook\z");
+            private static readonly Regex s_CodexUnityMcpAgentDigest = new(@"nova_issues_agent-([a-f0-9]{64})\.py' mcp-usage\z");
             private static string s_CodexHookSource;
             private static string s_CodexHookWarning;
             private static long s_NextCodexHookAttempt;
@@ -108,6 +112,7 @@ namespace NovaFramework.Editor
                     Log.Debug(LogTag.Editor,
                         $"[{c_CodexFeedbackTitle}] {c_CodexFeedbackDescription}\n" +
                         "在工程目录启动 Codex CLI 后，输入 /hooks 查看。\n" +
+                        $"如需统计 Unity MCP 工具的调用次数和结果，可单独启用「{c_CodexUnityMcpTitle}」。\n" +
                         "在 ChatGPT 桌面 App 的 Codex 中打开同一个本地工程。若有「设置 → Hooks（钩子）」入口，可从这里查看。");
                 }
                 else if (result.Reason != null)
@@ -138,32 +143,39 @@ namespace NovaFramework.Editor
                     return (CodexHookPreparation.Blocked, "工程的 Codex 配置已由 Git 跟踪。");
 
                 string existing = null;
+                JObject installedDefinition = null;
                 string installedDigest = null;
+                string monitoringDigest = null;
                 if (File.Exists(config))
                 {
                     const string existingConfig = "工程已有自己的 Codex 钩子配置，Nova 已保留该配置。";
                     if (new FileInfo(config).Length > 64 * 1024)
                         return (CodexHookPreparation.Blocked, existingConfig);
                     existing = File.ReadAllText(config);
-                    installedDigest = ReadGeneratedCodexHookDigest(JObject.Parse(existing), folder);
+                    installedDefinition = JObject.Parse(existing);
+                    installedDigest = ReadGeneratedCodexHookDigest(installedDefinition, folder);
                     if (installedDigest == null)
                         return (CodexHookPreparation.Blocked, existingConfig);
+                    monitoringDigest = ReadUnityMcpHookDigest(installedDefinition, folder);
                 }
 
                 var ignored = EnsureCodexHookIgnored(project);
                 if (ignored.State != CodexHookPreparation.Current)
                     return ignored;
 
-                if (installedDigest != null)
+                foreach (string priorDigest in new[] { installedDigest, monitoringDigest }.Where(value => value != null).Distinct())
                 {
-                    string installedAgent = CodexAgentPath(folder, installedDigest);
+                    string installedAgent = CodexAgentPath(folder, priorDigest);
                     if (IsLink(installedAgent) || Directory.Exists(installedAgent))
                         return (CodexHookPreparation.Blocked, "既有反馈脚本路径指向链接或目录。");
-                    if (File.Exists(installedAgent))
-                        return CodexAgentMatchesDigest(installedAgent, installedDigest)
-                            ? (CodexHookPreparation.Current, null)
-                            : (CodexHookPreparation.Blocked, "既有反馈脚本内容已变动，请检查当前工作区的反馈文件。");
+                    if (File.Exists(installedAgent) && !CodexAgentMatchesDigest(installedAgent, priorDigest))
+                        return (CodexHookPreparation.Blocked, "既有反馈脚本内容已变动，请检查当前工作区的反馈文件。");
                 }
+
+                bool keepBase = installedDigest != null && File.Exists(CodexAgentPath(folder, installedDigest));
+                bool keepMonitoring = monitoringDigest != null && File.Exists(CodexAgentPath(folder, monitoringDigest));
+                if (keepBase && keepMonitoring)
+                    return (CodexHookPreparation.Current, null);
 
                 string source = CodexAgentSource(framework);
                 if (!File.Exists(source))
@@ -181,14 +193,19 @@ namespace NovaFramework.Editor
                 else if (!File.ReadAllBytes(agent).SequenceEqual(script))
                     return (CodexHookPreparation.Blocked, "本地反馈脚本路径已被其他文件占用。");
 
-                string desired = CodexHookDefinition(folder, digest);
-                if (installedDigest == digest)
-                    return (CodexHookPreparation.Current, null);
+                // 保留原有五个钩子的命令和位置，供 Codex 沿用成员已作出的选择。
+                JObject desired = keepBase ? installedDefinition :
+                    CodexHookConfiguration(folder, digest, c_CodexFeedbackDescription, c_CodexFeedbackTitle);
+                var postToolUse = (JArray)desired["hooks"]["PostToolUse"];
+                if (postToolUse.Count == 2)
+                    postToolUse.RemoveAt(1);
+                postToolUse.Add(CodexUnityMcpHookGroup(folder, keepMonitoring ? monitoringDigest : digest));
                 if (existing != null && File.ReadAllText(config) != existing)
                     return (CodexHookPreparation.Retry, "项目的 Codex 配置正在变动。");
 
                 Directory.CreateDirectory(configFolder);
-                WriteCodexFile(folder, config, Encoding.UTF8.GetBytes(desired), replace: existing != null);
+                string body = desired.ToString(Formatting.Indented) + System.Environment.NewLine;
+                WriteCodexFile(folder, config, Encoding.UTF8.GetBytes(body), replace: existing != null);
                 return (CodexHookPreparation.Updated, null);
             }
 
@@ -208,9 +225,24 @@ namespace NovaFramework.Editor
                     c_InitialCodexFeedbackDescription => c_PreviousCodexFeedbackTitle + "（可选）",
                     _ => null
                 };
+                if (title == null)
+                    return null;
                 string digest = match.Groups[1].Value;
-                return title != null && JToken.DeepEquals(definition, CodexHookConfiguration(folder, digest, description, title))
-                    ? digest : null;
+                JObject expected = CodexHookConfiguration(folder, digest, description, title);
+                string monitoringDigest = ReadUnityMcpHookDigest(definition, folder);
+                if (monitoringDigest != null)
+                    ((JArray)expected["hooks"]["PostToolUse"]).Add(CodexUnityMcpHookGroup(folder, monitoringDigest));
+                return JToken.DeepEquals(definition, expected) ? digest : null;
+            }
+
+            /// <summary>只接受完整的 Unity MCP 监测定义，保留成员对该钩子的独立选择。</summary>
+            private static string ReadUnityMcpHookDigest(JObject definition, string folder)
+            {
+                JToken group = definition.SelectToken("hooks.PostToolUse[1]");
+                string command = (group?.SelectToken("hooks[0].command") as JValue)?.Value as string;
+                Match match = s_CodexUnityMcpAgentDigest.Match(command ?? string.Empty);
+                string digest = match.Success ? match.Groups[1].Value : null;
+                return digest != null && JToken.DeepEquals(group, CodexUnityMcpHookGroup(folder, digest)) ? digest : null;
             }
 
             /// <summary>核对原脚本仍是生成时的字节，供升级沿用同一条 Codex 审查定义。</summary>
@@ -292,29 +324,13 @@ namespace NovaFramework.Editor
             private static string CodexAgentPath(string folder, string digest) =>
                 Path.Combine(folder, $"{c_CodexAgentName}-{digest}.py");
 
-            /// <summary>生成 Codex 支持的钩子和审查标题，事件与本地反馈脚本的处理入口对应。</summary>
-            private static string CodexHookDefinition(string folder, string digest,
-                string description = c_CodexFeedbackDescription, string startupTitle = c_CodexFeedbackTitle) =>
-                CodexHookConfiguration(folder, digest, description, startupTitle).ToString(Formatting.Indented) + System.Environment.NewLine;
-
-            /// <summary>供配置生成和状态核对共用当前框架的钩子定义。</summary>
+            /// <summary>生成既有的五个自动反馈钩子，供安装和状态核对共用。</summary>
             private static JObject CodexHookConfiguration(string folder, string digest, string description, string startupTitle)
             {
-                string agent = CodexAgentPath(folder, digest);
-                string shellPath = "'" + agent.Replace("'", "'\"'\"'") + "'";
-                string powershellPath = "'" + agent.Replace("'", "''") + "'";
                 var hooks = new JObject();
                 foreach (var (eventName, label) in s_CodexHookLabels)
                 {
-                    var handler = new JObject
-                    {
-                        ["type"] = "command",
-                        ["command"] = $"python3 -B {shellPath} hook",
-                        ["commandWindows"] = $"if (Get-Command py -ErrorAction SilentlyContinue) {{ py -3 -B {powershellPath} hook }} " +
-                                             $"else {{ python -B {powershellPath} hook }}",
-                        ["statusMessage"] = eventName == "SessionStart" ? startupTitle : label,
-                        ["timeout"] = 3
-                    };
+                    var handler = CodexHookHandler(folder, digest, "hook", eventName == "SessionStart" ? startupTitle : label);
                     var group = new JObject { ["hooks"] = new JArray(handler) };
                     if (eventName == "PostToolUse")
                         group["matcher"] = c_CodexPostToolMatcher;
@@ -322,6 +338,30 @@ namespace NovaFramework.Editor
                 }
 
                 return new JObject { ["description"] = description, ["hooks"] = hooks };
+            }
+
+            /// <summary>生成只接收 Coplay Unity MCP 回执的独立钩子。</summary>
+            private static JObject CodexUnityMcpHookGroup(string folder, string digest) => new()
+            {
+                ["hooks"] = new JArray(CodexHookHandler(folder, digest, "mcp-usage", c_CodexUnityMcpTitle)),
+                ["matcher"] = c_CodexUnityMcpMatcher
+            };
+
+            /// <summary>生成指向不可变脚本的命令，兼容工作区路径中的单引号。</summary>
+            private static JObject CodexHookHandler(string folder, string digest, string command, string label)
+            {
+                string agent = CodexAgentPath(folder, digest);
+                string shellPath = "'" + agent.Replace("'", "'\"'\"'") + "'";
+                string powershellPath = "'" + agent.Replace("'", "''") + "'";
+                return new JObject
+                {
+                    ["type"] = "command",
+                    ["command"] = $"python3 -B {shellPath} {command}",
+                    ["commandWindows"] = $"if (Get-Command py -ErrorAction SilentlyContinue) {{ py -3 -B {powershellPath} {command} }} " +
+                                         $"else {{ python -B {powershellPath} {command} }}",
+                    ["statusMessage"] = label,
+                    ["timeout"] = 3
+                };
             }
 
             /// <summary>优先沿用现有 Git 忽略规则，否则仅在本机的仓库排除文件中添加精确路径。</summary>

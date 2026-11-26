@@ -24,9 +24,42 @@ namespace NovaFramework.Editor
         internal static partial class NovaIssues
         {
             private const string c_WorkspaceImplementation = "implementation_workspace";
+            private const string c_UnityMcpPackage = "com.coplaydev.unity-mcp";
+            private const double c_UnityMcpHeartbeatSeconds = 300;
             private static readonly DateTime s_EditorStartedUtc = DateTime.UtcNow.AddSeconds(-EditorApplication.timeSinceStartup);
             private static DateTime s_LastBuildReportWrite;
             private static double s_NextBuildReportCheck;
+            private static string s_LastUnityMcpState;
+            private static string s_LastUnityMcpVersion;
+            private static double s_NextUnityMcpHeartbeat;
+
+            /// <summary>状态变化时上报 Coplay 桥接，状态稳定时定期补一份最近观察。</summary>
+            private static void ObserveUnityMcpConnection(PackageInfo[] packages, double editorTime)
+            {
+                try
+                {
+                    var package = packages?.FirstOrDefault(item => item?.name == c_UnityMcpPackage
+                        && (item.errors == null || item.errors.Length == 0));
+                    if (package == null)
+                    {
+                        s_LastUnityMcpState = null;
+                        return;
+                    }
+                    var state = NovaFramework.Mcp.Editor.NovaToolchainBinding.ReadEditorTransport(c_UnityMcpPackage);
+                    string status = state.ToString().ToLowerInvariant();
+                    string version = ReadVersion(package.version);
+                    if (status == s_LastUnityMcpState && version == s_LastUnityMcpVersion && editorTime < s_NextUnityMcpHeartbeat)
+                        return;
+                    var data = ImplementationData("unity-mcp-connection", null, null, null);
+                    data["state"] = status;
+                    data["provider_version"] = version;
+                    Queue(new JObject { ["event"] = "implementation", ["implementation"] = data });
+                    s_LastUnityMcpState = status;
+                    s_LastUnityMcpVersion = version;
+                    s_NextUnityMcpHeartbeat = editorTime + c_UnityMcpHeartbeatSeconds;
+                }
+                catch (Exception) { /* 状态观察不影响 Editor 或 MCP 的连接。 */ }
+            }
 
             /// <summary>采集三工具的持久绑定、实际载入的 Framework 版本及 SDK 清单。</summary>
             private static JObject CaptureImplementationWorkspace(PackageInfo[] packages, ConfigMasterSO master)
@@ -53,25 +86,21 @@ namespace NovaFramework.Editor
                 return data;
             }
 
-            /// <summary>由实际工具入口记录固定结果，反馈故障不改变原操作的终态。</summary>
-            internal static void ObserveImplementation(string stage, string outcome, string platform = null,
-                string channel = null, string mode = null, string step = null, TimeSpan? elapsed = null,
-                string buildKind = null, bool development = false, string attempt = null, int sequence = 0,
-                string reportId = null, long? observedAt = null)
+            /// <summary>由实际工具入口记录固定结果，返回记录是否已交给本地队列。</summary>
+            internal static bool ObserveImplementation(string stage, string outcome, string platform = null,
+                string channel = null, string mode = null, string step = null, string buildKind = null,
+                bool development = false, string reportId = null, long? observedAt = null, long? calls = null)
             {
                 if (Application.isBatchMode)
-                    return;
+                    return false;
                 try
                 {
                     if (!BindFrameworkPackage())
-                        return;
+                        return false;
                     var data = ImplementationData(stage, platform, channel, mode);
                     data["outcome"] = outcome;
                     if (IsKey(step)) data["step"] = step;
-                    if (attempt != null) data["attempt"] = attempt;
-                    if (sequence > 0) data["sequence"] = sequence;
-                    if (elapsed.HasValue)
-                        data["milliseconds"] = (long)Math.Max(0, Math.Min(86400000, elapsed.Value.TotalMilliseconds));
+                    if (calls.HasValue) data["calls"] = calls.Value;
                     if (buildKind != null)
                     {
                         data["build_kind"] = buildKind;
@@ -81,16 +110,23 @@ namespace NovaFramework.Editor
                     if (reportId != null) input["id"] = reportId;
                     if (observedAt.HasValue) input["observed_at"] = observedAt.Value;
                     Queue(input);
+                    return true;
                 }
                 catch (Exception)
                 {
                     // 反馈是被动观察，异常不能阻断原有导出、查询及构建。
+                    return false;
                 }
             }
 
-            /// <summary>只读取 Unity 真实构建终态，脚本构建和平台工程导出保留各自证据。</summary>
+            private static bool IsMobileBuild(BuildTarget platform, BuildOptions options) =>
+                (platform is BuildTarget.Android or BuildTarget.iOS) && (options & BuildOptions.BuildScriptsOnly) == 0;
+
+            /// <summary>记录供 SDK 构建汇总使用的 Android 或 iOS 构建终态。</summary>
             internal static void ObservePlayerBuild(BuildSummary summary, bool exportsProject)
             {
+                if (!IsMobileBuild(summary.platform, summary.options))
+                    return;
                 string outcome = summary.result switch
                 {
                     BuildResult.Succeeded => "success",
@@ -98,20 +134,22 @@ namespace NovaFramework.Editor
                     BuildResult.Failed => "failed",
                     _ => "blocked"
                 };
-                string kind = PlayerBuildKind(summary.options, exportsProject);
                 string id = EventId("player-build", summary.guid.ToString(),
                     summary.buildStartedAt.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture), summary.platform.ToString());
-                ObserveImplementation("player-build", outcome, summary.platform.ToString(), elapsed: summary.totalTime,
-                    buildKind: kind, development: (summary.options & BuildOptions.Development) != 0, reportId: id,
+                ObserveImplementation("player-build", outcome, summary.platform.ToString(),
+                    buildKind: exportsProject ? "project" : "player",
+                    development: (summary.options & BuildOptions.Development) != 0, reportId: id,
                     observedAt: summary.buildEndedAt > DateTime.UnixEpoch ? new DateTimeOffset(summary.buildEndedAt).ToUnixTimeSeconds() : null);
             }
 
             /// <summary>Nova 构建入口在 Unity 没有返回报告时记录可确认的拒绝或失败。</summary>
             internal static void ObservePlayerBuildFailure(BuildTarget platform, bool exportsProject, BuildOptions options,
-                DateTime startedAt, string outcome)
+                string outcome)
             {
-                ObserveImplementation("player-build", outcome, platform.ToString(), elapsed: DateTime.UtcNow - startedAt,
-                    buildKind: PlayerBuildKind(options, exportsProject), development: (options & BuildOptions.Development) != 0);
+                if (!IsMobileBuild(platform, options))
+                    return;
+                ObserveImplementation("player-build", outcome, platform.ToString(),
+                    buildKind: exportsProject ? "project" : "player", development: (options & BuildOptions.Development) != 0);
             }
 
             /// <summary>构建目标使用当前绑定工作区的平台时，保留实际渠道和开发模式。</summary>
@@ -126,10 +164,6 @@ namespace NovaFramework.Editor
                 catch (Exception) { /* 未取得配置时保留独立的构建平台和结果。 */ }
                 return default;
             }
-
-            /// <summary>构建结果按实际目标区分仅脚本、平台工程和可安装产物。</summary>
-            private static string PlayerBuildKind(BuildOptions options, bool exportsProject) =>
-                (options & BuildOptions.BuildScriptsOnly) != 0 ? "scripts" : exportsProject ? "project" : "player";
 
             /// <summary>读取 Unity 保存的已完成报告，覆盖 Build Profiles 和直调 BuildPipeline。</summary>
             private static void PollPlayerBuild(double time)
@@ -157,7 +191,8 @@ namespace NovaFramework.Editor
                     if (report == null)
                         return false;
                     BuildSummary summary = report.summary;
-                    if (summary.buildType != BuildType.Player || summary.buildStartedAt < notBefore ||
+                    if (summary.buildType != BuildType.Player || !IsMobileBuild(summary.platform, summary.options) ||
+                        summary.buildStartedAt < notBefore ||
                         summary.result is not (BuildResult.Succeeded or BuildResult.Cancelled or BuildResult.Failed))
                         return false;
                     string extension = System.IO.Path.GetExtension(summary.outputPath)?.ToLowerInvariant();

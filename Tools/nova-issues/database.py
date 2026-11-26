@@ -10,7 +10,7 @@ import secrets
 import sqlite3
 import time
 
-from protocol import RETIRED_SDK_ISSUE, VERSION, retired_sdk_feedback
+from protocol import RETIRED_SDK_ISSUE, VERSION, retired_feedback
 
 
 # 维护台按两种状态读取历史记录，旧版上报和项目查询继续使用原有字段。
@@ -22,6 +22,74 @@ ISSUE_LATEST_PAYLOAD = """(
     SELECT r.payload FROM current_reports r WHERE r.issue_id=i.id AND r.kind='issue'
     ORDER BY r.observed_at DESC,r.received_at DESC,r.rowid DESC LIMIT 1
 )"""
+ACTIVITY_SECTIONS = ("projects", "issues", "usage")
+
+# 同一次 Action 沿用首次接收的编号，结果采用实际执行者的记录。
+CURRENT_USAGE = """
+CREATE VIEW IF NOT EXISTS current_usage AS
+SELECT rowid,project_id,workspace,observed_at,received_at,activity_id,
+       CASE WHEN codex_seen=1 THEN json_set(payload,'$.source','codex','$.entry','action') ELSE payload END AS payload
+FROM (
+    SELECT r.*, MIN(a.id) OVER operation AS activity_id,
+           MAX(CASE WHEN json_extract(payload,'$.source')='codex'
+                         AND json_type(payload,'$.action_operation') IS NOT NULL THEN 1 ELSE 0 END)
+               OVER operation AS codex_seen,
+           ROW_NUMBER() OVER (operation ORDER BY (json_extract(payload,'$.source') IS 'editor') DESC,
+                                 observed_at,received_at,r.rowid) AS n
+    FROM current_reports r JOIN activity_receipts a ON a.project_id=r.project_id AND a.report_id=r.id
+    WHERE r.kind='usage'
+    WINDOW operation AS (PARTITION BY r.project_id,workspace,COALESCE(json_extract(payload,'$.action_operation'),r.id))
+) WHERE n=1
+"""
+
+# 列表与未读记录共用分组字段和历史入口识别规则。
+USAGE_GROUP = "project_id,module,operation,outcome,framework,source,entry"
+USAGE_SCOPE = """
+    observed_at>=:since AND (:project='' OR project_id=:project)
+    AND (:module='' OR module=:module) AND (:source='' OR source=:source)
+"""
+USAGE_ENTRIES = """
+CREATE VIEW IF NOT EXISTS usage_entries AS
+WITH recorded AS (
+    SELECT project_id,json_extract(payload,'$.module') AS module,
+           json_extract(payload,'$.operation') AS operation,json_extract(payload,'$.outcome') AS outcome,
+           json_extract(payload,'$.framework') AS framework,json_extract(payload,'$.source') AS recorded_source,
+           json_extract(payload,'$.entry') AS recorded_entry,observed_at,activity_id
+    FROM current_usage
+), editor_entries AS (
+    SELECT *, CASE
+        WHEN recorded_entry IS NOT NULL OR COALESCE(recorded_source,'editor')!='editor' THEN NULL
+        WHEN operation GLOB ('nova.project.' || module || '.?*') AND outcome!='executed' THEN 'action'
+        WHEN recorded_source='editor' AND operation GLOB ('editor.' || module || '.export-*') THEN 'inspector'
+    END AS editor_entry FROM recorded
+)
+SELECT project_id,module,operation,outcome,framework,observed_at,activity_id,
+       COALESCE(recorded_source, CASE WHEN editor_entry IS NOT NULL THEN 'editor' ELSE 'legacy' END) AS source,
+       COALESCE(recorded_entry, editor_entry, '') AS entry
+FROM editor_entries
+"""
+
+# 全量接收记录独立于列表筛选和显示上限。自动登记与首次环境上报只计一次。
+MAINTAINER_ACTIVITY = f"""
+CREATE VIEW IF NOT EXISTS maintainer_activity AS
+WITH first_reports AS (
+    SELECT project_id, MIN(rowid) AS first_report FROM current_reports GROUP BY project_id
+), registered_with_environment AS (
+    SELECT f.project_id FROM first_reports f JOIN reports r ON r.rowid=f.first_report
+    WHERE r.kind IN ('snapshot', 'hook_activity') AND EXISTS (
+        SELECT 1 FROM automatic_workspaces w WHERE w.project_id=f.project_id
+    )
+)
+SELECT id, 'projects' AS section, project_id AS item FROM activity_receipts
+WHERE kind IN ('snapshot', 'hook_activity')
+   OR (kind='project' AND project_id NOT IN (SELECT project_id FROM registered_with_environment))
+UNION ALL
+SELECT a.id, 'issues', CAST(r.issue_id AS TEXT)
+FROM current_reports r JOIN activity_receipts a ON a.project_id=r.project_id AND a.report_id=r.id
+WHERE r.kind='issue'
+UNION ALL
+SELECT activity_id, 'usage', json_array({USAGE_GROUP}) FROM usage_entries
+"""
 
 SCHEMA = f"""
 CREATE TABLE IF NOT EXISTS projects (
@@ -62,26 +130,14 @@ SELECT rowid, * FROM reports WHERE CASE kind
         AND NOT (COALESCE(json_extract(payload,'$.stage'),'')='startup-stage'
                  AND COALESCE(json_extract(payload,'$.step'),'')='sdk')
     ELSE 1 END;
--- Codex 与 Editor 观察到同一操作时只展示一条，结果和发生时间采用实际执行者的记录。
-CREATE VIEW IF NOT EXISTS current_usage AS
-SELECT rowid,project_id,workspace,observed_at,received_at,
-       CASE WHEN codex_seen=1 THEN json_set(payload,'$.source','codex','$.entry','action') ELSE payload END AS payload
-FROM (
-    SELECT *, MAX(CASE WHEN json_extract(payload,'$.source')='codex'
-                           AND json_type(payload,'$.action_operation') IS NOT NULL THEN 1 ELSE 0 END)
-                  OVER operation AS codex_seen,
-           ROW_NUMBER() OVER (operation ORDER BY (json_extract(payload,'$.source') IS 'editor') DESC,
-                                 observed_at,received_at,rowid) AS n
-    FROM current_reports WHERE kind='usage'
-    WINDOW operation AS (PARTITION BY project_id,workspace,COALESCE(json_extract(payload,'$.action_operation'),id))
-) WHERE n=1;
 CREATE TABLE IF NOT EXISTS history (
     id INTEGER PRIMARY KEY, issue_id INTEGER NOT NULL REFERENCES issues(id),
     actor TEXT NOT NULL, status TEXT NOT NULL, note TEXT NOT NULL, created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS history_issue ON history(issue_id, id DESC);
 CREATE TABLE IF NOT EXISTS sessions (
-    token_hash TEXT PRIMARY KEY, username TEXT NOT NULL, csrf TEXT NOT NULL, expires_at INTEGER NOT NULL
+    token_hash TEXT PRIMARY KEY, username TEXT NOT NULL, csrf TEXT NOT NULL,
+    expires_at INTEGER NOT NULL, account_version TEXT
 );
 """
 
@@ -104,6 +160,20 @@ def now():
 
 def encoded(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+
+
+def select_list_page(db, query, count_query, bindings, page):
+    """在同一份查询快照中读取总数及当前页，末页消失时回到新的末页。"""
+    limit, offset = 500, 0
+    pagination = None
+    if page is not None:
+        number, limit = page
+        total = db.execute(count_query, bindings).fetchone()[0]
+        number = min(number, max(1, (total + limit - 1) // limit))
+        offset = (number - 1) * limit
+        pagination = {"page": number, "page_size": limit, "total": total}
+    rows = db.execute(f"{query} LIMIT :limit OFFSET :offset", bindings | {"limit": limit, "offset": offset})
+    return rows, pagination
 
 
 def issue_report_details(data):
@@ -146,22 +216,88 @@ def issue_summary(row):
 
 class Database:
     def __init__(self, path):
+        """初始化服务库，并为历史上报补齐列表使用的接收顺序。"""
         self.path = Path(path)
         self.path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         with self.connect() as db:
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2):
+            if version not in (0, 1, 2, 3, 4, 5):
                 raise ValueError("数据库版本不受支持。")
             db.execute("PRAGMA journal_mode=WAL")
             db.executescript(SCHEMA)
-            if version < 2:
+            if version < 5:
                 db.execute("BEGIN IMMEDIATE")
-                if db.execute("PRAGMA user_version").fetchone()[0] < 2:
+                version = db.execute("PRAGMA user_version").fetchone()[0]
+                if version < 2:
                     db.execute("""
                         UPDATE projects SET team='' WHERE team='自动登记'
                         AND id IN (SELECT project_id FROM automatic_workspaces)
                         """)
-                    db.execute("PRAGMA user_version=2")
+                if version < 4:
+                    self.migrate_activity(db)
+                if version < 5:
+                    if not any(column["name"] == "account_version" for column in db.execute("PRAGMA table_info(sessions)")):
+                        db.execute("ALTER TABLE sessions ADD COLUMN account_version TEXT")
+                    db.execute("PRAGMA user_version=5")
+
+    @staticmethod
+    def migrate_activity(db):
+        """为历史条目补齐接收编号，后续登记和上报在同一写入事务分配编号。"""
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS activity_receipts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                report_id TEXT, kind TEXT NOT NULL,
+                UNIQUE (project_id, report_id),
+                FOREIGN KEY (project_id, report_id) REFERENCES reports(project_id, id) ON DELETE CASCADE
+            )
+            """)
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='project_activity'").fetchone():
+            db.execute("""
+                INSERT INTO activity_receipts(project_id,report_id,kind)
+                SELECT a.project_id,a.report_id,COALESCE(r.kind,'project')
+                FROM project_activity a LEFT JOIN reports r ON r.project_id=a.project_id AND r.id=a.report_id
+                ORDER BY a.id
+                """)
+            db.execute("DROP TRIGGER IF EXISTS project_registration_activity")
+            db.execute("DROP TRIGGER IF EXISTS project_report_activity")
+            db.execute("DROP TABLE project_activity")
+        db.execute("""
+            WITH events AS (
+                SELECT id AS project_id,NULL AS report_id,'project' AS kind,created_at AS received_at,
+                       0 AS from_report,rowid AS source_order FROM projects
+                UNION ALL
+                SELECT project_id,id,kind,received_at,1,rowid FROM reports
+                WHERE kind IN ('snapshot','hook_activity')
+            )
+            INSERT INTO activity_receipts(project_id,report_id,kind)
+            SELECT e.project_id,e.report_id,e.kind FROM events e
+            WHERE NOT EXISTS (
+                SELECT 1 FROM activity_receipts a WHERE a.project_id=e.project_id AND a.report_id IS e.report_id
+            )
+            ORDER BY e.received_at,e.from_report,e.source_order
+            """)
+        db.execute("""
+            INSERT OR IGNORE INTO activity_receipts(project_id,report_id,kind)
+            SELECT project_id,id,kind FROM reports WHERE kind IN ('issue','usage') ORDER BY rowid
+            """)
+        db.execute("""
+            CREATE TRIGGER IF NOT EXISTS activity_registration AFTER INSERT ON projects
+            BEGIN
+                INSERT INTO activity_receipts(project_id,report_id,kind) VALUES (NEW.id,NULL,'project');
+            END
+            """)
+        db.execute("""
+            CREATE TRIGGER IF NOT EXISTS activity_report AFTER INSERT ON reports
+            WHEN NEW.kind IN ('issue','usage','snapshot','hook_activity')
+            BEGIN
+                INSERT INTO activity_receipts(project_id,report_id,kind) VALUES (NEW.project_id,NEW.id,NEW.kind);
+            END
+            """)
+        db.execute("DROP VIEW IF EXISTS current_usage")
+        db.execute(CURRENT_USAGE)
+        db.execute(USAGE_ENTRIES)
+        db.execute(MAINTAINER_ACTIVITY)
 
     @contextmanager
     def connect(self):
@@ -226,18 +362,22 @@ class Database:
             row = db.execute("SELECT token_hash FROM projects WHERE id=?", (project_id,)).fetchone()
         return row is not None and hmac.compare_digest(row["token_hash"], digest(token))
 
-    def start_session(self, user, ttl):
+    def start_session(self, user, account_version):
+        """旧会话按原期限清理，新会话通过登录时的账号版本验证。"""
         token, csrf = secrets.token_urlsafe(36), secrets.token_urlsafe(24)
-        stamp = now()
         with self.connect() as db:
-            db.execute("DELETE FROM sessions WHERE expires_at<=?", (stamp,))
-            db.execute("INSERT INTO sessions VALUES (?, ?, ?, ?)", (digest(token), user, csrf, stamp + ttl))
+            db.execute("DELETE FROM sessions WHERE expires_at>0 AND expires_at<=?", (now(),))
+            db.execute("DELETE FROM sessions WHERE username=? AND account_version<>?", (user, account_version))
+            db.execute("INSERT INTO sessions(token_hash,username,csrf,expires_at,account_version) VALUES (?,?,?,0,?)",
+                       (digest(token), user, csrf, account_version))
         return token, csrf
 
     def session(self, token):
         with self.connect() as db:
-            row = db.execute("SELECT username, csrf FROM sessions WHERE token_hash=? AND expires_at>?",
-                             (digest(token), now())).fetchone()
+            row = db.execute("""
+                SELECT username,csrf,account_version FROM sessions WHERE token_hash=?
+                AND (expires_at>? OR (expires_at=0 AND account_version IS NOT NULL))
+                """, (digest(token), now())).fetchone()
         return dict(row) if row is not None else None
 
     def end_session(self, token):
@@ -278,7 +418,7 @@ class Database:
                     raise PermissionError()
             else:
                 self.authorize_workspace(db, project_id, event["workspace"], token, automatic_name, allow_registration)
-            if retired_sdk_feedback(event["kind"], event["data"]):
+            if retired_feedback(event["kind"], event["data"]):
                 return (False, None, stamp)
             existing = db.execute("SELECT digest, issue_id, received_at FROM reports WHERE project_id=? AND id=?",
                                   (project_id, event["id"])).fetchone()
@@ -287,9 +427,12 @@ class Database:
                     raise Conflict("同一个记录标识已经关联到不同内容。")
                 return (False, existing["issue_id"], existing["received_at"])
             issue_id = self.attach_issue(db, event) if event["kind"] == "issue" else None
+            data = event["data"]
+            if event["kind"] == "implementation":
+                data = {key: value for key, value in data.items() if key not in ("attempt", "sequence", "milliseconds")}
             db.execute("INSERT INTO reports VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                        (project_id, event["id"], event["workspace"], event["kind"],
-                        payload_hash, encoded(event["data"]), event["observed_at"], stamp, issue_id))
+                        payload_hash, encoded(data), event["observed_at"], stamp, issue_id))
             db.execute("UPDATE projects SET last_seen=? WHERE id=?", (stamp, project_id))
             return (True, issue_id, stamp)
 
@@ -313,8 +456,8 @@ class Database:
                    (timestamp, timestamp, issue_id))
         return issue_id
 
-    def overview(self, days):
-        """汇总维护台数据，并从同一份数据库快照读取未读计数基线。"""
+    def overview(self, days, *, activity_after=None, previous_read=None, include_lists=True):
+        """从同一份数据库快照读取维护台数据和浏览器尚需判断的上报。"""
         since = now() - days * 86400
         with self.connect() as db:
             db.execute("BEGIN")
@@ -323,7 +466,7 @@ class Database:
                 FROM projects AS p LEFT JOIN (
                     SELECT project_id, MAX(observed_at) AS last_hook_run
                     FROM reports WHERE kind='hook_activity' GROUP BY project_id
-                ) AS h ON h.project_id=p.id ORDER BY p.name
+                ) AS h ON h.project_id=p.id ORDER BY p.name, p.id
                 """)
             latest = db.execute("""
                 SELECT workspace, project_id, received_at, json_extract(payload,'$.framework') AS framework,
@@ -370,107 +513,128 @@ class Database:
                        COUNT(CASE WHEN status='closed' THEN 1 END) AS handled
                 FROM (SELECT {MAINTAINER_ISSUE_STATUS} AS status FROM issues WHERE code!=?)
                 """, (RETIRED_SDK_ISSUE,)).fetchone()
-            activity_totals = db.execute("""
-                WITH counts AS (
-                    SELECT project_id, MIN(rowid) AS first_report,
-                           COUNT(CASE WHEN kind='issue' THEN 1 END) AS issues,
-                           COUNT(CASE WHEN kind IN ('snapshot', 'hook_activity') THEN 1 END) AS project_reports
-                    FROM current_reports GROUP BY project_id
-                )
-                -- 首次环境或钩子上报同时自动登记项目时，项目栏目只计一次。
-                SELECT COALESCE(SUM(c.issues), 0) AS issues,
-                       COUNT(*) + COALESCE(SUM(c.project_reports), 0) - COUNT(CASE
-                           WHEN r.kind IN ('snapshot', 'hook_activity') AND EXISTS (
-                               SELECT 1 FROM automatic_workspaces WHERE project_id=p.id
-                           ) THEN 1 END) AS projects,
-                       (SELECT COUNT(*) FROM current_usage) AS usage
-                FROM projects p LEFT JOIN counts c ON c.project_id=p.id
-                LEFT JOIN reports r ON r.rowid=c.first_report
-                """).fetchone()
-            return {"projects": list(map(dict, projects)), "workspaces": list(map(dict, latest)),
-                    "implementation": [{**dict(item), "tools": json.loads(item["tools"])} for item in implementation],
-                    "configured_tools": self.configured_implementation_tools(db),
-                    "usage": self.usage_rows(db, since), "usage_modules": [row["module"] for row in usage_modules],
-                    "issues": self.issue_rows(db),
-                    "issue_counts": dict(issue_counts), "activity_totals": dict(activity_totals),
-                    "codex_activity": list(map(dict, codex_activity)), "codex_modules": list(map(dict, codex_modules)),
-                    "server_time": now(), "days": days}
+            activity_totals = dict.fromkeys(ACTIVITY_SECTIONS, 0)
+            activity_totals.update(db.execute("SELECT section, COUNT(*) FROM maintainer_activity GROUP BY section"))
+            result = {"projects": list(map(dict, projects)), "workspaces": list(map(dict, latest)),
+                      "implementation": [{**dict(item), "tools": json.loads(item["tools"])} for item in implementation],
+                      "configured_tools": self.configured_implementation_tools(db),
+                      "usage_modules": [row["module"] for row in usage_modules],
+                      "issue_counts": dict(issue_counts), "activity_totals": activity_totals,
+                      "codex_activity": list(map(dict, codex_activity)), "codex_modules": list(map(dict, codex_modules)),
+                      "server_time": now(), "days": days}
+            if include_lists:
+                result["usage"], _ = self.usage_rows(db, since)
+                result["issues"], _ = self.issue_rows(db)
+            if activity_after is not None:
+                result["activity"] = self.activity_since(db, activity_totals, activity_after, previous_read or {})
+            return result
 
-    def list_usage(self, days, *, project_id="", module="", source="", sort="count"):
+    @staticmethod
+    def activity_since(db, totals, after, previous_read):
+        """按栏目返回接收编号与所属条目，首次读取得出起点，兼容旧版已读数量。"""
+        latest = db.execute("SELECT COALESCE(MAX(seq),0) FROM sqlite_sequence WHERE name='activity_receipts'").fetchone()[0]
+        starts = dict.fromkeys(ACTIVITY_SECTIONS, latest)
+        for section in ACTIVITY_SECTIONS:
+            if section in after:
+                starts[section] = min(after[section], latest)
+            elif 0 <= (seen := previous_read.get(section, -1)) < totals[section]:
+                starts[section] = 0 if not seen else db.execute("""
+                    SELECT id FROM maintainer_activity WHERE section=? ORDER BY id LIMIT 1 OFFSET ?
+                    """, (section, seen - 1)).fetchone()[0]
+        sections = {section: {"after": start, "items": []} for section, start in starts.items()}
+        if any(start < latest for start in starts.values()):
+            for activity_id, section, item in db.execute("""
+                SELECT id,section,item FROM maintainer_activity
+                WHERE id > CASE section WHEN 'projects' THEN :projects WHEN 'issues' THEN :issues ELSE :usage END
+                ORDER BY id
+                """, starts):
+                sections[section]["items"].append((activity_id, item))
+        return {"latest": latest, "sections": sections}
+
+    def list_usage(self, days, *, project_id="", module="", source="", sort="count", page=None):
         """读取选定时间范围及筛选条件下的使用汇总。"""
         with self.connect() as db:
+            db.execute("BEGIN")
             return self.usage_rows(db, now() - days * 86400, project_id=project_id, module=module,
-                                   source=source, sort=sort)
+                                   source=source, sort=sort, page=page)
 
     @staticmethod
-    def usage_rows(db, since, *, project_id="", module="", source="", sort="count"):
-        """按实际发生时间计算每组的最后一次触发，筛选和排序后取前 500 组。"""
+    def usage_rows(db, since, *, project_id="", module="", source="", sort="count", page=None):
+        """先按筛选条件聚合操作，再按实际发生时间或次数排序和分页。"""
         order = "last_used DESC, count DESC" if sort == "latest" else "count DESC, last_used DESC"
-        rows = db.execute(f"""
-            WITH recorded AS (
-                SELECT project_id, json_extract(payload,'$.module') AS module,
-                       json_extract(payload,'$.operation') AS operation,
-                       json_extract(payload,'$.outcome') AS outcome,
-                       json_extract(payload,'$.framework') AS framework,
-                       json_extract(payload,'$.source') AS recorded_source,
-                       json_extract(payload,'$.entry') AS recorded_entry, observed_at
-                FROM current_usage WHERE observed_at>=:since
-                  AND (:project='' OR project_id=:project)
-                  AND (:module='' OR json_extract(payload,'$.module')=:module)
-            ), editor_entries AS (
-                -- Editor 操作沿用原有上报格式，维护台按稳定操作标识显示实际入口。
-                SELECT *, CASE
-                    WHEN recorded_entry IS NOT NULL OR COALESCE(recorded_source,'editor')!='editor' THEN NULL
-                    WHEN operation GLOB ('nova.project.' || module || '.?*') AND outcome!='executed' THEN 'action'
-                    WHEN recorded_source='editor' AND operation GLOB ('editor.' || module || '.export-*') THEN 'inspector'
-                END AS editor_entry FROM recorded
-            ), classified AS (
-                SELECT project_id,module,operation,outcome,framework,observed_at,
-                       COALESCE(recorded_source, CASE WHEN editor_entry IS NOT NULL THEN 'editor' ELSE 'legacy' END) AS source,
-                       COALESCE(recorded_entry, editor_entry, '') AS entry
-                FROM editor_entries
-            )
-            SELECT project_id,module,operation,outcome,framework,source,entry,
+        grouped = f"""
+            FROM usage_entries
+            WHERE {USAGE_SCOPE}
+            GROUP BY {USAGE_GROUP}
+            """
+        query = f"""
+            SELECT {USAGE_GROUP}, json_array({USAGE_GROUP}) AS activity_key,
                    COUNT(*) AS count, MAX(observed_at) AS last_used
-            FROM classified WHERE (:source='' OR source=:source)
-            GROUP BY project_id,module,operation,outcome,framework,source,entry
-            ORDER BY {order}, project_id,module,operation,outcome,framework,source,entry LIMIT 500
-            """, {"since": since, "project": project_id, "module": module, "source": source})
-        return list(map(dict, rows))
+            {grouped}
+            ORDER BY {order}, {USAGE_GROUP}
+            """
+        bindings = {"since": since, "project": project_id, "module": module, "source": source}
+        rows, pagination = select_list_page(db, query, f"SELECT COUNT(*) FROM (SELECT 1 {grouped})", bindings, page)
+        return list(map(dict, rows)), pagination
 
-    def list_issues(self, *, project_id="", status="", search="", sort=""):
+    def usage_analysis(self, days, *, project_id="", module="", source=""):
+        """按明细计算占比所需的全量计数，并读取所选项目的独立实施证据。"""
+        with self.connect() as db:
+            db.execute("BEGIN")
+            rows = db.execute(f"""
+                SELECT module,operation,source,entry,
+                       SUM(CASE WHEN {USAGE_SCOPE} THEN 1 ELSE 0 END) AS count,
+                       SUM(CASE WHEN :project='' OR project_id=:project THEN 1 ELSE 0 END) AS history
+                FROM usage_entries
+                GROUP BY module,operation,source,entry
+                """, {"since": now() - days * 86400, "project": project_id, "module": module, "source": source})
+            evidence = db.execute("""
+                SELECT DISTINCT json_extract(payload,'$.stage') AS stage,
+                                CASE WHEN json_extract(payload,'$.stage')='editor-module'
+                                     THEN json_extract(payload,'$.step') END AS module
+                FROM current_reports
+                WHERE kind='implementation' AND (:project='' OR project_id=:project)
+                  AND (json_extract(payload,'$.stage') IN ('config-export','pipify-batch','plugpals-query','bundle-build')
+                       OR (json_extract(payload,'$.stage') IN ('config-load','editor-module')
+                           AND json_extract(payload,'$.outcome')='success'))
+                """, {"project": project_id})
+            return list(map(dict, rows)), list(map(dict, evidence))
+
+    def list_issues(self, *, project_id="", status="", search="", sort="", page=None):
         """按维护台选择的筛选与排序读取问题列表。"""
         with self.connect() as db:
-            return self.issue_rows(db, project_id, status, search, sort)
+            db.execute("BEGIN")
+            return self.issue_rows(db, project_id, status, search, sort, page=page)
 
     @staticmethod
-    def issue_rows(db, project_id="", status="", search="", sort=""):
+    def issue_rows(db, project_id="", status="", search="", sort="", *, page=None):
         """按项目的发生记录筛选问题，再统计匹配问题的全部发生次数。"""
-        conditions = ["i.code!=?"]
-        values = [RETIRED_SDK_ISSUE]
+        conditions = ["i.code!=:retired_code"]
+        bindings = {"retired_code": RETIRED_SDK_ISSUE}
         if project_id:
-            conditions.append("i.id IN (SELECT issue_id FROM current_reports WHERE project_id=? AND kind='issue')")
-            values.append(project_id)
+            conditions.append("i.id IN (SELECT issue_id FROM current_reports WHERE project_id=:project AND kind='issue')")
+            bindings["project"] = project_id
         if status:
-            conditions.append(f"({MAINTAINER_ISSUE_STATUS})=?")
-            values.append(status)
+            conditions.append(f"({MAINTAINER_ISSUE_STATUS})=:status")
+            bindings["status"] = status
         if search:
             db.create_function("issue_text_lower", 1, str.lower, deterministic=True)
-            conditions.append("instr(issue_text_lower('#' || i.id || ' ' || i.area || ' ' || i.title || ' ' || i.code), ?) > 0")
-            values.append(search.lower())
-        where = "WHERE " + " AND ".join(conditions) if conditions else ""
+            conditions.append("instr(issue_text_lower('#' || i.id || ' ' || i.area || ' ' || i.title || ' ' || i.code), :search) > 0")
+            bindings["search"] = search.lower()
+        where = "WHERE " + " AND ".join(conditions)
         order = {"latest": "i.last_seen DESC", "count": "occurrences DESC, i.last_seen DESC"}.get(
             sort, f"({MAINTAINER_ISSUE_STATUS})='closed', i.last_seen DESC")
-        rows = db.execute(f"""
+        query = f"""
             SELECT i.id,i.code,i.area,i.title,{MAINTAINER_ISSUE_STATUS} AS status,i.assignee,
                    i.first_seen,i.last_seen,i.duplicate_of,
                    COUNT(r.id) AS occurrences, COUNT(DISTINCT r.project_id) AS projects,
                    {ISSUE_LATEST_PAYLOAD} AS latest_payload
             FROM issues i LEFT JOIN current_reports r ON r.issue_id=i.id {where}
             GROUP BY i.id
-            ORDER BY {order}, i.id DESC LIMIT 500
-            """, values)
-        return list(map(issue_summary, rows))
+            ORDER BY {order}, i.id DESC
+            """
+        rows, pagination = select_list_page(db, query, f"SELECT COUNT(*) FROM issues i {where}", bindings, page)
+        return list(map(issue_summary, rows)), pagination
 
     def issue_projects(self, issue_id):
         """读取该问题全部发生记录对应的去重项目，包含较早的上报。"""
@@ -530,31 +694,21 @@ class Database:
                     ) AS n FROM reports WHERE project_id=? AND kind='hook_activity'
                 ) WHERE n=1 ORDER BY last_run DESC, workspace
                 """, (project_id,))
-            implementation = db.execute("""
-                WITH facts AS (
-                    SELECT rowid,workspace,observed_at,received_at,payload,
-                           json_extract(payload,'$.stage') AS stage
-                    FROM current_reports WHERE project_id=? AND kind='implementation'
-                ), ranked AS (
+            unity_mcp_connections = db.execute("""
+                SELECT workspace,observed_at,received_at,payload FROM (
                     SELECT *, ROW_NUMBER() OVER (
-                        PARTITION BY workspace,stage,
-                           CASE WHEN stage NOT IN ('workspace','framework-upgrade') THEN json_extract(payload,'$.framework') END,
-                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.unity') END,
-                           CASE WHEN stage IN ('config-export','config-load','pipify-batch','plugpals-query',
-                               'bundle-build','player-build','pipify-step') THEN json_extract(payload,'$.platform') END,
-                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.channel') END,
-                           CASE WHEN stage!='workspace' THEN json_extract(payload,'$.mode') END,
-                           CASE WHEN stage IN ('plugpals-query','editor-module','startup-stage','framework-upgrade')
-                                THEN json_extract(payload,'$.step') END,
-                           json_extract(payload,'$.attempt'),
-                           json_extract(payload,'$.build_kind'),json_extract(payload,'$.development')
-                        ORDER BY json_extract(payload,'$.sequence') DESC,observed_at DESC,
-                            CASE json_extract(payload,'$.outcome') WHEN 'running' THEN 0 WHEN 'waiting' THEN 1 ELSE 2 END DESC,
-                            received_at DESC,rowid DESC
-                    ) AS n FROM facts
-                )
-                SELECT workspace,observed_at,received_at,payload FROM ranked WHERE n=1
-                ORDER BY stage!='workspace',observed_at DESC,received_at DESC,rowid DESC LIMIT 400
+                        PARTITION BY workspace ORDER BY observed_at DESC,received_at DESC,rowid DESC
+                    ) AS n FROM reports WHERE project_id=? AND kind='implementation'
+                      AND json_extract(payload,'$.stage')='unity-mcp-connection'
+                ) WHERE n=1 ORDER BY observed_at DESC,workspace
+                """, (project_id,))
+            implementation = db.execute("""
+                SELECT workspace,observed_at,received_at,payload FROM (
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY workspace ORDER BY observed_at DESC,received_at DESC,rowid DESC
+                    ) AS n FROM current_reports WHERE project_id=? AND kind='implementation'
+                      AND json_extract(payload,'$.stage')='workspace'
+                ) WHERE n=1 ORDER BY observed_at DESC,received_at DESC,rowid DESC LIMIT 400
                 """, (project_id,))
             # 成功和其余结果各取最近一条，保留早于当前结果的验证证据。
             outcomes = db.execute("""
@@ -563,10 +717,14 @@ class Database:
                            json_extract(payload,'$.stage') AS stage,
                            json_extract(payload,'$.outcome')='success' AS succeeded
                     FROM current_reports WHERE project_id=? AND kind='implementation'
-                      AND json_extract(payload,'$.stage') IN ('config-export','config-load','pipify-batch',
-                          'plugpals-query','bundle-build','player-build','editor-module','table-ready')
+                      AND (json_extract(payload,'$.stage') IN ('config-export','config-load','pipify-batch',
+                           'plugpals-query','bundle-build','editor-module','table-ready')
+                           OR (json_extract(payload,'$.stage')='player-build'
+                               AND json_extract(payload,'$.platform') IN ('Android','iOS')
+                               AND json_extract(payload,'$.build_kind') IN ('player','project')))
                 )
-                SELECT workspace,observed_at,received_at,payload FROM (
+                SELECT workspace,observed_at,received_at,
+                       json_remove(payload,'$.attempt','$.sequence','$.milliseconds') AS payload FROM (
                     SELECT *, ROW_NUMBER() OVER (
                         PARTITION BY stage,succeeded,
                             CASE WHEN stage IN ('player-build','bundle-build') THEN json_extract(payload,'$.platform') END,
@@ -577,39 +735,66 @@ class Database:
                 ) WHERE n=1 ORDER BY observed_at DESC,received_at DESC,rowid DESC
                 """, (project_id,))
             modules = list(map(dict, db.execute("""
-                WITH events AS (
+                WITH tool_events AS (
+                    SELECT workspace,observed_at,json_extract(payload,'$.framework') AS framework,
+                           json_extract(payload,'$.stage') AS stage,json_extract(payload,'$.step') AS step,
+                           json_extract(payload,'$.outcome') AS outcome,json_extract(payload,'$.calls') AS calls
+                    FROM current_reports WHERE project_id=:project AND kind='implementation'
+                      AND json_extract(payload,'$.stage') IN
+                          ('config-export','pipify-batch','plugpals-query','bundle-build','config-load','editor-module')
+                ), usage_events AS (
                     SELECT workspace,observed_at,json_extract(payload,'$.framework') AS framework,
                            json_extract(payload,'$.module') AS module,json_extract(payload,'$.outcome') AS outcome,
-                           0 AS play_session,
+                           json_extract(payload,'$.operation') AS operation,
                            CASE WHEN json_extract(payload,'$.source')='editor'
                                 AND json_extract(payload,'$.operation')
                                     GLOB ('editor.' || json_extract(payload,'$.module') || '.export-*')
                                 THEN 1 ELSE 0 END AS manual_export
                     FROM current_usage WHERE project_id=:project
                       AND COALESCE(json_extract(payload,'$.entry'),'')!='skill'
+                ), events AS (
+                    -- 导出、Batch 和 Bundle 使用实际执行入口的回执，避免再计 Action 包装。
+                    SELECT workspace,observed_at,framework,
+                           CASE WHEN operation IN ('nova.project.bundle.build-asset','nova.project.bundle.build-raw-file')
+                                THEN 'asset' ELSE module END AS module,outcome,1 AS usage_call,manual_export,
+                           CASE WHEN operation IN ('nova.project.config.export-runtime','nova.project.pipify.run-batch',
+                                                   'nova.project.bundle.build-asset','nova.project.bundle.build-raw-file')
+                                THEN 0 ELSE 1 END AS development_call,
+                           0 AS play_session,0 AS play_calls
+                    FROM usage_events
                     UNION ALL
-                    SELECT workspace,observed_at,json_extract(payload,'$.framework'),
-                           json_extract(payload,'$.step'),'success',1,0
-                    FROM current_reports WHERE project_id=:project AND kind='implementation'
-                      AND json_extract(payload,'$.stage')='editor-module'
+                    SELECT workspace,observed_at,framework,
+                           CASE stage WHEN 'config-export' THEN 'config' WHEN 'config-load' THEN 'config'
+                                      WHEN 'pipify-batch' THEN 'pipify' WHEN 'plugpals-query' THEN 'upm'
+                                      WHEN 'bundle-build' THEN 'asset' ELSE step END,
+                           outcome,0,0,
+                           CASE WHEN stage IN ('config-export','pipify-batch','plugpals-query','bundle-build')
+                                THEN 1 ELSE 0 END,
+                           CASE WHEN stage='editor-module' AND calls IS NULL THEN 1 ELSE 0 END,
+                           CASE WHEN stage='editor-module' THEN COALESCE(calls,0)
+                                WHEN stage='config-load' AND outcome='success' THEN 1 ELSE 0 END
+                    FROM tool_events
                 ), recent AS (
-                    SELECT workspace,framework,module,SUM(1-play_session) AS count,SUM(play_session) AS play_sessions,
+                    SELECT workspace,framework,module,SUM(usage_call) AS count,SUM(play_session) AS play_sessions,
                            MAX(observed_at) AS last_use,
                            MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
-                           SUM(CASE WHEN outcome IN ('failed','blocked') THEN 1 ELSE 0 END) AS problems,
-                           SUM(manual_export) AS manual_exports
+                           SUM(CASE WHEN outcome IN ('failed','blocked') THEN usage_call ELSE 0 END) AS problems,
+                           SUM(manual_export) AS manual_exports,
+                           SUM(development_call) AS development_calls,SUM(play_calls) AS play_calls
                     FROM events WHERE observed_at>=:since
                     GROUP BY workspace,framework,module ORDER BY last_use DESC LIMIT 500
                 )
                 SELECT * FROM recent
                 UNION ALL
                 SELECT NULL,NULL,module,
-                       SUM(CASE WHEN observed_at>=:since THEN 1-play_session ELSE 0 END),
+                       SUM(CASE WHEN observed_at>=:since THEN usage_call ELSE 0 END),
                        SUM(CASE WHEN observed_at>=:since THEN play_session ELSE 0 END),
                        MAX(observed_at) AS last_use,
                        MAX(CASE WHEN outcome='success' THEN observed_at END) AS last_success,
-                       SUM(CASE WHEN observed_at>=:since AND outcome IN ('failed','blocked') THEN 1 ELSE 0 END),
-                       SUM(CASE WHEN observed_at>=:since THEN manual_export ELSE 0 END)
+                       SUM(CASE WHEN observed_at>=:since AND outcome IN ('failed','blocked') THEN usage_call ELSE 0 END),
+                       SUM(CASE WHEN observed_at>=:since THEN manual_export ELSE 0 END),
+                       SUM(CASE WHEN observed_at>=:since THEN development_call ELSE 0 END),
+                       SUM(CASE WHEN observed_at>=:since THEN play_calls ELSE 0 END)
                 FROM events GROUP BY module
                 """, {"project": project_id, "since": now() - 30 * 86400})))
             upgrade_issues = db.execute("""
@@ -623,6 +808,7 @@ class Database:
                 """, (project_id,))
             return {"project": dict(project), "snapshots": list(map(self.decode, snapshots)),
                     "tasks": list(map(self.decode, tasks)), "hook_activity": list(map(dict, hook_activity)),
+                    "unity_mcp_connections": list(map(self.decode, unity_mcp_connections)),
                     "implementation": list(map(self.decode, implementation)),
                     "configured_tools": self.configured_implementation_tools(db, project_id).get(project_id, []),
                     "implementation_outcomes": list(map(self.decode, outcomes)),

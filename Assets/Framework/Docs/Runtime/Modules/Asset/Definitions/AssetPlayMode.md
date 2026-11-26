@@ -23,7 +23,7 @@ Nova 资源策略枚举。资源策略与运行平台解耦，底层文件系统
 | `OfflinePlayMode` | `1` | 离线运行模式 |
 | `HostPlayMode` | `2` | 联机运行模式（需远端 URL） |
 
-WebGL 不是独立 PlayMode：`OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。WebGL 的启动请求时机与内存驻留由独立的 `WebGLAssetStrategy` 控制，而不是由 PlayMode 或首包拷贝选项控制。
+WebGL 复用 `OfflinePlayMode` 和 `HostPlayMode`。在 WebGL Player 中，`OfflinePlayMode` 使用 `WebServer`，`HostPlayMode` 按[首包布局清单](../WebGLAssetStrategies.md#首包构建布局与运行时文件系统)选择文件系统。有首包的 Package 使用 `WebServer + WebNetwork`，纯 CDN 的 Package 使用 `WebNetwork`。启动请求时机与内存驻留由 `WebGLAssetStrategy` 控制。
 
 ---
 

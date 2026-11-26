@@ -49,7 +49,6 @@ namespace NovaFramework.Editor
             {
                 if (messages == null || !messages.Any(message => message.type == CompilerMessageType.Error))
                     return;
-                ObserveUpgradeCompileError();
                 if (!BindFrameworkPackage())
                     return;
 

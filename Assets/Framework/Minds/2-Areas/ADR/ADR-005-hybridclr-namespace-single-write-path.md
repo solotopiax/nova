@@ -78,7 +78,7 @@ ConfigWindow 或受控固定字段 Action（用户明确修改 Namespace）
 ### 4. HybridCLR 配套约束
 
 - HomologousImageMode 默认 `SuperSet`，无明确理由禁止修改。
-- 升级 HybridCLR 版本前必须同步 `ConfigRuntimeSO.AotMetadataDlls` 列表（通过 ConfigWindow → HybridCLR 配置面板编辑并导出）。
+- 升级 HybridCLR 时在 ConfigWindow 中核对 AOT 元数据清单，由 ConfigMaster 导出到 `ConfigRuntimeSO.HybridConfigs.AotMetadataDlls`。操作入口见 [HybridCLR 配置与导出说明](../../../Docs/Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)。
 - 版本变更需同步 `link.xml` 保留规则。
 
 ## 后果（Consequences）

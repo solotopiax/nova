@@ -135,7 +135,6 @@ namespace NovaFramework.Editor
                                 if (reporter.ReportStep(i, info.DisplayName, 0f)) throw new OperationCanceledException(ct);
 
                                 Stopwatch sw = new Stopwatch();
-                                bool invokedStep = false;
                                 try
                                 {
                                     if ((checkpoint == null || checkpoint.NextStepIndex != i) && reporter is WindowReporter windowReporter &&
@@ -145,14 +144,11 @@ namespace NovaFramework.Editor
                                         // 只保存尚未调用的上传位置；重载后从同一 Runner 继续，不重复构建或已经开始的远端请求。
                                         var uploadInput = PipifySteps.ResolveGooglePlayInput(ctx,
                                             (PipifySteps.GooglePlayUploadParams)paramsInstance, System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath));
-                                        ObserveStep(item.StepId, i, "waiting", TimeSpan.Zero, 1);
                                         await HandOffWindowUploadAsync(batch, i, buildState.LatestArtifact,
                                             uploadInput, frozenMasterGuid, frozenPipifyGuid, windowReporter, ct, attempt);
                                     }
                                     object[] args = info.ParamsType == null ? new object[] { ctx } : new object[] { ctx, paramsInstance };
-                                    invokedStep = true;
                                     sw.Start();
-                                    ObserveStep(item.StepId, i, "running", TimeSpan.Zero);
                                     UniTask invoked = (UniTask)info.Method.Invoke(null, args);
                                     await invoked;
                                     ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
@@ -161,8 +157,6 @@ namespace NovaFramework.Editor
                                 {
                                     sw.Stop();
                                     Exception toThrow = tie.InnerException ?? tie;
-                                    if (invokedStep)
-                                        ObserveStep(item.StepId, i, toThrow is OperationCanceledException ? "cancelled" : "failed", sw.Elapsed);
                                     reporter.EndStep(i, false, sw.Elapsed, toThrow);
                                     ExceptionDispatchInfo.Capture(toThrow).Throw();
                                     throw; // 编译器可达性占位，实际不执行
@@ -170,14 +164,11 @@ namespace NovaFramework.Editor
                                 catch (Exception ex)
                                 {
                                     sw.Stop();
-                                    if (invokedStep)
-                                        ObserveStep(item.StepId, i, ex is OperationCanceledException ? "cancelled" : "failed", sw.Elapsed);
                                     reporter.EndStep(i, false, sw.Elapsed, ex);
                                     throw;
                                 }
                                 sw.Stop();
                                 ranStep = true;
-                                ObserveStep(item.StepId, i, "success", sw.Elapsed);
                                 reporter.EndStep(i, true, sw.Elapsed, null);
                             }
                             finally
@@ -205,15 +196,9 @@ namespace NovaFramework.Editor
                         ClearWindowUploadCheckpoint();
                         if (!success || ranStep)
                             NovaIssues.ObserveImplementation("pipify-batch", success ? "success" : cancelled ? "cancelled" : "failed",
-                                platform, channel, mode, success ? null : currentStep, total.Elapsed,
-                                attempt: attempt, sequence: batch.Items.Count * 2 + 1);
+                                platform, channel, mode, success ? null : currentStep, reportId: attempt);
                         reporter.EndBatch(success, total.Elapsed);
                     }
-
-                    // 等待重载在调用之前占一个序号，恢复后同一批次的实际执行会覆盖等待状态。
-                    void ObserveStep(string step, int index, string outcome, TimeSpan elapsed, int phase = 2) =>
-                        NovaIssues.ObserveImplementation("pipify-step", outcome, platform, channel, mode, step, elapsed,
-                            attempt: attempt, sequence: index * 2 + phase);
                 }
 
                 /// <summary>

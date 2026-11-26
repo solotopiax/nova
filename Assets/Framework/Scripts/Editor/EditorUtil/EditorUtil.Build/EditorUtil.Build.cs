@@ -42,7 +42,7 @@ namespace NovaFramework.Editor
                     requestedOptions |= BuildOptions.BuildScriptsOnly;
                 if (string.IsNullOrEmpty(outputPath))
                 {
-                    NovaIssues.ObservePlayerBuildFailure(target, exportsProject, requestedOptions, startedAt, "blocked");
+                    NovaIssues.ObservePlayerBuildFailure(target, exportsProject, requestedOptions, "blocked");
                     throw new ArgumentException(string.Format("{0} outputPath 不能为空", c_LogPrefix));
                 }
                 BuildPlayerOptions opts = ResolveScenes(target, outputPath, developmentBuild, buildMode);
@@ -71,7 +71,7 @@ namespace NovaFramework.Editor
                 catch (Exception error)
                 {
                     if (!hasReport && (!enteredUnityBuild || !NovaIssues.TryObserveLatestPlayerBuild(startedAt)))
-                        NovaIssues.ObservePlayerBuildFailure(target, exportsProject, opts.options, startedAt,
+                        NovaIssues.ObservePlayerBuildFailure(target, exportsProject, opts.options,
                             error is OperationCanceledException ? "cancelled" : enteredUnityBuild ? "failed" : "blocked");
                     throw;
                 }

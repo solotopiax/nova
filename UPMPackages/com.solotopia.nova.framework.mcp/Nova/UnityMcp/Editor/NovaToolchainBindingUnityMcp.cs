@@ -30,6 +30,7 @@ using NovaFramework.Mcp.Editor;
 using UnityEditor;
 using UnityEngine;
 using BindingResult = NovaFramework.Mcp.Editor.NovaToolchainBinding.BindingResult;
+using EditorTransportStatus = NovaFramework.Mcp.Editor.NovaToolchainBinding.EditorTransportStatus;
 
 namespace NovaFramework.Mcp.UnityMcp.Editor
 {
@@ -45,8 +46,18 @@ namespace NovaFramework.Mcp.UnityMcp.Editor
         /// <summary>注册固定入口；重载只释放本域进程句柄，不停止已经提供服务的进程。</summary>
         static NovaToolchainBindingUnityMcp()
         {
-            NovaToolchainBinding.RegisterProvider("com.coplaydev.unity-mcp", EnsureAsync);
+            NovaToolchainBinding.RegisterProvider("com.coplaydev.unity-mcp", EnsureAsync, ReadEditorTransport);
             AssemblyReloadEvents.beforeAssemblyReload += ReleaseLaunchHandle;
+        }
+
+        /// <summary>读取 Coplay 实际传输状态，区分 HTTP 桥接和 stdio 监听。</summary>
+        private static EditorTransportStatus ReadEditorTransport()
+        {
+            if (!EditorConfigurationCache.Instance.UseHttpTransport)
+                return StdioBridgeHost.IsRunning ? EditorTransportStatus.Listening : EditorTransportStatus.Disconnected;
+            var client = MCPServiceLocator.TransportManager.GetClient(TransportMode.Http);
+            return client?.IsConnected == true && MatchesHttpConnection(client.State, HttpEndpointUtility.GetMcpRpcUrl())
+                ? EditorTransportStatus.Connected : EditorTransportStatus.Disconnected;
         }
 
         /// <summary>准备 uv、复用或启动本机服务，并只绑定当前项目的 Codex 配置。</summary>

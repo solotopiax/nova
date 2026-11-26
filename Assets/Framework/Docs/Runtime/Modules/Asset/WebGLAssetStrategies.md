@@ -29,7 +29,7 @@ WebGL 在 Pipify 的 `BundledCopyOption` 中只开放三项：
 
 `OnlyCopyAll` 与 `OnlyCopyByTags` 在 WebGL 下不开放，因为它们不会先清理旧 Package 目录，历史文件可能污染实际布局。`None` 会由 Nova 精确清理目标 Package 的旧首包目录。
 
-Nova 不修改 YooAsset 原包。WebGL Player 构建完成后会扫描产物中的官方 `BuiltinCatalog.bytes`，在 `StreamingAssets/nova-webgl-layout.txt` 写入实际带首包的 Package；即使全部 Package 都是纯 CDN，该清单也会保留格式头。Host 启动只请求这份必然存在的清单：Package 在清单中时启用 `WebServer + WebNetwork`，否则使用纯 `WebNetwork`，不再通过预期 404 探测 Catalog。旧 Player 缺少或损坏清单时才兼容回退原探测方式。Offline 固定使用纯 `WebServer`，不读取布局清单也不回退 CDN；缺少 Catalog 时由 YooAsset 初始化明确失败。
+WebGL Player 的[构建后处理](../../../../Scripts/Editor/BuildProcessor/Core/NovaBuildPostprocessor.cs)扫描产物中的 YooAsset 官方 `BuiltinCatalog.bytes`，把实际带首包的 Package 写入 `StreamingAssets/nova-webgl-layout.txt`。即使全部 Package 都是纯 CDN，该清单也会保留格式头。[Host 启动读取布局清单](../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.WebGLCatalog.cs)，按 Package 是否列入清单选择 `WebServer + WebNetwork` 或纯 `WebNetwork`。缺少清单或清单损坏时回退到兼容旧 Player 的 Catalog 探测。Offline 固定使用纯 `WebServer`，由 YooAsset 加载本地 Catalog，缺少 Catalog 时初始化失败。
 
 YooAsset 的 Catalog 只能证明首包目录存在，不能区分按 Tag 与全量拷贝。因此 Offline 的构建契约仍要求 `ClearAndCopyAll`；若错误使用按 Tag 首包，初始化可能成功，但访问未随包资源时会失败。
 
@@ -113,12 +113,12 @@ WebGL 的 `CreateDownloader*()` 不提供 Android/iOS Sandbox 式“提前下载
 
 WebGL 不使用“单文件字节流入超时”。`WebGLBundleRequestTimeout`（默认 300 秒）通过同一个 UnityWebRequest creator 同时覆盖 `WebServer` 的 `StreamingAssets` Bundle 请求和 `WebNetwork` 的 CDN Bundle 请求；每个物理请求独立计时。只有 Host 的 CDN 请求使用 Asset 主备轮次、重试、最近成功域名优先和 UWR 埋点，StreamingAssets 请求不参与 CDN 候选轮换。
 
-元数据有自己的超时：`.version` 用 `CheckTimeout`，`.hash/.bytes` 用 `ManifestRequestTimeout`（默认 60 秒）。Host 远端元数据请求复用 CDN 主备轮次、重试、最近成功域名优先和 UWR 埋点；StreamingAssets 元数据请求只使用对应超时。远端 Manifest 候选耗尽时，只有探测到官方 Catalog 的 Host 包才会回退到随 Player 发布的 `StreamingAssets` 首包 Manifest；纯 CDN 没有 Catalog，不进入该回退。
+元数据有自己的超时：`.version` 用 `CheckTimeout`，`.hash/.bytes` 用 `ManifestRequestTimeout`（默认 60 秒）。Host 远端元数据请求复用 CDN 主备轮次、重试、最近成功域名优先和 UWR 埋点；StreamingAssets 元数据请求只使用对应超时。远端 Manifest 候选耗尽时，Host 下有首包 Catalog 的 Package 可回退到随 Player 发布的 `StreamingAssets` 首包 Manifest。
 
 ## 构建与迁移边界
 
 - `BuildAssetBundle`、`BuildRawFileBundle`、Pipify 和受控 Build Action 在 WebGL 目标下支持 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；非 WebGL 保留 YooAsset 原有五种选项。
-- Nova 不额外生成首包布局标记，也不修改 YooAsset 厂商包源码；运行时只依赖 YooAsset 构建生成的官方 Catalog。为确保 `None` 能清除旧 Catalog，项目构建应统一走上述 Nova 入口。
+- 通过上述 Nova 入口构建，确保 `None` 清除目标 Package 的旧 Catalog，以便构建后处理生成准确的[首包布局清单](#首包构建布局与运行时文件系统)。
 - WebGL 的运行策略与首包拷贝布局互相独立：前者决定何时请求，后者决定从 StreamingAssets 还是 CDN 请求。
 - 旧 `PreloadAsync` 已从 `IAssetManager`、`AssetManagerBase`、`AssetManager` 与 `AssetComponent` 删除，不保留兼容转发。迁移到 `CreateWarmupAll` / `CreateWarmupByTags` / `CreateWarmupByLocations`，并明确持有与释放 Group。
 - 本策略仅覆盖浏览器 WebGL，暂不覆盖微信小游戏。
@@ -136,6 +136,7 @@ WebGL 不使用“单文件字节流入超时”。`WebGLBundleRequestTimeout`�
 - [ProcedureCheckVersion.md](../Procedure/ProcedureCheckVersion.md)
 - [ProcedureHotfix.md](../Procedure/ProcedureHotfix.md)
 - [EditorUtil.BundleBuilder.md](../../../Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)
+- [ADR-085 WebGL 三种资源策略与 IAssetWarmupGroup 句柄分层](../../../../Minds/2-Areas/ADR/ADR-085-webgl-asset-strategies-and-warmup-group.md)
 
 ## 微信小游戏原生预下载
 

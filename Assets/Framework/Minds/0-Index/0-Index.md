@@ -35,7 +35,7 @@ date: 2026-06-05
 ## 默认查询顺序
 
 1. 本页
-2. 对应类型索引
+2. 按[查询策略](../AGENTS.md#查询策略)确定范围，再查对应类型索引
 3. 命中的正文条目
 
 ## 类型入口
@@ -45,7 +45,6 @@ date: 2026-06-05
 - [GLO 索引](0-Index-GLO.md)：术语与概念
 - [MOC 索引](0-Index-MOC.md)：模块图谱
 - [RES 索引](0-Index-RES.md)：外部资料
-- [变更记录](0-Log.md)：知识层治理与结构调整日志
 - [术语速查](0-Index-Terms.md)：高频命名对齐
 - [文件夹指南](0-Index-FolderGuide.md)：目录边界
 
@@ -61,6 +60,7 @@ date: 2026-06-05
 
 - [3-Resources/](../3-Resources/)
 - [4-Archives/](../4-Archives/)
+- [变更记录](0-Log.md)：知识层治理与结构调整日志
 - [审计归档索引](../4-Archives/Audits/INDEX.md)：历史审计、计划与风险台账
 - [旧协作归档索引](../4-Archives/Collaboration/INDEX.md)：已退役协作栈的历史材料
 

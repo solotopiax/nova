@@ -28,6 +28,8 @@
 
 `NovaFramework.Mcp.Editor.NovaToolchainBinding.EnsureAsync(projectRoot, cancellationToken)` 返回 `UniTask<BindingResult>`；结果包含 `ProjectRoot`、`Status` 和 `Detail`，当前域最近状态可从 `LastResult` 读取。入口只接受当前 Editor 项目，同一时刻串行执行，不接受任意 C#、反射或 Action 请求。Provider 通过 `RegisterProvider(providerId, ensure)` 显式注册；Coplay Adapter 的 `InitializeOnLoad` 只注册回调，实际工作由安装调度调用入口后开始。中立程序集不反向引用 Framework 或 Coplay。
 
+Provider 可通过 `RegisterProvider(providerId, ensure, readEditorTransport)` 同时注册只读状态。在 Unity 主线程调用 `NovaToolchainBinding.ReadEditorTransport(providerId)` 可取得当前状态。Coplay 在 HTTP 桥实际连接且地址一致时返回 `Connected`，stdio 桥启动时返回 `Listening`。无匹配 Provider 或只读入口时返回 `Unknown`。读取状态沿用现有连接。
+
 默认 HTTP 流程：
 
 1. 验证已经连到当前 Editor 的 Provider，正确连接直接复用，不重启本机服务。

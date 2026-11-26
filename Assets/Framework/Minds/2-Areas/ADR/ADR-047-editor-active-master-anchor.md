@@ -1,7 +1,7 @@
 ---
 id: ADR-047
 title: Editor 激活 ConfigMaster 锚点（Globals.json + GUID + 四段回退）
-summary: Globals.json 锚定 Editor 激活 master
+summary: 哪份 ConfigMaster 在 Editor 里生效
 category: module
 status: accepted
 date: 2026-05-28

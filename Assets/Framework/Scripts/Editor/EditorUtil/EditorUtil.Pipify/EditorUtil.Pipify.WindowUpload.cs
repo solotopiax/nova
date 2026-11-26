@@ -131,7 +131,7 @@ namespace NovaFramework.Editor
                 }
                 catch (Exception ex)
                 {
-                    ObservePendingUploadFailure(timer.Elapsed);
+                    ObservePendingUploadFailure();
                     ClearWindowUploadCheckpoint();
                     EditorUtility.ClearProgressBar();
                     Log.Error(LogTag.Editor, "{0} 窗口上传交接失败：{1}", c_LogPrefix, ex);
@@ -139,7 +139,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>记录交接中断，已被 Runner 消费的检查点由 Runner 自己记录终态。</summary>
-            private static void ObservePendingUploadFailure(TimeSpan elapsed)
+            private static void ObservePendingUploadFailure()
             {
                 try
                 {
@@ -149,8 +149,7 @@ namespace NovaFramework.Editor
                     var checkpoint = JsonUtility.FromJson<WindowUploadCheckpoint>(raw);
                     if (Guid.TryParseExact(checkpoint?.FeedbackAttempt, "N", out _))
                         NovaIssues.ObserveImplementation("pipify-batch", "failed", checkpoint.Target.ToString(),
-                            step: "googleplay.upload_aab", elapsed: elapsed, attempt: checkpoint.FeedbackAttempt,
-                            sequence: checkpoint.NextStepIndex * 2 + 2);
+                            step: "googleplay.upload_aab", reportId: checkpoint.FeedbackAttempt);
                 }
                 catch (Exception) { /* 上报不参与已有的检查点清理。 */ }
             }

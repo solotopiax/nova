@@ -62,7 +62,8 @@ def records(value, limit):
 def validate_snapshot(data):
     """接收环境快照，历史包来源证据标签仍可随旧客户端提交。"""
     obj(data, ("framework", "unity", "packages", "tools", "coverage"),
-        ("platform", "channel", "mode", "enabled", "coordinate_source", "application_identifiers", "codex_hooks", "git_user_name"))
+        ("platform", "channel", "mode", "enabled", "coordinate_source", "application_identifiers", "codex_hooks",
+         "git_user_name", "operating_system"))
     for name in ("framework", "unity", "platform", "channel", "mode", "coordinate_source"):
         if name in data:
             label(data[name], 80, empty=name not in ("framework", "unity"))
@@ -77,6 +78,8 @@ def validate_snapshot(data):
         key(entry)
     if "codex_hooks" in data:
         enum(data["codex_hooks"], ("complete", "pending", "incomplete"))
+    if "operating_system" in data:
+        enum(data["operating_system"], ("macos", "windows", "linux"))
     if "git_user_name" in data:
         label(data["git_user_name"], 100)
         if re.search(r"[\x00-\x1f\x7f-\x9f]", data["git_user_name"]):
@@ -114,7 +117,10 @@ def validate_usage(data):
     if "source" in data:
         enum(data["source"], ("codex", "editor"))
     if "entry" in data:
-        enum(data["entry"], ("action", "skill", "unity-cli", "nova-cli"))
+        enum(data["entry"], ("action", "skill", "unity-cli", "nova-cli", "unity-mcp"))
+        if data["entry"] == "unity-mcp" and (data.get("source") != "codex" or data["module"] != "unity-mcp"
+                or not re.fullmatch(r"unity-mcp\.[a-z0-9][a-z0-9_.-]*", data["operation"])):
+            raise InvalidInput("Unity MCP 使用记录的来源或工具标识无效。")
     if data.get("source") == "codex" and "entry" not in data:
         raise InvalidInput("Codex 使用记录缺少调用入口。")
     if "action_operation" in data:
@@ -140,11 +146,11 @@ def validate_implementation(data):
     """工程实施事实只携带状态、版本、可核对的入口和结果。"""
     base = ("framework", "unity", "stage")
     coordinate = ("platform", "channel", "mode")
-    # 仍解析旧客户端的 SDK 预加载信封，以便在完成认证后确认收件而不计入数据。
+    # 验证旧客户端已入队的格式，以便完成认证后给停用记录返回原编号回执。
     stage = enum(data.get("stage") if isinstance(data, dict) else None, (
         "workspace", "config-export", "config-load", "pipify-batch", "plugpals-query",
         "bundle-build", "player-build", "sdk-preload",
-        "editor-module", "startup-stage", "framework-upgrade", "table-ready", "pipify-step",
+        "editor-module", "startup-stage", "framework-upgrade", "table-ready", "pipify-step", "unity-mcp-connection",
     ))
     if stage == "workspace":
         obj(data, base + ("tools", "editor_framework", "sdk_packages", "sdk_configs"), coordinate + ("requested_framework",))
@@ -163,9 +169,15 @@ def validate_implementation(data):
         for config in records(data["sdk_configs"], 100):
             key(config)
     elif stage == "editor-module":
-        obj(data, base + ("step", "outcome"), coordinate)
+        obj(data, base + ("step", "outcome"), coordinate + ("calls",))
         enum(data["step"], ("asset", "procedure", "table", "localization", "ui", "network"))
         enum(data["outcome"], ("success",))
+        if "calls" in data:
+            int_range(data["calls"], 1, 2_147_483_647)
+    elif stage == "unity-mcp-connection":
+        obj(data, base + ("state", "provider_version"))
+        enum(data["state"], ("connected", "listening", "disconnected", "unknown"))
+        label(data["provider_version"], 80)
     elif stage == "table-ready":
         obj(data, base + ("outcome",))
         enum(data["outcome"], ("success",))
@@ -264,13 +276,15 @@ def validate_event(value):
 RETIRED_SDK_ISSUE = "editor-sdk-preload-exceeds-60-seconds"
 
 
-def retired_sdk_feedback(kind, data):
-    """识别旧客户端的 Editor SDK 运行记录，保留 SDK 接入和构建证据。"""
+def retired_feedback(kind, data):
+    """识别已经停用的旧上报，避免它们进入维护台的汇总。"""
     if kind == "usage":
         return data["operation"] == "editor.preload.sdk"
     if kind == "issue":
         return data["code"] == RETIRED_SDK_ISSUE
-    return kind == "implementation" and (
-        data["stage"] in ("sdk-device", "sdk-preload")
-        or (data["stage"] == "startup-stage" and data["step"] == "sdk")
+    if kind != "implementation":
+        return False
+    stage = data["stage"]
+    return stage in ("sdk-device", "sdk-preload", "startup-stage", "framework-upgrade", "pipify-step") or (
+        stage == "player-build" and (data.get("platform") not in ("Android", "iOS") or data["build_kind"] == "scripts")
     )

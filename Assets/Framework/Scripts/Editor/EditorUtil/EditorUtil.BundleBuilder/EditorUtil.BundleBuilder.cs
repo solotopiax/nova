@@ -177,7 +177,6 @@ namespace NovaFramework.Editor
             private static BuildResult ObserveBundleBuild(BuildTarget target, string step, Func<BuildResult> execute)
             {
                 var (channel, mode) = NovaIssues.CaptureBundleCoordinates(target);
-                var timer = System.Diagnostics.Stopwatch.StartNew();
                 string outcome = "failed";
                 try
                 {
@@ -192,8 +191,7 @@ namespace NovaFramework.Editor
                 }
                 finally
                 {
-                    NovaIssues.ObserveImplementation("bundle-build", outcome, target.ToString(), channel, mode,
-                        step: step, elapsed: timer.Elapsed);
+                    NovaIssues.ObserveImplementation("bundle-build", outcome, target.ToString(), channel, mode, step: step);
                 }
             }
 

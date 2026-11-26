@@ -487,7 +487,6 @@ namespace NovaFramework.Editor
                     ImportantUpdates.CancelUpgrade(importantBatchId, entry.Name);
                     throw;
                 }
-                NovaIssues.BeginFrameworkUpgrade(entry.Name, entry.LatestVersion);
                 ResolvePackages();
                 ImportantUpdates.UpgradeSubmitted();
 

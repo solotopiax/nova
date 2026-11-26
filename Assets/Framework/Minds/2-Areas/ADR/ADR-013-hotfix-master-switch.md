@@ -28,17 +28,17 @@ related:
 当前代码基线改为：
 
 - `ProcedureSplash` 始终进入 `ProcedureCheckVersion`
-- `ProcedureCheckVersion` 始终先执行 App 大版本检测
+- `ProcedureCheckVersion` 先处理 App 大版本阶段。非 WebGL 可执行大版本检测，WebGL 采用 `NoDownload`
 - `EnableHotfix` 只控制 Asset 资源热更检查 / 下载链路
 - `AppDownloadCheckUrl` 为空时，App 检查降级为 `NoDownload`，继续后续启动流程
 - WebGL 不使用 Downloader 做启动补丁差异检查；即使 `EnableHotfix=false`，`TagsOnLaunch` / `AllOnLaunch` 仍会加载 Manifest 并执行 Warmup，`OnDemand` 或空有效 Tag 则跳过 Warmup
 - `AutoHotfix` 从未被启动流程读取，也没有配套的业务手动触发入口，现已从公共配置、序列化字段和 Inspector 删除；进入 `ProcedureHotfix` 后仍固定立即执行 Downloader 或 WebGL Warmup
 
-因此，本 ADR 保留其“`EnableHotfix` 归属 Asset 配置域”的决策背景，但启动链分流细节应以 [[PAT-44-procedure-checkversion-two-stage|PAT-44]]、[[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 和当前 `Docs` 为准。
+本 ADR 保留 `EnableHotfix` 归属 Asset 配置域的决策依据。当前分流见 [版本检查](../../../Docs/Runtime/Modules/Procedure/ProcedureCheckVersion.md)、[[PAT-44-procedure-checkversion-two-stage|PAT-44]] 和 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]]。以下背景、方案和验证记录用于追溯当时实现。
 
 ## 背景（Context）
 
-Nova Framework 是面向"主流游戏（含热更）"设计的 Unity 框架，当前启动流程固化为：
+引入开关前，Nova Framework 的启动流程如下。
 
 ```
 ProcedureLaunch → ProcedureSplash → ProcedureCheckVersion
@@ -72,7 +72,7 @@ ProcedureLaunch → ProcedureSplash → ProcedureCheckVersion
 - **读取入口**：`AssetComponent.EnableHotfix` 公开属性 + `Nova.Asset.EnableHotfix` 业务层只读暴露
 - **配置层归属**：Inspector 序列化字段（Foldout「热更配置」首位），抗远端下发
 
-### 2. ProcedureSplash 出口二分
+### 2. 历史方案中的 ProcedureSplash 分流
 
 `ProcedureSplash.OnUpdate` 闪屏时长到达后：
 

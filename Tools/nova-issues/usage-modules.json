@@ -1,0 +1,20 @@
+{
+  "app": "App",
+  "asset": "Asset",
+  "config": "Config",
+  "debug": "Debug",
+  "event": "Event",
+  "localization": "Localization",
+  "native": "Native",
+  "network": "Network",
+  "nova": "Nova",
+  "objectpool": "ObjectPool",
+  "persist": "Persist",
+  "prefab": "Prefab",
+  "procedure": "Procedure",
+  "sdk": "SDK",
+  "sound": "Sound",
+  "table": "Table",
+  "ui": "UI",
+  "vibrate": "Vibrate"
+}

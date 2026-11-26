@@ -86,9 +86,6 @@ namespace NovaFramework.Runtime
 
             if (m_HasError)
             {
-#if UNITY_EDITOR
-                EditorPlayEvidence.Fail(this);
-#endif
                 Log.Warning(LogTag.Procedure, "ProcedureCheckVersion 检查异常，降级跳 ProcedureLoadDll。");
                 ChangeState<ProcedureLoadDll>(procedureOwner);
                 return;

@@ -133,7 +133,9 @@ WebGL 禁止 `OnlyCopyAll` / `OnlyCopyByTags`，因为不清理旧目录会让�
 
 Offline 不探测 Catalog，也不创建 `WebNetwork`，固定使用纯 `WebServer`。它的完整部署契约是 `ClearAndCopyAll`；缺少 Catalog 时由 YooAsset 初始化明确失败。Catalog 不能区分按 Tag 与全量拷贝，因此错误使用 `ClearAndCopyByTags` 时可能初始化成功、但在访问未随包资源时失败。
 
-纯 CDN 没有首包 Manifest，因此不会进入 WebGL 首包 Manifest 回退；探测到 Catalog 的 Host 包仍可在远端元数据失败时使用首包 Manifest。为确保 `None` 清理旧 Catalog，项目构建统一走 Nova Builder、Pipify 或受控 Build Action。
+纯 CDN 没有首包 Manifest，因此不会进入 WebGL 首包 Manifest 回退。Host 下有首包 Catalog 的 Package 仍可在远端元数据失败时使用首包 Manifest。为确保 `None` 清理旧 Catalog，项目构建统一走 Nova Builder、Pipify 或受控 Build Action。
+
+当前配置与部署方式见[首包构建布局与运行时文件系统](../../../Docs/Runtime/Modules/Asset/WebGLAssetStrategies.md#首包构建布局与运行时文件系统)。产物来源见[构建后处理](../../../Scripts/Editor/BuildProcessor/Core/NovaBuildPostprocessor.cs)，文件系统选择依据见[Host 启动读取布局清单](../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.WebGLCatalog.cs)。
 
 WebGL 导出后 `StreamingAssets` 仍是服务器上的独立 URL 目录，不会因为 CopyAll 就在打开网页时全部下载。`OnDemand` / `TagsOnLaunch` / `AllOnLaunch` 分别决定按需请求、启动请求指定 Tag，或启动请求全部 Bundle。
 

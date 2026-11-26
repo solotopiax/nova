@@ -23,9 +23,9 @@ import threading
 import time
 from urllib.parse import parse_qs, urlsplit
 
-from database import Conflict, Database, EnrollmentLimit
+from database import ACTIVITY_SECTIONS, Conflict, Database, EnrollmentLimit
 from protocol import (
-    InvalidInput, MAINTAINER_ISSUE_STATES, UUID, enum, int_range, key, label, obj, validate_event,
+    InvalidInput, MAINTAINER_ISSUE_STATES, UUID, enum, int_range, key, label, obj, retired_feedback, validate_event,
 )
 from registries import RegistryVersions
 
@@ -33,7 +33,7 @@ from registries import RegistryVersions
 ROOT = Path(__file__).resolve().parent
 ACCOUNTS = ("taoye", "yingzheng")
 COOKIE = "nova_issues_session"
-SESSION_TTL = 8 * 60 * 60
+SESSION_COOKIE_MAX_AGE = 400 * 24 * 60 * 60
 TOKEN = re.compile(r"[A-Za-z0-9_-]{32,128}\Z")
 MAX_BODY = 256 * 1024
 AUTO_REPORT_NETWORKS = tuple(map(ip_network, ("127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")))
@@ -44,6 +44,21 @@ ASSETS = {
 }
 USAGE_DESCRIPTIONS = ROOT / "usage-descriptions.json"
 UNITY_USAGE_DESCRIPTIONS = ROOT / "unity-usage-descriptions.json"
+USAGE_MODULES = ROOT / "usage-modules.json"
+USAGE_SOURCES = ("codex", "editor", "legacy")
+DEVELOPMENT_ENTRIES = ("action", "unity-cli", "nova-cli", "inspector", "unity-mcp")
+NOVA_CLI_MODULES = {
+    "nova_table_source": "table", "nova_tracks_source": "tracks", "nova_excel_template": "excel",
+    "nova_capabilities": "toolchain", "nova_skills": "toolchain",
+}
+MODULE_ALIASES = {"persist": "persistence", "vibrate": "vibration"}
+INSPECTOR_EXPORTS = {
+    "table": ("code", "data", "all"), "localization": ("text", "font"), "ui": ("code", "data", "all"),
+    "network": ("hostkey-code", "hostkey-data", "hostkey-all", "netcmd-code", "netcmd-data", "netcmd-all",
+                "proto-file", "proto-all"),
+}
+TOOL_EVIDENCE_MODULES = {"config-export": "config", "pipify-batch": "pipify",
+                         "plugpals-query": "upm", "bundle-build": "bundle"}
 
 
 def load_web_assets():
@@ -52,7 +67,7 @@ def load_web_assets():
             for route, (filename, content_type) in ASSETS.items()}
 
 
-def runtime_revision(assets=None, descriptions=None):
+def runtime_revision(assets=None, descriptions=None, modules=None):
     """用服务端源码和实际加载的 Web 内容生成可核对的版本标识。"""
     digest = hashlib.sha256()
     for name in ("serve.py", "database.py", "protocol.py", "registries.py"):
@@ -63,13 +78,20 @@ def runtime_revision(assets=None, descriptions=None):
         digest.update(hashlib.sha256(content).digest())
     if descriptions is None:
         descriptions = load_usage_descriptions()
-    digest.update(hashlib.sha256(json.dumps(descriptions, sort_keys=True).encode("utf-8")).digest())
+    if modules is None:
+        modules = load_usage_modules()
+    digest.update(hashlib.sha256(json.dumps([descriptions, modules], sort_keys=True).encode("utf-8")).digest())
     return digest.hexdigest()
 
 
 def load_usage_descriptions():
     """读取随服务部署的 Nova 与 Unity CLI 说明。"""
     return json.loads(USAGE_DESCRIPTIONS.read_bytes()) | json.loads(UNITY_USAGE_DESCRIPTIONS.read_bytes())
+
+
+def load_usage_modules():
+    """读取随维护台部署的 Framework 模块导航。"""
+    return json.loads(USAGE_MODULES.read_bytes())
 
 
 def usage_description(row, descriptions):
@@ -91,11 +113,108 @@ def usage_description(row, descriptions):
     if row["entry"] == "unity-cli" and operation.startswith("unity."):
         command = " ".join(operation.removeprefix("unity.").rsplit(".", 1))
         return f"通过 Unity CLI 调用「{command}」。具体用途由提供该命令的项目或包定义。"
+    if row["entry"] == "unity-mcp":
+        return f"通过 Unity MCP 调用「{operation.removeprefix('unity-mcp.')}」。"
     return ""
+
+
+def usage_breakdown(rows, evidence, descriptions, module_names):
+    """合并已知类型和历史上报，模块排行只统计入口明确的开发调用。"""
+    def category(identifier, **metadata):
+        return {"id": identifier, "count": 0, "history": 0, **metadata}
+
+    modules = {MODULE_ALIASES.get(name, name): category(MODULE_ALIASES.get(name, name), label=label, tracked=False)
+               for name, label in module_names.items()}
+    modules["unity-mcp"] = category("unity-mcp", label="Unity MCP", tracked=True)
+    operations = {}
+    sources = {name: category(name) for name in USAGE_SOURCES}
+    entries = {name: category(name) for name in (*DEVELOPMENT_ENTRIES, "skill", "")}
+    for operation, description in descriptions.items():
+        if retired_feedback("usage", {"operation": operation}):
+            continue
+        operations[operation] = category(operation, description=description)
+        parts = operation.split(".")
+        domain = NOVA_CLI_MODULES.get(parts[0])
+        if operation.startswith("nova.project.") and len(parts) >= 4:
+            domain = parts[2]
+        elif operation.startswith("unity."):
+            domain = "unity-cli"
+        if domain:
+            domain = MODULE_ALIASES.get(domain, domain)
+            modules.setdefault(domain, category(domain, tracked=False))["tracked"] = True
+
+    for domain, scopes in INSPECTOR_EXPORTS.items():
+        modules.setdefault(domain, category(domain, tracked=False))["tracked"] = True
+        for scope in scopes:
+            operation = f"editor.{domain}.export-{scope}"
+            description = usage_description({"operation": operation, "module": domain, "entry": "inspector"}, descriptions)
+            operations[operation] = category(operation, description=description)
+
+    for report in rows:
+        domain = MODULE_ALIASES.get(report["module"], report["module"])
+        operation = report["operation"]
+        module = modules.setdefault(domain, category(domain, tracked=False))
+        if operation not in operations:
+            operations[operation] = category(operation, description=usage_description(report, descriptions))
+        categories = [
+            operations[operation],
+            sources.setdefault(report["source"], category(report["source"])),
+            entries.setdefault(report["entry"], category(report["entry"])),
+        ]
+        if report["entry"] in DEVELOPMENT_ENTRIES:
+            module["tracked"] = True
+            categories.append(module)
+        for item in categories:
+            item["count"] += report["count"]
+            item["history"] += report["history"]
+
+    # 专项工具和 Play 有独立统计，只在这里补充已经使用过的历史证据。
+    for report in evidence:
+        stage = report["stage"]
+        domain = TOOL_EVIDENCE_MODULES.get(stage) or ("config" if stage == "config-load" else report["module"])
+        module = modules.setdefault(domain, category(domain, tracked=False))
+        module["tool_history" if stage in TOOL_EVIDENCE_MODULES else "play_history"] = True
+
+    return {
+        "total": sum(row["count"] for row in operations.values()),
+        "calls": sum(row["count"] for row in modules.values()),
+        "skill_turns": entries["skill"]["count"],
+        "dimensions": {name: list(items.values()) for name, items in
+                       (("module", modules), ("operation", operations), ("source", sources), ("entry", entries))},
+    }
+
+
+def activity_positions(query, suffix):
+    """读取浏览器按栏目保存的接收编号或旧版已读数量。"""
+    positions = {}
+    for section in ACTIVITY_SECTIONS:
+        values = query.get(f"{section}_{suffix}")
+        if values is None:
+            continue
+        if len(values) != 1 or len(values[0]) > 16 or not values[0].isdecimal():
+            raise InvalidInput("已读进度无效。")
+        positions[section] = int_range(int(values[0]), 0, 9007199254740991)
+    return positions
+
+
+def requested_page(query):
+    """接受维护台使用的页大小，兼容没有分页参数的旧请求。"""
+    if "page" not in query and "page_size" not in query:
+        return None
+    number = query.get("page", ["1"])
+    size = query.get("page_size", ["50"])
+    if len(number) != 1 or not re.fullmatch(r"[0-9]{1,10}", number[0]) or size not in (["10"], ["50"], ["100"], ["200"]):
+        raise InvalidInput("页码或每页条数无效。")
+    return int_range(int(number[0]), 1, 2147483647), int(size[0])
 
 
 def password_hash(password, salt):
     return hashlib.scrypt(password.encode("utf-8"), salt=salt, n=32768, r=8, p=1, maxmem=64 << 20)
+
+
+def account_version(salt, password_digest):
+    """以当前账号的凭据标记验证长期会话。"""
+    return hashlib.sha256(salt + password_digest).hexdigest()
 
 
 def read_accounts(path):
@@ -169,7 +288,8 @@ class NovaIssuesServer(HTTPServer):
         self.pool = ThreadPoolExecutor(max_workers=32)
         self.assets = load_web_assets()
         self.usage_descriptions = load_usage_descriptions()
-        self.revision = runtime_revision(self.assets, self.usage_descriptions)
+        self.usage_modules = load_usage_modules()
+        self.revision = runtime_revision(self.assets, self.usage_descriptions, self.usage_modules)
         super().__init__(address, Handler)
 
     def process_request(self, request, client_address):
@@ -253,6 +373,10 @@ class Handler(BaseHTTPRequestHandler):
         session = self.server.database.session(token) if TOKEN.fullmatch(token) else None
         if not session:
             raise HttpError(401, "请先登录。")
+        account = self.server.accounts.get(session["username"])
+        version = session["account_version"]
+        if account is None or (version is not None and not hmac.compare_digest(version, account_version(*account))):
+            raise HttpError(401, "请先登录。")
         if mutation:
             self.require_origin()
             csrf = self.headers.get("X-Nova-CSRF", "")
@@ -266,9 +390,9 @@ class Handler(BaseHTTPRequestHandler):
         if not host or self.headers.get("Origin", "") != f"{scheme}://{host}":
             raise HttpError(403, "请求必须来自本服务页面。")
 
-    def session_cookie(self, token, ttl):
+    def session_cookie(self, token, max_age):
         secure = "; Secure" if self.server.tls else ""
-        return ("Set-Cookie", f"{COOKIE}={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age={ttl}{secure}")
+        return ("Set-Cookie", f"{COOKIE}={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age={max_age}{secure}")
 
     def login(self):
         self.require_origin()
@@ -284,8 +408,9 @@ class Handler(BaseHTTPRequestHandler):
         if not accepted or username not in self.server.accounts:
             raise HttpError(401, "账号或密码错误。")
         self.server.login_limits.clear(address)
-        token, csrf = self.server.database.start_session(username, SESSION_TTL)
-        self.reply(200, {"username": username, "csrf": csrf}, headers=(self.session_cookie(token, SESSION_TTL),))
+        token, csrf = self.server.database.start_session(username, account_version(salt, wanted))
+        self.reply(200, {"username": username, "csrf": csrf},
+                   headers=(self.session_cookie(token, SESSION_COOKIE_MAX_AGE),))
 
     def do_GET(self):
         self.dispatch("GET")
@@ -322,13 +447,16 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, {"status": "ok", "service": "nova-issues-server", "protocol": 1,
                              "automatic_reporting": self.allows_automatic_reporting(), "codex_telemetry": True,
                              "project_snapshot_details": True, "git_user_name_reporting": True,
+                             "snapshot_operating_system": True,
                              "hook_activity": True, "implementation_tracking": True,
-                             "execution_evidence": True, "feedback_timings": True,
-                             "compact_reports": True, "revision": self.server.revision})
+                             "execution_evidence": True, "feedback_timings": True, "play_call_counts": True,
+                             "compact_reports": True, "unity_mcp_monitoring": True, "revision": self.server.revision})
         elif method == "POST" and path == "/api/session":
             self.login()
         elif method == "GET" and path == "/api/session":
-            self.reply(200, self.browser_session()[1])
+            token, session = self.browser_session()
+            headers = (self.session_cookie(token, SESSION_COOKIE_MAX_AGE),) if session["account_version"] else ()
+            self.reply(200, {"username": session["username"], "csrf": session["csrf"]}, headers=headers)
         elif method == "POST" and path == "/api/session/logout":
             token, _ = self.browser_session(mutation=True)
             db.end_session(token)
@@ -386,36 +514,57 @@ class Handler(BaseHTTPRequestHandler):
         """处理使用维护账号会话授权的查询和修改。"""
         db = self.server.database
         path = url.path.removeprefix("/api/maintainer/")
-        if method == "GET" and path in ("overview", "usage"):
+        if method == "GET" and path in ("overview", "usage", "usage-analysis"):
             query = parse_qs(url.query)
             days_value = query.get("days", ["14"])[0]
             if not days_value.isdecimal() or len(days_value) > 3:
                 raise InvalidInput("时间范围无效。")
             days = int_range(int(days_value), 1, 365)
             if path == "overview":
-                result = db.overview(days)
+                include_lists = query.get("lists") != ["0"]
+                if query.get("activity") == ["1"]:
+                    result = db.overview(days, activity_after=activity_positions(query, "after"),
+                                         previous_read=activity_positions(query, "seen"), include_lists=include_lists)
+                else:
+                    result = db.overview(days, include_lists=include_lists)
             else:
                 project = query.get("project", [""])[0]
                 module = query.get("module", [""])[0]
-                result = {"usage": db.list_usage(
-                    days, project_id=key(project) if project else "", module=key(module) if module else "",
-                    source=enum(query.get("source", [""])[0], ("", "codex", "editor", "legacy")),
-                    sort=enum(query.get("sort", ["count"])[0], ("count", "latest")),
-                )}
-            for row in result["usage"]:
+                scope = {
+                    "project_id": key(project) if project else "",
+                    "module": key(module) if module else "",
+                    "source": enum(query.get("source", [""])[0], ("", *USAGE_SOURCES)),
+                }
+                if path == "usage-analysis":
+                    rows, evidence = db.usage_analysis(days, **scope)
+                    breakdown = usage_breakdown(rows, evidence, self.server.usage_descriptions, self.server.usage_modules)
+                    self.reply(200, breakdown)
+                    return
+                usage, pagination = db.list_usage(
+                    days, sort=enum(query.get("sort", ["count"])[0], ("count", "latest")),
+                    page=requested_page(query), **scope,
+                )
+                result = {"usage": usage}
+                if pagination is not None:
+                    result["pagination"] = pagination
+            for row in result.get("usage", []):
                 row["description"] = usage_description(row, self.server.usage_descriptions)
             self.reply(200, result)
         elif method == "GET" and path == "issues":
             query = parse_qs(url.query)
             project = query.get("project", [""])[0]
             status = query.get("status", [""])[0]
-            issues = db.list_issues(
+            issues, pagination = db.list_issues(
                 project_id=key(project) if project else "",
                 status=enum(status, MAINTAINER_ISSUE_STATES) if status else "",
                 search=query.get("q", [""])[0].strip(),
                 sort=enum(query.get("sort", [""])[0], ("", "latest", "count")),
+                page=requested_page(query),
             )
-            self.reply(200, {"issues": issues})
+            result = {"issues": issues}
+            if pagination is not None:
+                result["pagination"] = pagination
+            self.reply(200, result)
         elif method == "POST" and path == "projects":
             data = obj(self.body(), ("id", "name", "team"))
             project_id = key(data["id"])

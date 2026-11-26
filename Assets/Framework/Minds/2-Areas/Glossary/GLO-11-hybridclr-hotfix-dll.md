@@ -11,7 +11,7 @@ aliases:
   - GLO-11-hybridclr-hotfix-dll
   - HybridCLR
   - hybridclr
-keywords: [GLO-11, HybridCLR, GameDlls, AotMetadataDlls, ProcedureLoadDll, EnableHotfix, AOT, 热更, 热修复]
+keywords: [GLO-11, HybridCLR, StartupGameDlls, AotMetadataDlls, ProcedureLoadDll, EnableHotfix, AOT, 热更, 热修复]
 tags: [glossary, nova, terminology, hybridclr, hotfix]
 related:
   - "[[ADR-005-hybridclr-namespace-single-write-path|ADR-005]]"
@@ -24,20 +24,20 @@ related:
 
 ## 定义
 
-HybridCLR 是 Nova 的热更运行时方案，用于在 IL2CPP 下运行时加载业务 DLL。业务 DLL 清单（`ConfigRuntimeSO.HybridConfigs.GameDlls`）、AOT 元数据清单（`ConfigRuntimeSO.HybridConfigs.AotMetadataDlls`）与业务入口（`Namespace + HybridConfigs.GameEntranceProcedureName`）全部由 `ConfigRuntimeSO` 配置驱动。
+HybridCLR 用于在 IL2CPP Player 中加载业务 DLL。`ConfigRuntimeSO.HybridConfigs.StartupGameDlls` 决定启动业务 DLL 清单，`HybridConfigs.AotMetadataDlls` 提供 AOT 元数据清单。业务入口由 `ConfigRuntimeSO.Namespace` 和 `HybridConfigs.GameEntranceProcedureName` 定位。
 
 ## 边界
 
-- 启动必经 `ProcedureSplash -> ProcedureCheckVersion`；版本检查随后按结果进入 `ProcedureAppDownload`、`ProcedureHotfix` 或直接进入 `ProcedureLoadDll`，检查异常时也降级进入 `ProcedureLoadDll`。`ProcedureLoadDll` 是业务 DLL 加载的唯一入口。
-- `EnableHotfix` 位于 `AssetComponent / AssetManagerConfig`，是热更主开关（ADR-013）：false ⇔ `OfflinePlayMode`，true ⇔ `HostPlayMode`；WebGL 由平台适配层选择 Web 文件系统。
+- `ProcedureLoadDll` 编排启动 DLL 加载，运行时按需加载由 `Util.HybridCLR.LoadGameAssemblyAsync` 提供。启动路由见[内置流程](../../../Docs/Runtime/Modules/Procedure/BuiltInProcedures.md)。
+- `AssetComponent / AssetManagerConfig` 的 `EnableHotfix` 控制常规资源热更。Inspector 编辑期将关闭热更与 `OfflinePlayMode` 联动、将开启热更与 `HostPlayMode` 联动。WebGL 启动预热由资源策略决定。
 - `Util.HybridCLR` 是运行时加载工具；`EditorUtil.HybridCLR` 是编辑器复制与校验工具，两者职责不混用。
 - AOT metadata 的复制发生在 BuildPlayer 之后（ADR-028）；热更程序集命名空间遵循单一写入路径（ADR-005）。
 
 ## 易混淆项
 
 - HybridCLR 热更的是 C# 业务 DLL，不是 AssetBundle/资源热更（资源走 YooAsset，见 GLO-10）。
-- AOT metadata DLL 不是业务 DLL：它是为热更代码补充泛型/反射元数据，先于 GameDlls 加载。
-- 不要绕过 `ProcedureLoadDll` 自建 DLL 加载入口，也不要在业务侧硬编码程序集名。
+- AOT metadata DLL 为热更代码补充泛型和反射元数据，先于 `StartupGameDlls` 加载。
+- 启动业务程序集由配置提供，运行时按需加载复用 HybridCLR 入口。
 
 ## 示例
 
@@ -46,7 +46,7 @@ ProcedureLoadDll:
   Asset Bootstrap + Manifest
   -> Config.LoadAsync
   -> 加载 AOT metadata（ConfigRuntimeSO.HybridConfigs.AotMetadataDlls）
-  -> 加载业务 DLL（ConfigRuntimeSO.HybridConfigs.GameDlls）
+  -> 加载业务 DLL（ConfigRuntimeSO.HybridConfigs.StartupGameDlls）
   -> RefreshAssemblies -> RegisterAdditionalProcedures
   -> ChangeState(业务入口 Procedure)
 ```

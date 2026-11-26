@@ -22,7 +22,11 @@ namespace NovaFramework.Mcp.Editor
     {
         private static string s_ProviderId;
         private static Func<string, CancellationToken, UniTask<BindingResult>> s_Ensure;
+        private static Func<EditorTransportStatus> s_ReadEditorTransport;
         private static bool s_IsRunning;
+
+        /// <summary>当前 Editor 的传输状态，供只读观察和状态上报使用。</summary>
+        public enum EditorTransportStatus { Unknown, Disconnected, Connected, Listening }
 
         /// <summary>本次自动绑定结果；服务连通和当前聊天已加载工具是不同证据。</summary>
         public sealed class BindingResult
@@ -53,14 +57,24 @@ namespace NovaFramework.Mcp.Editor
         /// <summary>注册唯一 Provider；中立层不引用 Framework 或具体传输实现。</summary>
         /// <param name="providerId">稳定 Provider 身份。</param>
         /// <param name="ensure">只为当前项目准备服务与宿主绑定的明确入口。</param>
-        public static void RegisterProvider(string providerId, Func<string, CancellationToken, UniTask<BindingResult>> ensure)
+        public static void RegisterProvider(string providerId, Func<string, CancellationToken, UniTask<BindingResult>> ensure) =>
+            RegisterProvider(providerId, ensure, null);
+
+        /// <summary>注册 Provider 与其只读传输状态查询。查询由当前 Editor 的主线程调用。</summary>
+        public static void RegisterProvider(string providerId, Func<string, CancellationToken, UniTask<BindingResult>> ensure,
+            Func<EditorTransportStatus> readEditorTransport)
         {
             if (string.IsNullOrWhiteSpace(providerId)) throw new ArgumentException("Provider 身份不能为空。", nameof(providerId));
             if (ensure == null) throw new ArgumentNullException(nameof(ensure));
             if (s_ProviderId != null && s_ProviderId != providerId) throw new InvalidOperationException("已有不同的工具链绑定 Provider，不能静默替换。");
             s_ProviderId = providerId;
             s_Ensure = ensure;
+            s_ReadEditorTransport = readEditorTransport;
         }
+
+        /// <summary>读取指定 Provider 当前传输状态。缺少相应读取入口时返回 Unknown。</summary>
+        public static EditorTransportStatus ReadEditorTransport(string providerId) =>
+            s_ProviderId == providerId && s_ReadEditorTransport != null ? s_ReadEditorTransport() : EditorTransportStatus.Unknown;
 
         /// <summary>串行准备当前 Editor 项目的服务与绑定；异常准确返回 blocked，由调用方有界重试。</summary>
         /// <param name="projectRoot">必须与当前 Editor 对应的完整项目根一致。</param>

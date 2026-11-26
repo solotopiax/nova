@@ -112,7 +112,7 @@ HostPlayMode 下，如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifes
 
 WebGL Player 构建后处理会扫描输出目录中的 `StreamingAssets/{YooFolder}/{Package}/BuiltinCatalog.bytes`，并生成始终存在的 `StreamingAssets/nova-webgl-layout.txt`。WebGL Host 运行时读取该清单：Package 在清单中时使用 `WebServer + WebNetwork`，否则使用纯 `WebNetwork`；纯 CDN 不再请求不存在的 Catalog，因此不会产生预期 404。旧 Player 缺少或损坏清单时才回退原 Catalog 探测以保持兼容。WebGL Offline 不读取布局清单，也不创建远端文件系统，固定使用纯 `WebServer`；因此必须用 `ClearAndCopyAll` 构建完整首包，Catalog 缺失时由 YooAsset 初始化明确失败。
 
-Host 探测到 Catalog 时，远端元数据候选耗尽后，Nova 可临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，加载随 Player 发布的首包 Manifest，并在成功或失败后立即恢复远端元数据路由。纯 CDN 没有 Catalog，因此明确跳过该回退。`LaunchHotfixTags` 只在 `TagsOnLaunch` 中选择启动预热范围，不代替 Pipify 的首包拷贝选择。详见 [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)。
+Host 下有首包 Catalog 的 Package 在远端元数据候选耗尽后，可临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，加载随 Player 发布的首包 Manifest，并在成功或失败后立即恢复远端元数据路由。纯 CDN 没有 Catalog，因此明确跳过该回退。`LaunchHotfixTags` 只在 `TagsOnLaunch` 中选择启动预热范围，不代替 Pipify 的首包拷贝选择。详见 [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)。
 
 WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 WebServer（StreamingAssets）或 WebNetwork（CDN）Bundle 请求应用 `WebGLBundleRequestTimeout`，默认 300 秒。每个主备候选独立计时，超时后仍按现有候选轮次与重试策略推进；该值不影响 `.version/.hash/.bytes` 的独立超时。
 
@@ -162,7 +162,7 @@ WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 Web
 
 `LoadRawSync/Async` 的 Nova 公共签名与调用方式不变，但路径行为不是完全兼容。YooAsset 3.0.5 下内部改为 `AssetHandle + RawFileObject`：`GetBytes()` 从 `RawFileObject` 可靠返回原始内容副本；异步路径尽力从 `EnsureBundleFileAsync` 获取底层 bundle 文件路径，失败不影响字节加载。同步操作无法等待 Ensure，Web/内存文件系统也可能不支持本地路径，所以 `FilePath` 可以为 null。同步、异步、异常与取消路径都由 AssetManager/Adapter 成对释放 `AssetHandle`。仓库检索未发现框架内部的 `IRawFileHandle.FilePath` 消费方；外部消费方需要按新语义复核。
 
-WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。WebGL 没有可靠的字节流入看门狗，因此 WebServer 与 WebNetwork 都使用 `WebGLBundleRequestTimeout` 控制 Bundle 单次请求时长；非 WebGL HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
+WebGL Player 的 `OfflinePlayMode` 固定使用 `WebServer`，`HostPlayMode` 按[首包布局清单](../../WebGLAssetStrategies.md#首包构建布局与运行时文件系统)选择文件系统。WebGL 没有可靠的字节流入看门狗，因此 WebServer 与 WebNetwork 都使用 `WebGLBundleRequestTimeout` 控制 Bundle 单次请求时长；非 WebGL HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
 
 `CreateWarmup*` 只创建 `IAssetWarmupGroup`，不会自动发起请求；调用方需要 `RunAsync()` 并在终止时 `Release()`。Group 的 Release 只是释放 BundleFileHandle 引用；随后 `CleanupAsync()` 才会卸载引用归零的运行时 Bundle。`TagsOnLaunch` 由启动流程先 Release，并在启动 DLL 消费完成后 Cleanup；`AllOnLaunch` 成功后由 `m_AllOnLaunchWarmupGroup` 持有到 Shutdown，业务主动创建的普通 Group 仍由创建者负责释放。
 
@@ -238,7 +238,7 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 
 - `Initialize()` 不等于 `BootstrapAsync()`；只注入配置，不做包注册。
 - `LoadManifestAsync()` 之前必须至少完成一次 `BootstrapAsync()`，否则包都还没注册。
-- 非 WebGL HostPlayMode 的远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，包含资源版本与文件名前缀，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单，最终仍保持 HostPlayMode 的 Builtin + Sandbox 文件系统。WebGL Host 只有在探测到官方 Catalog 时才使用 WebServer + WebNetwork 并允许首包元数据回退，否则使用纯 WebNetwork；WebGL Offline 固定使用纯 WebServer，二者都不使用 Sandbox 本地版本回退。
+- 非 WebGL HostPlayMode 的远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，包含资源版本与文件名前缀，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单，最终仍保持 HostPlayMode 的 Builtin + Sandbox 文件系统。WebGL Host 按[首包布局清单](../../WebGLAssetStrategies.md#首包构建布局与运行时文件系统)选择文件系统。有首包 Catalog 的 Package 可以回退到首包元数据。WebGL Offline 固定使用纯 WebServer，二者都不使用 Sandbox 本地版本回退。
 - 大多数 `Load*` API 都默认走 `m_DefaultPackageName`；如果你以为它们支持多包透传，那是错的。
 - Raw 文件内容应通过 `IRawFileHandle.GetBytes()` 获取；`FilePath` 是底层 bundle 路径，不能假定为可直接读取的原始文件路径。
 - Editor 下用 Host/Offline PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。

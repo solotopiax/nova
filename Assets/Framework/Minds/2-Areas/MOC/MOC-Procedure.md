@@ -50,11 +50,9 @@ ProcedureSplash
   -> ProcedureCheckVersion
 
 ProcedureCheckVersion
-  -> ForcedDownload ? ProcedureAppDownload
-  -> RecommendedDownload ? ProcedureAppDownload
-  -> !EnableHotfix ? ProcedureLoadDll
-  -> hasPatch ? ProcedureHotfix
-  -> else ProcedureLoadDll
+  -> 强更 / 推荐更新：ProcedureAppDownload
+  -> 无 App 更新且 RequiresStartupAssetWork：ProcedureHotfix
+  -> 无 App 更新且无需启动资源工作：ProcedureLoadDll
 
 ProcedureHotfix
   -> ProcedureLoadDll
@@ -64,8 +62,7 @@ ProcedureLoadDll
   -> 跳业务入口 Procedure
 ```
 
-- `ProcedureAppDownload` 在推荐更新取消且存在补丁时，会回到 `ProcedureHotfix`
-- `ProcedureAppDownload` 在推荐更新取消且无补丁时，会回到 `ProcedureLoadDll`
+- 推荐更新取消后，`ProcedureAppDownload` 读取 `RequiresStartupAssetWork`，进入 `ProcedureHotfix` 或 `ProcedureLoadDll`。完整路由见 [内置流程](../../../Docs/Runtime/Modules/Procedure/BuiltInProcedures.md)。
 - `Splash` 跨框架启动链路存活，正常情况下由 `ProcedureLoadDll.OnLeave` 销毁
 
 ## 分档边界
@@ -84,8 +81,8 @@ ProcedureLoadDll
 
 ## 与其他模块的关系
 
-- `App`：`ProcedureCheckVersion` 调 `IAppManager.CheckAsync()`
-- `Asset`：`EnableHotfix` 开关和补丁判断都在 Asset 侧，但它只控制资源热更检查，不控制 App 大版本检测
+- `App`：非 WebGL 通过 `IAppManager.CheckAsync()` 判断大版本更新，WebGL 的 App 阶段采用 `NoDownload`。
+- `Asset`：`EnableHotfix` 控制常规资源热更。WebGL 启动资源工作随其加载策略独立判断。
 - `HybridCLR`：`ProcedureLoadDll` 负责 AOT metadata、业务 DLL、程序集刷新和业务入口定位
 - `LauncherUI`：是启动链路 UI，不是独立流程系统
 

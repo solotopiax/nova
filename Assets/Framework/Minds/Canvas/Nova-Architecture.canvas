@@ -1,18 +1,18 @@
 {
 	"nodes":[
-		{"id":"g100000000000010","type":"group","x":-1100,"y":-520,"width":1500,"height":700,"color":"5","label":"Runtime —— Assets/Framework/Scripts/Runtime/"},
-		{"id":"g200000000000010","type":"group","x":480,"y":-520,"width":740,"height":700,"color":"4","label":"Editor —— Assets/Framework/Scripts/Editor/"},
-		{"id":"g300000000000010","type":"group","x":-1040,"y":440,"width":1100,"height":380,"color":"2","label":"Game —— 业务 DLL（HybridCLR 热更，业务侧自治）"},
-		{"id":"g400000000000010","type":"group","x":120,"y":440,"width":1100,"height":380,"color":"6","label":"Minds —— Assets/Framework/Minds/（Obsidian Vault）"},
-		{"id":"x500000000000001","type":"text","text":"### Tools 链\n`.claude/agents/*.md`（6 agent + team-leader 调度规范） · `.claude/rules/*.md`（按需加载） · `.claude/skills/*`（obs / canvas / publish ...） · `.claude/hooks/*`（PreToolUse / UserPromptSubmit / PostToolUse）","x":420,"y":620,"width":700,"height":80,"color":"3"},
-		{"id":"a000000000000001","type":"text","text":"# Nova Framework 整体架构\n\n四层结构：**Runtime（AOT 框架）** · **Editor（工具/Inspector/Pipify）** · **Game（业务 DLL，HybridCLR 热更）** · **Minds（Vault 知识库）**。\n\n红线：Runtime ← Editor 单向依赖；Minds 仅约束 NovaFramework.* 程序集；业务 DLL 仅由 ProcedureLoadDll 加载。","x":-1100,"y":-760,"width":2320,"height":140,"color":"1"},
-		{"id":"m410000000000001","type":"text","text":"## PARA\n\n`0-Index/` 索引 + AI 协作规则\n`1-Inbox/` AI 草稿\n`2-Areas/` ADR/PAT/GLO/MOC\n`3-Resources/` RES\n`4-Archives/` 废弃归档","x":140,"y":490,"width":340,"height":140,"color":"6"},
-		{"id":"m410000000000002","type":"text","text":"## Layer 0/1 索引\n\nLayer 0：`0-Index.md`\nLayer 1：`0-Index-{ADR,PAT,GLO,RES,MOC}.md`（自动生成）","x":500,"y":490,"width":340,"height":140,"color":"6"},
-		{"id":"m410000000000003","type":"text","text":"## 21 张 MOC\n\n20 模块 + 1 Workflow；动手前必读对应 MOC（ADR-034/PAT-82）","x":860,"y":490,"width":340,"height":140,"color":"6"},
+		{"id":"g100000000000010","type":"group","x":-1100,"y":-520,"width":1500,"height":700,"color":"5","label":"Runtime（早期示意）"},
+		{"id":"g200000000000010","type":"group","x":480,"y":-520,"width":740,"height":700,"color":"4","label":"Editor（早期示意）"},
+		{"id":"g300000000000010","type":"group","x":-1040,"y":440,"width":1100,"height":380,"color":"2","label":"Game（早期示意）"},
+		{"id":"g400000000000010","type":"group","x":120,"y":440,"width":1100,"height":380,"color":"6","label":"Minds 知识库"},
+		{"id":"x500000000000001","type":"file","x":430,"y":880,"width":480,"height":220,"color":"3","file":"0-Index/0-Index.md"},
+		{"id":"a000000000000001","type":"text","text":"# Nova 架构示意与知识入口\n\nRuntime、Editor 和 Game 区块记录早期方案，供历史追溯。当前用法从 [[0-Index/0-Index#与 Docs 的分工|Minds 索引中的 Docs 入口]] 查找。右下角 Minds 区块提供现行知识导航。","x":-1100,"y":-760,"width":2320,"height":140,"color":"1"},
+		{"id":"m410000000000001","type":"text","text":"## 查设计依据\n\n从 [[0-Index/0-Index|Minds 主索引]] 选择相关的类型索引，再打开命中的 Markdown 条目。","x":140,"y":490,"width":340,"height":140,"color":"6"},
+		{"id":"m410000000000002","type":"text","text":"## 按问题查条目\n\n按标题或摘要查找。示例 [[2-Areas/ADR/ADR-047-editor-active-master-anchor|哪份 ConfigMaster 在 Editor 里生效]]。","x":500,"y":490,"width":340,"height":140,"color":"6"},
+		{"id":"m410000000000003","type":"text","text":"## 浏览模块和视图\n\n[[0-Index/0-Index-MOC|模块图谱]] 按模块导航。[[0-Index/0-Index-FolderGuide|文件夹指南]] 列出视图和历史资料。","x":860,"y":490,"width":340,"height":140,"color":"6"},
 		{"id":"r110000000000001","type":"text","text":"## Manager 三层链\n\n`ManagerBase` → 模块 Manager（如 `IUIManager`） → 实现类\n\n**Priority** 控盘启停顺序","x":-1080,"y":-490,"width":260,"height":140,"color":"5"},
 		{"id":"r130000000000002","type":"text","text":"### ObjectPool\nGameObject 池 + `IReference` 纯 C# 池","x":-840,"y":-200,"width":220,"height":110,"color":"5"},
 		{"id":"r120000000000006","type":"text","text":"### Event\n`EventManager` + `EventPool` + `EventData`","x":120,"y":-330,"width":220,"height":110,"color":"5"},
-		{"id":"m410000000000004","type":"text","text":"## 红线\n\n- AI 仅可写 `1-Inbox/`；`2-Areas/` 经 `/nova-obs inbox-to-areas` 入库；`4-Archives/` 经 `/nova-obs *-to-archives`\n- Minds 作用域仅 `NovaFramework.*` 程序集；业务侧违反不入 obs\n- memory ↔ obs 分工：memory 留指针；obs 留全文；禁互相复制（PAT-17）","x":140,"y":650,"width":1060,"height":140,"color":"6"},
+		{"id":"m410000000000004","type":"text","text":"## 查询与维护\n\nCodex 直接读取 Markdown，Obsidian 用于浏览双链和属性视图。\n开发仓的长期结论按 [[AGENTS#默认写入策略|Minds 工作指引]] 维护。消费项目从实际解析的 Framework 包按需读取。","x":140,"y":650,"width":1060,"height":140,"color":"6"},
 		{"id":"r120000000000001","type":"text","text":"### Asset\nYooAsset 封装；外部统一称\"资源系统\"；Asset 地址 = 资源主键","x":-1080,"y":-330,"width":220,"height":110,"color":"5"},
 		{"id":"r130000000000001","type":"text","text":"### Config / Table\nConfigSO（编辑器→运行时）+ Luban Table","x":-1080,"y":-200,"width":220,"height":110,"color":"5"},
 		{"id":"r120000000000003","type":"text","text":"### Sound / Vibrate / Localization\n表现层三件套","x":-600,"y":-330,"width":220,"height":110,"color":"5"},
@@ -40,9 +40,9 @@
 	"edges":[
 		{"id":"e000000000000001","fromNode":"g200000000000010","fromSide":"left","toNode":"g100000000000010","toSide":"right","label":"Editor → Runtime（单向依赖）"},
 		{"id":"e000000000000002","fromNode":"g300000000000010","fromSide":"top","toNode":"r110000000000005","toSide":"bottom","label":"HybridCLR Load DLL"},
-		{"id":"e000000000000004","fromNode":"g400000000000010","fromSide":"top","toNode":"g100000000000010","toSide":"bottom","label":"约束（仅 NovaFramework.*）"},
-		{"id":"e000000000000005","fromNode":"g400000000000010","fromSide":"top","toNode":"g200000000000010","toSide":"bottom","label":"约束"},
-		{"id":"e000000000000006","fromNode":"x500000000000001","fromSide":"top","toNode":"g400000000000010","toSide":"bottom","label":"调度 + 规则 + skill + hook"},
+		{"id":"e000000000000004","fromNode":"g400000000000010","fromSide":"top","toNode":"g100000000000010","toSide":"bottom","label":"设计依据"},
+		{"id":"e000000000000005","fromNode":"g400000000000010","fromSide":"top","toNode":"g200000000000010","toSide":"bottom","label":"设计依据"},
+		{"id":"e000000000000006","fromNode":"g400000000000010","fromSide":"bottom","toNode":"x500000000000001","toSide":"top","label":"打开主索引"},
 		{"id":"e000000000000003","fromNode":"e210000000000003","fromSide":"bottom","toNode":"g300000000000010","toSide":"right","label":"Pipify 编译 + 打包"}
 	]
 }

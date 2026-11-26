@@ -12,6 +12,7 @@ SERVICE_ROOT = Path(__file__).resolve().parent
 FRAMEWORK_ROOT = SERVICE_ROOT.parents[1] / "Assets/Framework"
 OUTPUT = SERVICE_ROOT / "usage-descriptions.json"
 UNITY_OUTPUT = SERVICE_ROOT / "unity-usage-descriptions.json"
+MODULE_OUTPUT = SERVICE_ROOT / "usage-modules.json"
 ACTION = re.compile(r'\[\s*AgentAction(?:Attribute)?\s*\(\s*"(nova\.project\.[^"]+)"\s*,(.*?)\)\s*\]', re.S)
 DESCRIPTION = re.compile(r'\bDescription\s*=\s*("(?:\\.|[^"\\])*")')
 SKILL_HEADER = re.compile(r"\A---\n(.*?)\n---\s*\n# ([^\n]+)", re.S)
@@ -60,6 +61,16 @@ def build_descriptions(framework_root):
     return descriptions
 
 
+def build_module_names(framework_root):
+    """从现行 Runtime 模块导航生成独立部署所需的模块名。"""
+    source = (framework_root / "Docs/Runtime/Runtime.md").read_text(encoding="utf-8")
+    navigation = source.split("## 模块导航\n", 1)[1].split("\n## ", 1)[0]
+    titles = re.findall(r"^\| ([A-Za-z][A-Za-z0-9]*) \| `Nova\.[A-Za-z][A-Za-z0-9]*` \|", navigation, re.M)
+    if not titles:
+        raise ValueError("Runtime 模块导航缺少模块。")
+    return {title.lower(): title for title in titles}
+
+
 def unity_command_descriptions(project):
     """只读获取目标 Editor 中 Unity Pipeline 自带命令的说明。"""
     result = {}
@@ -102,3 +113,4 @@ if __name__ == "__main__":
         existing_unity = json.loads(UNITY_OUTPUT.read_text(encoding="utf-8")) if UNITY_OUTPUT.exists() else {}
         write_descriptions(UNITY_OUTPUT, unity_command_descriptions(args.unity_project) | existing_unity)
     write_descriptions(OUTPUT, nova_descriptions)
+    write_descriptions(MODULE_OUTPUT, build_module_names(FRAMEWORK_ROOT))

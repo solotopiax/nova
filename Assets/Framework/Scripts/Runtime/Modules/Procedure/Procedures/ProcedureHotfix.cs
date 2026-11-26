@@ -421,9 +421,6 @@ namespace NovaFramework.Runtime
         /// <param name="ct">流程生命周期取消令牌。</param>
         private void ShowRetryDialog(bool quitOnCancel, CancellationToken ct)
         {
-#if UNITY_EDITOR
-            EditorPlayEvidence.Fail(this);
-#endif
             LauncherUIController.ShowDialog(
                 LauncherDialogType.HotfixFailed,
                 onConfirm: () => OnRetryClicked(ct),
@@ -448,9 +445,6 @@ namespace NovaFramework.Runtime
             LauncherUIController.DestroyDialog();
             ResetProgressCache();
 
-#if UNITY_EDITOR
-            EditorPlayEvidence.Enter(this);
-#endif
             StartDownloadAttempt(ct);
         }
 

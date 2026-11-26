@@ -12,46 +12,65 @@ using UnityEngine;
 
 namespace NovaFramework.Runtime
 {
-    [Flags]
     internal enum EditorPlayModule
     {
-        Asset = 1,
-        Procedure = 2,
-        Table = 4,
-        Localization = 8,
-        UI = 16,
-        Network = 32
+        Asset,
+        Procedure,
+        Table,
+        Localization,
+        UI,
+        Network
     }
 
-    /// <summary>只在 Play 中通知编辑器。模块使用在同一次 Play 中只通知一次。</summary>
+    /// <summary>只在 Editor Play 中归集实际使用，供编辑器定期取走计数。</summary>
     internal static class EditorPlayEvidence
     {
-        private static EditorPlayModule s_Used;
+        private static readonly (long Count, long ObservedAt)[] s_Calls =
+            new (long Count, long ObservedAt)[Enum.GetValues(typeof(EditorPlayModule)).Length];
         private static bool s_TablesReady;
-        internal static event Action<EditorPlayModule> ModuleUsed;
         internal static event Action<string, PlatformType, ChannelType, DevelopMode?> ConfigLoadFinished;
         internal static event Action TablesReady;
-        internal static event Action<string> ProcedureEntered;
-        internal static event Action<string> ProcedureFailed;
 
-        /// <summary>每次进入 Play 重新观察，兼容禁用域重载的项目。</summary>
-        internal static void ResetModules()
+        /// <summary>每次进入 Play 重新观察表注册，兼容禁用域重载的项目。</summary>
+        internal static void ResetTableRegistration()
         {
-            s_Used = 0;
             s_TablesReady = false;
         }
 
-        /// <summary>每次 Play 只通知指定模块的首次成功使用。</summary>
+        /// <summary>每次成功使用计一次，调用路径只更新内存中的计数和时间。</summary>
         internal static void Use(EditorPlayModule module)
         {
             try
             {
-                if ((s_Used & module) != 0 || ModuleUsed == null || !Application.isPlaying)
+                if (!Application.isPlaying)
                     return;
-                s_Used |= module;
-                ModuleUsed.Invoke(module);
+                AddCalls(module, 1, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             }
             catch (Exception) { /* 观察不参与运行结果。 */ }
+        }
+
+        /// <summary>原子取出本批次数和最后一次调用时间。后续调用归入下一批。</summary>
+        internal static (long Count, long ObservedAt) TakeCalls(EditorPlayModule module)
+        {
+            lock (s_Calls)
+            {
+                int index = (int)module;
+                var batch = s_Calls[index];
+                long count = Math.Min(batch.Count, int.MaxValue);
+                s_Calls[index] = batch.Count == count ? default : (batch.Count - count, batch.ObservedAt);
+                return (count, batch.ObservedAt);
+            }
+        }
+
+        /// <summary>累加调用或放回入队失败的批次，保留最新发生时间。</summary>
+        internal static void AddCalls(EditorPlayModule module, long count, long observedAt)
+        {
+            lock (s_Calls)
+            {
+                ref var pending = ref s_Calls[(int)module];
+                pending.Count += count;
+                pending.ObservedAt = Math.Max(pending.ObservedAt, observedAt);
+            }
         }
 
         /// <summary>已注册真实表数据，独立于业务取表次数。</summary>
@@ -80,33 +99,6 @@ namespace NovaFramework.Runtime
             }
             catch (Exception) { /* 观察不参与配置加载结果。 */ }
         }
-
-        internal static void Enter(ProcedureBase procedure)
-        {
-            if (!Application.isPlaying)
-                return;
-            Use(EditorPlayModule.Procedure);
-            try { ProcedureEntered?.Invoke(StartupStage(procedure)); }
-            catch (Exception) { /* 观察不参与流程切换。 */ }
-        }
-
-        internal static void Fail(ProcedureBase procedure)
-        {
-            if (!Application.isPlaying)
-                return;
-            try { ProcedureFailed?.Invoke(StartupStage(procedure)); }
-            catch (Exception) { /* 观察不影响失败回退。 */ }
-        }
-
-        private static string StartupStage(ProcedureBase procedure) => procedure switch
-        {
-            ProcedureSplash => "splash",
-            ProcedureCheckVersion => "version-check",
-            ProcedureAppDownload => "app-download",
-            ProcedureHotfix => "hotfix",
-            ProcedureLoadDll => "load-dll",
-            _ => null
-        };
     }
 }
 #endif

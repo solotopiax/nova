@@ -622,16 +622,16 @@ public class UILoginView : MonoBehaviour
 
 ---
 
-## 2.5 和 Nova 现有体系的名词对照（先埋个点）
+## 2.5 和 Nova 资源体系的概念对照
 
-| Nova 现有 | Addressable 对应 |
+| Nova 当前用法 | Addressables 对应概念 |
 |-----------|------------------|
-| `IAssetLoadManager.LoadAsync<T>(path)` | `Addressables.LoadAssetAsync<T>(address)` |
-| HotfixComponent 下载的资源包 | Addressable Remote Group 的 bundle |
-| 资源路径字符串（`Assets/Game/Configs/ConfigRuntime.asset`） | Address（可以改成 `ConfigRuntime`） |
-| `ConfigRuntimeSO.AotMetadataDlls` 列出的 DLL 文件 | 可以标 Label = `AotMetadata` 批量加载 |
+| `Nova.Asset.LoadAsync<T>(location)` 返回加载句柄 | `Addressables.LoadAssetAsync<T>(address)` |
+| `ProcedureHotfix` 执行的 YooAsset 资源补丁下载 | Addressables Remote Group 的 Bundle |
+| YooAsset 中用于定位资源的地址 | Address |
+| `ConfigRuntimeSO.HybridConfigs.AotMetadataDlls` 中配置的 DLL 资源 | 教程示例可用 `AotMetadata` 标签表示资源集合 |
 
-> 这些对应关系只是心智映射，真动 Nova 整合要等到需求真的到了再拆。
+Nova 的当前用法见 [AssetComponent](../../../Docs/Runtime/Modules/Asset/AssetComponent.md) 和 [ProcedureLoadDll](../../../Docs/Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.md)。这里的对应关系用于理解两套资源系统。
 
 ---
 
@@ -3120,9 +3120,9 @@ Addressables.Release(downloadH);
 
 ---
 
-## 6.12 Nova 项目实操建议
+## 6.12 Addressables 对接草案（历史资料）
 
-你目前 `IAssetLoadManager.LoadAsync` 是框架封装层。如果将来要接 Addressables，底层实现就是：
+下例保留当时对接 Addressables 的草案。Nova 现在从 `Nova.Asset` 获取资源句柄，由持有者释放本次句柄，现行链路见 [AssetComponent](../../../Docs/Runtime/Modules/Asset/AssetComponent.md)。
 
 ```csharp
 // 框架层内部
@@ -5256,7 +5256,7 @@ foreach (var id in result)
 
 未完成但有价值的主题，按需再找我：
 
-- **Nova 整合** —— 真要动 `IAssetLoadManager` / Procedure 链路 / HybridCLR 协同时再聊，需求到了讨论最具体
+- **Nova 整合** —— 如需研究接入，从现行资源句柄、Procedure 与 HybridCLR 的边界开始
 - **Addressables Report / Analyze** —— 想诊断"哪个 bundle 装了什么、有没有重复资源"时看
 - **Scriptable Build Pipeline 深入** —— 自定义构建脚本、打包钩子
 - **Cloud Content Delivery (CCD)** —— Unity 官方 CDN 服务，想白嫖托管时看

@@ -13,106 +13,41 @@ supersedes: []
 superseded-by: []
 related:
   - "[[ADR-001-component-manager-three-layer|ADR-001]]"
+  - "[[ADR-042-assetmanager-load-api-all-return-handle|ADR-042]]"
 ---
 
 # ADR-011：Load/Unload 与 IReference Get/Put 配对收口
 
-## 背景（Context）
+## 背景
 
-历史上踩过两类**可预见但极难排查**的坑：
+团队曾遇到跨场景资源句柄积累和短生命周期引用对象漏还。二者都会在长时间运行或高负载下放大，分别造成原生资源内存占用和额外分配。把收尾责任落实到拥有者，比等问题在真机出现再倒查可靠。
 
-1. **内存泄漏**：`LoadAsync` / `Resources.Load` / `AssetBundle.LoadFromFile` 取出资源后，业务路径未走 `Unload` / `Release`，资源句柄持续累积；尤其是 UI/Prefab/AB 这种跨场景的资源，Editor 下不易察觉，真机长时间运行后才暴露
-2. **频繁 IO 触发的 GC 问题**：`ReferencePool.Get<T>()` 出来的 `IReference` 实例只 Get 不 Put，池退化成无界 `new`，对象分配/回收压力转嫁给 GC，造成卡顿尖刺
+## 决策
 
-这两类问题的共同特征是 —— **风险可预见**（生命周期一旦不闭环必然出事），但**复现链路长**（泄漏要跑很久才显现，GC 尖刺只在特定负载下出现），事后排查成本极高。Nova 已经在 `AssetLoadManager` / `ABLoadManager` / `PrefabLoadManager` / `UIManager` / `ObjectPool` / `Hotfix` 等多模块大量使用这两类设施，没有强制配对约束时，加新模块或重构旧模块极易遗漏，code-reviewer 静态检查也缺乏明确依据。
-
-## 决策（Decision）
-
-框架中已经在使用的 Load 操作必须和 Unload 配对，已经在用的 IReference 必须有 Put 和 Get 收口，**单边操作即视为缺陷**。
-
-**适用范围（Load/Unload）：**
-
-- 所有已使用的资源加载入口，包括但不限于：
-  - `Resources.Load` / `Resources.LoadAsync` → `Resources.UnloadAsset`
-  - `AssetBundle.LoadFromFile*` / `AssetBundle.LoadAsset*` → `AssetBundle.Unload`
-  - 自定义 `IAssetLoadManager.LoadAsync` / `LoadSync` → 对应 `Release` / `Unload` 路径
-  - `IABLoadManager.Load*` → 对应释放路径
-  - `IPrefabLoadManager.Load*` → 对应回收路径（参考 ADR：PrefabInstanceTag 单路径回收）
-- 每条 Load 路径必须存在**至少一条**与之配对的 Unload/Release/Destroy 路径，且业务可达
-
-**适用范围（IReference）：**
-
-- 所有 `: IReference` 类型，从 `ReferencePool.Get<T>` 获取后必须有对应 `ReferencePool.Put` 归还
-- 一次性短生命周期使用不豁免（finally 兜底归还）
-
-**不适用：**
-
-- 单例 / 全局长生命周期对象（如 Manager 本身）
-- 框架启动期一次性加载、整个进程持有的资源（如 ConfigRuntimeSO）
-
-## 被排除的方案（Alternatives）
-
-| 方案 | 否决理由 |
+| 场景 | 配对方式 |
 |---|---|
-| **依赖 GC 回收**（不主动 Unload） | Unity 的 `Object.Destroy` 不释放底层资源句柄；AssetBundle/Texture/Mesh 的内存由原生层管理，不归 .NET GC 管 |
-| **using / IDisposable 模式** | 跨帧异步加载场景多，using 作用域无法覆盖；且 `IReference` 走对象池语义，不适合 Dispose 即销毁 |
-| **静态分析强制配对**（如 Roslyn Analyzer） | 长期目标可做，但短期成本高且无法覆盖运行时分支决定的释放路径；ADR 规则 + code-reviewer 人审更现实 |
+| Nova 资源加载 | `IAssetManager.LoadAsync<T>` 和 `LoadSync<T>` 返回 `IAssetHandle<T>`。持有者在消费结束后释放本次句柄 |
+| Nova 场景加载 | 持有 `ISceneHandle` 至场景生命周期结束，再调用 `UnloadAsync()` |
+| 引用池直接使用 | `ReferencePool.Get<T>()` 获得的实例在使用结束后归还 `ReferencePool.Put` |
+| 引用交给其他模块 | 沿接口确认归还责任、归还时机和异常边界。事件的具体归还行为见 [EventManager](../../../Docs/Runtime/Modules/Event/EventManager.md#5-eventdata-在分发后会被归还引用池) |
 
-## 后果（Consequences）
+配对可以跨越不同方法。复核时沿同一个句柄或引用实例确认所有权，覆盖正常结束、失败、取消和拥有者退出。长期持有的对象也按所属模块的生命周期确认结束条件。
 
-### 正面
+## 后果
 
-- 内存加载/释放路径形成闭环，杜绝句柄泄漏
-- 对象池真正起到对象复用作用，不退化为无界 new
-- code-reviewer 有明确审查依据，可一票否决"只 Get 不 Put / 只 Load 不 Unload"的 PR
+显式持有资源句柄让同一地址的多次加载各自有释放依据。引用池复用则依赖归还实际取得的对象。生命周期过短会提前释放，缺少结束路径则会累积持有。
 
-### 负面
+## 被排除的方案
 
-- 业务侧需要显式管理释放时机，新增 try/finally 或 OnDestroy 钩子代码量
-- 异步路径（`UniTask` 取消、异常退出）需要额外考虑兜底释放，认知负担上升
-- 跨场景共享资源的引用计数语义需要业务侧理解（Get/Put 不等于一次释放）
+| 方案 | 原因 |
+|---|---|
+| 依靠 C# GC 作为资源句柄的释放时点 | 原生资源的释放由框架持有的句柄控制 |
+| 只比较关键词调用次数 | 调用次数无法体现转交所有权、失败或跨帧退出 |
+| 用统一销毁动作替代归还 | 资源句柄、场景和引用池对象各有收尾接口 |
 
-> 上述代价与"内存泄漏 + GC 卡顿事后排查"的成本相比，明显划算 —— 这正是把规则前置为红线的核心理由。
+## 验证依据
 
-## 验证依据（Verification）
-
-**grep 关键词清单（code-reviewer 必扫）：**
-
-执行前将 `NOVA_FRAMEWORK_ROOT` 设为当前已解析的 `<FrameworkRoot>`。
-
-```bash
-# IReference 配对扫查
-grep -rn "ReferencePool\.Get<" "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
-grep -rn "ReferencePool\.Put"   "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
-# 每个 Get<T> 出现的文件必须能在同模块找到对应 Put
-
-# 资源加载配对扫查
-grep -rn "LoadAsync\|LoadSync\|Resources\.Load\|AssetBundle\.Load" "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
-grep -rn "Unload\|Release" "$NOVA_FRAMEWORK_ROOT/Scripts/Runtime" --include="*.cs"
-```
-
-**已存在使用点（基于 2026-05-15 扫查）：**
-
-`IReference` 实现类（必须个个核对 Put 路径）：
-
-- `Core/Reference/ReferenceHelper`
-- `Modules/UI/Managers/UIManager/Implements/UIManager.OpenUIViewInfo`
-- `Modules/UI/Managers/UIManager/Implements/UIManager.UIGroup.UIViewInfo`
-- `Modules/Asset/Managers/AssetLoadManager/Definitions/PreloadAssetObject`
-- `Modules/Asset/Managers/AssetLoadManager/Definitions/AssetObject`
-- `Modules/Asset/Managers/ABLoadManager/Definitions/ABObject`
-- `Modules/Asset/Managers/PrefabLoadManager/Definitions/PrefabObject`
-- `Modules/ObjectPool/Managers/Implements/ObjectPools/Object<T>`
-
-**审查要点：**
-
-- 新增 Load 入口 PR：必须同 PR 给出 Unload 路径，否则 REJECT
-- 新增 `: IReference` 类型 PR：必须证明 Put 调用链可达，否则 REJECT
-- 重构涉及生命周期的 PR：要求 reviewer 单独画 Get/Put、Load/Unload 配对图
-
-## 关联
-
-- 相关 ADR：[[ADR-001-component-manager-three-layer|ADR-001]]（Manager 持有资源句柄的所有权）
-- 相关 ADR：[[ADR-042-assetmanager-load-api-all-return-handle|ADR-042]]（本 ADR 原则在 Handle 接口层面的系统性落地——LoadXxx 全部返回 Handle，调用方持有并主动 Release）
-- 规范落点：统一工程约束中的资源加载反模式零容忍条目
-- 相关 Pattern：对象池语义、引用计数（待补 Pattern 文档）
+- [资源句柄](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md)和[场景句柄](../../../Docs/Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md)给出现行接口。
+- [ReferencePool](../../../Docs/Runtime/Core/Reference/ReferencePool.md)给出获取、归还和重置边界。
+- [[ADR-042-assetmanager-load-api-all-return-handle|ADR-042]] 记录从地址反查释放到句柄所有权的迁移。
+- [[PAT-28-luban-load-release-symmetric|PAT-28]] 说明表资源加载时如何追踪本次句柄的释放位置。

@@ -60,9 +60,21 @@ DEFERRED = re.compile(r"(?:请|需要)你(?:确认|提供|选择|执行)|尚未(
                       r"仅(?:检查|定位|验证|分析)|建议(?:先|你)|\b(?:unable to|not executed|for your approval)\b", re.I)
 DETOUR = re.compile(r"手工|临时绕|绕行|规避|workaround", re.I)
 FRAMEWORK_FINDING = re.compile(r"Nova.{0,14}(?:框架|协作体系|工具链).{0,20}(?:缺陷|缺口|遗漏|异常|不一致)", re.I)
+CONFIRMED_FRAMEWORK_FINDING = re.compile(
+    r"(?<!无)(?<!未)(?<!非)已(?:确认|证实)\s*(?:为|是)?\s*"
+    r"(?:(?:一|两|多)(?:个|项)\s*)?(?:Nova\s*(?:框架|协作体系|工具链)|框架(?:侧|层)?|Framework)\s*"
+    r"(?:问题|缺陷|缺口|遗漏|异常|不一致)"
+    r"|(?:Nova\s*框架|框架侧)(?:问题|缺陷|根因)(?:已确认|已证实)|框架侧待修复", re.I
+)
+FINDING_TASK_CONTEXT = (
+    "Nova 自动反馈：执行任务的 Agent 在核实框架问题后，按当前任务授权和反馈状态，立即依实际解析的 "
+    "Framework 包内 Docs/Onboarding/NOVA_ISSUES.md 调用 finding 提交脱敏证据。业务已完成或已经绕行时同样处理。"
+    "收尾按上报编号检查已送达或待补传状态。证据不足的线索保留在本机。"
+)
 OBSERVED_TOOLS = ("codex", "unity-cli")
 HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "PostToolUse", "Stop", "Interrupt"}
 ACTION_ID = re.compile(r"nova\.project\.([a-z0-9][a-z0-9-]*)\.[a-z0-9][a-z0-9_.-]*\Z")
+UNITY_MCP_TOOL = re.compile(r"mcp__(?:unitymcp|nova_unity_[a-f0-9]{16})__([a-zA-Z0-9_.-]+)\Z", re.I)
 SKILL_ID = re.compile(r"nova-project-[a-z0-9-]+\Z")
 EXECUTION_HINT = re.compile(r"(?:^|[ /])unity(?:[ .]|$)|\b(?:py|python3?|dotnet)\b.{0,140}(?:export|generate|build)", re.I)
 UNITY_COMMAND = re.compile(r"^\s*['\"]?(?:[^'\"\r\n]+[/\\])?unity(?:\.exe)?['\"]?\s+command\s+([a-z0-9_]+)\s+([a-z0-9_]+)\b", re.I)
@@ -87,6 +99,14 @@ CREATE TABLE IF NOT EXISTS turns (
     evidence TEXT NOT NULL DEFAULT '', actual INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'observing', updated INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS turn_findings (
+    turn_id TEXT NOT NULL, report_id TEXT NOT NULL,
+    PRIMARY KEY(turn_id, report_id)
+) WITHOUT ROWID;
+CREATE TRIGGER IF NOT EXISTS discard_turn_findings AFTER DELETE ON turns
+BEGIN
+    DELETE FROM turn_findings WHERE turn_id=OLD.id;
+END;
 CREATE TABLE IF NOT EXISTS outbox (
     id TEXT PRIMARY KEY, payload TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
     ready_at INTEGER NOT NULL, accepted INTEGER, issue_id INTEGER, error TEXT
@@ -113,9 +133,11 @@ END;
 # 与 Unity Editor 的待发查询一致，已停用的试验记录和缺少回执的自动入口遗漏保留在本机。
 SENDABLE_REPORT_FILTER = f"""
     json_extract(payload,'$.kind')!='task'
-    AND COALESCE(json_extract(payload,'$.data.stage'),'') NOT IN ('sdk-device','sdk-preload')
-    AND NOT (COALESCE(json_extract(payload,'$.data.stage'),'')='startup-stage'
-             AND COALESCE(json_extract(payload,'$.data.step'),'')='sdk')
+    AND COALESCE(json_extract(payload,'$.data.stage'),'') NOT IN
+        ('sdk-device','sdk-preload','startup-stage','framework-upgrade','pipify-step')
+    AND NOT (COALESCE(json_extract(payload,'$.data.stage'),'')='player-build'
+             AND (COALESCE(json_extract(payload,'$.data.platform'),'') NOT IN ('Android','iOS')
+                  OR json_extract(payload,'$.data.build_kind')='scripts'))
     AND COALESCE(json_extract(payload,'$.data.operation'),'')!='editor.preload.sdk'
     AND COALESCE(json_extract(payload,'$.data.code'),'')!='editor-sdk-preload-exceeds-60-seconds'
     AND (
@@ -447,6 +469,9 @@ def snapshot(root, db):
     if match:
         result.update({name: editor[name] for name in ("enabled", "application_identifiers", "codex_hooks")
                        if name in editor})
+    operating_system = {"darwin": "macos", "win32": "windows", "linux": "linux"}.get(sys.platform)
+    if operating_system:
+        result["operating_system"] = operating_system
     return result
 
 
@@ -469,6 +494,7 @@ def report_editor_environment(root, db, *, compilation_day=None):
         "\n".join(sorted(set(data.get("enabled", [])))),
         "\n".join(f"{name}|{item['state']}|{item.get('version', 'unknown')}"
                   for name, item in sorted(data["tools"].items())),
+        data.get("operating_system"),
     ))
     git_name = git_user_name(root)
     if git_name:
@@ -540,6 +566,50 @@ def record_usage(db, identifier, framework, module, operation, entry, outcome, i
     if action_operation:
         data["action_operation"] = action_operation
     enqueue(db, "usage", data, report_id)
+
+
+def unity_mcp_operation(event):
+    """仅识别 Coplay Unity MCP 的 Codex 回执，Nova Action 沿用自己的统计。"""
+    if event.get("hook_event_name") != "PostToolUse":
+        return ""
+    match = UNITY_MCP_TOOL.fullmatch(string(event.get("tool_name"), 200))
+    if not match:
+        return ""
+    tool = identity(match[1])
+    if tool == "execute_custom_tool":
+        arguments = event.get("tool_input")
+        tool = identity(arguments.get("tool_name")) if isinstance(arguments, dict) else ""
+    return identity(f"unity-mcp.{tool}") if tool and tool != "nova_project_action" else ""
+
+
+def unity_mcp_outcome(value, depth=0):
+    """从 Coplay 和 MCP 回执提取终态，参数和结果正文只在此进程内处理。"""
+    if depth > 4:
+        return None
+    if isinstance(value, dict):
+        if value.get("isError") is True or value.get("is_error") is True:
+            return "failed"
+        status = value.get("status")
+        if status in USAGE_OUTCOMES:
+            return status
+        if status == "error" or value.get("success") is False:
+            return "failed"
+        if value.get("success") is True:
+            return "success"
+        for key in ("structuredContent", "structured_content", "result", "content"):
+            if outcome := unity_mcp_outcome(value.get(key), depth + 1):
+                return outcome
+    elif isinstance(value, list):
+        for item in value[:8]:
+            if isinstance(item, dict) and item.get("type") == "text":
+                if outcome := unity_mcp_outcome(item.get("text"), depth + 1):
+                    return outcome
+    elif isinstance(value, str) and len(value) <= 65536 and value.lstrip().startswith("{"):
+        try:
+            return unity_mcp_outcome(json.loads(value), depth + 1)
+        except (ValueError, RecursionError):
+            pass
+    return None
 
 
 def shell_outcome(event):
@@ -814,11 +884,17 @@ def report_hook_activity(db, framework, stamp):
     return True
 
 
-def handle_hook(root, db, event):
+def handle_hook(root, db, event, response=None):
     """上报限频的钩子运行记录、模块用量和已确认问题，任务观察保存在工作区。"""
     name = event.get("hook_event_name")
     if name not in HOOK_EVENTS:
         return False
+    identifier = turn_key(event)
+    if name == "UserPromptSubmit" and response is not None:
+        context = FINDING_TASK_CONTEXT
+        if identifier:
+            context += f" 本轮调用 finding 时，将 {identifier} 填入 turn 字段，供收尾核对。"
+        response["hookSpecificOutput"] = {"hookEventName": name, "additionalContext": context}
     stamp = now()
     if stamp - state(db, "codex_seen", 0) >= 30:
         save(db, "codex_seen", stamp)
@@ -828,7 +904,6 @@ def handle_hook(root, db, event):
     if name == "SessionStart":
         report_hook_activity(db, observed_framework(root, db), stamp)
         return has_pending_reports(db)
-    identifier = turn_key(event)
     if not identifier:
         return False
     turn = record_turn(root, db, event, identifier)
@@ -855,6 +930,8 @@ def handle_hook(root, db, event):
     if name == "Stop":
         message = string(event.get("last_assistant_message"), 30000)
         if turn["status"] == "observing":
+            confirmed_hint = CONFIRMED_FRAMEWORK_FINDING.search(message)
+            recorded = has_turn_finding(db, identifier)
             complete = bool(COMPLETE.search(message)) and not DEFERRED.search(message)
             route = ROUTE_BY_SKILL.get(turn["route"])
             candidate = (route and complete and turn["actual"] == VERIFIED_EXECUTION
@@ -868,11 +945,22 @@ def handle_hook(root, db, event):
                         event_id("missing-nova-route", identifier, route[0]))
                 pending = True
                 result = "confirmed"
-            elif (route and not turn["evidence"]) or FRAMEWORK_FINDING.search(message):
+            elif recorded:
+                result = "confirmed"
+            elif confirmed_hint or (route and not turn["evidence"]) or FRAMEWORK_FINDING.search(message):
                 result = "pending-evidence"
             else:
                 result = "reviewed"
-            db.execute("UPDATE turns SET status=?,updated=? WHERE id=?", (result, stamp, identifier))
+            closed = db.execute("UPDATE turns SET status=?,updated=? WHERE id=? AND status='observing'",
+                                (result, stamp, identifier)).rowcount
+            if (closed and confirmed_hint and not gap and response is not None and not event.get("stop_hook_active")
+                    and event.get("permission_mode") != "plan" and not recorded):
+                # 结论文字只触发复核，包内证据仍由 finding 验证。
+                response.update(decision="block", reason=(
+                    "本轮结论提到已确认的 Nova 框架问题，请复核是否已提交全部有证据的问题。"
+                    "已有上报编号时按编号查回执。漏项按当前用户授权和反馈状态调用 finding，"
+                    f"将本轮标识 {identifier} 填入 turn。证据或授权不足时在收尾说明实际状态。"
+                ))
     elif name == "Interrupt":
         db.execute("UPDATE turns SET status='interrupted',updated=? WHERE id=? AND status='observing'",
                    (stamp, identifier))
@@ -922,7 +1010,7 @@ def inspect_pending(db):
 
 
 def finding(root, db, payload):
-    """核对包内证据锚点，提交已确认的问题并忽略空白的可选描述。"""
+    """核对包内证据锚点，登记已确认的问题并返回可查询的上报编号。"""
     framework, path = resolved_framework(root, db)
     anchor = payload.get("anchor")
     if not isinstance(anchor, dict) or path is None:
@@ -955,8 +1043,42 @@ def finding(root, db, payload):
                   "priority": payload.get("priority") if payload.get("priority") in ("P0", "P1", "P2", "P3") else "P2",
                   "evidence": [{"source": "framework.source",
                                 "detail": f"{file.relative_to(path).as_posix()} 第 {line} 行已与本地证据核对。"}]})
-    enqueue(db, "issue", issue, event_id("finding", occurrence, area, code))
-    return True
+    report_id = event_id("finding", occurrence, area, code)
+    enqueue(db, "issue", issue, report_id)
+    turn = identity(payload.get("turn"))
+    if turn:
+        db.execute("INSERT OR IGNORE INTO turn_findings(turn_id,report_id) SELECT id,? FROM turns WHERE id=?",
+                   (report_id, turn))
+        db.execute("UPDATE turns SET status='confirmed',updated=? WHERE id=? AND status='pending-evidence'",
+                   (now(), turn))
+    return report_id
+
+
+def has_turn_finding(db, identifier):
+    """核对本轮已登记的报告是否仍在待发队列或已有回执。"""
+    return db.execute("""
+        SELECT 1 FROM turn_findings AS f
+        WHERE f.turn_id=? AND (
+            EXISTS (SELECT 1 FROM outbox WHERE id=f.report_id) OR
+            EXISTS (SELECT 1 FROM report_receipts WHERE id=f.report_id AND kind='issue')
+        ) LIMIT 1
+    """, (identifier,)).fetchone() is not None
+
+
+def finding_receipt(db, report_id):
+    """使用同一个数据库快照读取待发记录或服务端回执。"""
+    row = db.execute("""
+        SELECT accepted,issue_id,0 AS attempts,NULL AS error FROM report_receipts WHERE id=? AND kind='issue'
+        UNION ALL
+        SELECT accepted,issue_id,attempts,error FROM outbox WHERE id=? AND json_extract(payload,'$.kind')='issue'
+        LIMIT 1
+    """, (report_id, report_id)).fetchone()
+    if row is None:
+        return {"status": "unknown", "report_id": report_id}
+    if row["accepted"] is not None:
+        return {"status": "delivered", "report_id": report_id,
+                "issue_id": row["issue_id"], "accepted": row["accepted"]}
+    return {"status": "queued", "report_id": report_id, "attempts": row["attempts"], "error": row["error"]}
 
 
 @lru_cache(maxsize=1)
@@ -1116,14 +1238,17 @@ def work(root, folder, worker_id, *, single=False):
                        COALESCE(json_type(payload,'$.data.codex_hooks'),
                                 json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS has_project_details,
                        json_type(payload,'$.data.git_user_name') IS NOT NULL AS has_git_user_name,
+                       json_type(payload,'$.data.operating_system') IS NOT NULL AS has_operating_system,
+                       (json_extract(payload,'$.data.stage')='unity-mcp-connection'
+                        OR json_extract(payload,'$.data.entry')='unity-mcp') AS needs_unity_mcp_monitoring,
                        ((json_extract(payload,'$.kind')='issue' AND json_type(payload,'$.data.priority') IS NULL)
                         OR (json_extract(payload,'$.kind')='snapshot'
                             AND EXISTS (SELECT 1 FROM json_each(outbox.payload,'$.data.packages') AS package
                                         WHERE json_type(package.value,'$.evidence') IS NULL))) AS requires_compact_reports,
-                       json_extract(payload,'$.data.stage') IN
-                           ('editor-module','startup-stage','framework-upgrade') AS has_execution_evidence,
+                       json_extract(payload,'$.data.stage')='editor-module' AS has_execution_evidence,
+                       json_type(payload,'$.data.calls') IS NOT NULL AS has_play_call_counts,
                        (json_type(payload,'$.data.action_operation') IS NOT NULL
-                        OR json_extract(payload,'$.data.stage') IN ('pipify-step','table-ready')
+                        OR json_extract(payload,'$.data.stage')='table-ready'
                         OR (json_extract(payload,'$.data.stage')='editor-module'
                             AND json_extract(payload,'$.data.step') IN ('localization','ui','network'))
                         OR (json_extract(payload,'$.data.stage')='pipify-batch'
@@ -1151,6 +1276,10 @@ def work(root, folder, worker_id, *, single=False):
                 received, error = None, "server-upgrade-required"
             elif item["has_execution_evidence"] and health.get("execution_evidence") is not True:
                 received, error = None, "server-upgrade-required"
+            elif item["has_play_call_counts"] and health.get("play_call_counts") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["needs_unity_mcp_monitoring"] and health.get("unity_mcp_monitoring") is not True:
+                received, error = None, "server-upgrade-required"
             elif item["needs_feedback_timings"] and health.get("feedback_timings") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["kind"] == "usage" and item["source"] and health.get("codex_telemetry") is not True:
@@ -1158,6 +1287,8 @@ def work(root, folder, worker_id, *, single=False):
             elif item["has_project_details"] and health.get("project_snapshot_details") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["has_git_user_name"] and health.get("git_user_name_reporting") is not True:
+                received, error = None, "server-upgrade-required"
+            elif item["has_operating_system"] and health.get("snapshot_operating_system") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["requires_compact_reports"] and not compact_reports:
                 received, error = None, "server-upgrade-required"
@@ -1213,27 +1344,39 @@ def main():
     parser.add_argument("--enrollment", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--project", type=Path)
     commands = parser.add_subparsers(dest="command", required=True)
-    for command in ("hook", "editor", "finding", "status", "flush"):
+    for command in ("hook", "mcp-usage", "editor", "finding", "flush"):
         commands.add_parser(command)
+    commands.add_parser("status").add_argument("--report-id", help="check the local queue or receipt for an issue report")
     worker = commands.add_parser("worker")
     worker.add_argument("--lease", required=True)
     args = parser.parse_args()
-    hook = args.command == "hook"
+    report_id = getattr(args, "report_id", None)
+    if report_id is not None and not re.fullmatch(r"[0-9a-f]{32}", report_id):
+        parser.error("--report-id must be a 32-character hexadecimal report ID")
+    mcp_usage = args.command == "mcp-usage"
+    hook = args.command == "hook" or mcp_usage
+    hook_response = {}
     try:
-        raw = sys.stdin.buffer.read(MAX_INPUT + 1) if args.command in ("hook", "editor", "finding") else b"{}"
+        raw = sys.stdin.buffer.read(MAX_INPUT + 1) if hook or args.command in ("editor", "finding") else b"{}"
         if len(raw) > MAX_INPUT:
             return 0 if hook else 1
         payload = json.loads(raw or b"{}")
         if not isinstance(payload, dict):
             return 0 if hook else 1
-        if hook and not relevant_hook(payload):
+        if mcp_usage:
+            operation = unity_mcp_operation(payload)
+            identifier = turn_key(payload)
+            invocation = string(payload.get("tool_use_id"), 160)
+            if not (operation and identifier and invocation):
+                return 0
+        elif hook and not relevant_hook(payload):
             return 0
         workspace = payload.get("cwd") if hook else args.project
         if not workspace or not Path(workspace).is_absolute():
-            return 0
+            return 2 if args.command == "finding" else 0
         root = nova_project(Path(workspace).resolve())
         if not root:
-            return 0
+            return 2 if args.command == "finding" else 0
         folder = project_folder(root)
         if not folder:
             return 0 if hook else 1
@@ -1241,11 +1384,16 @@ def main():
             work(root, folder, getattr(args, "lease", ""), single=args.command == "flush")
             return 0
         should_wake = False
+        report = None
         with ledger(folder) as db:
             if state(db, "enrolled_at") is None:
                 save(db, "enrolled_at", now())
-            if hook:
-                should_wake = handle_hook(root, db, payload)
+            if mcp_usage:
+                record_usage(db, identifier, observed_framework(root, db), "unity-mcp", operation, "unity-mcp",
+                             unity_mcp_outcome(payload.get("tool_response")) or "executed", invocation)
+                should_wake = True
+            elif hook:
+                should_wake = handle_hook(root, db, payload, hook_response)
             elif args.command == "editor":
                 source = string(payload.get("framework_root"), 2000)
                 if source and Path(source).is_absolute():
@@ -1253,9 +1401,14 @@ def main():
                 editor_event(root, db, payload)
                 should_wake = True
             elif args.command == "finding":
-                if not finding(root, db, payload):
+                report_id = finding(root, db, payload)
+                if not report_id:
+                    print(compact({"status": "rejected", "reason": "invalid-finding"}))
                     return 2
-                should_wake = True
+                report = finding_receipt(db, report_id)
+                should_wake = report["status"] == "queued"
+            elif report_id is not None:
+                report = finding_receipt(db, report_id)
             elif args.command == "status":
                 print(compact({"turns": [dict(row) for row in db.execute(
                     "SELECT id,route,status,updated FROM turns ORDER BY updated DESC LIMIT 30")],
@@ -1270,12 +1423,14 @@ def main():
                 should_wake = False
         if should_wake:
             wake(root, folder)
+        if report is not None:
+            print(compact(report))
         return 0
     except (OSError, ValueError, TypeError, sqlite3.Error, RecursionError):
         return 0 if hook else 1
     finally:
         if hook:
-            print("{}")
+            print(compact(hook_response))
 
 
 if __name__ == "__main__":
