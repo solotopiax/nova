@@ -78,7 +78,7 @@ namespace NovaFramework.Editor
                     string platform = EditorUserBuildSettings.activeBuildTarget.ToString();
                     string channel = frozenMaster.CurrentChannel.ToString();
                     string mode = frozenMaster.CurrentDevelopMode.ToString();
-                    string currentStep = null;
+                    string currentStep = "workspace";
                     var buildState = new PipifyBuildState { LatestArtifact = checkpoint?.RestoreArtifact() };
                     s_IsRunning = true;
                     // 不冻结 Domain Reload 也不进入 Asset Editing：
@@ -95,6 +95,7 @@ namespace NovaFramework.Editor
                         for (int i = checkpoint?.NextStepIndex ?? 0; i < batch.Items.Count; i++)
                         {
                             ct.ThrowIfCancellationRequested();
+                            currentStep = "workspace";
                             ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
                             BatchItem item = batch.Items[i];
                             currentStep = item.StepId;

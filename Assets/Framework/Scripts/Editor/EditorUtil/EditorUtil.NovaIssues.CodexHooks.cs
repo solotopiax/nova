@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -218,13 +219,7 @@ namespace NovaFramework.Editor
                     return null;
 
                 string description = (definition["description"] as JValue)?.Value as string;
-                string title = description switch
-                {
-                    c_CodexFeedbackDescription or c_PreviousAutomaticFeedbackDescription => c_CodexFeedbackTitle,
-                    c_PreviousBriefCodexFeedbackDescription or c_PreviousCodexFeedbackDescription => c_PreviousCodexFeedbackTitle,
-                    c_InitialCodexFeedbackDescription => c_PreviousCodexFeedbackTitle + "（可选）",
-                    _ => null
-                };
+                string title = CodexFeedbackTitle(description);
                 if (title == null)
                     return null;
                 string digest = match.Groups[1].Value;
@@ -234,6 +229,15 @@ namespace NovaFramework.Editor
                     ((JArray)expected["hooks"]["PostToolUse"]).Add(CodexUnityMcpHookGroup(folder, monitoringDigest));
                 return JToken.DeepEquals(definition, expected) ? digest : null;
             }
+
+            /// <summary>从已有反馈说明确定当时生成的启动钩子名称。</summary>
+            private static string CodexFeedbackTitle(string description) => description switch
+            {
+                c_CodexFeedbackDescription or c_PreviousAutomaticFeedbackDescription => c_CodexFeedbackTitle,
+                c_PreviousBriefCodexFeedbackDescription or c_PreviousCodexFeedbackDescription => c_PreviousCodexFeedbackTitle,
+                c_InitialCodexFeedbackDescription => c_PreviousCodexFeedbackTitle + "（可选）",
+                _ => null
+            };
 
             /// <summary>只接受完整的 Unity MCP 监测定义，保留成员对该钩子的独立选择。</summary>
             private static string ReadUnityMcpHookDigest(JObject definition, string folder)
@@ -255,60 +259,70 @@ namespace NovaFramework.Editor
                 return Hex(sha.ComputeHash(stream)) == digest;
             }
 
-            /// <summary>核对原有或当前 Framework 生成的项目钩子和脚本，只上报准备状态。</summary>
-            private static string ObserveCodexHookStatus(string project, string folder, string framework)
+            /// <summary>逐项核对当前 Framework 提供的钩子及其本地脚本。无法读取配置时不推测数量。</summary>
+            private static (string State, int? Added, int Expected) ObserveCodexHookStatus(string project, string folder)
             {
+                int expected = s_CodexHookLabels.Length + 1;
                 string config = Path.Combine(project, c_CodexHookPath);
                 try
                 {
                     if (IsLink(Path.GetDirectoryName(config)) || IsLink(config) || Directory.Exists(config) ||
                         File.Exists(Path.GetDirectoryName(config)))
-                        return "incomplete";
+                        return ("incomplete", null, expected);
                     var file = new FileInfo(config);
                     if (!file.Exists)
-                        return "pending";
+                        return ("pending", 0, expected);
                     if (file.Length > 64 * 1024)
-                        return "incomplete";
+                        return ("incomplete", null, expected);
 
                     JObject definition = JObject.Parse(File.ReadAllText(config));
                     JToken value = definition["hooks"];
                     if (value == null)
-                        return "pending";
+                        return ("pending", 0, expected);
                     if (value is not JObject hooks)
-                        return "incomplete";
+                        return ("incomplete", null, expected);
                     bool hasNovaHook = hooks.Properties().SelectMany(entry => CodexHookGroups(entry.Value))
                         .Where(group => group["hooks"] is JArray)
                         .SelectMany(group => ((JArray)group["hooks"]).OfType<JObject>())
                         .Any(handler => new[] { "command", "commandWindows" }.Any(key =>
                             handler[key]?.Type == JTokenType.String && ((string)handler[key]).Contains(c_CodexAgentName)));
                     if (!hasNovaHook)
-                        return "pending";
+                        return ("pending", 0, expected);
 
-                    string installedDigest = ReadGeneratedCodexHookDigest(definition, folder);
-                    if (installedDigest != null)
-                        return CodexAgentMatchesDigest(CodexAgentPath(folder, installedDigest), installedDigest)
-                            ? "complete" : "incomplete";
+                    var scripts = new Dictionary<string, bool>(StringComparer.Ordinal);
+                    string title = CodexFeedbackTitle((definition["description"] as JValue)?.Value as string) ?? c_CodexFeedbackTitle;
+                    int added = s_CodexHookLabels.Count(item => HasPreparedHook(item.Event,
+                        item.Event == "PostToolUse" ? new JValue(c_CodexPostToolMatcher) : null,
+                        "hook", item.Event == "SessionStart" ? title : item.Label, s_CodexAgentDigest));
+                    if (HasPreparedHook("PostToolUse", new JValue(c_CodexUnityMcpMatcher),
+                        "mcp-usage", c_CodexUnityMcpTitle, s_CodexUnityMcpAgentDigest))
+                        added++;
+                    return (added == expected ? "complete" : "incomplete", added, expected);
 
-                    byte[] script = File.ReadAllBytes(CodexAgentSource(framework));
-                    using var sha = SHA256.Create();
-                    string digest = Hex(sha.ComputeHash(script));
-                    var desired = (JObject)CodexHookConfiguration(folder, digest, c_CodexFeedbackDescription, c_CodexFeedbackTitle)["hooks"];
-                    foreach (var entry in desired.Properties())
+                    bool HasPreparedHook(string eventName, JToken matcher, string command, string label, Regex pattern)
                     {
-                        var expectedGroup = (JObject)entry.Value[0];
-                        if (!CodexHookGroups(hooks[entry.Name]).Any(group =>
-                            JToken.DeepEquals(group["matcher"], expectedGroup["matcher"]) && group["hooks"] is JArray handlers &&
-                            handlers.Any(handler => JToken.DeepEquals(handler, expectedGroup["hooks"][0]))))
-                            return "incomplete";
+                        var handlers = CodexHookGroups(hooks[eventName])
+                            .Where(group => JToken.DeepEquals(group["matcher"], matcher))
+                            .SelectMany(group => group["hooks"] is JArray entries ? entries.OfType<JObject>() : Enumerable.Empty<JObject>());
+                        foreach (var handler in handlers)
+                        {
+                            Match match = pattern.Match((handler["command"] as JValue)?.Value as string ?? string.Empty);
+                            if (!match.Success)
+                                continue;
+                            string digest = match.Groups[1].Value;
+                            if (!JToken.DeepEquals(handler, CodexHookHandler(folder, digest, command, label)))
+                                continue;
+                            if (!scripts.TryGetValue(digest, out bool verified))
+                                scripts[digest] = verified = CodexAgentMatchesDigest(CodexAgentPath(folder, digest), digest);
+                            if (verified)
+                                return true;
+                        }
+                        return false;
                     }
-
-                    var agent = new FileInfo(CodexAgentPath(folder, digest));
-                    return !IsLink(agent.FullName) && agent.Exists && agent.Length == script.Length &&
-                        File.ReadAllBytes(agent.FullName).SequenceEqual(script) ? "complete" : "incomplete";
                 }
                 catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or JsonException)
                 {
-                    return "incomplete";
+                    return ("incomplete", null, expected);
                 }
             }
 

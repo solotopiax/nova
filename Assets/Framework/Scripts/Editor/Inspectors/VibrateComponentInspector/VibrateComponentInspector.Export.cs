@@ -31,14 +31,10 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            if (isEmphasis)
-            {
-                EditorUtil.Vibrate.ExportEmphasisData(filePath, dataExportPath, settings);
-            }
-            else
-            {
-                EditorUtil.Vibrate.ExportCustomData(filePath, dataExportPath, settings);
-            }
+            var operations = new EditorUtil.Vibrate.ExportOperations();
+            EditorUtil.NovaIssues.RunManualExport("vibrate", isEmphasis ? "emphasis-data" : "custom-data",
+                () => isEmphasis ? EditorUtil.Vibrate.ExportEmphasisData(filePath, dataExportPath, settings, operations)
+                    : EditorUtil.Vibrate.ExportCustomData(filePath, dataExportPath, settings, operations));
         }
 
         /// <summary>
@@ -57,14 +53,10 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            if (isEmphasis)
-            {
-                EditorUtil.Vibrate.ExportEmphasisCode(filePath, classExportPath, settings);
-            }
-            else
-            {
-                EditorUtil.Vibrate.ExportCustomCode(filePath, classExportPath, settings);
-            }
+            var operations = new EditorUtil.Vibrate.ExportOperations();
+            EditorUtil.NovaIssues.RunManualExport("vibrate", isEmphasis ? "emphasis-code" : "custom-code",
+                () => isEmphasis ? EditorUtil.Vibrate.ExportEmphasisCode(filePath, classExportPath, settings, operations)
+                    : EditorUtil.Vibrate.ExportCustomCode(filePath, classExportPath, settings, operations));
         }
 
         /// <summary>
@@ -88,14 +80,10 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            if (isEmphasis)
-            {
-                EditorUtil.Vibrate.ExportEmphasisAll(settings);
-            }
-            else
-            {
-                EditorUtil.Vibrate.ExportCustomAll(settings);
-            }
+            var operations = new EditorUtil.Vibrate.ExportOperations();
+            EditorUtil.NovaIssues.RunManualExport("vibrate", isEmphasis ? "emphasis-all" : "custom-all",
+                () => isEmphasis ? EditorUtil.Vibrate.ExportEmphasisAll(settings, operations)
+                    : EditorUtil.Vibrate.ExportCustomAll(settings, operations));
         }
 
         /// <summary>

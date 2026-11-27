@@ -24,11 +24,12 @@ import uuid
 FRAMEWORK = "com.solotopia.nova.framework"
 WORKDIR = Path("Library/Nova/Issues")
 REPORT_SERVER = "http://172.16.22.175:8787"
-ENVIRONMENT_REPORT_KEY = "editor_environment_report"
 HOOK_ACTIVITY_REPORT_KEY = "codex_hook_activity_report"
 HOOK_ACTIVITY_INTERVAL = 3600
 # 共享队列只按已确认的服务能力产生新版正文，已入队的报告按原内容重试。
 COMPACT_REPORTS_KEY = "compact_reports"
+ENVIRONMENT_REPORT_KEY = "editor_environment_report"
+ENVIRONMENT_CHECK_INTERVAL = 3600
 RECEIPT_RETENTION_SECONDS = 30 * 86400
 MINIMUM_RECLAIM_BYTES = 1 << 20
 MAX_INPUT = 4 << 20
@@ -90,6 +91,11 @@ NOVA_CLI = {
     "nova_capabilities.py": ("toolchain", {"inventory", "describe"}),
     "nova_skills.py": ("toolchain", {"resolve", "doctor"}),
 }
+NOVA_CLI_CHECKS = {
+    "nova_table_source.py": {"plan", "verify"}, "nova_tracks_source.py": {"plan", "verify"},
+    "nova_excel_template.py": {"plan", "verify"}, "nova_capabilities.py": {"check"}, "nova_skills.py": {"validate"},
+}
+ACTION_JOB_STATES = ("queued", "running", "completed", "interrupted", "expired")
 
 
 SCHEMA = """
@@ -136,7 +142,8 @@ SENDABLE_REPORT_FILTER = f"""
     AND COALESCE(json_extract(payload,'$.data.stage'),'') NOT IN
         ('sdk-device','sdk-preload','startup-stage','framework-upgrade','pipify-step')
     AND NOT (COALESCE(json_extract(payload,'$.data.stage'),'')='player-build'
-             AND (COALESCE(json_extract(payload,'$.data.platform'),'') NOT IN ('Android','iOS')
+             AND ((json_type(payload,'$.data.batch_mode') IS NULL
+                    AND COALESCE(json_extract(payload,'$.data.platform'),'') NOT IN ('Android','iOS'))
                   OR json_extract(payload,'$.data.build_kind')='scripts'))
     AND COALESCE(json_extract(payload,'$.data.operation'),'')!='editor.preload.sdk'
     AND COALESCE(json_extract(payload,'$.data.code'),'')!='editor-sdk-preload-exceeds-60-seconds'
@@ -467,7 +474,8 @@ def snapshot(root, db):
                                           "codex": "observed" if now() - state(db, "codex_seen", 0) < 1800 else "waiting",
                                           "editor": "observed" if now() - editor.get("at", 0) < 1800 else "waiting"}}
     if match:
-        result.update({name: editor[name] for name in ("enabled", "application_identifiers", "codex_hooks")
+        result.update({name: editor[name] for name in ("enabled", "application_identifiers", "codex_hooks",
+                                                       "editor_framework", "codex_hook_counts")
                        if name in editor})
     operating_system = {"darwin": "macos", "win32": "windows", "linux": "linux"}.get(sys.platform)
     if operating_system:
@@ -475,35 +483,46 @@ def snapshot(root, db):
     return result
 
 
-def report_editor_environment(root, db, *, compilation_day=None):
-    """兼容 Editor 的脚本入口，与原生采集共用工作区每日上报状态。"""
+def report_editor_environment(root, db, *, observation_id=None):
+    """旧 Editor 脚本入口复用工作区的每小时检查和变化签名。"""
+    stamp = now()
+    db.execute("UPDATE state SET value=value WHERE key='workspace'")
+    previous = state(db, ENVIRONMENT_REPORT_KEY, {})
+    if stamp - previous.get("checked_at", 0) < ENVIRONMENT_CHECK_INTERVAL:
+        return
+    report_id = event_id("editor-snapshot", observation_id) if observation_id else None
+    if report_id and db.execute("SELECT id FROM outbox WHERE id=? UNION ALL SELECT id FROM report_receipts WHERE id=?",
+                                (report_id, report_id)).fetchone():
+        return
     data = snapshot(root, db)
     if not data:
         return
     project, _ = automatic_credentials(root, db)
-    stamp = now()
-    day = datetime.fromtimestamp(stamp).date().isoformat()
-    previous = state(db, ENVIRONMENT_REPORT_KEY, {})
-    fields = [project["id"], data["framework"], data["unity"]]
     identifiers = data.get("application_identifiers", {})
-    fields.extend((
+    fields = [
+        project["id"], data["framework"], data["unity"],
         "|".join(f"{name}={identifiers[name]}" for name in sorted(identifiers)),
         data.get("codex_hooks"),
         "\n".join(f"{item['id']}|{item['version']}|{item['source']}"
                   for item in sorted(data["packages"], key=lambda item: item["id"])),
         "\n".join(sorted(set(data.get("enabled", [])))),
         "\n".join(f"{name}|{item['state']}|{item.get('version', 'unknown')}"
-                  for name, item in sorted(data["tools"].items())),
+                  for name, item in sorted(data["tools"].items()) if name != "codex"),
         data.get("operating_system"),
-    ))
+    ]
+    hook_counts = data.get("codex_hook_counts", {})
+    if "editor_framework" in data or hook_counts:
+        fields.extend((data.get("editor_framework"),
+                       str(hook_counts["added"]) if hook_counts else None,
+                       str(hook_counts["expected"]) if hook_counts else None))
     git_name = git_user_name(root)
     if git_name:
         data["git_user_name"] = git_name
         fields.append(git_name)
     signature = event_id(*fields)
-    if previous.get("hash") != signature or compilation_day == day and previous.get("day") != day:
-        enqueue(db, "snapshot", data, observed_at=stamp)
-        save(db, ENVIRONMENT_REPORT_KEY, {"hash": signature, "day": day})
+    if previous.get("hash") != signature:
+        enqueue(db, "snapshot", data, report_id, stamp)
+    save(db, ENVIRONMENT_REPORT_KEY, {"hash": signature, "checked_at": stamp})
 
 
 def expected_route(prompt):
@@ -555,6 +574,8 @@ def tool_operation(event):
         action = identity(action_input.get("action_id"))
         if ACTION_ID.fullmatch(action):
             return tool_name, action, identity(action_input.get("operation")), command
+        if action_input.get("operation") == "describe" and not action:
+            return tool_name, "nova-project-action", "describe", command
     return tool_name, "", "", command
 
 
@@ -566,6 +587,53 @@ def record_usage(db, identifier, framework, module, operation, entry, outcome, i
     if action_operation:
         data["action_operation"] = action_operation
     enqueue(db, "usage", data, report_id)
+
+
+def record_workflow(db, trace, framework, stage, operation, outcome, *, invocation="", observed_at=None,
+                    source="codex", receipt=None, **details):
+    """只发送已观察步骤、结果和不可还原的回执标识。"""
+    report_id = event_id("workflow", trace, stage, invocation)
+    data = {"trace": trace, "framework": framework, "stage": stage, "source": source,
+            "operation": operation, "outcome": outcome, **details}
+    if receipt:
+        data["receipt"] = receipt
+    enqueue(db, "workflow", data, report_id, observed_at)
+
+
+def record_release_result(root, trace, stage, operation, outcome, reason=None, target_version=None):
+    """正式发布脚本复用本项目队列，只登记实际发生的签名、发布和同步结果。"""
+    if stage not in ("sign", "registry", "github") or outcome not in ("success", "partial", "failed", "cancelled"):
+        return
+    if not (re.fullmatch(r"[0-9a-f]{32}", trace) and identity(operation)):
+        return
+    observed_at = now()
+    if nova_project(root) != root:
+        return
+    folder = project_folder(root)
+    if folder is None:
+        return
+    details = {}
+    if identity(reason):
+        details["reason"] = reason
+    if target_version and VERSION.fullmatch(target_version):
+        details["target_version"] = target_version
+    with ledger(folder) as db:
+        record_workflow(db, trace, observed_framework(root, db), stage, operation, outcome, source="release",
+                        observed_at=observed_at, **details)
+    wake(root, folder)
+
+
+def record_task_start(db, turn):
+    """在识别出 Nova 入口后补上本轮的本地开始时间。"""
+    record_workflow(db, turn["id"], turn["version"], "started", turn["route"] or "nova-task", "observed",
+                    observed_at=turn["started"])
+
+
+def tracked_task(db, identifier):
+    """兼顾本地待发和已送达回执，只为已开始观察的任务记录收尾。"""
+    report_id = event_id("workflow", identifier, "started", "")
+    return db.execute("SELECT 1 FROM outbox WHERE id=? UNION ALL SELECT 1 FROM report_receipts WHERE id=?",
+                      (report_id, report_id)).fetchone() is not None
 
 
 def unity_mcp_operation(event):
@@ -699,7 +767,7 @@ def nova_cli_operation(root, db, event, command):
     elif command_name.startswith(("--root=", "--project-root=")):
         command_name = next(argv, "")
     module, commands = adapter
-    if command_name not in commands:
+    if command_name not in (commands | NOVA_CLI_CHECKS.get(path.name, set())):
         return None
     _, package = resolved_framework(root, db)
     if not package or path.resolve() != package / "Agents" / "Tools" / path.name or not path.is_file():
@@ -708,15 +776,16 @@ def nova_cli_operation(root, db, event, command):
 
 
 def observed_cli_usage(root, db, event, command, framework, identifier):
-    """统计 Unity CLI 和随包 Nova CLI，排除状态轮询与计划辅助步骤。"""
+    """记录 CLI 执行结果并识别计划、检查和验证阶段。"""
     tool_id = string(event.get("tool_use_id"), 160)
     if not tool_id:
         return False
+    phase = None
     match = UNITY_COMMAND.match(command)
     if match:
         group, name = (item.lower() for item in match.groups())
         if (group, name) in (("editor", "status"), ("script", "recompile_status"), ("test", "list"), ("test", "status")):
-            return False
+            phase = "check"
         module, operation, entry = "unity-cli", identity(f"unity.{group}.{name}"), "unity-cli"
         if not operation:
             return False
@@ -726,7 +795,16 @@ def observed_cli_usage(root, db, event, command, framework, identifier):
             return False
         module, operation = nova
         entry = "nova-cli"
-    record_usage(db, identifier, framework, module, operation, entry, shell_outcome(event), tool_id)
+    outcome = shell_outcome(event)
+    command_name = operation.rsplit(".", 1)[-1]
+    phase = phase or {"plan": "plan", "verify": "verify", "check": "check", "validate": "check", "doctor": "check",
+                      "inventory": "entry", "describe": "entry", "resolve": "entry"}.get(command_name, "execute")
+    if phase not in ("plan", "verify", "check") or (entry == "nova-cli" and command_name == "doctor"):
+        record_usage(db, identifier, framework, module, operation, entry, outcome, tool_id)
+    turn = db.execute("SELECT * FROM turns WHERE id=?", (identifier,)).fetchone()
+    if turn is not None:
+        record_task_start(db, turn)
+        record_workflow(db, identifier, framework, phase, operation, outcome, invocation=tool_id)
     return True
 
 
@@ -745,7 +823,7 @@ def response_dict(value):
                 return result
         return {}
     if isinstance(value, dict):
-        if value.get("status") in USAGE_OUTCOMES:
+        if value.get("status") in (*USAGE_OUTCOMES, "ready", *ACTION_JOB_STATES):
             return value
         for name in ("data", "structuredContent", "content", "text"):
             if name in value and isinstance(value[name], (list, dict, str)):
@@ -778,6 +856,83 @@ def observed_action_usage(db, event, framework, identifier, action, operation):
     record_usage(db, identifier, framework, ACTION_ID.fullmatch(action)[1], action, "action", outcome, tool_id,
                  action_operation)
     return True
+
+
+def observe_action_workflow(db, event, turn, action, operation):
+    """从 Action 响应关联计划、执行与 Verify，同步回执中的结果。"""
+    tool_id = string(event.get("tool_use_id"), 160)
+    if not tool_id or operation not in ("describe", "plan", "execute", "verify"):
+        return False
+    response = response_dict(event.get("tool_response"))
+    response_action = None if action == "nova-project-action" else action
+    if response.get("operation") != operation or response.get("action_id") != response_action:
+        return False
+    outcome = response.get("status")
+    details = response.get("data")
+    data = details if isinstance(details, dict) else {}
+    invocation = tool_id
+    job = None
+    if outcome in ACTION_JOB_STATES and (request_id := string(data.get("request_id"), 160)):
+        job = event_id("action-job", action, operation, request_id)
+        if outcome in ("queued", "running", "interrupted", "expired"):
+            stage = "wait" if outcome in ("queued", "running") else "interrupted"
+            record_task_start(db, turn)
+            record_workflow(db, turn["id"], turn["version"], stage, action,
+                            "observed" if stage == "wait" else "cancelled",
+                            invocation=job, receipt=job, reason="action-job" if stage == "wait" else outcome)
+            return True
+        result = response_dict(data.get("response"))
+        if result.get("action_id") != response_action or result.get("operation") != operation:
+            return False
+        outcome = result.get("status")
+        data = result.get("data") if isinstance(result.get("data"), dict) else {}
+        invocation = job
+    if operation == "plan" and outcome == "ready":
+        outcome = "success"
+    if outcome not in USAGE_OUTCOMES:
+        return False
+    token = re.fullmatch(r"nova-action-operation-v1:([a-fA-F0-9]{32})", string(data.get("recovery_token"), 100))
+    operation_id = token[1] if token else string(data.get("operation_id"), 32)
+    receipt = event_id("action", action, operation_id) if re.fullmatch(r"[a-fA-F0-9]{32}", operation_id) else job
+    record_task_start(db, turn)
+    record_workflow(db, turn["id"], turn["version"], "entry" if operation == "describe" else operation,
+                    action, outcome, invocation=invocation, receipt=receipt)
+    return True
+
+
+def observed_reference(root, db, event, tool, command):
+    """只识别当前工程规则及当前框架的知识、规则和文档入口。"""
+    if tool == "Read" and isinstance(event.get("tool_input"), dict):
+        paths = [string(event["tool_input"].get("file_path"), 2400)]
+    elif tool in SHELL_TOOLS and ".md" in command:
+        if shell_outcome(event) == "failed":
+            return set()
+        try:
+            words = shlex.split(command.replace("\\", "/"))
+        except ValueError:
+            return set()
+        if not words or Path(words[0]).name.lower() not in ("cat", "sed", "head", "tail", "bat", "get-content", "type"):
+            return set()
+        paths = [word for word in words[1:] if word.endswith(".md")]
+    else:
+        return set()
+    _, package = resolved_framework(root, db)
+    cwd = command_cwd(root, event)
+    result = set()
+    for value in paths:
+        try:
+            path = (cwd / value).resolve()
+            if not path.is_file():
+                continue
+        except (OSError, ValueError):
+            continue
+        if path.name == "AGENTS.md" and root in path.parents:
+            result.add("project-rules")
+        elif package and package / "Minds" in path.parents:
+            result.add("nova-minds")
+        elif package and package / "Docs" in path.parents:
+            result.add("nova-constraints" if path.name == "DEVELOPMENT_CONSTRAINTS.md" else "nova-docs")
+    return result
 
 
 def observed_skills(root, db, event, tool_name, command, framework, identifier):
@@ -862,8 +1017,8 @@ def relevant_hook(event):
     if action or tool in ("apply_patch", "Write", "Edit"):
         return True
     if tool == "Read" and isinstance(arguments, dict):
-        return string(arguments.get("file_path"), 2400).endswith("SKILL.md")
-    return tool in SHELL_TOOLS and bool("SKILL.md" in command or EXECUTION_HINT.search(command)
+        return string(arguments.get("file_path"), 2400).endswith(".md")
+    return tool in SHELL_TOOLS and bool(".md" in command or EXECUTION_HINT.search(command)
                                         or UNITY_COMMAND.match(command) or any(script in command for script in NOVA_CLI))
 
 
@@ -885,7 +1040,7 @@ def report_hook_activity(db, framework, stamp):
 
 
 def handle_hook(root, db, event, response=None):
-    """上报限频的钩子运行记录、模块用量和已确认问题，任务观察保存在工作区。"""
+    """保留本地任务归因，发送已观察的协作阶段、模块用量和已确认问题。"""
     name = event.get("hook_event_name")
     if name not in HOOK_EVENTS:
         return False
@@ -909,9 +1064,19 @@ def handle_hook(root, db, event, response=None):
     turn = record_turn(root, db, event, identifier)
     framework = turn["version"]
     pending = report_hook_activity(db, framework, stamp)
+    if name == "UserPromptSubmit" and turn["route"]:
+        record_task_start(db, turn)
+        pending = True
     if name == "PostToolUse":
         tool_name, action, operation, command = tool_operation(event)
         skills = observed_skills(root, db, event, tool_name, command, framework, identifier)
+        references = observed_reference(root, db, event, tool_name, command)
+        if skills or references:
+            record_task_start(db, turn)
+            for item in sorted(skills | references):
+                stage = "entry" if item in skills else "lookup"
+                record_workflow(db, identifier, framework, stage, item, "observed", invocation=item)
+            pending = True
         route = ROUTE_BY_SKILL.get(turn["route"])
         if route:
             trusted_path = f"{route[0]}/SKILL.md"
@@ -924,6 +1089,7 @@ def handle_hook(root, db, event, response=None):
                 db.execute("UPDATE turns SET actual=?,updated=? WHERE id=?", (VERIFIED_EXECUTION, stamp, identifier))
         if action:
             pending |= observed_action_usage(db, event, framework, identifier, action, operation)
+            pending |= observe_action_workflow(db, event, turn, action, operation)
         elif tool_name in SHELL_TOOLS:
             pending |= observed_cli_usage(root, db, event, command, framework, identifier)
         return pending or bool(skills)
@@ -953,6 +1119,10 @@ def handle_hook(root, db, event, response=None):
                 result = "reviewed"
             closed = db.execute("UPDATE turns SET status=?,updated=? WHERE id=? AND status='observing'",
                                 (result, stamp, identifier)).rowcount
+            if closed and tracked_task(db, identifier):
+                record_workflow(db, identifier, framework, "finished", turn["route"] or "nova-task", "observed",
+                                reason=result)
+                pending = True
             if (closed and confirmed_hint and not gap and response is not None and not event.get("stop_hook_active")
                     and event.get("permission_mode") != "plan" and not recorded):
                 # 结论文字只触发复核，包内证据仍由 finding 验证。
@@ -962,8 +1132,11 @@ def handle_hook(root, db, event, response=None):
                     f"将本轮标识 {identifier} 填入 turn。证据或授权不足时在收尾说明实际状态。"
                 ))
     elif name == "Interrupt":
-        db.execute("UPDATE turns SET status='interrupted',updated=? WHERE id=? AND status='observing'",
-                   (stamp, identifier))
+        closed = db.execute("UPDATE turns SET status='interrupted',updated=? WHERE id=? AND status='observing'",
+                            (stamp, identifier)).rowcount
+        if closed and tracked_task(db, identifier):
+            record_workflow(db, identifier, framework, "interrupted", turn["route"] or "nova-task", "cancelled")
+            pending = True
     return pending
 
 
@@ -980,8 +1153,18 @@ def editor_snapshot(root, db, payload):
     if isinstance(identifiers, dict) and len(identifiers) <= 3:
         result["application_identifiers"] = {name: value for name, value in identifiers.items()
                                              if identity(name) and APPLICATION_IDENTIFIER.fullmatch(string(value, 255))}
-    if payload.get("codex_hooks") in ("complete", "pending", "incomplete"):
-        result["codex_hooks"] = payload["codex_hooks"]
+    if "editor_framework" in payload:
+        result["editor_framework"] = version(payload["editor_framework"])
+    hook_status = payload.get("codex_hooks")
+    if hook_status in ("complete", "pending", "incomplete"):
+        result["codex_hooks"] = hook_status
+        counts = payload.get("codex_hook_counts")
+        if isinstance(counts, dict):
+            added, expected = counts.get("added"), counts.get("expected")
+            if (type(added) is int and type(expected) is int and 1 <= expected <= 2147483647
+                    and 0 <= added <= expected and (hook_status == "complete") == (added == expected)
+                    and (hook_status != "pending" or added == 0)):
+                result["codex_hook_counts"] = {"added": added, "expected": expected}
     enabled = payload.get("enabled")
     for value in enabled[:100] if isinstance(enabled, list) else []:
         if identity(value):
@@ -990,7 +1173,7 @@ def editor_snapshot(root, db, payload):
         if name in OBSERVED_TOOLS and isinstance(item, dict) and identity(item.get("state")):
             result["tools"][name] = {"state": item["state"], "version": version(item.get("version"))}
     save(db, "editor", result)
-    report_editor_environment(root, db, compilation_day=payload.get("compilation_day"))
+    report_editor_environment(root, db, observation_id=identity(payload.get("id")))
 
 
 def editor_event(root, db, payload):
@@ -1000,7 +1183,7 @@ def editor_event(root, db, payload):
         editor_snapshot(root, db, payload)
         return
     if kind == "compile-finished" and identity(payload.get("id")):
-        report_editor_environment(root, db, compilation_day=datetime.fromtimestamp(now()).date().isoformat())
+        report_editor_environment(root, db, observation_id=identity(payload.get("id")))
 
 
 def inspect_pending(db):
@@ -1239,6 +1422,9 @@ def work(root, folder, worker_id, *, single=False):
                                 json_type(payload,'$.data.application_identifiers')) IS NOT NULL AS has_project_details,
                        json_type(payload,'$.data.git_user_name') IS NOT NULL AS has_git_user_name,
                        json_type(payload,'$.data.operating_system') IS NOT NULL AS has_operating_system,
+                       (json_extract(payload,'$.kind')='snapshot'
+                            AND COALESCE(json_type(payload,'$.data.editor_framework'),
+                                         json_type(payload,'$.data.codex_hook_counts')) IS NOT NULL) AS has_snapshot_version_and_hook_counts,
                        (json_extract(payload,'$.data.stage')='unity-mcp-connection'
                         OR json_extract(payload,'$.data.entry')='unity-mcp') AS needs_unity_mcp_monitoring,
                        ((json_extract(payload,'$.kind')='issue' AND json_type(payload,'$.data.priority') IS NULL)
@@ -1247,6 +1433,10 @@ def work(root, folder, worker_id, *, single=False):
                                         WHERE json_type(package.value,'$.evidence') IS NULL))) AS requires_compact_reports,
                        json_extract(payload,'$.data.stage')='editor-module' AS has_execution_evidence,
                        json_type(payload,'$.data.calls') IS NOT NULL AS has_play_call_counts,
+                       (json_extract(payload,'$.kind')='workflow'
+                        OR json_type(payload,'$.data.batch_mode') IS NOT NULL
+                        OR (json_extract(payload,'$.data.stage')='editor-module'
+                            AND json_extract(payload,'$.data.step') IN ('persist','event','sound','vibrate'))) AS needs_workflow,
                        (json_type(payload,'$.data.action_operation') IS NOT NULL
                         OR json_extract(payload,'$.data.stage')='table-ready'
                         OR (json_extract(payload,'$.data.stage')='editor-module'
@@ -1272,6 +1462,8 @@ def work(root, folder, worker_id, *, single=False):
                 received, error = None, "service-unavailable"
             elif item["kind"] == "hook_activity" and health.get("hook_activity") is not True:
                 received, error = None, "server-upgrade-required"
+            elif item["needs_workflow"] and health.get("workflow_monitoring") is not True:
+                received, error = None, "server-upgrade-required"
             elif item["kind"] == "implementation" and health.get("implementation_tracking") is not True:
                 received, error = None, "server-upgrade-required"
             elif item["has_execution_evidence"] and health.get("execution_evidence") is not True:
@@ -1290,6 +1482,8 @@ def work(root, folder, worker_id, *, single=False):
                 received, error = None, "server-upgrade-required"
             elif item["has_operating_system"] and health.get("snapshot_operating_system") is not True:
                 received, error = None, "server-upgrade-required"
+            elif item["has_snapshot_version_and_hook_counts"] and health.get("snapshot_version_and_hook_counts") is not True:
+                received, error = None, "server-upgrade-required"
             elif item["requires_compact_reports"] and not compact_reports:
                 received, error = None, "server-upgrade-required"
             else:
@@ -1299,7 +1493,12 @@ def work(root, folder, worker_id, *, single=False):
             with ledger(folder) as db:
                 if state(db, "workspace") != workspace:
                     return
+                payload = json.loads(item["payload"])["data"]
+                is_queue_event = payload.get("stage") == "queue"
                 if received:
+                    if not is_queue_event and item["attempts"] > 0 and health.get("workflow_monitoring") is True:
+                        db.execute("UPDATE state SET value=value WHERE key='workspace'")
+                        recover_queue(db, item["id"], payload.get("framework", "unknown"))
                     db.execute("UPDATE outbox SET accepted=?,issue_id=?,error=NULL WHERE id=?",
                                (now(), received.get("issue_id"), item["id"]))
                     delivered = True
@@ -1309,8 +1508,10 @@ def work(root, folder, worker_id, *, single=False):
                         delay = 300
                     elif error == "server-upgrade-required":
                         delay = 30
-                    db.execute("UPDATE outbox SET attempts=attempts+1,error=?,ready_at=? WHERE id=? AND accepted IS NULL",
-                               (error, now() + delay, item["id"]))
+                    updated = db.execute("UPDATE outbox SET attempts=attempts+1,error=?,ready_at=? WHERE id=? AND accepted IS NULL",
+                                         (error, now() + delay, item["id"]))
+                    if updated.rowcount and not is_queue_event and error in ("service-unavailable", "transport"):
+                        save(db, "report_queue_interrupted", True)
         if maintenance or delivered:
             with ledger(folder) as db:
                 reclaim_ledger_space(db)
@@ -1335,6 +1536,22 @@ def work(root, folder, worker_id, *, single=False):
                     save(db, "worker", {})
             return
         time.sleep(1.5 if ready else 3)
+
+
+def recover_queue(db, report_id, framework):
+    """与 Editor 共用恢复标记，首次确认重试时送出队列量和累计尝试次数。"""
+    if not state(db, "report_queue_interrupted") or not db.execute(
+            "SELECT 1 FROM outbox WHERE id=? AND error IN ('service-unavailable','transport')", (report_id,)).fetchone():
+        return
+    pending, retries = db.execute("""
+        SELECT COUNT(*), COALESCE(SUM(attempts),0) FROM outbox
+        WHERE accepted IS NULL AND COALESCE(json_extract(payload,'$.data.stage'),'')!='queue'
+        """).fetchone()
+    trace = event_id("queue-resumed", report_id)
+    enqueue(db, "workflow", {"trace": trace, "source": "codex", "framework": framework, "stage": "queue",
+                            "operation": "reports-resumed", "outcome": "success",
+                            "pending": min(2_147_483_647, pending), "retries": min(2_147_483_647, retries)}, trace)
+    save(db, "report_queue_interrupted", False)
 
 
 def main():
@@ -1389,8 +1606,11 @@ def main():
             if state(db, "enrolled_at") is None:
                 save(db, "enrolled_at", now())
             if mcp_usage:
-                record_usage(db, identifier, observed_framework(root, db), "unity-mcp", operation, "unity-mcp",
-                             unity_mcp_outcome(payload.get("tool_response")) or "executed", invocation)
+                turn = record_turn(root, db, payload, identifier)
+                outcome = unity_mcp_outcome(payload.get("tool_response")) or "executed"
+                record_usage(db, identifier, turn["version"], "unity-mcp", operation, "unity-mcp", outcome, invocation)
+                record_task_start(db, turn)
+                record_workflow(db, identifier, turn["version"], "execute", operation, outcome, invocation=invocation)
                 should_wake = True
             elif hook:
                 should_wake = handle_hook(root, db, payload, hook_response)

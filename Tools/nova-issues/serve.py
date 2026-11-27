@@ -23,7 +23,10 @@ import threading
 import time
 from urllib.parse import parse_qs, urlsplit
 
-from database import ACTIVITY_SECTIONS, Conflict, Database, EnrollmentLimit
+from database import (
+    ACTIVITY_SECTIONS, DEVELOPMENT_ENTRIES, MODULE_ALIASES, RECENT_REPORT_DAYS, Conflict, Database, EnrollmentLimit,
+)
+from maintenance import DatabaseMaintenance, backup
 from protocol import (
     InvalidInput, MAINTAINER_ISSUE_STATES, UUID, enum, int_range, key, label, obj, retired_feedback, validate_event,
 )
@@ -36,6 +39,7 @@ COOKIE = "nova_issues_session"
 SESSION_COOKIE_MAX_AGE = 400 * 24 * 60 * 60
 TOKEN = re.compile(r"[A-Za-z0-9_-]{32,128}\Z")
 MAX_BODY = 256 * 1024
+MAX_ACTIVITY_ID = 9007199254740991
 AUTO_REPORT_NETWORKS = tuple(map(ip_network, ("127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")))
 ASSETS = {
     "/": ("index.html", "text/html; charset=utf-8"),
@@ -46,19 +50,26 @@ USAGE_DESCRIPTIONS = ROOT / "usage-descriptions.json"
 UNITY_USAGE_DESCRIPTIONS = ROOT / "unity-usage-descriptions.json"
 USAGE_MODULES = ROOT / "usage-modules.json"
 USAGE_SOURCES = ("codex", "editor", "legacy")
-DEVELOPMENT_ENTRIES = ("action", "unity-cli", "nova-cli", "inspector", "unity-mcp")
+USAGE_ENTRY_TYPES = (*DEVELOPMENT_ENTRIES, "editor-tool", "play", "skill")
+IMPLEMENTATION_USAGE_DESCRIPTIONS = {
+    "config-export": "导出 Config 运行配置并记录执行结果。",
+    "pipify-batch": "运行整个 Pipify Batch 并记录执行结果。",
+    "plugpals-query": "在 PlugPals 查询包仓库并记录查询结果。",
+    "bundle-build": "在 Unity Editor 构建标准资源包或原生文件包并记录结果。",
+    "config-load": "在 Unity Editor Play 中成功读取 Config 运行配置。",
+    "editor-module": "记录 Unity Editor Play 中模块成功调用的上报时间和次数。",
+}
 NOVA_CLI_MODULES = {
     "nova_table_source": "table", "nova_tracks_source": "tracks", "nova_excel_template": "excel",
     "nova_capabilities": "toolchain", "nova_skills": "toolchain",
 }
-MODULE_ALIASES = {"persist": "persistence", "vibrate": "vibration"}
 INSPECTOR_EXPORTS = {
     "table": ("code", "data", "all"), "localization": ("text", "font"), "ui": ("code", "data", "all"),
+    "sound": ("code", "data", "all"),
+    "vibrate": ("emphasis-code", "emphasis-data", "emphasis-all", "custom-code", "custom-data", "custom-all"),
     "network": ("hostkey-code", "hostkey-data", "hostkey-all", "netcmd-code", "netcmd-data", "netcmd-all",
                 "proto-file", "proto-all"),
 }
-TOOL_EVIDENCE_MODULES = {"config-export": "config", "pipify-batch": "pipify",
-                         "plugpals-query": "upm", "bundle-build": "bundle"}
 
 
 def load_web_assets():
@@ -70,7 +81,7 @@ def load_web_assets():
 def runtime_revision(assets=None, descriptions=None, modules=None):
     """用服务端源码和实际加载的 Web 内容生成可核对的版本标识。"""
     digest = hashlib.sha256()
-    for name in ("serve.py", "database.py", "protocol.py", "registries.py"):
+    for name in ("serve.py", "database.py", "maintenance.py", "protocol.py", "registries.py"):
         digest.update(hashlib.sha256((ROOT / name).read_bytes()).digest())
     if assets is None:
         assets = load_web_assets()
@@ -97,17 +108,23 @@ def load_usage_modules():
 def usage_description(row, descriptions):
     """按操作编号查找用途，自定义命令展示已知的调用入口。"""
     operation = row["operation"]
+    if row["entry"] in ("editor-tool", "play"):
+        return IMPLEMENTATION_USAGE_DESCRIPTIONS.get(operation, "")
     if operation in descriptions:
         return descriptions[operation]
     if row["entry"] == "inspector":
         module = row["module"]
-        name = {"table": "Table", "localization": "本地化", "ui": "UI", "network": "网络"}.get(module)
+        name = {"table": "Table", "localization": "本地化", "ui": "UI", "network": "网络",
+                "sound": "声音", "vibrate": "振动"}.get(module)
         scope = operation.removeprefix(f"editor.{module}.export-")
         label = {"code": "代码", "data": "数据", "all": "代码和数据", "text": "本地化文本",
                  "font": "本地化字体", "hostkey-code": "域名表代码", "hostkey-data": "域名表数据",
                  "hostkey-all": "域名表代码和数据", "netcmd-code": "指令表代码", "netcmd-data": "指令表数据",
                  "netcmd-all": "指令表代码和数据", "proto-file": "单份协议的 C# 类型",
-                 "proto-all": "已配置协议的 C# 类型"}.get(scope)
+                 "proto-all": "已配置协议的 C# 类型", "emphasis-code": "强调振动代码",
+                 "emphasis-data": "强调振动数据", "emphasis-all": "强调振动代码和数据",
+                 "custom-code": "自定义振动代码", "custom-data": "自定义振动数据",
+                 "custom-all": "自定义振动代码和数据"}.get(scope)
         if name and label:
             return f"在 Unity 的{name}检视面板手动导出{label}。"
     if row["entry"] == "unity-cli" and operation.startswith("unity."):
@@ -118,17 +135,20 @@ def usage_description(row, descriptions):
     return ""
 
 
-def usage_breakdown(rows, evidence, descriptions, module_names):
-    """合并已知类型和历史上报，模块排行只统计入口明确的开发调用。"""
+def usage_breakdown(rows, descriptions, module_names, selected_module):
+    """按操作明细的上报条数及调用次数汇总各维度。"""
     def category(identifier, **metadata):
         return {"id": identifier, "count": 0, "history": 0, **metadata}
 
-    modules = {MODULE_ALIASES.get(name, name): category(MODULE_ALIASES.get(name, name), label=label, tracked=False)
+    def module_category(identifier, *, tracked=False, **metadata):
+        return category(identifier, tracked=tracked, development_calls=0, play_calls=None, **metadata)
+
+    modules = {MODULE_ALIASES.get(name, name): module_category(MODULE_ALIASES.get(name, name), label=label)
                for name, label in module_names.items()}
-    modules["unity-mcp"] = category("unity-mcp", label="Unity MCP", tracked=True)
+    modules["unity-mcp"] = module_category("unity-mcp", label="Unity MCP", tracked=True)
     operations = {}
     sources = {name: category(name) for name in USAGE_SOURCES}
-    entries = {name: category(name) for name in (*DEVELOPMENT_ENTRIES, "skill", "")}
+    entries = {name: category(name) for name in (*USAGE_ENTRY_TYPES, "")}
     for operation, description in descriptions.items():
         if retired_feedback("usage", {"operation": operation}):
             continue
@@ -141,19 +161,20 @@ def usage_breakdown(rows, evidence, descriptions, module_names):
             domain = "unity-cli"
         if domain:
             domain = MODULE_ALIASES.get(domain, domain)
-            modules.setdefault(domain, category(domain, tracked=False))["tracked"] = True
+            modules.setdefault(domain, module_category(domain))["tracked"] = True
 
     for domain, scopes in INSPECTOR_EXPORTS.items():
-        modules.setdefault(domain, category(domain, tracked=False))["tracked"] = True
         for scope in scopes:
             operation = f"editor.{domain}.export-{scope}"
             description = usage_description({"operation": operation, "module": domain, "entry": "inspector"}, descriptions)
             operations[operation] = category(operation, description=description)
+        domain = MODULE_ALIASES.get(domain, domain)
+        modules.setdefault(domain, module_category(domain))["tracked"] = True
 
     for report in rows:
         domain = MODULE_ALIASES.get(report["module"], report["module"])
         operation = report["operation"]
-        module = modules.setdefault(domain, category(domain, tracked=False))
+        module = modules.setdefault(domain, module_category(domain))
         if operation not in operations:
             operations[operation] = category(operation, description=usage_description(report, descriptions))
         categories = [
@@ -161,23 +182,26 @@ def usage_breakdown(rows, evidence, descriptions, module_names):
             sources.setdefault(report["source"], category(report["source"])),
             entries.setdefault(report["entry"], category(report["entry"])),
         ]
-        if report["entry"] in DEVELOPMENT_ENTRIES:
+        if report["entry"] in (*DEVELOPMENT_ENTRIES, "editor-tool"):
             module["tracked"] = True
             categories.append(module)
+        module["development_calls"] += report["development_calls"]
+        if report["entry"] == "editor-tool" and report["history"]:
+            module["tool_history"] = True
+        if report["entry"] == "play" and report["history"]:
+            module["play_history"] = True
+            if report["play_calls"] is not None:
+                module["play_calls"] = (module["play_calls"] or 0) + report["play_calls"]
         for item in categories:
             item["count"] += report["count"]
             item["history"] += report["history"]
 
-    # 专项工具和 Play 有独立统计，只在这里补充已经使用过的历史证据。
-    for report in evidence:
-        stage = report["stage"]
-        domain = TOOL_EVIDENCE_MODULES.get(stage) or ("config" if stage == "config-load" else report["module"])
-        module = modules.setdefault(domain, category(domain, tracked=False))
-        module["tool_history" if stage in TOOL_EVIDENCE_MODULES else "play_history"] = True
-
     return {
         "total": sum(row["count"] for row in operations.values()),
         "calls": sum(row["count"] for row in modules.values()),
+        "development_calls": sum(row["development_calls"] for row in modules.values()),
+        "play_calls": sum(row["play_calls"] or 0 for row in modules.values()),
+        "selected_module": MODULE_ALIASES.get(selected_module, selected_module),
         "skill_turns": entries["skill"]["count"],
         "dimensions": {name: list(items.values()) for name, items in
                        (("module", modules), ("operation", operations), ("source", sources), ("entry", entries))},
@@ -193,16 +217,28 @@ def activity_positions(query, suffix):
             continue
         if len(values) != 1 or len(values[0]) > 16 or not values[0].isdecimal():
             raise InvalidInput("已读进度无效。")
-        positions[section] = int_range(int(values[0]), 0, 9007199254740991)
+        positions[section] = int_range(int(values[0]), 0, MAX_ACTIVITY_ID)
     return positions
 
 
-def requested_page(query):
+def unread_filter(value):
+    """校验本浏览器的已读进度和最近收到的上报位置，仅供本次列表查询。"""
+    obj(value, ("after", "through", "viewed"))
+    if not isinstance(value["viewed"], list):
+        raise InvalidInput("已读进度无效。")
+    return {
+        "unread_after": int_range(value["after"], 0, MAX_ACTIVITY_ID),
+        "unread_through": int_range(value["through"], 0, MAX_ACTIVITY_ID),
+        "unread_viewed": json.dumps([int_range(item, 1, MAX_ACTIVITY_ID) for item in value["viewed"]]),
+    }
+
+
+def requested_page(query, default_size=50):
     """接受维护台使用的页大小，兼容没有分页参数的旧请求。"""
     if "page" not in query and "page_size" not in query:
         return None
     number = query.get("page", ["1"])
-    size = query.get("page_size", ["50"])
+    size = query.get("page_size", [str(default_size)])
     if len(number) != 1 or not re.fullmatch(r"[0-9]{1,10}", number[0]) or size not in (["10"], ["50"], ["100"], ["200"]):
         raise InvalidInput("页码或每页条数无效。")
     return int_range(int(number[0]), 1, 2147483647), int(size[0])
@@ -290,6 +326,7 @@ class NovaIssuesServer(HTTPServer):
         self.usage_descriptions = load_usage_descriptions()
         self.usage_modules = load_usage_modules()
         self.revision = runtime_revision(self.assets, self.usage_descriptions, self.usage_modules)
+        self.maintenance = DatabaseMaintenance(database)
         super().__init__(address, Handler)
 
     def process_request(self, request, client_address):
@@ -312,6 +349,7 @@ class NovaIssuesServer(HTTPServer):
 
     def server_close(self):
         super().server_close()
+        self.maintenance.close()
         self.pool.shutdown()
         self.registry_versions.close()
 
@@ -447,10 +485,12 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, {"status": "ok", "service": "nova-issues-server", "protocol": 1,
                              "automatic_reporting": self.allows_automatic_reporting(), "codex_telemetry": True,
                              "project_snapshot_details": True, "git_user_name_reporting": True,
-                             "snapshot_operating_system": True,
+                             "snapshot_operating_system": True, "snapshot_version_and_hook_counts": True,
                              "hook_activity": True, "implementation_tracking": True,
                              "execution_evidence": True, "feedback_timings": True, "play_call_counts": True,
-                             "compact_reports": True, "unity_mcp_monitoring": True, "revision": self.server.revision})
+                             "compact_reports": True, "unity_mcp_monitoring": True,
+                             "workflow_monitoring": True, "database_maintenance": self.server.maintenance.status(),
+                             "revision": self.server.revision})
         elif method == "POST" and path == "/api/session":
             self.login()
         elif method == "GET" and path == "/api/session":
@@ -514,12 +554,13 @@ class Handler(BaseHTTPRequestHandler):
         """处理使用维护账号会话授权的查询和修改。"""
         db = self.server.database
         path = url.path.removeprefix("/api/maintainer/")
-        if method == "GET" and path in ("overview", "usage", "usage-analysis"):
+        if ((method == "GET" and path in ("overview", "usage", "usage-analysis", "usage-occurrences")) or
+                (method == "POST" and path in ("usage", "usage-analysis"))):
             query = parse_qs(url.query)
             days_value = query.get("days", ["14"])[0]
             if not days_value.isdecimal() or len(days_value) > 3:
                 raise InvalidInput("时间范围无效。")
-            days = int_range(int(days_value), 1, 365)
+            days = int_range(int(days_value), 1, RECENT_REPORT_DAYS)
             if path == "overview":
                 include_lists = query.get("lists") != ["0"]
                 if query.get("activity") == ["1"]:
@@ -527,22 +568,34 @@ class Handler(BaseHTTPRequestHandler):
                                          previous_read=activity_positions(query, "seen"), include_lists=include_lists)
                 else:
                     result = db.overview(days, include_lists=include_lists)
+            elif path == "usage-occurrences":
+                activity_key = query.get("key", [""])[0]
+                if not activity_key or len(activity_key) > 1400:
+                    raise InvalidInput("操作标识无效。")
+                occurrences, pagination = db.list_usage_occurrences(days, activity_key, requested_page(query) or (1, 50))
+                self.reply(200, {"usage-occurrences": occurrences, "pagination": pagination})
+                return
             else:
                 project = query.get("project", [""])[0]
                 module = query.get("module", [""])[0]
+                entry = enum(query.get("entry", [""])[0], ("", *USAGE_ENTRY_TYPES, "legacy"))
                 scope = {
                     "project_id": key(project) if project else "",
                     "module": key(module) if module else "",
                     "source": enum(query.get("source", [""])[0], ("", *USAGE_SOURCES)),
+                    "entry": "" if entry == "legacy" else entry or None,
                 }
+                unread = unread_filter(self.body()) if method == "POST" else None
                 if path == "usage-analysis":
-                    rows, evidence = db.usage_analysis(days, **scope)
-                    breakdown = usage_breakdown(rows, evidence, self.server.usage_descriptions, self.server.usage_modules)
+                    rows = db.usage_analysis(days, unread=unread, **scope)
+                    breakdown = usage_breakdown(rows, self.server.usage_descriptions,
+                                                self.server.usage_modules, scope["module"])
                     self.reply(200, breakdown)
                     return
                 usage, pagination = db.list_usage(
                     days, sort=enum(query.get("sort", ["count"])[0], ("count", "latest")),
-                    page=requested_page(query), **scope,
+                    page=requested_page(query), unread=unread,
+                    **scope,
                 )
                 result = {"usage": usage}
                 if pagination is not None:
@@ -550,7 +603,7 @@ class Handler(BaseHTTPRequestHandler):
             for row in result.get("usage", []):
                 row["description"] = usage_description(row, self.server.usage_descriptions)
             self.reply(200, result)
-        elif method == "GET" and path == "issues":
+        elif method in ("GET", "POST") and path == "issues":
             query = parse_qs(url.query)
             project = query.get("project", [""])[0]
             status = query.get("status", [""])[0]
@@ -560,6 +613,7 @@ class Handler(BaseHTTPRequestHandler):
                 search=query.get("q", [""])[0].strip(),
                 sort=enum(query.get("sort", [""])[0], ("", "latest", "count")),
                 page=requested_page(query),
+                unread=unread_filter(self.body()) if method == "POST" else None,
             )
             result = {"issues": issues}
             if pagination is not None:
@@ -580,6 +634,15 @@ class Handler(BaseHTTPRequestHandler):
             self.reply_found(db.update_team(key(match[1]), team, previous))
         elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)", path)):
             self.reply_found(db.project_detail(key(match[1])))
+        elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)/snapshots", path)):
+            page = requested_page(parse_qs(url.query), default_size=10) or (1, 10)
+            self.reply_found(db.list_project_snapshots(key(match[1]), page))
+        elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)/workflow", path)):
+            query = parse_qs(url.query)
+            value = query.get("trace", [""])[0]
+            rows, pagination = db.list_workflow(key(match[1]), key(value, UUID) if value else "",
+                                                requested_page(query) or (1, 50))
+            self.reply(200, {"workflow": rows, "pagination": pagination})
         elif method == "DELETE" and (match := re.fullmatch(r"projects/([^/]+)", path)):
             self.reply_found({"deleted": True} if db.delete_project(key(match[1])) else None)
         elif method == "GET" and (match := re.fullmatch(r"projects/([^/]+)/package-versions", path)):
@@ -619,23 +682,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(200, {"updated": True})
         else:
             raise HttpError(404, "找不到请求的入口。")
-
-
-def backup(db_path, output):
-    if not db_path.is_file():
-        raise ValueError("找不到待备份的数据库。")
-    output.touch(mode=0o600, exist_ok=False)
-    try:
-        source = sqlite3.connect(db_path)
-        destination = sqlite3.connect(output)
-        try:
-            source.backup(destination)
-        finally:
-            destination.close()
-            source.close()
-    except Exception:
-        output.unlink()
-        raise
 
 
 def stop_on_signal(_signum, _frame):
@@ -678,6 +724,7 @@ def main():
             try:
                 signal.signal(signal.SIGTERM, stop_on_signal)
                 print(f"nova-issues-server listening on {server.server_address[0]}:{server.server_port}", flush=True)
+                server.maintenance.start()
                 server.serve_forever()
             except KeyboardInterrupt:
                 pass

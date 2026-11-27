@@ -206,6 +206,10 @@ namespace NovaFramework.Runtime
                 m_DirtyFragments.Remove(classify);
             }
 
+#if UNITY_EDITOR
+            if (allSuccess && saved.Count > 0)
+                EditorPlayEvidence.Use(EditorPlayModule.Persist);
+#endif
             return allSuccess;
         }
 
@@ -224,7 +228,11 @@ namespace NovaFramework.Runtime
             }
 
             group.Serialize(BuildFilePath(classify), m_UseAESEncrypt);
-            m_DirtyFragments.Remove(classify);
+            bool hadWrites = m_DirtyFragments.Remove(classify);
+#if UNITY_EDITOR
+            if (hadWrites)
+                EditorPlayEvidence.Use(EditorPlayModule.Persist);
+#endif
             return true;
         }
 

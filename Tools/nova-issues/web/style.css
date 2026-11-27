@@ -140,6 +140,10 @@ input, select, textarea { font-weight: 400; }
 .toolbar .search { width: min(100%, 330px); }
 .issues-toolbar label, .usage-toolbar label { flex: 1 1 145px; min-width: 0; }
 .issues-toolbar .search { flex: 1.5 1 205px; }
+.toolbar .unread-filter { display: flex; align-items: center; flex: none; width: auto; min-height: 2.6rem; }
+.unread-filter input { accent-color: var(--accent); }
+.usage-details-toolbar { align-items: center; justify-content: space-between; }
+.usage-details-toolbar h2 { margin: 0; }
 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; margin-bottom: 1.1rem; }
 .metric, .panel, .occurrence {
   background: var(--surface);
@@ -195,25 +199,50 @@ input, select, textarea { font-weight: 400; }
 }
 .usage-analysis-metric span { color: var(--muted); font-size: .86rem; }
 .usage-analysis-metric strong { font-size: 1.46rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.usage-analysis-controls, .usage-analysis-dimensions, .usage-analysis-refine {
+.usage-analysis-controls, .usage-analysis-dimensions, .usage-ranking-heading {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: .4rem;
 }
 .usage-analysis-controls { justify-content: space-between; margin-bottom: .55rem; }
-.usage-analysis-controls button, .usage-analysis-refine input[type="search"] { padding: .38rem .65rem; }
-.usage-analysis-refine input[type="search"] { width: min(100%, 14rem); }
-.usage-analysis-refine label { display: flex; gap: .35rem; align-items: center; font-weight: 400; }
-.usage-analysis-refine input[type="checkbox"] { accent-color: var(--accent); }
+.usage-analysis-controls button, .usage-analysis-controls input[type="search"] { padding: .38rem .65rem; }
+.usage-analysis-controls input[type="search"] { width: min(100%, 14rem); }
+.usage-module-rankings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1.2rem;
+}
+.usage-module-rankings > section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: .75rem;
+  border: 1px solid #bdceca;
+  border-radius: 8px;
+  background: var(--surface);
+  container-type: inline-size;
+}
+.usage-module-rankings .usage-ranking-list {
+  display: grid;
+  flex: 1;
+  grid-template-rows: 1fr auto;
+  gap: .6rem;
+}
+.usage-module-rankings .pagination { margin-top: 0; }
+@container (max-width: 28rem) {
+  .usage-module-rankings .pagination-summary { flex-basis: 100%; }
+}
+.usage-ranking-heading { justify-content: space-between; min-height: 1.65rem; margin-bottom: .5rem; }
+.usage-ranking-heading h3 { margin: 0; }
+.usage-ranking-heading label { display: flex; gap: .35rem; align-items: center; font-weight: 400; }
+.usage-ranking-heading input[type="checkbox"] { accent-color: var(--accent); }
 .usage-analysis-dimensions button[aria-pressed="true"] {
   color: #fff;
   background: var(--accent);
   border-color: var(--accent);
 }
 .usage-analysis-note { margin-bottom: .65rem; font-size: .86rem; }
-.usage-chart { max-height: 16.8rem; overflow-y: auto; overscroll-behavior: contain; }
-.usage-chart:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .usage-chart-list { list-style: none; margin: 0; padding: 0; }
 .usage-chart-row {
   display: grid;
@@ -224,6 +253,10 @@ input, select, textarea { font-weight: 400; }
   padding: .45rem .55rem;
   border-bottom: 1px solid var(--line);
   font-size: .88rem;
+}
+.usage-module-rankings .usage-chart-row {
+  grid-template-columns: minmax(0, 1.45fr) minmax(1.8rem, 1fr) minmax(3.7rem, max-content) 3.5rem;
+  gap: .45rem;
 }
 .usage-chart-header { color: #324c48; font-weight: 650; background: #edf4f2; }
 .usage-chart-header > :nth-last-child(-n+2), .usage-chart-value { text-align: right; }
@@ -268,6 +301,11 @@ td.mono { font-size: .84rem; }
 }
 .project-team { display: flex; align-items: baseline; flex-wrap: wrap; gap: .22rem .55rem; }
 .project-team button { font-size: .86rem; white-space: nowrap; }
+.snapshot-packages { margin-top: .85rem; padding-top: .7rem; border-top: 1px solid var(--line); }
+.snapshot-packages > h3 { margin-bottom: .25rem; }
+.snapshot-package-groups { padding-inline-start: .65rem; }
+.snapshot-package-groups > details { margin-bottom: .25rem; }
+.snapshot-package-groups > details > summary { padding-block: .3rem; font-size: .9rem; font-weight: 600; }
 .package-list td:nth-child(n+2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .muted, .empty { color: var(--muted); }
 .empty { padding: .5rem .15rem; margin: 0; }
@@ -284,6 +322,7 @@ dialog {
 dialog::backdrop { background: #031818a6; }
 .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .7rem; margin-bottom: 1rem; }
 .dialog-head h2 { margin: .12rem 0 0; flex: 1; font-size: 1.4rem; overflow-wrap: anywhere; }
+.usage-description { margin: 0; overflow-wrap: anywhere; }
 .dialog-delete { display: grid; justify-items: start; gap: .65rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .dialog-delete .error { margin: 0; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
@@ -323,6 +362,9 @@ dd { margin: 0; overflow-wrap: anywhere; }
   .issues-toolbar label, .issues-toolbar .search, .usage-toolbar label { flex-basis: 100%; }
   .usage-analysis-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .usage-chart-row { grid-template-columns: minmax(0, 1fr) 3.3rem 3.4rem; gap: .4rem; }
+  .usage-module-rankings .usage-chart-row {
+    grid-template-columns: minmax(0, 1fr) minmax(3.3rem, max-content) 3.4rem;
+  }
   .usage-chart-header > :nth-child(2) { display: none; }
   .usage-chart-track { grid-area: 2 / 1 / 3 / -1; }
   .main { padding: .85rem; }

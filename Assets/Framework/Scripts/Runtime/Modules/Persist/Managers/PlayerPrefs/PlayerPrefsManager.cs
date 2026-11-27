@@ -78,10 +78,17 @@ namespace NovaFramework.Runtime
         /// <returns>成功返回 true。</returns>
         public override bool Save()
         {
+#if UNITY_EDITOR
+            bool hadWrites = m_IsDirty;
+#endif
             FlushDirtyIndex();
             _Save();
             m_IsDirty = false;
             m_DirtyClassifies.Clear();
+#if UNITY_EDITOR
+            if (hadWrites)
+                EditorPlayEvidence.Use(EditorPlayModule.Persist);
+#endif
             return true;
         }
 
@@ -95,6 +102,9 @@ namespace NovaFramework.Runtime
         public override bool Save(string classify)
         {
             ValidateClassifyName(classify);
+#if UNITY_EDITOR
+            bool hadWrites = m_IsDirty;
+#endif
             if (m_DirtyClassifies.Contains(classify))
             {
                 RefreshItemNameListToSave(classify);
@@ -108,6 +118,10 @@ namespace NovaFramework.Runtime
             }
 
             _Save();
+#if UNITY_EDITOR
+            if (hadWrites)
+                EditorPlayEvidence.Use(EditorPlayModule.Persist);
+#endif
             return true;
         }
 

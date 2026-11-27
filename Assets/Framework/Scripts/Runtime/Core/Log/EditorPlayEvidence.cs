@@ -19,7 +19,11 @@ namespace NovaFramework.Runtime
         Table,
         Localization,
         UI,
-        Network
+        Network,
+        Persist,
+        Event,
+        Sound,
+        Vibrate
     }
 
     /// <summary>只在 Editor Play 中归集实际使用，供编辑器定期取走计数。</summary>

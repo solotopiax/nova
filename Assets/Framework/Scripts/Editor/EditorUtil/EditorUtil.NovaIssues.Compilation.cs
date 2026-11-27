@@ -58,7 +58,12 @@ namespace NovaFramework.Editor
                     ? CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(Path.GetFileNameWithoutExtension(assemblyPath))
                     : null;
                 foreach (var message in messages)
-                    QueueDiagnostic(FromCompilerMessage(message, assemblyDefinition, s_Project, packages));
+                {
+                    var diagnostic = FromCompilerMessage(message, assemblyDefinition, s_Project, packages);
+                    QueueDiagnostic(diagnostic, fromCompilation: true);
+                    if (diagnostic != null)
+                        ObserveEditorStartupProblem(diagnostic.Code);
+                }
             }
 
             /// <summary>后台追踪同工程日志，补齐托管监听就绪前的错误。</summary>
@@ -91,11 +96,14 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>同一版本中的同一诊断只入队一次，落盘继续按工作区去重。</summary>
-            private static void QueueDiagnostic(EditorDiagnostic diagnostic)
+            private static void QueueDiagnostic(EditorDiagnostic diagnostic, bool fromCompilation = false)
             {
                 if (diagnostic == null || !s_QueuedDiagnostics.Add(diagnostic.ObservationId))
                     return;
-                Queue(new JObject { ["event"] = "editor-diagnostic", ["id"] = diagnostic.ObservationId, ["issue"] = diagnostic.ToIssue() });
+                var input = new JObject { ["event"] = "editor-diagnostic", ["id"] = diagnostic.ObservationId, ["issue"] = diagnostic.ToIssue() };
+                if (fromCompilation && diagnostic.Framework == s_FrameworkVersion)
+                    input["compiler_error"] = diagnostic.Code;
+                Queue(input);
             }
 
             private static Dictionary<string, DiagnosticPackage> GetDiagnosticPackages(PackageInfo[] packages)
@@ -225,6 +233,8 @@ namespace NovaFramework.Editor
                     _issueCode = "unity." + code + "." + EventId(_location);
                 }
 
+                internal string Code => _code;
+                internal string Framework => _framework;
                 internal string ObservationId => EventId(_issueCode, _framework, _version);
 
                 /// <summary>保留归因位置和扩展包版本，避免重复发送错误正文和版本字段。</summary>

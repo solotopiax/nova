@@ -133,6 +133,10 @@ namespace NovaFramework.Runtime
             {
                 CancelFade();
                 m_AudioSource.Play();
+#if UNITY_EDITOR
+                if (m_AudioSource.isPlaying)
+                    EditorPlayEvidence.Use(EditorPlayModule.Sound);
+#endif
                 if (fadeInSeconds > 0f)
                 {
                     float volume = m_AudioSource.volume;

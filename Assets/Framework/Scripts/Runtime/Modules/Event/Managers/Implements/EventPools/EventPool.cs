@@ -326,6 +326,9 @@ namespace NovaFramework.Runtime
         private void HandleEvent(object sender, T e)
         {
             bool noHandlerException = false;
+#if UNITY_EDITOR
+            bool handled = false;
+#endif
             NovaLinkedListRange<EventHandler<T>> range = default(NovaLinkedListRange<EventHandler<T>>);
             if (m_EventHandlers.TryGetValue(e.ID, out range))
             {
@@ -336,6 +339,9 @@ namespace NovaFramework.Runtime
                     try
                     {
                         current.Value(sender, e);
+#if UNITY_EDITOR
+                        handled = true;
+#endif
                     }
                     catch (Exception ex)
                     {
@@ -352,6 +358,9 @@ namespace NovaFramework.Runtime
                 try
                 {
                     m_DefaultHandler(sender, e);
+#if UNITY_EDITOR
+                    handled = true;
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -371,6 +380,10 @@ namespace NovaFramework.Runtime
             }
 
             ReferencePool.Put(e);
+#if UNITY_EDITOR
+            if (handled)
+                EditorPlayEvidence.Use(EditorPlayModule.Event);
+#endif
         }
 
         /// <summary>

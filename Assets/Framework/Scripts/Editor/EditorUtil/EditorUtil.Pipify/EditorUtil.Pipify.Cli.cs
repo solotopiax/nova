@@ -33,6 +33,7 @@ namespace NovaFramework.Editor
                 /// </summary>
                 public static async void Run()
                 {
+                    int exitCode = 1;
                     try
                     {
                         string batchName = ReadArg("-batchName");
@@ -54,12 +55,16 @@ namespace NovaFramework.Editor
 
                         // 上传依赖 Editor 的 UniTask 调度；同步 GetResult 无法等待未完成的异步步骤。
                         await RunBatchForCliAsync(batch, overrides);
-                        EditorApplication.Exit(0);
+                        exitCode = 0;
                     }
                     catch (Exception ex)
                     {
                         Log.Error(LogTag.Editor, "{0}[CLI] 执行失败：{1}", c_LogPrefix, ex);
-                        EditorApplication.Exit(1);
+                    }
+                    finally
+                    {
+                        NovaIssues.FlushBatchObservations();
+                        EditorApplication.Exit(exitCode);
                     }
                 }
 

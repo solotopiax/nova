@@ -135,6 +135,10 @@ namespace NovaFramework.Runtime
                 m_DirtyTables.Remove(classify);
             }
 
+#if UNITY_EDITOR
+            if (allSuccess && saved.Count > 0)
+                EditorPlayEvidence.Use(EditorPlayModule.Persist);
+#endif
             return allSuccess;
 #endif
         }
@@ -156,7 +160,11 @@ namespace NovaFramework.Runtime
             }
 
             table.FlushToDb(m_Connection, m_UseAESEncrypt);
-            m_DirtyTables.Remove(classify);
+            bool hadWrites = m_DirtyTables.Remove(classify);
+#if UNITY_EDITOR
+            if (hadWrites)
+                EditorPlayEvidence.Use(EditorPlayModule.Persist);
+#endif
             return true;
 #endif
         }

@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -29,7 +28,6 @@ using UnityEditor.Compilation;
 using UnityEngine;
 using EditorPlayEvidence = NovaFramework.Runtime.EditorPlayEvidence;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
-using PackageEvents = UnityEditor.PackageManager.Events;
 
 namespace NovaFramework.Editor
 {
@@ -42,9 +40,9 @@ namespace NovaFramework.Editor
             private const string c_Framework = "com.solotopia.nova.framework";
             private const string c_Server = "http://172.16.22.175:8787";
             private const string c_WorkDirectory = "Library/Nova/Issues";
-            private const string c_CompilationDayKey = "Nova.Issues.CompilationDay";
             private const string c_PendingReloadKey = "Nova.Issues.PendingObservations";
             private const string c_EnvironmentReportKey = "editor_environment_report";
+            private const int c_EnvironmentCheckInterval = 3600;
             // 两个发送端均按服务确认的能力决定新报告的格式，已入队的正文固定不变。
             private const string c_CompactReportsKey = "compact_reports";
             private const int c_ReceiptRetentionSeconds = 30 * 86400;
@@ -63,18 +61,24 @@ namespace NovaFramework.Editor
             private static readonly string s_Project = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             private static string s_FrameworkRoot;
             private static string s_FrameworkVersion;
-            private static double s_NextSnapshot;
+            private static bool s_FrameworkFromRegistry;
+            private static double s_NextWorkspaceCheck;
+            private static long s_LastEnvironmentCheck = -1;
+            private static long s_QueuedEnvironmentCheck;
             private static int s_Sending;
+            private static bool s_BatchFlushed;
 
-            /// <summary>只在普通 Editor 会话中订阅观察事件，后台队列不阻塞 Unity 的加载。</summary>
+            /// <summary>普通 Editor 采集环境，批处理退出时补齐实际的构建结果。</summary>
             static NovaIssues()
             {
-                if (Application.isBatchMode) return;
+                if (Application.isBatchMode)
+                {
+                    EditorApplication.quitting += FlushBatchObservations;
+                    return;
+                }
 
                 EditorApplication.update += Update;
-                PackageEvents.registeredPackages += _ => s_NextSnapshot = 0;
                 CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompilationFinished;
-                CompilationPipeline.compilationFinished += OnCompilationFinished;
                 EditorPlayEvidence.TablesReady += ObserveTablesReady;
                 EditorPlayEvidence.ConfigLoadFinished += ObserveRuntimeConfig;
                 EditorApplication.playModeStateChanged += OnPlayModeChanged;
@@ -83,14 +87,7 @@ namespace NovaFramework.Editor
                 RestoreObservationsAfterReload();
             }
 
-            /// <summary>保存本次编译日期，重载脚本后仍可用已就绪的 Editor 生成环境快照。</summary>
-            private static void OnCompilationFinished(object _)
-            {
-                SessionState.SetString(c_CompilationDayKey, LocalDay(Now()));
-                s_NextSnapshot = 0;
-            }
-
-            /// <summary>定期读取当前注册包、已启用模块和工具状态，工程实施另按其实际配置采集。</summary>
+            /// <summary>环境按工作区每小时检查，其他编辑器证据沿用各自的采集频率。</summary>
             private static void Update()
             {
                 double stamp = EditorApplication.timeSinceStartup;
@@ -98,21 +95,35 @@ namespace NovaFramework.Editor
                 PollPlayCalls(stamp);
                 if (s_FrameworkRoot != null)
                     PollEditorDiagnostics(stamp);
-                if (stamp < s_NextSnapshot || EditorApplication.isCompiling || EditorApplication.isUpdating)
+                if (stamp < s_NextWorkspaceCheck || EditorApplication.isCompiling || EditorApplication.isUpdating)
                     return;
 
-                s_NextSnapshot = stamp + 30;
+                s_NextWorkspaceCheck = stamp + 30;
                 if (!BindFrameworkPackage())
                     return;
 
                 PackageInfo[] packages = PackageInfo.GetAllRegisteredPackages();
+                ObserveEditorStartup();
                 PollEditorDiagnostics(stamp);
                 ObserveUnityMcpConnection(packages, stamp);
-                JObject snapshot = CaptureSnapshot(packages, out var master);
-                try { snapshot["implementation"] = CaptureImplementationWorkspace(packages, master); }
-                catch (Exception) { /* 实施采集失败时仍可上报原有环境快照。 */ }
-                snapshot["compilation_day"] = SessionState.GetString(c_CompilationDayKey, string.Empty);
-                Queue(snapshot);
+                if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(out var master, out _, out _, out _))
+                    master = null;
+                long lastCheck = Volatile.Read(ref s_LastEnvironmentCheck);
+                long now = Now();
+                if (lastCheck >= 0 && now - Math.Max(lastCheck, s_QueuedEnvironmentCheck) >= c_EnvironmentCheckInterval)
+                {
+                    try
+                    {
+                        Queue(CaptureSnapshot(packages, master));
+                        s_QueuedEnvironmentCheck = now;
+                    }
+                    catch (Exception) { /* 暂时未能完成环境检查，下次继续。 */ }
+                }
+                try
+                {
+                    Queue(new JObject { ["event"] = "implementation", ["implementation"] = CaptureImplementationWorkspace(packages, master) });
+                }
+                catch (Exception) { /* 实施采集失败时继续刷新待发记录。 */ StartDrain(); }
             }
 
             /// <summary>以实际安装的 Framework 识别消费工程，供快照和编译结果共用。</summary>
@@ -123,16 +134,18 @@ namespace NovaFramework.Editor
                 {
                     s_FrameworkRoot = null;
                     s_FrameworkVersion = null;
+                    s_FrameworkFromRegistry = false;
                     return false;
                 }
 
                 s_FrameworkRoot = Path.GetFullPath(framework.resolvedPath);
                 s_FrameworkVersion = ReadVersion(framework.version);
+                s_FrameworkFromRegistry = framework.source == UnityEditor.PackageManager.PackageSource.Registry;
                 return true;
             }
 
             /// <summary>将允许上报的字段复制到普通 JSON，避免采集资产内容和诊断原文。</summary>
-            private static JObject CaptureSnapshot(PackageInfo[] packages, out ConfigMasterSO master)
+            private static JObject CaptureSnapshot(PackageInfo[] packages, ConfigMasterSO master)
             {
                 var registered = (packages ?? Array.Empty<PackageInfo>())
                     .Where(package => package != null && IsKey(package.name) && !package.name.StartsWith("com.unity.modules.", StringComparison.Ordinal)
@@ -165,6 +178,7 @@ namespace NovaFramework.Editor
                 {
                     ["event"] = "snapshot",
                     ["unity"] = ReadVersion(Application.unityVersion),
+                    ["editor_framework"] = ReadVersion(global::NovaFramework.Runtime.Nova.Version),
                     ["packages"] = new JArray(registered),
                     ["tools"] = tools,
                     ["enabled"] = new JArray(),
@@ -179,7 +193,7 @@ namespace NovaFramework.Editor
                 };
                 if (operatingSystem != null)
                     result["operating_system"] = operatingSystem;
-                if (Config.WorkspaceActive.TryGetPersistedConfigMaster(out master, out _, out _, out _))
+                if (master != null)
                 {
                     result["enabled"] = new JArray(
                         (master.EnabledSDKs ?? new System.Collections.Generic.List<string>())
@@ -270,11 +284,13 @@ namespace NovaFramework.Editor
                 input["id"] ??= Guid.NewGuid().ToString("N");
                 input["framework"] = s_FrameworkVersion;
                 input["framework_root"] = s_FrameworkRoot;
+                input["framework_registry"] = s_FrameworkFromRegistry;
                 input["product"] = PlayerSettings.productGUID.ToString();
                 input["name"] = SafeName(Application.productName);
                 input["observed_at"] ??= Now();
                 s_Pending.Enqueue(input);
-                StartDrain();
+                if (!Application.isBatchMode)
+                    StartDrain();
             }
 
             /// <summary>把尚未落盘的证据跨域重载保存，保留最初编号和发生时间。</summary>
@@ -303,7 +319,16 @@ namespace NovaFramework.Editor
                 catch (JsonException) { /* 无效的会话缓存不会阻止 Editor 启动。 */ }
             }
 
-            /// <summary>正常退出时仅补写本地账本，不等待服务端或重试网络。</summary>
+            internal static void FlushBatchObservations()
+            {
+                if (!Application.isBatchMode || s_BatchFlushed)
+                    return;
+                s_BatchFlushed = true;
+                TryObserveLatestPlayerBuild(s_EditorStartedUtc);
+                FlushObservationsBeforeQuit();
+            }
+
+            /// <summary>正常退出时补写本地账本，批处理会话另尝试发送本轮有终态的记录。</summary>
             private static void FlushObservationsBeforeQuit()
             {
                 FlushPlayCalls();
@@ -324,6 +349,8 @@ namespace NovaFramework.Editor
                         if ((string)item["event"] != "snapshot")
                             db.RunInTransaction(() => Record(db, (JObject)item.DeepClone()));
                     }
+                    if (Application.isBatchMode)
+                        SendPending(db, limit: 2);
                 }
                 catch (Exception) { /* 退出不会等待争用的账本。 */ }
             }
@@ -340,7 +367,8 @@ namespace NovaFramework.Editor
                     try
                     {
                         var storage = LedgerPath();
-                        if (s_Pending.TryPeek(out JObject first) && (string)first["event"] != "editor-diagnostic")
+                        if (s_Pending.ToArray().FirstOrDefault(item =>
+                                (string)item["event"] == "snapshot" || (string)item["implementation"]?["stage"] == "workspace") is JObject first)
                             PrepareCodexHooksIfNeeded(s_Project, first, storage);
                         if (storage.Path == null)
                         {
@@ -351,6 +379,7 @@ namespace NovaFramework.Editor
 
                         using var db = new SQLiteConnection(storage.Path, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
                         InitializeLedger(db);
+                        ReadEnvironmentCheck(db);
                         PruneDeliveredReports(db);
                         while (s_Pending.TryPeek(out JObject pending))
                         {
@@ -358,11 +387,15 @@ namespace NovaFramework.Editor
                             var input = (JObject)pending.DeepClone();
                             if ((string)input["event"] == "snapshot")
                             {
-                                input["codex_hooks"] = ObserveCodexHookStatus(s_Project, Path.GetDirectoryName(storage.Path),
-                                    (string)input["framework_root"]);
+                                var (hookState, addedHooks, expectedHooks) = ObserveCodexHookStatus(s_Project, Path.GetDirectoryName(storage.Path));
+                                input["codex_hooks"] = hookState;
+                                if (addedHooks.HasValue)
+                                    input["codex_hook_counts"] = new JObject { ["added"] = addedHooks.Value, ["expected"] = expectedHooks };
                                 input["git_user_name"] = ReadGitUserName(s_Project);
                             }
                             db.RunInTransaction(() => Record(db, input));
+                            if ((string)input["event"] == "snapshot")
+                                ReadEnvironmentCheck(db);
                             s_Pending.TryDequeue(out _);
                         }
                         drained = true;
@@ -540,28 +573,41 @@ namespace NovaFramework.Editor
                 switch ((string)input["event"])
                 {
                     case "implementation":
-                        RecordImplementation(db, input["implementation"] as JObject, workspace, id, stamp);
+                        var implementation = input["implementation"] as JObject;
+                        if (ReportText(implementation, "stage") == "workspace")
+                            RecordFrameworkUpgrade(db, input, workspace, stamp, ReportText(implementation, "editor_framework"));
+                        RecordImplementation(db, implementation, workspace, id, stamp);
                         break;
                     case "editor-diagnostic":
                         var issue = (JObject)input["issue"];
                         AppendReport(db, workspace, EventId("editor-diagnostic", workspace, id), stamp, "issue", issue);
+                        if (ReportText(input, "compiler_error") is string code)
+                            RecordFrameworkUpgrade(db, input, workspace, stamp, null, code);
                         break;
                     case "snapshot":
                         RecordSnapshot(db, input, workspace, (string)project["id"], stamp);
-                        RecordImplementation(db, input["implementation"] as JObject, workspace, id, stamp);
                         break;
                     case "usage":
                         AppendReport(db, workspace, id, stamp, "usage", (JObject)input["usage"].DeepClone());
                         break;
+                    case "workflow":
+                        AppendReport(db, workspace, id, stamp, "workflow", (JObject)input["workflow"].DeepClone());
+                        break;
                 }
             }
 
-            /// <summary>保存实际注册包和工具快照，采集该工作区的操作回执。</summary>
+            private static void ReadEnvironmentCheck(SQLiteConnection db) =>
+                Volatile.Write(ref s_LastEnvironmentCheck, (long?)ReadState(db, c_EnvironmentReportKey)?["checked_at"] ?? 0);
+
+            /// <summary>保存本次检查。首次采集或环境事实改变时，使用原发生时间入队。</summary>
             private static void RecordSnapshot(SQLiteConnection db, JObject input, string workspace, string projectId, long stamp)
             {
+                JObject previous = ReadState(db, c_EnvironmentReportKey) as JObject;
+                if (stamp - ((long?)previous?["checked_at"] ?? 0) < c_EnvironmentCheckInterval)
+                    return;
                 var data = new JObject();
                 foreach (string field in new[] { "framework", "unity", "packages", "tools", "enabled",
-                             "application_identifiers", "codex_hooks", "operating_system" })
+                             "application_identifiers", "codex_hooks", "operating_system", "editor_framework", "codex_hook_counts" })
                 {
                     if (input[field] != null) data[field] = input[field].DeepClone();
                 }
@@ -574,8 +620,7 @@ namespace NovaFramework.Editor
                 long codexSeen = ReadState(db, "codex_seen")?.Value<long>() ?? 0;
                 data["coverage"] = new JObject { ["agent"] = "observed", ["editor"] = "observed", ["codex"] = stamp - codexSeen < 1800 ? "observed" : "waiting" };
 
-                // 与脚本入口共用字段顺序，忽略清单顺序和临时观察状态。
-                JObject previous = ReadState(db, c_EnvironmentReportKey) as JObject;
+                // 与 Python 兼容入口共用签名，忽略清单顺序和短时活跃状态。
                 var identifiers = (JObject)data["application_identifiers"];
                 string appSignature = string.Join("|", identifiers.Properties().OrderBy(field => field.Name, StringComparer.Ordinal)
                     .Select(field => field.Name + "=" + (string)field.Value));
@@ -586,15 +631,15 @@ namespace NovaFramework.Editor
                     .Select(p => $"{p.Name}|{p.Value["state"]}|{(string)p.Value["version"] ?? "unknown"}"));
                 string[] signatureParts = { projectId, (string)data["framework"], (string)data["unity"], appSignature,
                     (string)data["codex_hooks"], packageSignature, enabledSignature, toolSignature, (string)data["operating_system"] };
+                var hookCounts = data["codex_hook_counts"] as JObject;
+                if (data["editor_framework"] != null || hookCounts != null)
+                    signatureParts = signatureParts.Concat(new[] { (string)data["editor_framework"],
+                        (string)hookCounts?["added"], (string)hookCounts?["expected"] }).ToArray();
                 if (gitName != null) signatureParts = signatureParts.Append(gitName).ToArray();
                 string signature = EventId(signatureParts);
-                string day = LocalDay(stamp);
-                bool compiledToday = (string)input["compilation_day"] == day;
-                if ((string)previous?["hash"] != signature || compiledToday && (string)previous?["day"] != day)
-                {
+                if ((string)previous?["hash"] != signature)
                     AppendReport(db, workspace, (string)input["id"], stamp, "snapshot", data);
-                    SaveState(db, c_EnvironmentReportKey, new JObject { ["hash"] = signature, ["day"] = day });
-                }
+                SaveState(db, c_EnvironmentReportKey, new JObject { ["hash"] = signature, ["checked_at"] = stamp });
             }
 
             /// <summary>在 Execute 结束时采集，避免随后验证覆盖执行时间或结果。</summary>
@@ -605,7 +650,40 @@ namespace NovaFramework.Editor
                     return;
                 string[] parts = action.Split('.');
                 if (parts.Length >= 4)
+                {
                     ObserveUsage(parts[2], action, outcome, EventId("action", action, operation));
+                    ObserveActionWorkflow(action, operation, "execute", outcome);
+                }
+            }
+
+            /// <summary>记录持久化 Action 回执的阶段，关联编号与 Codex 观察一致。</summary>
+            internal static void ObserveActionWorkflow(string action, string operation, string stage, string outcome)
+            {
+                if (!IsKey(action) || !IsKey(operation) || !action.StartsWith("nova.project.", StringComparison.Ordinal))
+                    return;
+                string receipt = EventId("action", action, operation);
+                ObserveWorkflow(stage, action, outcome, receipt, receipt);
+            }
+
+            private static void ObserveWorkflow(string stage, string operation, string outcome, string trace,
+                string receipt = null, string reason = null)
+            {
+                if (outcome is not ("observed" or "executed" or "success" or "partial" or "blocked" or "failed" or "cancelled"))
+                    return;
+                try
+                {
+                    if (!BindFrameworkPackage())
+                        return;
+                    var data = new JObject
+                    {
+                        ["stage"] = stage, ["operation"] = operation, ["outcome"] = outcome,
+                        ["source"] = "editor", ["trace"] = trace, ["framework"] = s_FrameworkVersion
+                    };
+                    if (receipt != null) data["receipt"] = receipt;
+                    if (IsKey(reason)) data["reason"] = reason;
+                    Queue(new JObject { ["event"] = "workflow", ["workflow"] = data });
+                }
+                catch (Exception) { /* 记录结果不改变操作本身。 */ }
             }
 
             /// <summary>写入固定上报信封；旧版服务需要的必填字段仅在兼容格式中保留。</summary>
@@ -637,7 +715,7 @@ namespace NovaFramework.Editor
                 (bool?)ReadState(db, c_CompactReportsKey) == true;
 
             /// <summary>按原内容发送待发报告，服务端确认原编号后转存回执。</summary>
-            private static void SendPending(SQLiteConnection db)
+            private static void SendPending(SQLiteConnection db, int limit = c_ReportBatchSize)
             {
                 var reports = ReadPendingReports(db);
                 if (reports.Count == 0) return;
@@ -648,7 +726,7 @@ namespace NovaFramework.Editor
                 bool compactReports = (bool?)health?["compact_reports"] == true;
                 if (ready && SupportsCompactReports(db) != compactReports)
                     SaveState(db, c_CompactReportsKey, new JValue(compactReports));
-                foreach (var (row, report, kind) in reports)
+                foreach (var (row, report, kind) in reports.Take(limit))
                 {
                     bool needsUpgrade = ready && RequiresServerUpgrade(health, kind, (JObject)report["data"], compactReports);
                     JObject receipt = ready && !needsUpgrade ? Request(HttpMethod.Post, "/api/v1/auto-reports", (string)project["id"], token,
@@ -656,12 +734,46 @@ namespace NovaFramework.Editor
                     long stamp = Now();
                     if (receipt?["accepted"]?.Type == JTokenType.Boolean && (bool)receipt["accepted"] &&
                         receipt["id"]?.Type == JTokenType.String && (string)receipt["id"] == row.Id)
-                        AcknowledgeReport(db, row.Id, kind, stamp, (long?)receipt["issue_id"]);
+                    {
+                        db.RunInTransaction(() =>
+                        {
+                            if (row.Attempts > 0 && (bool?)health["workflow_monitoring"] == true)
+                                ObserveQueueRecovery(db, report, row.Id);
+                            StoreReceipt(db, row.Id, kind, stamp, (long?)receipt["issue_id"]);
+                        });
+                    }
                     else
-                        db.Execute("UPDATE outbox SET attempts=attempts+1,error=?,ready_at=? WHERE id=? AND accepted IS NULL",
-                            !ready ? "service-unavailable" : needsUpgrade ? "server-upgrade-required" : "transport",
-                            stamp + Math.Min(300, 1L << Math.Min(row.Attempts + 1, 9)), row.Id);
+                    {
+                        db.RunInTransaction(() =>
+                        {
+                            if (db.Execute("UPDATE outbox SET attempts=attempts+1,error=?,ready_at=? WHERE id=? AND accepted IS NULL",
+                                    !ready ? "service-unavailable" : needsUpgrade ? "server-upgrade-required" : "transport",
+                                    stamp + Math.Min(300, 1L << Math.Min(row.Attempts + 1, 9)), row.Id) > 0 &&
+                                !needsUpgrade && ReportText((JObject)report["data"], "stage") != "queue")
+                                SaveState(db, "report_queue_interrupted", new JValue(true));
+                        });
+                    }
                 }
+            }
+
+            /// <summary>失败后首次确认一份重试，记录此时仍在队列中的待发量和累计尝试次数。</summary>
+            private static void ObserveQueueRecovery(SQLiteConnection db, JObject report, string id)
+            {
+                var data = (JObject)report["data"];
+                if (ReportText(data, "stage") == "queue" ||
+                    (bool?)ReadState(db, "report_queue_interrupted") != true ||
+                    db.ExecuteScalar<int>("SELECT COUNT(*) FROM outbox WHERE id=? AND error IN ('service-unavailable','transport')", id) == 0)
+                    return;
+                const string pending = "FROM outbox WHERE accepted IS NULL AND COALESCE(json_extract(payload,'$.data.stage'),'')!='queue'";
+                string trace = EventId("queue-resumed", id);
+                AppendReport(db, ReportText(report, "workspace"), trace, Now(), "workflow", new JObject
+                {
+                    ["stage"] = "queue", ["operation"] = "reports-resumed", ["outcome"] = "success",
+                    ["framework"] = ReportText(data, "framework") ?? "unknown", ["trace"] = trace, ["source"] = "editor",
+                    ["pending"] = Math.Min(int.MaxValue, db.ExecuteScalar<long>("SELECT COUNT(*) " + pending)),
+                    ["retries"] = Math.Min(int.MaxValue, db.ExecuteScalar<long>("SELECT COALESCE(SUM(attempts),0) " + pending))
+                });
+                SaveState(db, "report_queue_interrupted", new JValue(false));
             }
 
             /// <summary>先筛出可发送的记录，再按问题优先、就绪时间和入队顺序取一批。</summary>
@@ -702,7 +814,8 @@ namespace NovaFramework.Editor
                     return false;
 
                 if (stage == "player-build" &&
-                    (ReportText(data, "platform") is not ("Android" or "iOS") || ReportText(data, "build_kind") is null or "scripts"))
+                    ((data["batch_mode"] == null && ReportText(data, "platform") is not ("Android" or "iOS")) ||
+                     ReportText(data, "build_kind") is null or "scripts"))
                     return false;
 
                 string code = ReportText(data, "code");
@@ -725,7 +838,10 @@ namespace NovaFramework.Editor
                     (kind == "snapshot" && data["packages"] is JArray packages &&
                      packages.OfType<JObject>().Any(package => package["evidence"] == null));
                 bool needsMcpMonitoring = stage == "unity-mcp-connection" || ReportText(data, "entry") == "unity-mcp";
+                bool needsWorkflowMonitoring = kind == "workflow" || data["batch_mode"] != null ||
+                    (stage == "editor-module" && ReportText(data, "step") is "persist" or "event" or "sound" or "vibrate");
                 return (kind == "hook_activity" && (bool?)health["hook_activity"] != true) ||
+                       (needsWorkflowMonitoring && (bool?)health["workflow_monitoring"] != true) ||
                        (kind == "implementation" && (bool?)health["implementation_tracking"] != true) ||
                        (stage == "editor-module" && (bool?)health["execution_evidence"] != true) ||
                        (data["calls"] != null && (bool?)health["play_call_counts"] != true) ||
@@ -736,6 +852,8 @@ namespace NovaFramework.Editor
                         (bool?)health["project_snapshot_details"] != true) ||
                        (data["git_user_name"] != null && (bool?)health["git_user_name_reporting"] != true) ||
                        (data["operating_system"] != null && (bool?)health["snapshot_operating_system"] != true) ||
+                       (kind == "snapshot" && (data["editor_framework"] != null || data["codex_hook_counts"] != null) &&
+                        (bool?)health["snapshot_version_and_hook_counts"] != true) ||
                        (needsCompact && !compactReports);
             }
 
@@ -840,10 +958,6 @@ namespace NovaFramework.Editor
 
             /// <summary>使用 UTC Unix 秒，供共享队列排序和重试。</summary>
             private static long Now() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-            /// <summary>使用工作站所在时区的自然日，供每日编译环境上报去重。</summary>
-            private static string LocalDay(long stamp) => DateTimeOffset.FromUnixTimeSeconds(stamp).ToLocalTime()
-                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
             /// <summary>在 Windows 和 macOS 上完整传递包含空格的工程目录。</summary>
             private static string Quote(string value)

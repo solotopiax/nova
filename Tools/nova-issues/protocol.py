@@ -63,10 +63,10 @@ def validate_snapshot(data):
     """接收环境快照，历史包来源证据标签仍可随旧客户端提交。"""
     obj(data, ("framework", "unity", "packages", "tools", "coverage"),
         ("platform", "channel", "mode", "enabled", "coordinate_source", "application_identifiers", "codex_hooks",
-         "git_user_name", "operating_system"))
-    for name in ("framework", "unity", "platform", "channel", "mode", "coordinate_source"):
+         "git_user_name", "operating_system", "editor_framework", "codex_hook_counts"))
+    for name in ("framework", "unity", "editor_framework", "platform", "channel", "mode", "coordinate_source"):
         if name in data:
-            label(data[name], 80, empty=name not in ("framework", "unity"))
+            label(data[name], 80, empty=name not in ("framework", "unity", "editor_framework"))
     for package in records(data["packages"], 350):
         obj(package, ("id", "version", "source"), ("evidence",))
         key(package["id"])
@@ -78,6 +78,14 @@ def validate_snapshot(data):
         key(entry)
     if "codex_hooks" in data:
         enum(data["codex_hooks"], ("complete", "pending", "incomplete"))
+    if "codex_hook_counts" in data:
+        counts = data["codex_hook_counts"]
+        obj(counts, ("added", "expected"))
+        expected = int_range(counts["expected"], 1, 2147483647)
+        added = int_range(counts["added"], 0, expected)
+        status = data.get("codex_hooks")
+        if status is None or (status == "complete") != (added == expected) or (status == "pending" and added != 0):
+            raise InvalidInput("钩子数量与上报状态不一致。")
     if "operating_system" in data:
         enum(data["operating_system"], ("macos", "windows", "linux"))
     if "git_user_name" in data:
@@ -142,6 +150,36 @@ def validate_hook_activity(data):
     label(data["framework"], 80)
 
 
+def validate_workflow(data):
+    """接收已核实的协作阶段和回执摘要，排除对话、参数和日志正文。"""
+    obj(data, ("framework", "source", "trace", "stage", "operation", "outcome"),
+        ("receipt", "reason", "pending", "retries", "target_version", "previous_version"))
+    label(data["framework"], 80)
+    enum(data["source"], ("codex", "editor", "release"))
+    key(data["trace"], UUID)
+    key(data["operation"])
+    enum(data["stage"], ("started", "entry", "lookup", "check", "plan", "execute", "verify", "wait", "finished",
+                         "interrupted", "startup", "upgrade", "queue", "sign", "registry", "github"))
+    enum(data["outcome"], ("observed", "executed", "success", "partial", "blocked", "failed", "cancelled"))
+    if "receipt" in data:
+        key(data["receipt"], UUID)
+    if "reason" in data:
+        key(data["reason"])
+    if "target_version" in data:
+        if data["stage"] not in ("upgrade", "sign", "registry"):
+            raise InvalidInput("该阶段不支持目标版本。")
+        key(data["target_version"], VERSION)
+    if "previous_version" in data:
+        if data["stage"] != "upgrade":
+            raise InvalidInput("原版本须使用升级阶段。")
+        key(data["previous_version"], VERSION)
+    if data["stage"] == "queue":
+        for field in ("pending", "retries"):
+            int_range(data.get(field), 0, 2147483647)
+    elif {"pending", "retries"} & data.keys():
+        raise InvalidInput("队列数据须使用队列阶段。")
+
+
 def validate_implementation(data):
     """工程实施事实只携带状态、版本、可核对的入口和结果。"""
     base = ("framework", "unity", "stage")
@@ -170,7 +208,8 @@ def validate_implementation(data):
             key(config)
     elif stage == "editor-module":
         obj(data, base + ("step", "outcome"), coordinate + ("calls",))
-        enum(data["step"], ("asset", "procedure", "table", "localization", "ui", "network"))
+        enum(data["step"], ("asset", "procedure", "table", "localization", "ui", "network",
+                            "persist", "event", "sound", "vibrate"))
         enum(data["outcome"], ("success",))
         if "calls" in data:
             int_range(data["calls"], 1, 2_147_483_647)
@@ -214,7 +253,8 @@ def validate_implementation(data):
     else:
         build = ("build_kind", "development") if stage == "player-build" else ()
         batch = ("attempt", "sequence") if stage == "pipify-batch" else ()
-        obj(data, base + ("outcome",) + build, coordinate + ("step", "milliseconds") + batch)
+        build_optional = ("batch_mode",) if stage == "player-build" else ()
+        obj(data, base + ("outcome",) + build, coordinate + ("step", "milliseconds") + batch + build_optional)
         enum(data["outcome"], ("success", "failed", "cancelled", "blocked"))
         if stage == "pipify-batch" and ("attempt" in data or "sequence" in data):
             key(data.get("attempt"), UUID)
@@ -223,6 +263,11 @@ def validate_implementation(data):
             enum(data["build_kind"], ("player", "project", "scripts"))
             if type(data["development"]) is not bool:
                 raise InvalidInput("开发构建标记无效。")
+            if "batch_mode" in data:
+                if type(data["batch_mode"]) is not bool:
+                    raise InvalidInput("批处理构建标记无效。")
+                enum(data.get("platform"), ("Android", "iOS", "StandaloneOSX", "StandaloneWindows",
+                                            "StandaloneWindows64", "StandaloneLinux64", "WebGL"))
         if "step" in data:
             key(data["step"])
         if "milliseconds" in data:
@@ -267,7 +312,7 @@ def validate_event(value):
     int_range(value["observed_at"], 1, int(time.time()) + 86400)
     validators = {"snapshot": validate_snapshot, "usage": validate_usage, "issue": validate_issue,
                   "task": validate_task, "hook_activity": validate_hook_activity,
-                  "implementation": validate_implementation}
+                  "implementation": validate_implementation, "workflow": validate_workflow}
     kind = enum(value["kind"], validators)
     validators[kind](value["data"])
     return value
@@ -286,5 +331,6 @@ def retired_feedback(kind, data):
         return False
     stage = data["stage"]
     return stage in ("sdk-device", "sdk-preload", "startup-stage", "framework-upgrade", "pipify-step") or (
-        stage == "player-build" and (data.get("platform") not in ("Android", "iOS") or data["build_kind"] == "scripts")
+        stage == "player-build" and (data["build_kind"] == "scripts" or
+                                     ("batch_mode" not in data and data.get("platform") not in ("Android", "iOS")))
     )

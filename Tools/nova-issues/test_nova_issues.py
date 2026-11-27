@@ -1,7 +1,9 @@
 """Focused integration tests for the issue service and its local agent."""
 
 import concurrent.futures
-from datetime import datetime, timedelta
+from contextlib import closing
+from datetime import datetime
+import gzip
 import http.client
 import importlib.util
 import json
@@ -15,6 +17,7 @@ import tempfile
 import threading
 import time
 import unittest
+from urllib.parse import urlencode
 from unittest.mock import patch
 import uuid
 
@@ -354,7 +357,7 @@ class IssuesTest(unittest.TestCase):
         _, detail, _ = self.http(path, headers=headers)
         exports = [row for row in detail["implementation_outcomes"] if row["data"]["stage"] == "config-export"]
         self.assertEqual([(row["data"]["outcome"], row["observed_at"]) for row in exports],
-                         [("failed", stamp - 2), ("success", historical)])
+                         [("failed", stamp - 2), ("blocked", stamp - 15), ("success", historical)])
         modules = {row["module"]: row for row in detail["project_module_evidence"]}
         self.assertEqual((modules["asset"]["play_sessions"], modules["asset"]["last_success"]), (0, historical))
         self.assertEqual((modules["table"]["play_sessions"], modules["table"]["last_success"]), (2, stamp - 3))
@@ -418,6 +421,145 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual(self.http("/api/session", headers=session)[0], 401)
         self.assertEqual(self.http("/api/maintainer/overview", headers=session)[0], 401)
         self.assertEqual(self.http("/api/session", headers=other_session)[0], 200)
+
+    def test_daily_maintenance_archives_details_without_losing_history_or_receipts(self):
+        stamp = int(time.time())
+        day = 86400
+        workspace = uuid.uuid4().hex
+
+        def report(kind, age, received_age=None, **data):
+            event = {"version": 1, "kind": kind, "id": uuid.uuid4().hex, "workspace": workspace,
+                     "observed_at": stamp - age * day, "data": {"framework": "0.7.19", **data}}
+            arrival = stamp - (age if received_age is None else received_age) * day
+            with patch("database.now", return_value=arrival):
+                status, receipt, _ = self.ingest(event)
+            self.assertEqual((status, receipt["accepted"]), (201, True))
+            return event, receipt
+
+        action_operation = uuid.uuid4().hex
+        action = {"module": "hotfix", "operation": "nova.project.hotfix.refresh-game-dlls",
+                  "outcome": "success", "entry": "action", "action_operation": action_operation}
+        action_editor, received = report("usage", 45, source="editor", **action)
+        action_codex, _ = report("usage", 45, source="codex", **action)
+        play = {"stage": "editor-module", "unity": "6000.4.2f1", "outcome": "success"}
+        play_batch, _ = report("implementation", 42, step="asset", calls=8, **play)
+        expired_batch, _ = report("implementation", 400, step="table", calls=4, **play)
+        workflow, _ = report("workflow", 41, source="codex", trace=uuid.uuid4().hex,
+                             stage="finished", operation="nova-task", outcome="success")
+        snapshot, _ = report("snapshot", 100, unity="6000.4.2f1", packages=[], tools={}, coverage={})
+        issue, _ = report("issue", 100, **{k: v for k, v in self.sample_issue()["data"].items() if k != "framework"})
+        boundary, _ = report("implementation", 30, step="asset", calls=2, **play)
+        late, _ = report("implementation", 42, received_age=0, step="asset", calls=3, **play)
+        crossing = action | {"action_operation": uuid.uuid4().hex}
+        old_peer, _ = report("usage", 40, source="editor", **crossing)
+        new_peer, _ = report("usage", 8, source="codex", **crossing)
+
+        maintenance = self.server.maintenance
+        # 即使批次大小为一，也要将同一个 Action 的两份观察一起归档。
+        with patch("maintenance.now", return_value=stamp), patch("maintenance.BATCH_SIZE", 1):
+            self.assertTrue(maintenance.run_due())
+            self.assertFalse(maintenance.run_due())
+        with self.database.connect() as db:
+            online = {row["id"] for row in db.execute("SELECT id FROM reports")}
+            self.assertEqual(online, {item["id"] for item in (snapshot, issue, boundary, late, old_peer, new_peer)})
+            archive = [item for row in db.execute("SELECT payload FROM report_archives")
+                       for item in json.loads(gzip.decompress(row["payload"]))]
+            self.assertEqual({item["id"] for item in archive},
+                             {item["id"] for item in (action_editor, action_codex, play_batch, workflow)})
+            self.assertEqual(db.execute("""
+                SELECT count,play_calls FROM archived_usage_history WHERE module='table'
+                """).fetchone()[:], (1, 4))
+            self.assertEqual(db.execute("""
+                SELECT COUNT(*) FROM archived_report_receipts WHERE report_id=?
+                """, (expired_batch["id"],)).fetchone()[0], 0)
+        copied = next((self.base / "maintenance-backups").glob("nova-issues-*.sqlite3"))
+        with closing(sqlite3.connect(copied)) as db:
+            self.assertIsNotNone(db.execute("SELECT 1 FROM reports WHERE id=?", (expired_batch["id"],)).fetchone())
+
+        code, replay, _ = self.ingest(action_editor)
+        self.assertEqual((code, replay["received_at"]), (200, received["received_at"]))
+        changed = action_editor | {"data": action_editor["data"] | {"outcome": "failed"}}
+        self.assertEqual(self.ingest(changed)[0], 409)
+        self.assertEqual(self.ingest(expired_batch)[0], 200)
+        report("usage", 0, source="codex", **action)
+
+        with patch("database.now", return_value=stamp):
+            rows = self.database.usage_analysis(30, project_id="project-a")
+            history = {item["module"]: item for item in rows}
+            self.assertEqual((history["hotfix"]["count"], history["hotfix"]["history"]), (0, 2))
+            self.assertEqual((history["asset"]["count"], history["asset"]["history"], history["asset"]["play_calls"]),
+                             (1, 3, 2))
+            self.assertEqual((history["table"]["count"], history["table"]["history"]), (0, 1))
+            modules = {row["module"]: row for row in self.database.project_detail("project-a")["project_module_evidence"]}
+            self.assertEqual(modules["table"]["last_success"], expired_batch["observed_at"])
+
+    def test_daily_maintenance_retries_without_archiving_after_backup_failure(self):
+        stamp = int(time.time())
+        age = stamp - 45 * 86400
+        row = {"version": 1, "id": uuid.uuid4().hex, "workspace": uuid.uuid4().hex,
+               "observed_at": age, "kind": "usage", "data": {
+                   "framework": "0.7.19", "module": "table", "operation": "editor.table.export-all",
+                   "source": "editor", "outcome": "success"}}
+        with patch("database.now", return_value=age):
+            self.assertEqual(self.ingest(row)[0], 201)
+        maintenance = self.server.maintenance
+        with patch("maintenance.now", return_value=stamp), patch("maintenance.backup", side_effect=OSError("fixture disk full")):
+            with self.assertRaises(OSError):
+                maintenance.run_due()
+        self.assertEqual(maintenance.status()["failures"], 1)
+        with self.database.connect() as db:
+            self.assertTrue(db.execute("SELECT 1 FROM reports WHERE id=?", (row["id"],)).fetchone())
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM report_archives").fetchone()[0], 0)
+        with patch("maintenance.now", return_value=stamp):
+            self.assertTrue(maintenance.run_due())
+        self.assertEqual(maintenance.status()["failures"], 0)
+
+        for offset in range(1, 9):
+            with patch("maintenance.now", return_value=stamp + offset * 86400):
+                self.assertTrue(maintenance.run_due())
+        self.assertEqual(len(list((self.base / "maintenance-backups").glob("nova-issues-*.sqlite3"))), 7)
+
+    def test_online_feedback_query_window_stops_at_thirty_days(self):
+        session = self.login()
+        for path in ("overview", "usage", "usage-analysis", "usage-occurrences"):
+            query = ("&" + urlencode({"key": "fixture-usage-record"})) if path == "usage-occurrences" else ""
+            route = f"/api/maintainer/{path}"
+            with self.subTest(path=path):
+                self.assertEqual(self.http(f"{route}?days=30{query}", headers=session)[0], 200)
+                self.assertEqual(self.http(f"{route}?days=31{query}", headers=session)[0], 400)
+        self.assertEqual(self.http("/health")[1]["database_maintenance"]["recent_days"], 30)
+
+    def test_usage_unread_excludes_reports_outside_the_query_window(self):
+        session = self.login()
+        stamp = int(time.time())
+        workspace = uuid.uuid4().hex
+        with patch("database.now", return_value=stamp):
+            for age, module, operation in (
+                (1, "table", "editor.table.export-all"),
+                (30, "localization", "editor.localization.export-text"),
+                (31, "table", "editor.table.export-all"),
+            ):
+                event = {
+                    "version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
+                    "observed_at": stamp - age * 86400, "kind": "usage", "data": {
+                        "framework": "0.7.19", "module": module, "operation": operation,
+                        "source": "editor", "outcome": "success",
+                    },
+                }
+                self.assertEqual(self.ingest(event)[0], 201)
+
+            status, overview, _ = self.http(
+                "/api/maintainer/overview?activity=1&usage_after=0&days=1", headers=session)
+            self.assertEqual(status, 200)
+            activity = overview["activity"]
+            unread = {json.loads(key)[1]: number for number, key in activity["sections"]["usage"]["items"]}
+            self.assertEqual(list(unread), ["table", "localization"])
+            self.assertEqual(len(activity["sections"]["usage"]["items"]), 2)
+
+            selection = {"after": 0, "through": activity["latest"], "viewed": [unread["table"]]}
+            status, listing, _ = self.http("/api/maintainer/usage?days=30", selection, session)
+            self.assertEqual(status, 200)
+            self.assertEqual([item["module"] for item in listing["usage"]], ["localization"])
 
     def test_idempotent_delivery_concurrent_projects_and_backup(self):
         """重复上报只保留一份，快速处理保护旧备注与其他维护者的修改。"""
@@ -755,7 +897,7 @@ class IssuesTest(unittest.TestCase):
                         db.execute("UPDATE turns SET actual=1 WHERE id=?", (agent.turn_key(prompt),))
                     pending = agent.handle_hook(root, db, self.event(
                         "Stop", turn, last_assistant_message="已生成的文件可以在输出目录中核对。"))
-                    self.assertFalse(pending)
+                    self.assertTrue(pending)
                     status = db.execute("SELECT status FROM turns WHERE id=?", (agent.turn_key(prompt),)).fetchone()[0]
                     self.assertEqual(status, "pending-evidence")
             self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE json_extract(payload,'$.kind')='issue'").fetchone()[0], 0)
@@ -777,7 +919,7 @@ class IssuesTest(unittest.TestCase):
             self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE json_extract(payload,'$.kind')='usage'").fetchone()[0], 1)
 
     def test_codex_keeps_turns_local_and_reports_module_counts(self):
-        """普通任务留在本地，真实模块调用继续去重并同步到维护台。"""
+        """任务正文留在本地，真实调用去重并与协作阶段一起同步。"""
         root, folder = self.fixture_project()
         package = root / "Packages" / agent.FRAMEWORK
         (root / "Packages/manifest.json").write_text('{"dependencies":{}}')
@@ -816,7 +958,7 @@ class IssuesTest(unittest.TestCase):
             agent.handle_hook(root, db, self.event("Stop"))
             reports = [json.loads(row["payload"]) for row in db.execute("SELECT payload FROM outbox")]
             self.assertEqual(db.execute("SELECT COUNT(*) FROM turns").fetchone()[0], 2)
-            self.assertCountEqual([item["kind"] for item in reports], ["hook_activity"] + ["usage"] * 5)
+            self.assertCountEqual([item["kind"] for item in reports], ["hook_activity"] + ["usage"] * 5 + ["workflow"] * 5)
             self.assertNotIn("fixture-private", json.dumps(reports))
             self.assertNotIn(str(root), json.dumps(reports))
             # 升级前已排队的任务基础信息不再发送。
@@ -828,9 +970,10 @@ class IssuesTest(unittest.TestCase):
         }):
             agent.work(root, folder, "", single=True)
         with agent.ledger(folder) as db:
-            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 6)
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE error='server-upgrade-required'").fetchone()[0], 8)
             db.execute("UPDATE outbox SET ready_at=0")
         with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
             agent.work(root, folder, "", single=True)
         session = self.login()
         overview = self.http("/api/maintainer/overview?days=1", headers=session)[1]
@@ -843,6 +986,30 @@ class IssuesTest(unittest.TestCase):
         detail = self.http(f"/api/maintainer/projects/{project}", headers=session)[1]
         self.assertEqual(detail["tasks"], [])
         self.assertEqual(detail["snapshots"], [])
+        workflow = self.http(f"/api/maintainer/projects/{project}/workflow", headers=session)[1]["workflow"]
+        self.assertEqual(len(workflow), 5)
+        self.assertEqual(len({row["data"]["trace"] for row in workflow}), 1)
+        self.assertFalse(any("received_at" in row for row in workflow))
+        self.assertCountEqual([row["data"]["stage"] for row in workflow], ["started", "entry", "execute", "execute", "finished"])
+
+    def test_action_job_observes_wait_and_verified_result_once(self):
+        root, folder = self.fixture_project()
+        action = "nova.project.pipify.run-batch"
+        receipt = uuid.uuid4().hex
+        response = {"action_id": action, "operation": "verify", "status": "queued",
+                    "data": {"request_id": "fixture-private-request"}}
+        completed = response | {"status": "completed", "data": response["data"] | {"response": {
+            "action_id": action, "operation": "verify", "status": "success",
+            "data": {"recovery_token": f"nova-action-operation-v1:{receipt}"}}}}
+        with agent.ledger(folder) as db:
+            for index, reply in enumerate((response, response | {"status": "running"}, completed, completed)):
+                agent.handle_hook(root, db, self.event("PostToolUse", tool_name="nova_project_action",
+                    tool_use_id=f"verify-{index}", tool_input={"action_id": action, "operation": "verify"}, tool_response=reply))
+            rows = [json.loads(row[0])["data"] for row in db.execute(
+                "SELECT payload FROM outbox WHERE json_extract(payload,'$.kind')='workflow' ORDER BY rowid")]
+        self.assertEqual([row["stage"] for row in rows], ["started", "wait", "verify"])
+        self.assertEqual(rows[-1]["receipt"], agent.event_id("action", action, receipt))
+        self.assertNotIn("fixture-private-request", json.dumps(rows))
 
     def test_usage_history_identifies_editor_receipts_and_adds_operation_descriptions(self):
         action = "nova.project.hotfix.refresh-game-dlls"
@@ -926,6 +1093,36 @@ class IssuesTest(unittest.TestCase):
         table = next(row for row in self.http(route, headers=headers)[1]["project_module_evidence"] if row["module"] == "table")
         self.assertEqual((table["manual_exports"], table["play_sessions"]), (2, 1))
 
+    def test_project_module_summary_combines_module_aliases(self):
+        stamp = int(time.time())
+        workspace = uuid.uuid4().hex
+
+        def report(kind, seconds_ago, **data):
+            event = {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
+                     "observed_at": stamp - seconds_ago, "kind": kind,
+                     "data": {"framework": "0.7.19", **data}}
+            self.assertEqual(self.ingest(event)[0], 201)
+
+        report("usage", 12, module="vibration", operation="nova.project.vibration.export",
+               source="codex", entry="action", outcome="success")
+        report("usage", 4, module="vibrate", operation="editor.vibrate.export-emphasis-all",
+               source="editor", outcome="failed")
+        report("usage", 5, module="persistence", operation="nova.project.persistence.inspect-data",
+               source="codex", entry="action", outcome="failed")
+        play = {"stage": "editor-module", "unity": "6000.4.2f1", "outcome": "success"}
+        report("implementation", 20, step="vibrate", calls=7, **play)
+        report("implementation", 15, step="persist", calls=6, **play)
+
+        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=self.login())
+        self.assertEqual(status, 200)
+        rows = detail["project_module_evidence"]
+        self.assertEqual(len(rows), 2)
+        metrics = ("development_calls", "play_calls", "last_use", "last_success")
+        self.assertEqual({row["module"]: tuple(row[key] for key in metrics) for row in rows}, {
+            "persistence": (1, 6, stamp - 5, stamp - 15),
+            "vibration": (2, 7, stamp - 4, stamp - 12),
+        })
+
     def test_module_call_totals_count_native_tool_calls_and_sum_only_reported_play_calls(self):
         """实际工具执行和 Play 调用分别累计，重复回执和旧场次不进入调用次数。"""
         stamp = int(time.time())
@@ -955,6 +1152,7 @@ class IssuesTest(unittest.TestCase):
             implementation("config-load", "failed"),
             implementation("table-ready"),
             implementation("editor-module", step="table"),
+            implementation("editor-module", step="procedure"),
             implementation("editor-module", step="table", calls=4),
         ):
             self.assertEqual(self.ingest(event)[0], 201, event)
@@ -965,10 +1163,13 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual(self.ingest(other)[0], 200)
         old = implementation("editor-module", step="table", calls=300) | {"observed_at": stamp - 31 * 86400}
         self.assertEqual(self.ingest(old)[0], 201)
+        old_export = implementation("config-export") | {"observed_at": stamp - 31 * 86400}
+        self.assertEqual(self.ingest(old_export)[0], 201)
         self.assertEqual(self.ingest(implementation("editor-module", step="table", calls=0))[0], 400)
         self.assertEqual(self.ingest(implementation("table-ready", calls=7))[0], 400)
 
-        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=self.login())
+        session = self.login()
+        status, detail, _ = self.http("/api/maintainer/projects/project-a", headers=session)
         self.assertEqual(status, 200)
         modules = {row["module"]: row for row in detail["project_module_evidence"]}
         self.assertEqual({module: modules[module]["development_calls"] for module in ("config", "pipify", "upm", "asset")},
@@ -976,6 +1177,25 @@ class IssuesTest(unittest.TestCase):
         self.assertEqual(modules["config"]["play_calls"], 1)
         self.assertEqual((modules["table"]["development_calls"], modules["table"]["play_calls"],
                           modules["table"]["play_sessions"], modules["table"]["last_use"]), (0, 10, 1, stamp - 20))
+
+        route = "/api/maintainer/usage-analysis?days=30&project=project-a"
+        status, analysis, _ = self.http(route, headers=session)
+        self.assertEqual(status, 200, analysis)
+        self.assertEqual((analysis["development_calls"], analysis["play_calls"]), (6, 11))
+        ranking = {row["id"]: row for row in analysis["dimensions"]["module"]}
+        self.assertEqual({key: ranking[key]["development_calls"] for key in ("config", "pipify", "upm", "bundle")},
+                         {"config": 2, "pipify": 1, "upm": 2, "bundle": 1})
+        self.assertEqual((ranking["config"]["play_calls"], ranking["table"]["play_calls"]), (1, 10))
+        self.assertTrue(ranking["procedure"]["play_history"])
+        self.assertIsNone(ranking["procedure"]["play_calls"])
+
+        _, filtered, _ = self.http(f"{route}&source=editor&module=config", headers=session)
+        self.assertEqual((filtered["development_calls"], filtered["play_calls"]), (2, 1))
+        _, filtered, _ = self.http(f"{route}&source=codex", headers=session)
+        self.assertEqual((filtered["development_calls"], filtered["play_calls"], filtered["total"]), (0, 0, 3))
+        _, overview, _ = self.http("/api/maintainer/overview?days=30", headers=session)
+        self.assertIn("procedure", overview["usage_modules"])
+        self.assertIn("upm", overview["usage_modules"])
 
     def test_play_call_counts_wait_for_service_support(self):
         """旧服务只认识场次时保留调用批次，升级后按原编号补发。"""
@@ -1027,17 +1247,19 @@ class IssuesTest(unittest.TestCase):
             for state, age in (("connected", 0), ("disconnected", 10)):
                 agent.enqueue(db, "implementation", connection | {"state": state}, observed_at=stamp - age)
             pending = db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall()
-        self.assertEqual(len(pending), 6)
+        self.assertEqual(len(pending), 11)
         self.assertTrue(all("private-" not in row["payload"] for row in pending))
-        old_health = {key: value for key, value in self.http("/health")[1].items() if key != "unity_mcp_monitoring"}
+        old_health = {key: value for key, value in self.http("/health")[1].items()
+                      if key not in ("unity_mcp_monitoring", "workflow_monitoring")}
         with patch.object(agent, "automatic_report_health", return_value=old_health), patch.object(agent, "deliver") as send:
             agent.work(root, folder, "", single=True)
             send.assert_not_called()
         with agent.ledger(folder) as db:
             self.assertEqual(db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall(), pending)
-            self.assertEqual(db.execute("SELECT DISTINCT error FROM outbox").fetchone()[0], "server-upgrade-required")
+            self.assertEqual(db.execute("SELECT DISTINCT error FROM outbox WHERE attempts>0").fetchone()[0], "server-upgrade-required")
             db.execute("UPDATE outbox SET ready_at=0")
         with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
             agent.work(root, folder, "", single=True)
 
         headers = self.login()
@@ -1052,6 +1274,22 @@ class IssuesTest(unittest.TestCase):
             ("unity-mcp.manage_scene", "failed", 1), ("unity-mcp.manage_scene", "success", 1),
         ])
         self.assertTrue(all(row["entry"] == "unity-mcp" and "Unity MCP" in row["description"] for row in usage))
+
+    def test_release_results_preserve_actual_phase_and_target_version(self):
+        root, folder = self.fixture_project()
+        trace = uuid.uuid4().hex
+        with patch.object(agent, "wake"):
+            agent.record_release_result(root, trace, "sign", agent.FRAMEWORK, "success", target_version="0.7.19")
+            agent.record_release_result(root, trace, "registry", agent.FRAMEWORK, "failed", "npm-publish", "0.7.19")
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
+        path = f"/api/maintainer/projects/auto-1234567890abcdef1234567890abcdef/workflow?trace={trace}"
+        status, result, _ = self.http(path, headers=self.login())
+        self.assertEqual(status, 200)
+        self.assertEqual([(row["data"]["stage"], row["data"]["outcome"]) for row in result["workflow"]],
+                         [("registry", "failed"), ("sign", "success")])
+        self.assertTrue(all(row["data"]["source"] == "release" and row["data"]["target_version"] == "0.7.19"
+                            for row in result["workflow"]))
 
     def test_action_uses_editor_result_and_counts_a_shared_invocation_once(self):
         root, folder = self.fixture_project()
@@ -1078,6 +1316,11 @@ class IssuesTest(unittest.TestCase):
         usage = result["usage"][0]
         self.assertEqual((usage["source"], usage["outcome"], usage["framework"], usage["count"], usage["last_used"]),
                          ("codex", "failed", "0.7.18", 1, editor["observed_at"]))
+        query = urlencode({"key": usage["activity_key"], "page_size": 10})
+        status, occurrences, _ = self.http(f"/api/maintainer/usage-occurrences?{query}", headers=header)
+        self.assertEqual(status, 200)
+        self.assertEqual([item["observed_at"] for item in occurrences["usage-occurrences"]], [editor["observed_at"]])
+        self.assertFalse(any("received_at" in item for item in occurrences["usage-occurrences"]))
         self.assertEqual(result["codex_modules"][0]["problems"], 1)
         modules = self.http("/api/maintainer/projects/project-a", headers=header)[1]["project_module_evidence"]
         self.assertEqual((modules[0]["count"], modules[0]["problems"]), (1, 1))
@@ -1125,24 +1368,30 @@ class IssuesTest(unittest.TestCase):
         usage("config", "nova.project.config.export-runtime", source="editor", entry="action", age=40 * 86400)
         usage("vibration", "nova.project.vibration.export", source="editor", entry="action",
               project="project-b", token=second)
-        for stage, fields in (("pipify-batch", {}), ("editor-module", {"step": "asset", "calls": 4})):
+        for project, token, stage, fields in (
+            ("project-a", None, "pipify-batch", {}),
+            ("project-a", None, "editor-module", {"step": "asset", "calls": 4}),
+            ("project-b", second, "editor-module", {"step": "asset", "calls": 9}),
+        ):
             event = {"version": 1, "id": uuid.uuid4().hex, "workspace": workspace,
                      "observed_at": stamp, "kind": "implementation", "data": {
                          "stage": stage, "outcome": "success", "framework": "0.7.18", "unity": "6000.4.2f1", **fields,
                      }}
-            self.assertEqual(self.ingest(event)[0], 201)
+            self.assertEqual(self.ingest(event, project, token)[0], 201)
 
         route = "/api/maintainer/usage-analysis"
         self.assertEqual(self.http(route)[0], 401)
         session = self.login()
         status, report, _ = self.http(f"{route}?days=14&project=project-a", headers=session)
         self.assertEqual(status, 200, report)
-        self.assertEqual((report["total"], report["calls"], report["skill_turns"]), (4, 2, 1))
+        self.assertEqual((report["total"], report["calls"], report["skill_turns"]), (6, 3, 1))
+        self.assertEqual((report["development_calls"], report["play_calls"]), (3, 4))
         dimensions = {name: {row["id"]: row for row in rows} for name, rows in report["dimensions"].items()}
         self.assertEqual({key: row["count"] for key, row in dimensions["source"].items()},
-                         {"codex": 2, "editor": 1, "legacy": 1})
+                         {"codex": 2, "editor": 3, "legacy": 1})
         self.assertEqual({key: row["count"] for key, row in dimensions["entry"].items()},
-                         {"action": 1, "inspector": 1, "skill": 1, "": 1, "nova-cli": 0, "unity-cli": 0, "unity-mcp": 0})
+                         {"action": 1, "inspector": 1, "skill": 1, "": 1, "nova-cli": 0, "unity-cli": 0, "unity-mcp": 0,
+                          "editor-tool": 1, "play": 1})
         self.assertEqual(dimensions["operation"][action]["count"], 1)
         self.assertEqual(dimensions["operation"]["custom.historical-operation"]["count"], 1)
         self.assertEqual(dimensions["operation"]["unity.scene.list_open"]["count"], 0)
@@ -1158,6 +1407,14 @@ class IssuesTest(unittest.TestCase):
         self.assertTrue(modules["asset"]["play_history"])
         self.assertEqual(sum(row["count"] for row in dimensions["operation"].values()), report["total"])
         self.assertEqual(sum(row["count"] for row in modules.values()), report["calls"])
+        all_details = self.http("/api/maintainer/usage?days=14&project=project-a", headers=session)[1]["usage"]
+        self.assertEqual(sum(row["count"] for row in all_details), report["total"])
+        self.assertEqual(sum(row["development_calls"] for row in all_details), report["development_calls"])
+        self.assertEqual(sum(row["play_calls"] or 0 for row in all_details), report["play_calls"])
+        play = next(row for row in all_details if row["entry"] == "play")
+        query = urlencode({"key": play["activity_key"], "page_size": 10})
+        occurrences = self.http(f"/api/maintainer/usage-occurrences?{query}", headers=session)[1]
+        self.assertEqual(occurrences["usage-occurrences"], [{"observed_at": stamp, "play_calls": 4}])
 
         scope = "days=14&project=project-a&module=table&source=editor"
         status, filtered, _ = self.http(f"{route}?{scope}", headers=session)
@@ -1165,8 +1422,62 @@ class IssuesTest(unittest.TestCase):
         details = self.http(f"/api/maintainer/usage?{scope}&page=1&page_size=50", headers=session)[1]
         self.assertEqual(filtered["total"], sum(row["count"] for row in details["usage"]))
         self.assertEqual((filtered["total"], filtered["calls"], filtered["skill_turns"]), (1, 1, 0))
+        self.assertEqual((filtered["selected_module"], filtered["development_calls"], filtered["play_calls"]), ("table", 1, 0))
         codex = next(row for row in filtered["dimensions"]["source"] if row["id"] == "codex")
         self.assertEqual((codex["count"], codex["history"]), (0, 2))
+
+        for entry, stored_entry, development_calls, play_calls in (
+                ("play", "play", 0, 4), ("editor-tool", "editor-tool", 1, 0), ("legacy", "", 0, 0)):
+            with self.subTest(entry=entry):
+                query = f"project=project-a&entry={entry}"
+                details = self.http(f"/api/maintainer/usage?{query}&page=1&page_size=10", headers=session)[1]
+                self.assertEqual(details["pagination"]["total"], 1)
+                self.assertEqual([row["entry"] for row in details["usage"]], [stored_entry])
+                analysis = self.http(f"{route}?{query}", headers=session)[1]
+                self.assertEqual((analysis["total"], analysis["development_calls"], analysis["play_calls"]),
+                                 (1, development_calls, play_calls))
+
+    def test_bundle_usage_history_and_unread_analysis_match_details(self):
+        stamp = int(time.time())
+        workspace = uuid.uuid4().hex
+        data = {"stage": "bundle-build", "outcome": "success", "framework": "0.7.18",
+                "unity": "6000.4.2f1", "step": "bundlebuilder.build_asset"}
+        # 旧版存下的专项上报没有使用记录的接收编号。
+        with self.database.connect() as db:
+            db.execute("INSERT INTO reports VALUES (?, ?, ?, 'implementation', 'fixture', ?, ?, ?, NULL)",
+                       ("project-a", uuid.uuid4().hex, workspace, json.dumps(data), stamp - 30, stamp - 30))
+        session = self.login()
+        first = self.http("/api/maintainer/overview?activity=1", headers=session)[1]
+        self.assertEqual(first["activity_totals"]["usage"], 0)
+        for age, outcome in ((20, "success"), (10, "failed")):
+            event = {"version": 1, "id": uuid.uuid4().hex, "kind": "implementation", "workspace": workspace,
+                     "observed_at": stamp - age, "data": data | {"outcome": outcome}}
+            self.assertEqual(self.ingest(event)[0], 201)
+            self.assertEqual(self.ingest(event)[0], 200)
+
+        scope = "project=project-a&module=bundle&source=editor&days=14"
+        list_url = f"/api/maintainer/usage?{scope}&page=1&page_size=50"
+        analysis_url = f"/api/maintainer/usage-analysis?{scope}"
+        rows = self.http(list_url, headers=session)[1]["usage"]
+        analysis = self.http(analysis_url, headers=session)[1]
+        self.assertEqual((analysis["total"], analysis["development_calls"]), (3, 3))
+        self.assertEqual([(row["operation"], row["outcome"], row["count"], row["development_calls"]) for row in rows],
+                         [("bundle-build", "success", 2, 2), ("bundle-build", "failed", 1, 1)])
+        query = urlencode({"key": rows[0]["activity_key"], "days": 14})
+        occurrences = self.http(f"/api/maintainer/usage-occurrences?{query}", headers=session)[1]
+        self.assertEqual([row["observed_at"] for row in occurrences["usage-occurrences"]], [stamp - 20, stamp - 30])
+
+        after = first["activity"]["latest"]
+        activity = self.http(f"/api/maintainer/overview?activity=1&usage_after={after}", headers=session)[1]["activity"]
+        items = {key: record_id for record_id, key in activity["sections"]["usage"]["items"]}
+        self.assertEqual(set(items), {row["activity_key"] for row in rows})
+        selection = {"after": after, "through": activity["latest"], "viewed": [items[rows[1]["activity_key"]]]}
+        self.assertEqual(self.http(list_url, selection, session)[1]["usage"], [rows[0]])
+        unread = self.http(analysis_url, selection, session)[1]
+        self.assertEqual((unread["total"], unread["development_calls"]), (2, 2))
+        self.assertEqual(self.http(f"{list_url}&entry=editor-tool", selection, session)[1]["usage"], [rows[0]])
+        self.assertEqual(self.http(f"{list_url}&entry=play", selection, session)[1]["usage"], [])
+        self.assertEqual(self.http(f"{analysis_url}&entry=play", selection, session)[1]["total"], 0)
 
     def test_usage_sort_uses_observation_time_and_applies_before_limit(self):
         """低频的新记录可排到前面，晚到的旧上报仍按实际发生时间排序。"""
@@ -1312,47 +1623,50 @@ class IssuesTest(unittest.TestCase):
             {"workspace": another_workspace, "last_run": recent - 3600, "framework": "0.7.14"},
         ])
 
-    def test_editor_environment_reports_once_per_local_compile_day_or_changed_versions(self):
-        """跨日但未编译时保留本地观察，版本变化和首次编译进入可重试队列。"""
+    def test_editor_environment_checks_hourly_and_only_reports_changes(self):
+        """重开账本仍沿用检查时间，编译不会重置间隔或补报相同快照。"""
         root, folder = self.fixture_project()
-        started = datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) - timedelta(days=3)
+        started = int(time.time()) - 5 * 3600
         observed = {"event": "snapshot", "packages": [], "tools": {}, "enabled": []}
-        compile_finished = {"event": "compile-finished", "id": "compile-1"}
-
         def observe(offset, event, expected):
-            """重新打开队列验证日期和去重状态均已持久保存。"""
-            stamp = int((started + timedelta(days=offset)).timestamp())
+            stamp = started + offset
             with patch.object(agent, "now", return_value=stamp), agent.ledger(folder) as db:
                 agent.editor_event(root, db, event)
                 count = db.execute("SELECT COUNT(*) FROM outbox WHERE json_extract(payload,'$.kind')='snapshot'")
                 self.assertEqual(count.fetchone()[0], expected)
 
-        observe(0, observed, 1)
-        observe(0, compile_finished, 1)
-        observe(1, observed | {"tools": {"mcp": {"state": "connected"}}}, 1)
-        observe(1, compile_finished, 2)
-        observe(1, compile_finished | {"id": "compile-2"}, 2)
+        observe(0, observed | {"id": "snapshot-1"}, 1)
         package = root / "Packages" / agent.FRAMEWORK / "package.json"
         package.write_text(json.dumps({"name": agent.FRAMEWORK, "version": "0.7.14"}))
-        observe(1, observed, 3)
+        observe(3599, observed, 1)
+        observe(3600, observed | {"id": "snapshot-2"}, 2)
+        observe(3600, observed | {"id": "snapshot-2"}, 2)
+        with agent.ledger(folder) as db:
+            agent.save(db, "codex_tools", {"codex": {"at": started + 7100, "tool": {"state": "observed"}}})
+        observe(7200, observed, 2)
         (root / "ProjectSettings/ProjectVersion.txt").write_text("m_EditorVersion: 6000.4.3f1\n")
-        observe(1, observed, 4)
-        observe(1, compile_finished, 4)
-        observe(2, observed | {"compilation_day": (started + timedelta(days=1)).date().isoformat()}, 4)
-        observe(2, observed | {"compilation_day": (started + timedelta(days=2)).date().isoformat()}, 5)
+        observe(10799, {"event": "compile-finished", "id": "compile-1"}, 2)
+        observe(10800, observed, 3)
+        observe(14400, {"event": "compile-finished", "id": "compile-2"}, 3)
 
         with patch.object(agent, "REPORT_SERVER", self.url), patch.object(agent, "deliver", return_value=(None, "transport")):
             agent.work(root, folder, "", single=True)
         with agent.ledger(folder) as db:
-            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE accepted IS NULL AND attempts=1").fetchone()[0], 5)
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM outbox WHERE accepted IS NULL AND attempts=1").fetchone()[0], 3)
             db.execute("UPDATE outbox SET ready_at=0")
         with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
             agent.work(root, folder, "", single=True)
         overview = self.database.overview(14)
         self.assertEqual(overview["workspaces"][0]["framework"], "0.7.14")
         self.assertEqual(overview["workspaces"][0]["unity"], "6000.4.3f1")
         project = self.database.project_detail(overview["workspaces"][0]["project_id"])
-        self.assertEqual(len(project["snapshots"]), 5)
+        self.assertEqual(len(project["snapshots"]), 3)
+        self.assertEqual(overview["snapshot_count_24h"], 3)
+        self.assertEqual(overview["workspaces"][0]["observed_at"], started + 10800)
+        workflow, _ = self.database.list_workflow(project["project"]["id"], "", (1, 10))
+        self.assertEqual(len(workflow), 1)
+        self.assertEqual((workflow[0]["data"]["pending"], workflow[0]["data"]["retries"]), (3, 3))
 
     def test_environment_reports_package_enablement_and_tool_changes(self):
         root, folder = self.fixture_project()
@@ -1361,11 +1675,13 @@ class IssuesTest(unittest.TestCase):
         base = {"event": "snapshot", "packages": packages, "enabled": [], "tools": {}}
         enabled = base | {"enabled": ["SDK.Ad", "Kit.GameLogin"]}
         connected = enabled | {"tools": {"unity-cli": {"state": "connected"}}}
+        started = int(time.time()) - 4 * 3600
         with agent.ledger(folder) as db:
-            for payload in (base, enabled, connected,
-                            connected | {"packages": packages[::-1], "enabled": enabled["enabled"][::-1]},
-                            connected | {"packages": [packages[0], packages[1] | {"version": "0.3.1"}]}):
-                agent.editor_event(root, db, payload)
+            for offset, payload in enumerate((base, enabled, connected,
+                    connected | {"packages": packages[::-1], "enabled": enabled["enabled"][::-1]},
+                    connected | {"packages": [packages[0], packages[1] | {"version": "0.3.1"}]})):
+                with patch.object(agent, "now", return_value=started + offset * 3600):
+                    agent.editor_event(root, db, payload)
             rows = [json.loads(row[0])["data"] for row in db.execute("SELECT payload FROM outbox ORDER BY rowid")]
         self.assertEqual(len(rows), 4)
         self.assertEqual(rows[-1]["enabled"], enabled["enabled"])
@@ -1377,13 +1693,13 @@ class IssuesTest(unittest.TestCase):
         packages = [{"id": agent.FRAMEWORK, "version": "0.7.13", "source": "registry"}]
         snapshot = {"event": "snapshot", "packages": packages, "tools": {}, "codex_hooks": "pending",
                     "application_identifiers": {"Android": "com.fixture.game"}}
+        started = int(time.time()) - 4 * 3600
         with agent.ledger(folder) as db:
-            agent.editor_event(root, db, snapshot)
-            agent.editor_event(root, db, snapshot)
-            agent.editor_event(root, db, snapshot | {"codex_hooks": "incomplete"})
-            agent.editor_event(root, db, snapshot | {"codex_hooks": "complete"})
-            agent.editor_event(root, db, snapshot | {"codex_hooks": "complete",
-                               "application_identifiers": {"Android": "com.fixture.newgame", "iOS": "com.fixture.ios"}})
+            for offset, payload in enumerate((snapshot, snapshot | {"codex_hooks": "incomplete"},
+                    snapshot | {"codex_hooks": "complete"}, snapshot | {"codex_hooks": "complete",
+                    "application_identifiers": {"Android": "com.fixture.newgame", "iOS": "com.fixture.ios"}})):
+                with patch.object(agent, "now", return_value=started + offset * 3600):
+                    agent.editor_event(root, db, payload)
 
         old_health = {"automatic_reporting": True, "codex_telemetry": True}
         with patch.object(agent, "automatic_report_health", return_value=old_health), patch.object(agent, "deliver") as send:
@@ -1406,10 +1722,10 @@ class IssuesTest(unittest.TestCase):
         global_config = self.base / "user.gitconfig"
         global_config.write_text("[user]\n\tname = 全局配置名\n", encoding="utf-8")
         snapshot = {"event": "snapshot", "packages": [], "tools": {}}
-        started = int(time.time()) - 10
+        started = int(time.time()) - 5 * 3600
 
         def observe(db, seconds):
-            with patch.object(agent, "now", return_value=started + seconds):
+            with patch.object(agent, "now", return_value=started + seconds * 3600):
                 agent.editor_event(root, db, snapshot)
 
         with patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": str(global_config), "GIT_CONFIG_NOSYSTEM": "1"}):
@@ -1448,10 +1764,10 @@ class IssuesTest(unittest.TestCase):
     def test_environment_reports_reporting_machine_os_and_preserves_legacy_snapshots(self):
         root, folder = self.fixture_project()
         snapshot = {"event": "snapshot", "packages": [], "tools": {}, "platform": "Android"}
-        stamp = int(time.time()) - 20
+        stamp = int(time.time()) - 4 * 3600
         with agent.ledger(folder) as db:
             for offset, platform in enumerate(("unsupported", "darwin", "win32", "win32")):
-                with patch.object(sys, "platform", platform), patch.object(agent, "now", return_value=stamp + offset):
+                with patch.object(sys, "platform", platform), patch.object(agent, "now", return_value=stamp + offset * 3600):
                     agent.editor_event(root, db, snapshot)
             payloads = db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall()
         self.assertEqual([json.loads(row["payload"])["data"].get("operating_system") for row in payloads],
@@ -1469,6 +1785,42 @@ class IssuesTest(unittest.TestCase):
         project = self.database.project_detail("auto-1234567890abcdef1234567890abcdef")
         self.assertEqual([row["data"].get("operating_system") for row in project["snapshots"]], ["windows", "macos", None])
 
+    def test_environment_hook_counts_and_loaded_version_preserve_each_snapshot(self):
+        root, folder = self.fixture_project()
+        snapshot = {"event": "snapshot", "packages": [{"id": agent.FRAMEWORK, "version": "0.7.13", "source": "registry"}],
+                    "tools": {}, "codex_hooks": "incomplete"}
+        counted = snapshot | {"editor_framework": "0.7.12", "codex_hook_counts": {"added": 4, "expected": 6}}
+        next_count = counted | {"codex_hook_counts": {"added": 5, "expected": 6}}
+        stamp = int(time.time()) - 5 * 3600
+        with agent.ledger(folder) as db:
+            for offset, item in enumerate((snapshot, counted, counted, next_count,
+                                           next_count | {"editor_framework": "0.7.13"})):
+                with patch.object(agent, "now", return_value=stamp + offset * 3600):
+                    agent.editor_event(root, db, item)
+            rows = db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall()
+            agent.enqueue(db, "implementation", {"stage": "workspace", "framework": "0.7.13", "unity": "6000.4.2f1",
+                                                 "editor_framework": "0.7.13", "sdk_packages": [], "sdk_configs": [],
+                                                 "tools": {"config": "configured", "pipify": "pending", "plugpals": "pending"}})
+        self.assertEqual(len(rows), 4)
+        legacy_health = self.http("/health")[1]
+        self.assertIs(legacy_health.pop("snapshot_version_and_hook_counts"), True)
+        with patch.object(agent, "REPORT_SERVER", self.url), patch.object(agent, "automatic_report_health", return_value=legacy_health):
+            agent.work(root, folder, "", single=True)
+        with agent.ledger(folder) as db:
+            self.assertEqual(db.execute("SELECT id,payload FROM outbox ORDER BY rowid").fetchall(), rows[1:])
+            self.assertEqual(db.execute("SELECT DISTINCT error FROM outbox").fetchone()[0], "server-upgrade-required")
+            db.execute("UPDATE outbox SET ready_at=0")
+        with patch.object(agent, "REPORT_SERVER", self.url):
+            agent.work(root, folder, "", single=True)
+
+        detail = self.database.project_detail("auto-1234567890abcdef1234567890abcdef")
+        self.assertEqual(detail["implementation"][0]["data"]["editor_framework"], "0.7.13")
+        snapshots = detail["snapshots"]
+        self.assertEqual([row["data"].get("editor_framework") for row in snapshots], ["0.7.13", "0.7.12", "0.7.12", None])
+        self.assertEqual([row["data"].get("codex_hook_counts") for row in snapshots],
+                         [{"added": 5, "expected": 6}, {"added": 5, "expected": 6},
+                          {"added": 4, "expected": 6}, None])
+
     def test_compact_reports_preserve_data_used_by_maintainers(self):
         """后台确认能力后，环境和问题只提交有用字段，旧待发正文保持原样。"""
         root, folder = self.fixture_project()
@@ -1481,7 +1833,7 @@ class IssuesTest(unittest.TestCase):
             "tools": {"unity-cli": {"state": "connected"}, "mcp": {"state": "installed"},
                       "pipeline": {"state": "registered"}},
         }
-        with agent.ledger(folder) as db:
+        with agent.ledger(folder) as db, patch.object(agent, "now", return_value=int(time.time()) - 3601):
             agent.editor_event(root, db, snapshot)
             legacy = json.loads(db.execute("SELECT payload FROM outbox").fetchone()[0])
         self.assertEqual(legacy["data"]["packages"][0]["evidence"], "registered")
@@ -1607,6 +1959,30 @@ class IssuesTest(unittest.TestCase):
                              ("pending", pending, None))
         self.assertLess(path.stat().st_size, before // 2)
 
+    def test_project_snapshots_paginate_all_records_in_observed_order(self):
+        """页面默认取十条，按采集时间排序，能翻到第 100 条之后。"""
+        stamp = int(time.time())
+        report = {"version": 1, "workspace": uuid.uuid4().hex, "kind": "snapshot",
+                  "data": {"framework": "0.7.19", "unity": "6000.4.2f1", "packages": [], "tools": {}, "coverage": {}}}
+        ids = [uuid.uuid4().hex for _ in range(103)]
+        for index, identifier in enumerate(ids):
+            self.assertEqual(self.ingest(report | {"id": identifier, "observed_at": stamp - index})[0], 201)
+        second = self.database.register("project-b", "项目乙", "QA")
+        self.assertEqual(self.ingest(report | {"id": uuid.uuid4().hex, "observed_at": stamp}, "project-b", second)[0], 201)
+
+        route = "/api/maintainer/projects/project-a/snapshots"
+        self.assertEqual(self.http(route)[0], 401)
+        session = self.login()
+        for query, number, expected in (("", 1, ids[:10]), ("?page=2", 2, ids[10:20]),
+                                        ("?page=999&page_size=10", 11, ids[100:])):
+            with self.subTest(query=query):
+                status, result, _ = self.http(route + query, headers=session)
+                self.assertEqual(status, 200, result)
+                self.assertEqual(result["pagination"], {"page": number, "page_size": 10, "total": 103})
+                self.assertEqual([row["id"] for row in result["snapshots"]], expected)
+        self.assertEqual(self.http(f"{route}?page_size=11", headers=session)[0], 400)
+        self.assertEqual(self.http("/api/maintainer/projects/missing/snapshots", headers=session)[0], 404)
+
     def test_project_package_versions_and_older_snapshots(self):
         public, internal, third_party = "com.solotopia.framework", "com.fixture.internal", "com.thirdparty.sdk"
         stamp = int(time.time())
@@ -1616,17 +1992,24 @@ class IssuesTest(unittest.TestCase):
                            "packages": [{"id": name, "version": "1.0.0", "source": "registry", "evidence": "registered"}
                                         for name in (third_party, internal, public)]}}
         rich = report | {"data": report["data"] | {"codex_hooks": "complete",
+                                                   "codex_hook_counts": {"added": 6, "expected": 6},
+                                                   "editor_framework": "0.7.13",
                                                    "application_identifiers": {"Android": "com.fixture.game"}}}
         self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"codex_hooks": "authorized"}})[0], 400)
         self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"git_user_name": "invalid\nname"}})[0], 400)
         self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"application_identifiers": {"Android": "/Users/private"}}})[0], 400)
+        for counts in ({"added": 7, "expected": 6}, {"added": 5, "expected": 6}, {"added": True, "expected": 6}):
+            self.assertEqual(self.ingest(rich | {"data": rich["data"] | {"codex_hook_counts": counts}})[0], 400)
         self.assertEqual(self.ingest(rich)[0], 201)
         legacy = report | {"id": uuid.uuid4().hex, "observed_at": stamp - 1}
         self.assertEqual(self.ingest(legacy)[0], 201)
         session = self.login()
         detail = self.http("/api/maintainer/projects/project-a", headers=session)[1]
         self.assertEqual(detail["snapshots"][0]["data"]["codex_hooks"], "complete")
+        self.assertEqual(detail["snapshots"][0]["data"]["codex_hook_counts"], {"added": 6, "expected": 6})
+        self.assertEqual(detail["snapshots"][0]["data"]["editor_framework"], "0.7.13")
         self.assertNotIn("codex_hooks", detail["snapshots"][1]["data"])
+        self.assertNotIn("codex_hook_counts", detail["snapshots"][1]["data"])
 
         catalogs = {REGISTRIES["public"]: {public: "2.0.0"}, REGISTRIES["internal"]: {internal: "1.0.0"}}
         route = "/api/maintainer/projects/project-a/package-versions"

@@ -4,13 +4,13 @@ const byId = (id) => document.getElementById(id);
 const statusNames = { open: "待处理", closed: "已处理" };
 const outcomeNames = {
   executed: "已执行", success: "成功", partial: "部分完成", blocked: "有阻塞",
-  failed: "失败", cancelled: "已取消",
+  failed: "失败", cancelled: "已取消", observed: "已观察",
 };
 const completedOutcomes = new Set(["executed", "success", "advanced", "recovered"]);
 const usageSources = { codex: "Codex", editor: "Editor", legacy: "未标注" };
 const usageEntries = {
   action: "Nova Action", skill: "Skill 查阅", "unity-cli": "Unity CLI", "nova-cli": "Nova CLI",
-  inspector: "Unity 检视面板", "unity-mcp": "Unity MCP",
+  inspector: "手动操作", "unity-mcp": "Unity MCP", "editor-tool": "Editor 工具", play: "Editor Play",
 };
 const coverageNames = {
   observed: "已观察", waiting: "待采集", registered: "已注册", not_observed: "未验证",
@@ -31,27 +31,32 @@ const sortOptions = [["latest", "最新时间"], ["count", "触发次数"]];
 const pageSizes = [10, 50, 100, 200];
 const listPages = new Map();
 const unreadSections = ["projects", "issues", "usage"];
+const unreadUnits = { projects: "个项目", issues: "个问题", usage: "组操作" };
+const unreadOnly = new Set();
 const legacyReadStoragePrefix = "nova-issues.read.v1:";
 const readStoragePrefix = "nova-issues.read.v2:";
 const date = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" });
 const usageNumber = new Intl.NumberFormat("zh-CN");
 const usagePercent = new Intl.NumberFormat("zh-CN", { style: "percent", maximumFractionDigits: 1 });
-const usageDimensions = [["module", "模块"], ["operation", "操作"], ["source", "来源"], ["entry", "入口"]];
-const usageChart = { dimension: "module", search: "", historyOnly: false, scrollTop: 0 };
+const usageDimensions = [["module", "模块"], ["operation", "操作"], ["source", "来源"], ["entry", "操作类型"]];
+const usageChart = { dimension: "module", search: "", historyOnly: false };
 let session = null;
 let data = null;
 let readProgress = {};
 let unreadRows = {};
 let view = "overview";
 let loadCounter = 0;
+let refreshing = false;
 let days = 14;
 let paintLists = null;
+let paintUnreadList = null;
+let unreadListNeedsPaint = false;
 let projectLive = null;
 let dialogHasEdits = null;
 const filters = {
   projectActivity: "",
   search: "", issueProject: "", status: "open", issueSort: "latest",
-  project: "", module: "", usageSource: "", usageSort: "latest",
+  project: "", module: "", usageSource: "", usageEntry: "", usageSort: "latest",
 };
 
 function node(tag, text, className) {
@@ -136,12 +141,11 @@ function overviewQuery() {
   return query;
 }
 
-/** 用同一批未读上报刷新侧栏、条目红点和次数增量。 */
-function updateUnread() {
+/** 更新侧栏的未读条目数，按需同步已展示的条目红点和次数增量。 */
+function updateUnread({ sidebarOnly = false } = {}) {
   const activity = data?.activity;
   for (const section of unreadSections) {
     const rows = new Map();
-    let count = 0;
     if (session && activity) {
       const { after, items } = activity.sections[section];
       const progress = currentReadProgress(section) || { after, viewed: new Set() };
@@ -150,7 +154,6 @@ function updateUnread() {
         if (id <= progress.after || progress.viewed.has(id)) continue;
         if (!rows.has(key)) rows.set(key, []);
         rows.get(key).push(id);
-        count++;
         nextAfter = Math.min(nextAfter, id - 1);
       }
       nextAfter = Math.max(progress.after, nextAfter);
@@ -165,17 +168,33 @@ function updateUnread() {
       }
     }
     unreadRows[section] = rows;
+    let count = rows.size;
+    if (section === "usage") {
+      const operations = new Set();
+      for (const key of rows.keys()) {
+        const [project, module, operation] = JSON.parse(key);
+        operations.add(JSON.stringify([project, moduleAliases.get(module) || module, operation]));
+      }
+      count = operations.size;
+    }
     const item = byId("nav").querySelector(`[data-view="${section}"]`);
     const badge = item.querySelector(".nav-unread");
     badge.textContent = count || "";
     badge.hidden = count === 0;
-    if (count) item.setAttribute("aria-label", `${titles[section]}，${count} 条未读`);
-    else item.removeAttribute("aria-label");
+    if (count) {
+      const label = `${count} ${unreadUnits[section]}有未读上报`;
+      item.title = label;
+      item.setAttribute("aria-label", `${titles[section]}，${label}`);
+    } else {
+      item.removeAttribute("title");
+      item.removeAttribute("aria-label");
+    }
   }
-  for (const item of document.querySelectorAll("button[data-unread-section]")) updateUnreadButton(item);
-  for (const item of document.querySelectorAll(".unread-increment")) updateUnreadIncrement(item);
   const markAll = byId("mark-all-read");
   if (markAll) markAll.disabled = !unreadRows[view]?.size;
+  if (sidebarOnly) return;
+  for (const item of document.querySelectorAll("button[data-unread-section]")) updateUnreadButton(item);
+  for (const item of document.querySelectorAll(".unread-increment")) updateUnreadIncrement(item);
 }
 
 /** 将本栏截至最近一次刷新收到的上报全部标为已读。 */
@@ -184,22 +203,33 @@ function markSectionRead(section) {
   const progress = readProgress[section];
   progress.after = Math.max(progress.after, data.activity.latest);
   updateUnread();
+  refreshUnreadList(section);
 }
 
-function unreadItemCount(item) {
-  return unreadRows[item.dataset.unreadSection]?.get(item.dataset.unreadKey)?.length || 0;
+/** 已读后更新当前筛选结果，详情打开期间保留原有列表。 */
+function refreshUnreadList(section) {
+  if (view !== section || !unreadOnly.has(section)) return;
+  if (byId("details").open) unreadListNeedsPaint = true;
+  else paintUnreadList?.({ background: true });
+}
+
+/** 只取当前条目渲染时已到达的上报，避免把后台新收到的上报计入旧列表。 */
+function unreadItemIds(item) {
+  const through = Number(item.dataset.unreadThrough);
+  return unreadRows[item.dataset.unreadSection]?.get(item.dataset.unreadKey)?.filter((id) => id <= through) || [];
 }
 
 /** 显示条目红点，并向读屏软件提供该条目的未读数量。 */
 function updateUnreadButton(item) {
   const indicator = item.querySelector(".row-unread");
-  const count = unreadItemCount(item);
+  const count = unreadItemIds(item).length;
   indicator.hidden = count === 0;
   indicator.setAttribute("aria-label", `${count} 条未读`);
 }
 
+/** 在当前条目显示渲染时已收到且尚未查阅的上报数量。 */
 function updateUnreadIncrement(item) {
-  const count = unreadItemCount(item);
+  const count = unreadItemIds(item).length;
   item.textContent = count ? `+${count}` : "";
   item.hidden = count === 0;
 }
@@ -210,6 +240,7 @@ function countWithUnread(section, key, total) {
   const increment = node("span", null, "unread-increment");
   increment.dataset.unreadSection = section;
   increment.dataset.unreadKey = key;
+  increment.dataset.unreadThrough = data.activity.latest;
   increment.setAttribute("aria-hidden", "true");
   count.append(increment);
   updateUnreadIncrement(increment);
@@ -220,14 +251,16 @@ function countWithUnread(section, key, total) {
 function unreadButton(section, key, label, open) {
   const item = button(null, async () => {
     const account = session;
-    const ids = unreadRows[section]?.get(key) || [];
+    const ids = unreadItemIds(item);
     if (!await open() || account !== session || !ids.length) return;
     const progress = readProgress[section];
     for (const id of ids) progress.viewed.add(id);
     updateUnread();
+    refreshUnreadList(section);
   }, "link");
   item.dataset.unreadSection = section;
   item.dataset.unreadKey = key;
+  item.dataset.unreadThrough = data.activity.latest;
   const indicator = node("span", null, "row-unread");
   indicator.setAttribute("role", "img");
   item.append(indicator, label);
@@ -241,9 +274,13 @@ function setSession(value) {
   data = null;
   readProgress = {};
   unreadRows = {};
+  unreadOnly.clear();
   listPages.clear();
-  Object.assign(usageChart, { dimension: "module", search: "", historyOnly: false, scrollTop: 0 });
+  Object.assign(usageChart, { dimension: "module", search: "", historyOnly: false });
   paintLists = null;
+  paintUnreadList = null;
+  unreadListNeedsPaint = false;
+  refreshing = false;
   loadCounter++;
   byId("login").hidden = Boolean(value);
   byId("workspace").hidden = !value;
@@ -317,23 +354,47 @@ function filter(name, label, options, repaint) {
   });
 }
 
+/** 各栏目独立开关未读筛选，并从筛选结果的第一页开始查看。 */
+function unreadFilter(section, repaint) {
+  const label = node("label", null, "unread-filter");
+  const input = node("input");
+  input.type = "checkbox";
+  input.checked = unreadOnly.has(section);
+  input.addEventListener("change", () => {
+    if (input.checked) unreadOnly.add(section);
+    else unreadOnly.delete(section);
+    repaint({ reset: true, background: true });
+  });
+  label.append(input, "仅未读");
+  return label;
+}
+
 /** 筛选范围改变时回到第一页，保留该列表选定的每页条数。 */
 function resetListPage(id) {
   const state = listPages.get(id);
   if (state) state.page = 1;
 }
 
-/** 在浏览器中对已有的完整项目列表或模块汇总取页。 */
+/** 在浏览器中对已加载的结果取页，筛选后页码最多到新的末页。 */
 function localListPage(items, page, size) {
   const total = items.length;
   const number = Math.min(page, Math.max(1, Math.ceil(total / size)));
   return { items: items.slice((number - 1) * size, number * size), page: number, total };
 }
 
-/** 从维护台接口读取筛选和排序后的指定页及总数。 */
-async function remoteListPage(resource, filters, page, size) {
+/** 分析和列表沿用当前浏览器收到的上报及其已读进度。 */
+function unreadSelection(section) {
+  const through = data.activity.latest;
+  const { after, viewed } = currentReadProgress(section) || { after: through, viewed: [] };
+  return { after, through, viewed: [...viewed].filter((id) => id > after && id <= through) };
+}
+
+/** 让服务端在分页前应用筛选。 */
+async function remoteListPage(resource, filters, page, size, onlyUnread = false) {
   const query = new URLSearchParams({ ...filters, page, page_size: size });
-  const result = await request(`/api/maintainer/${resource}?${query}`);
+  if (onlyUnread && !unreadRows[resource]?.size) return localListPage([], page, size);
+  const selection = onlyUnread ? unreadSelection(resource) : undefined;
+  const result = await request(`/api/maintainer/${resource}?${query}`, selection);
   return { items: result[resource], ...result.pagination };
 }
 
@@ -372,7 +433,7 @@ function paginatedList(id, title, defaultSize, readPage, renderRows) {
     paint({ background: true });
   }
 
-  /** 读取当前页，前台筛选时清除旧结果，自动刷新时继续显示现有表格。 */
+  /** 读取当前页，筛选时清除旧结果，翻页时继续显示现有表格。 */
   function paint({ reset = false, delay = 0, background = false } = {}) {
     if (reset) state.page = 1;
     clearTimeout(timer);
@@ -390,7 +451,8 @@ function paginatedList(id, title, defaultSize, readPage, renderRows) {
         if (run !== latest || !element.isConnected) return;
         state.page = page;
         lastPage = Math.max(1, Math.ceil(total / state.size));
-        results.replaceChildren(renderRows(items));
+        const content = renderRows(items, page);
+        if (results.firstChild !== content) results.replaceChildren(content);
         summary.textContent = total ? `第 ${page} / ${lastPage} 页 · 共 ${total} 条` : "共 0 条";
         previous.disabled = page <= 1;
         next.disabled = page >= lastPage;
@@ -478,7 +540,7 @@ function projectRows(projects, editable = false) {
       name, editable ? teamControl(project) : project.team || "—",
       versions || "待上报", unity || "暂无",
       ...(editable ? [implementationSummary(implementation.length, data.configured_tools?.[project.id] || [])] : []),
-      stamp(Math.max(0, ...workspaces.map((item) => item.received_at))),
+      stamp(Math.max(0, ...workspaces.map((item) => item.observed_at))),
     ];
   }));
 }
@@ -502,6 +564,7 @@ function overview() {
   ]) {
     const entry = button(null, () => {
       Object.assign(filters, preset);
+      unreadOnly.delete(section);
       resetListPage(section);
       openView(section);
       byId("page-title").focus();
@@ -524,13 +587,15 @@ function overview() {
 function projectsPage() {
   const toolbar = node("div", null, "toolbar");
   const list = paginatedList("projects", "项目", 10, (page, size) => {
-    const projects = filters.projectActivity === "24h" ? data.projects.filter(activeProject) : data.projects;
+    let projects = data.projects;
+    if (filters.projectActivity === "24h") projects = projects.filter(activeProject);
+    if (unreadOnly.has("projects")) projects = projects.filter((project) => unreadRows.projects?.has(project.id));
     return localListPage(projects, page, size);
   }, (projects) => projectRows(projects, true));
   toolbar.append(filter("projectActivity", "上报时间", [["", "全部项目"], ["24h", "过去 24 小时有上报"]],
-    () => list.paint({ reset: true })));
-  paintLists = list.paint;
-  return panel(null, toolbar, list.element);
+    () => list.paint({ reset: true })), unreadFilter("projects", list.paint));
+  paintLists = paintUnreadList = list.paint;
+  return panel(null, toolbar, node("p", `近 24 小时上报环境快照 ${usageNumber.format(data.snapshot_count_24h)} 份`, "muted"), list.element);
 }
 
 /** 将筛选条件和排序一起交给服务端查询问题。 */
@@ -550,7 +615,7 @@ function issuesPage() {
   input.value = filters.search;
   const list = paginatedList("issues", "问题", 50, (page, size) => remoteListPage("issues", {
     sort: filters.issueSort, q: filters.search.trim(), project: filters.issueProject, status: filters.status,
-  }, page, size), issueRows);
+  }, page, size, unreadOnly.has("issues")), issueRows);
   input.addEventListener("input", () => {
     filters.search = input.value;
     list.paint({ reset: true, delay: 180 });
@@ -559,27 +624,44 @@ function issuesPage() {
   const applyFilters = () => list.paint({ reset: true });
   toolbar.append(search, filter("issueProject", "项目", [["", "全部项目"], ...projects], applyFilters),
     filter("status", "状态", [["", "全部"], ...Object.entries(statusNames)], applyFilters),
-    filter("issueSort", "排序", sortOptions, applyFilters));
-  paintLists = list.paint;
+    filter("issueSort", "排序", sortOptions, applyFilters), unreadFilter("issues", list.paint));
+  paintLists = paintUnreadList = list.paint;
   return panel(null, toolbar, list.element);
 }
 
 /** 显示当前页的操作汇总，点击名称可查阅记录。 */
 function usageRows(items) {
-  return table(["项目", "模块", "操作", "来源", "入口", "Framework", "结果", "次数", "最近使用"],
+  const details = table(["项目", "模块", "操作", "来源", "操作类型", "Framework", "结果", "记录数", "调用次数", "最近使用"],
     items.map((item) => {
-      const operation = node("code", item.operation, "usage-operation");
-      operation.title = item.description || "暂无该操作的说明。";
-      const entry = unreadButton("usage", item.activity_key, operation, () => openUsage(item));
-      return [projectName(item.project_id), usageModuleName(item.module), entry,
-        usageSources[item.source] || "未标注", usageEntries[item.entry] || "—", item.framework,
+      const name = usageOperationName(item.operation);
+      const operation = node(name === item.operation ? "code" : "span", name, "usage-operation");
+      const description = item.description || "暂无该操作的说明。";
+      operation.title = description;
+      const entry = unreadButton("usage", item.activity_key, operation, () => openUsage(description));
+      const count = button(null, () => openUsageOccurrences(item, data.days), "link");
+      count.append(countWithUnread("usage", item.activity_key, item.count));
+      count.setAttribute("aria-label", `查看 ${item.count} 条发生记录`);
+      const calls = item.play_calls ?? (item.development_calls || null);
+      return [projectName(item.project_id), usageCategoryLabel("module", { id: item.module }), entry,
+        usageSources[item.source] || "未标注", usageCategoryLabel("entry", { id: item.entry }), item.framework,
         statusPill(outcomeNames[item.outcome] || item.outcome, completedOutcomes.has(item.outcome)),
-        countWithUnread("usage", item.activity_key, item.count), stamp(item.last_used)];
+        count, calls === null ? "—" : usageNumber.format(calls), stamp(item.last_used)];
     }));
+  const headers = details.querySelectorAll("th");
+  if (headers.length) {
+    headers[7].title = "收到几条记录。点数字可查看每条记录的时间和结果。";
+    headers[8].title = "实际调用了几次。一次 Play 上报可以包含多次调用。";
+  }
+  return details;
 }
 
-/** 显示 Unity MCP 模块的产品名称，筛选查询仍使用原标识。 */
+function usageOperationName(id) {
+  return Object.hasOwn(implementationStages, id) ? implementationStages[id] : id;
+}
+
+/** 显示工具的产品名称，筛选查询仍使用原标识。 */
 function usageModuleName(id) {
+  if (id === "upm") return implementationModules.upm;
   return id === "unity-mcp" ? usageEntries[id] : id;
 }
 
@@ -589,17 +671,26 @@ function resetUsagePages() {
   resetListPage("usageDetails");
 }
 
-/** 明细与图表共用时间、项目、模块和来源条件。 */
+function resetUsageRankings() {
+  for (const id of ["usageAnalysis", "usageDevelopment", "usagePlay"]) resetListPage(id);
+}
+
+/** 明细与图表共用时间、项目、模块、来源和操作类型条件。 */
 function usageScope() {
-  return { days: data.days, project: filters.project, module: filters.module, source: filters.usageSource };
+  return { days: data.days, project: filters.project, module: filters.module, source: filters.usageSource, entry: filters.usageEntry };
 }
 
 /** 维度名称沿用使用记录与模块清单，保留历史未知类型。 */
 function usageCategoryLabel(dimension, item) {
+  if (dimension === "operation") return usageOperationName(item.id);
   if (dimension === "source") return usageSources[item.id] || item.id || "未标注";
   if (dimension === "entry") return usageEntries[item.id] || item.id || "未标注";
-  if (dimension === "module" && Object.hasOwn(implementationModules, item.id)) return implementationModules[item.id];
-  if (dimension === "module") return item.label || item.id;
+  if (dimension === "module") {
+    const id = moduleAliases.get(item.id) || item.id;
+    if (Object.hasOwn(implementationModules, id)) return implementationModules[id];
+    if (id === "bundle") return implementationStages["bundle-build"];
+    return item.label || usageModuleName(id);
+  }
   return item.id;
 }
 
@@ -608,22 +699,19 @@ function unreportedUsageModule(item) {
   return item.tracked && !item.history && !item.tool_history && !item.play_history;
 }
 
-/** 以整段筛选范围的次数为分母绘制占比条，未采集的模块保留在清单中。 */
-function usageChartRow(dimension, item, title, total) {
+/** 以当前排行的总次数为分母，保留未采集次数的条目。 */
+function usageChartRow(dimension, { item, title, count }, total) {
   const row = node("li", null, "usage-chart-row");
   const label = node("span", null, "usage-chart-label");
-  const name = node(dimension === "operation" ? "code" : "span", title);
+  const name = node(dimension === "operation" && title === item.id ? "code" : "span", title);
   name.title = item.description || item.id;
   label.append(name);
-  const untracked = dimension === "module" && !item.tracked;
-  if (!item.count) {
-    const evidence = [item.history && "有历史记录", item.tool_history && "有专项工具上报",
-      item.play_history && "有 Editor Play 上报"].filter(Boolean);
-    label.append(node("small", evidence.join(" · ") || (untracked ? "暂无开发调用采集" : "历史无上报"),
-      evidence.length || untracked ? "muted" : "usage-history-empty"));
+  if (dimension !== "module" && !count) {
+    label.append(node("small", item.history ? "有历史记录" : "历史无上报",
+      item.history ? "muted" : "usage-history-empty"));
   }
 
-  const share = total ? item.count / total : 0;
+  const share = total && count !== null ? count / total : 0;
   const bar = node("span", null, "usage-chart-track");
   bar.setAttribute("aria-hidden", "true");
   if (share) {
@@ -632,16 +720,46 @@ function usageChartRow(dimension, item, title, total) {
     bar.append(fill);
   }
   const percent = share > 0 && share < .001 ? "<0.1%" : usagePercent.format(share);
-  row.append(label, bar, node("span", untracked ? "—" : usageNumber.format(item.count), "usage-chart-value"),
-    node("span", untracked ? "—" : percent, "usage-chart-value"));
+  row.append(label, bar, node("span", count === null ? "—" : usageNumber.format(count), "usage-chart-value"),
+    node("span", count === null ? "—" : percent, "usage-chart-value"));
   return row;
 }
 
-/** 在使用记录顶部显示四个维度的完整占比图，切换维度和搜索无需重新取数。 */
+/** 各排行独立排序和翻页，占比使用搜索前的总次数。 */
+function usageRanking(id, title, emptyMessage = "没有匹配的类型") {
+  let rows = [];
+  let total = 0;
+  let dimension = "module";
+  const chart = paginatedList(id, title, 10, (page, size) => localListPage(rows, page, size), (visible) => {
+    if (!visible.length) return node("p", emptyMessage, "empty");
+    const header = node("div", null, "usage-chart-row usage-chart-header");
+    header.append(node("span", "名称"), node("span"), node("span", "次数"), node("span", "占比"));
+    const list = node("ul", null, "usage-chart-list");
+    for (const row of visible) list.append(usageChartRow(dimension, row, total));
+    const content = document.createDocumentFragment();
+    content.append(header, list);
+    return content;
+  });
+  chart.element.classList.add("usage-ranking-list");
+  chart.element.setAttribute("role", "region");
+  chart.element.setAttribute("aria-label", title);
+  return {
+    element: chart.element,
+    show(items, chartDimension, chartTotal, countFor) {
+      dimension = chartDimension;
+      total = chartTotal;
+      rows = items.map(({ item, title }) => ({ item, title, count: countFor(item) }))
+        .sort((a, b) => (b.count ?? -1) - (a.count ?? -1) || a.title.localeCompare(b.title, "zh-CN"));
+      chart.paint({ background: true });
+    },
+  };
+}
+
+/** 按页显示使用分析，切换维度、搜索和翻页复用已加载的数据。 */
 function usageAnalysis() {
   const element = node("section", null, "usage-analysis");
   const totals = node("div", null, "usage-analysis-totals");
-  const metrics = ["使用记录", "开发调用", "Skill 查阅（按轮）", "历史无调用上报的模块"].map((label) => {
+  const metrics = ["记录数", "开发调用", "Skill 查阅（按轮）", "历史无调用上报的模块"].map((label) => {
     const tile = node("div", null, "usage-analysis-metric");
     const number = node("strong", "—");
     tile.append(node("span", label), number);
@@ -659,89 +777,100 @@ function usageAnalysis() {
   search.value = usageChart.search;
   search.addEventListener("input", () => {
     usageChart.search = search.value;
-    usageChart.scrollTop = 0;
-    showChart();
+    showChart({ reset: true });
   });
   const choices = usageDimensions.map(([id, label]) => button(label, () => {
     if (usageChart.dimension === id) return;
-    Object.assign(usageChart, { dimension: id, search: "", scrollTop: 0 });
+    Object.assign(usageChart, { dimension: id, search: "" });
     search.value = "";
-    showChart();
+    showChart({ reset: true });
   }, "secondary"));
   tabs.append(...choices);
-  const refine = node("div", null, "usage-analysis-refine");
+  controls.append(tabs, search);
   const historyControl = node("label");
   const history = node("input");
   history.type = "checkbox";
   history.checked = usageChart.historyOnly;
   history.addEventListener("change", () => {
     usageChart.historyOnly = history.checked;
-    usageChart.scrollTop = 0;
+    resetListPage("usageDevelopment");
     showChart();
   });
   historyControl.append(history, "只看历史无上报");
-  refine.append(search, historyControl);
-  controls.append(tabs, refine);
 
   const note = node("p", null, "usage-analysis-note muted");
-  const graph = node("div", null, "usage-chart");
-  graph.tabIndex = 0;
-  graph.setAttribute("role", "region");
-  graph.setAttribute("aria-label", "使用次数与占比");
-  graph.addEventListener("scroll", () => { usageChart.scrollTop = graph.scrollTop; });
   const status = node("p", "正在读取使用分析…", "empty");
   status.setAttribute("role", "status");
-  const header = node("div", null, "usage-chart-row usage-chart-header");
-  header.append(node("span", "名称"), node("span"), node("span", "次数"), node("span", "占比"));
-  element.append(node("h2", "使用分析"), totals, controls, note, header, graph, status);
+  const chart = usageRanking("usageAnalysis", "使用分析");
+  chart.element.setAttribute("aria-label", "使用次数与占比");
+  const development = usageRanking("usageDevelopment", "开发次数");
+  const play = usageRanking("usagePlay", "Play 次数", "暂无匹配的 Play 上报");
+  const rankings = node("div", null, "usage-module-rankings");
+  const developmentHeading = node("div", null, "usage-ranking-heading");
+  developmentHeading.append(node("h3", "开发次数"), historyControl);
+  const playHeading = node("div", null, "usage-ranking-heading");
+  playHeading.append(node("h3", "Play 次数"));
+  const developmentSection = node("section");
+  developmentSection.append(developmentHeading, development.element);
+  const playSection = node("section");
+  playSection.append(playHeading, play.element);
+  rankings.append(developmentSection, playSection);
+  element.append(node("h2", "使用分析"), totals, controls, note, rankings, chart.element, status);
 
   let payload = null;
   let scope = "";
   let latest = 0;
 
-  /** 更新当前维度的按次数排行，搜索只改变可见项。 */
-  function showChart() {
+  /** 更新当前维度的完整排行，再用分页展示符合条件的条目。 */
+  function showChart({ reset = false } = {}) {
+    if (reset) resetUsageRankings();
     const dimension = usageChart.dimension;
     choices.forEach((choice, index) => choice.setAttribute("aria-pressed", String(usageDimensions[index][0] === dimension)));
     search.hidden = dimension === "entry" || dimension === "source";
     const modules = dimension === "module";
-    historyControl.hidden = !modules;
     note.textContent = modules
-      ? "占比按使用记录中的开发调用计算。历史查看所选项目全部时间，含专项工具和 Editor Play 上报。"
-      : "占比按所选范围的使用记录计算，含 Skill 查阅。历史状态查看所选项目的全部上报时间。";
-    header.hidden = graph.hidden = !payload;
+      ? "开发次数包含手动操作。一次 Play 上报可包含多次调用，旧版只记录场次时显示「—」。"
+      : "占比按操作明细的记录数计算，含 Skill 查阅。历史状态查看所选项目的全部上报时间。";
+    rankings.hidden = !payload || !modules;
+    chart.element.hidden = !payload || modules;
     if (!payload) return;
     const query = usageChart.search.trim().toLowerCase();
     const rows = payload.dimensions[dimension].map((item) => ({ item, title: usageCategoryLabel(dimension, item) }))
-      .filter(({ item }) => !modules || !usageChart.historyOnly || unreportedUsageModule(item))
-      .filter(({ item, title }) => !query || `${title} ${item.id} ${item.description || ""}`.toLowerCase().includes(query))
-      .sort((a, b) => b.item.count - a.item.count || a.title.localeCompare(b.title, "zh-CN"));
-    const list = node("ul", null, "usage-chart-list");
-    const total = modules ? payload.calls : payload.total;
-    for (const { item, title } of rows) list.append(usageChartRow(dimension, item, title, total));
-    graph.replaceChildren(rows.length ? list : node("p", "没有匹配的类型", "empty"));
-    graph.scrollTop = usageChart.scrollTop;
+      .filter(({ item, title }) => !query || `${title} ${item.id} ${item.description || ""}`.toLowerCase().includes(query));
+    if (!modules) {
+      chart.show(rows, dimension, payload.total, (item) => item.count);
+      return;
+    }
+    const matching = rows.filter(({ item }) => !payload.selected_module || payload.selected_module === item.id);
+    const developmentRows = usageChart.historyOnly ? matching.filter(({ item }) => unreportedUsageModule(item)) : matching;
+    const playRows = !filters.usageSource || filters.usageSource === "editor"
+      ? matching.filter(({ item }) => item.play_history) : [];
+    development.show(developmentRows, dimension, payload.development_calls,
+      (item) => item.tracked ? item.development_calls : null);
+    play.show(playRows, dimension, payload.play_calls, (item) => item.play_calls);
   }
 
   /** 按当前筛选更新图表，旧请求返回时不覆盖新范围。 */
   async function paint() {
     const query = new URLSearchParams(usageScope()).toString();
+    const selection = unreadOnly.has("usage") ? unreadSelection("usage") : undefined;
+    const scopeKey = JSON.stringify([query, selection]);
     const run = ++latest;
-    if (query !== scope) {
-      if (scope) usageChart.scrollTop = 0;
-      scope = query;
+    if (scopeKey !== scope) {
+      const reset = Boolean(scope);
+      scope = scopeKey;
       payload = null;
       for (const metric of metrics) metric.textContent = "—";
       status.textContent = "正在读取使用分析…";
       status.hidden = false;
-      showChart();
+      showChart({ reset });
     }
     try {
-      const result = await request(`/api/maintainer/usage-analysis?${query}`);
+      const result = await request(`/api/maintainer/usage-analysis?${query}`, selection);
       if (run !== latest || !element.isConnected) return;
       payload = result;
       const neverReported = result.dimensions.module.filter(unreportedUsageModule).length;
-      [result.total, result.calls, result.skill_turns, neverReported].forEach((value, index) => {
+      [result.total, result.development_calls, result.skill_turns, neverReported].forEach((value, index) => {
         metrics[index].textContent = usageNumber.format(value);
       });
       status.hidden = true;
@@ -776,36 +905,44 @@ function usagePage() {
     items.map((item) => [projectName(item.project_id), usageModuleName(item.module), item.calls,
       item.skill_turns, item.problems, stamp(item.last_used)])));
   const details = paginatedList("usageDetails", "操作明细", 50, (page, size) => remoteListPage("usage",
-    { ...usageScope(), sort: filters.usageSort }, page, size), usageRows);
+    { ...usageScope(), sort: filters.usageSort }, page, size, unreadOnly.has("usage")), usageRows);
   const analysis = usageAnalysis();
   const moduleSection = node("div", null, "usage-module-summary");
   moduleSection.append(node("h2", "项目模块调用"), modules.element);
-  const detailsTitle = node("h2", "操作明细");
-  const paintTables = (options) => {
-    moduleSection.hidden = detailsTitle.hidden = filters.usageSource !== "codex";
-    if (!moduleSection.hidden) modules.paint(options);
+  const detailsToolbar = node("div", null, "toolbar usage-details-toolbar");
+  const paintDetails = (options) => {
+    void analysis.paint();
     details.paint(options);
   };
-  paintLists = (options) => {
-    void analysis.paint();
-    paintTables(options);
+  detailsToolbar.append(node("h2", "操作明细"), unreadFilter("usage", paintDetails));
+  const paintModules = (options) => {
+    // 该汇总按模块累计所有类型，选定类型时由使用分析和明细展示结果。
+    moduleSection.hidden = filters.usageSource !== "codex" || Boolean(filters.usageEntry);
+    if (!moduleSection.hidden) modules.paint(options);
   };
+  paintLists = (options) => {
+    paintDetails(options);
+    paintModules(options);
+  };
+  paintUnreadList = paintDetails;
   const applyFilters = () => {
     resetUsagePages();
     paintLists({ reset: true });
   };
   toolbar.append(filter("usageSource", "来源", [["", "全部"], ...Object.entries(usageSources)], applyFilters),
+    filter("usageEntry", "操作类型", [["", "全部"], ...Object.entries(usageEntries), ["legacy", "未标注"]], applyFilters),
     filter("project", "项目", [["", "全部"], ...data.projects.map((item) => [item.id, item.name])], applyFilters),
-    filter("module", "模块", [["", "全部"], ...data.usage_modules.map((name) => [name, usageModuleName(name)])], applyFilters),
-    control("最近", days, [[1, "1 天"], [7, "7 天"], [14, "14 天"], [30, "30 天"], [90, "90 天"]], (value) => {
+    filter("module", "模块", [["", "全部"], ...data.usage_modules.map((id) => [id, usageCategoryLabel("module", { id })])], applyFilters),
+    control("最近", days, [[1, "1 天"], [7, "7 天"], [14, "14 天"], [30, "30 天"]], (value) => {
       days = Number(value);
-      usageChart.scrollTop = 0;
+      resetUsageRankings();
       refresh(true);
-    }), filter("usageSort", "排序", sortOptions, () => {
+    }), filter("usageSort", "排序", [["latest", "最新时间"], ["count", "记录数"]], () => {
       resetUsagePages();
-      paintTables({ reset: true });
+      paintModules({ reset: true });
+      details.paint({ reset: true });
     }));
-  return panel(null, toolbar, analysis.element, moduleSection, detailsTitle, details.element);
+  return panel(null, toolbar, analysis.element, moduleSection, detailsToolbar, details.element);
 }
 
 /** 根据当前栏目更新标题、侧栏、操作按钮和内容。 */
@@ -829,30 +966,34 @@ function render() {
   }
   if (view === "projects") actions.append(button("添加项目", registerProject, "primary"));
   const pages = { overview, issues: issuesPage, projects: projectsPage, usage: usagePage };
+  paintUnreadList = null;
+  unreadListNeedsPaint = false;
   const content = pages[view]();
   byId("content").replaceChildren(...(Array.isArray(content) ? content : [content]));
   paintLists();
 }
 
-/** 刷新维护台及各栏未读数量，保留正在使用的筛选控件。 */
-async function refresh(force = false) {
-  if (!session) return;
+/** 后台只检查新上报，完整刷新由打开页面或明确操作触发。 */
+async function refresh(refreshPage = false) {
+  if (!session || (!refreshPage && refreshing)) return;
   const run = ++loadCounter;
+  refreshing = true;
   try {
     const latest = await request(`/api/maintainer/overview?${overviewQuery()}`);
     if (run !== loadCounter) return;
     if (data && data.days !== latest.days) resetUsagePages();
     data = latest;
-    updateUnread();
-    showError(byId("page-error"), "");
-    const active = document.activeElement;
-    const keepFocus = byId("content").contains(active) &&
-      (active.matches("input, select, textarea") || active.closest(".pagination, .usage-analysis"));
-    if (force || !keepFocus) render();
-    else paintLists?.({ background: true });
+    const renderPage = refreshPage || !paintLists;
+    updateUnread({ sidebarOnly: !renderPage });
+    if (renderPage) {
+      showError(byId("page-error"), "");
+      render();
+    }
     void refreshProjectDetail();
   } catch (error) {
-    if (session && run === loadCounter) showError(byId("page-error"), error.message);
+    if (refreshPage && session && run === loadCounter) showError(byId("page-error"), error.message);
+  } finally {
+    if (run === loadCounter) refreshing = false;
   }
 }
 
@@ -867,17 +1008,26 @@ function openDialog(title, children, { closeOnBackdrop = false, hasEdits = null 
   if (!dialog.open) dialog.showModal();
 }
 
-/** 打开使用记录所属的操作，展示其用途和列表汇总。 */
-function openUsage(item) {
-  const details = fields([
-    ["项目", projectName(item.project_id)], ["模块", usageModuleName(item.module)],
-    ["来源", usageSources[item.source] || "未标注"], ["入口", usageEntries[item.entry] || "—"],
-    ["Framework", item.framework], ["结果", outcomeNames[item.outcome] || item.outcome],
-    ["次数", String(item.count)], ["最近使用", stamp(item.last_used)],
-  ]);
-  openDialog(item.operation, item.description ? [node("p", item.description), details] : [details],
-    { closeOnBackdrop: true });
+/** 打开操作说明，供使用记录登记已读状态。 */
+function openUsage(description) {
+  openDialog("操作说明", [node("p", description, "usage-description")], { closeOnBackdrop: true });
   return true;
+}
+
+/** 已知的 Play 次数按原上报列出，每条操作保留实际结果和时间。 */
+function openUsageOccurrences(item, days) {
+  const isPlay = item.entry === "play";
+  const columns = ["发生时间", "结果"];
+  if (isPlay) columns.push("调用次数");
+  const list = paginatedList("usageOccurrences", "发生记录", 10,
+    (page, size) => remoteListPage("usage-occurrences", { key: item.activity_key, days }, page, size),
+    (items) => table(columns, items.map((record) => {
+      const cells = [preciseStamp(record.observed_at), outcomeNames[item.outcome] || item.outcome];
+      if (isPlay) cells.push(record.play_calls == null ? "—" : usageNumber.format(record.play_calls));
+      return cells;
+    })));
+  openDialog("发生记录", [list.element], { closeOnBackdrop: true });
+  list.paint({ reset: true });
 }
 
 function closeDialog() {
@@ -1019,116 +1169,143 @@ function gamePackageNames(identifiers) {
     statusPill("未配置", false);
 }
 
-/** 显示钩子配置的上报状态和工作区最近运行。 */
-function hookStatus(snapshot, run) {
-  const status = hookStatuses[snapshot?.codex_hooks];
-  let current = statusPill("待上报", false);
-  if (status) {
-    const [text, tone, title] = status;
-    current = pill(text, tone);
-    current.title = title;
-  }
-  if (!run) return current;
-  const value = node("div");
-  value.append(current, node("div", `工作区最近运行 ${stamp(run.last_run)} · Framework ${run.framework}`, "muted"));
+/** 显示该份快照上报的钩子状态和实测数量。 */
+function hookStatus(snapshot) {
+  const status = hookStatuses[snapshot.codex_hooks];
+  if (!status) return statusPill("待上报", false);
+  const [text, tone, title] = status;
+  const counts = snapshot.codex_hook_counts;
+  const value = pill(counts ? `${text}（${counts.added}/${counts.expected}）` : text, tone);
+  value.title = counts ? title : `${title} 这份快照未记录钩子数量。`;
   return value;
 }
 
-function packageTable(packages, versions) {
+/** 按当前可核实的版本分组，查询更新时保留各组的展开状态。 */
+function renderPackageGroups(element, packages, versions) {
   function rank(item) {
     if (item.id.startsWith("com.solotopia.")) return 0;
     return versions.get(item.id)?.registry === "internal" ? 1 : 2;
   }
-  const ordered = packages.map((item) => {
+
+  const groups = {
+    different: { label: "非最新版本", rows: [] },
+    latest: { label: "最新版本", rows: [] },
+    builtin: { label: "随 Unity 版本", rows: [] },
+    other: { label: "其他版本", rows: [] },
+  };
+  const ordered = [...packages].sort((a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id));
+  for (const item of ordered) {
     const found = versions.get(item.id);
-    const latest = found?.latest;
+    const followsUnity = item.source === "builtin";
+    const latest = followsUnity ? null : found?.latest;
     const canCompare = latest && item.version && item.version !== "unknown";
-    const followsUnity = !latest && item.source === "builtin";
-    return { item, found, latest, followsUnity, isLatest: canCompare ? item.version === latest : null };
-  });
-  // 先显示查到最新版本的包，其次是随 Unity 的包，最后是未知版本。
-  ordered.sort((a, b) => Number(!a.latest) - Number(!b.latest) ||
-    Number(b.followsUnity) - Number(a.followsUnity) ||
-    Number(b.isLatest === false) - Number(a.isLatest === false) ||
-    rank(a.item) - rank(b.item) || a.item.id.localeCompare(b.item.id));
-  const list = table(["已发现包", "当前版本", "最新版本"], ordered.map(({ item, found, latest, followsUnity, isLatest }) => {
     let current = node("span", item.version);
-    if (isLatest !== null) {
+    let group = followsUnity ? groups.builtin : groups.other;
+    if (canCompare) {
+      const isLatest = item.version === latest;
+      group = isLatest ? groups.latest : groups.different;
       const status = found.registry === "third-party"
-        ? (isLatest ? "已是当前 Unity 的最新兼容版本" : "有与当前 Unity 兼容的新版")
+        ? (isLatest ? "已是当前 Unity 的最新兼容版本" : "与当前 Unity 的最新兼容版本不同")
         : (isLatest ? "已是最新" : "与仓库最新版本不同");
       current = pill(item.version, isLatest ? "success" : "warning");
       current.title = status;
       current.setAttribute("aria-label", `${item.version}，${status}`);
     }
-    return [node("code", item.id), current, latest || (followsUnity ? "随 Unity" : "—")];
-  }));
-  list.classList.add("package-list");
-  return list;
+    group.rows.push([node("code", item.id), current, latest || (followsUnity ? "随 Unity" : "—")]);
+  }
+  Object.values(groups).forEach(({ label, rows }, index) => {
+    let section = element.children[index];
+    if (!section) {
+      section = node("details");
+      section.append(node("summary"), node("div"));
+      element.append(section);
+    }
+    section.firstElementChild.textContent = `${label}（${rows.length}）`;
+    const list = table(["已发现包", "当前版本", "最新版本"], rows);
+    list.classList.add("package-list");
+    section.lastElementChild.replaceChildren(list);
+  });
 }
 
 const implementationStages = {
   "config-export": "Config 导出", "config-load": "Editor 读取 Config",
   "pipify-batch": "Pipify Batch", "plugpals-query": "PlugPals 仓库查询",
-  "bundle-build": "Bundle 构建", "player-build": "目标平台构建",
+  "bundle-build": "Bundle 构建", "player-build": "目标平台构建", "editor-module": "Play 模块调用",
 };
+const moduleAliases = new Map([["persist", "persistence"], ["vibrate", "vibration"]]);
 const implementationModules = {
-  config: "Config", pipify: "Pipify", upm: "包管理", procedure: "流程", asset: "资源",
+  config: "Config", pipify: "Pipify", upm: "PlugPals", procedure: "流程", asset: "资源",
   table: "表", localization: "本地化", ui: "UI", network: "网络", sdk: "SDK",
+  persistence: "存档", event: "事件", sound: "声音", vibration: "振动",
 };
 const buildKinds = { player: "Player", project: "平台工程" };
+const workflowStages = {
+  started: "任务开始", entry: "使用入口", lookup: "查阅资料", check: "执行检查",
+  plan: "计划", execute: "执行", verify: "验证", wait: "等待回执", finished: "本轮结束",
+  interrupted: "中断", startup: "Editor 启动", upgrade: "Framework 升级",
+  queue: "队列恢复", sign: "打包签名", registry: "仓库发布", github: "GitHub 同步",
+};
+const workflowOperations = {
+  "nova-task": "Nova 任务", "project-rules": "工程协作规则", "nova-project-action": "Nova Action 发现",
+  "nova-constraints": "Nova 开发约束", "nova-docs": "Nova 文档", "nova-minds": "Nova 知识库",
+  "editor-ready": "Editor 就绪", "editor-compilation": "Editor 编译",
+  "framework-loaded": "Framework 已载入", "framework-compilation": "Framework 编译",
+  "reports-resumed": "待发上报恢复", "public-sync": "公开仓同步",
+};
+const preciseDate = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "medium" });
 
-// 同一份 SDK 对应关系用于核对包的启用状态和展示模块名称。
-const sdkPackageConfigs = new Map(Object.entries({
-  ad: { name: "Ad", type: "AdPlugin.Runtime.AdPluginConfig" },
-  aihelp: { name: "AIHelp", type: "AIHelp.Runtime.AIHelpPluginConfig" },
-  applesignin: { name: "AppleSignIn", type: "AppleSignIn.AppleSignInPluginConfig" },
-  appsflyer: { name: "AppsFlyer", type: "AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig" },
-  "datamaster.abtest": { name: "DataMaster", type: "StarlusDataMaster.ABTest.Runtime.DataMasterPluginConfig" },
-  facebook: { name: "Facebook", type: "Facebook.FacebookPluginConfig" },
-  firebase: { name: "Firebase", type: "FirebasePlugin.Runtime.FirebasePluginConfig" },
-  googlesignin: { name: "GoogleSignIn", type: "GoogleSignIn.GoogleSignInPluginConfig" },
-  iap: { name: "IAP", type: "IAP.Runtime.IAPPluginConfig" },
-  tga: { name: "TGA", type: "TGAPlugin.Runtime.TGAPluginConfig" },
-  "wechat.minigame": { name: "WeChatMiniGame", type: "WeChatMiniGame.Runtime.WeChatMiniGamePluginConfig" },
-}));
+function preciseStamp(value) {
+  return value ? preciseDate.format(value * 1000) : "—";
+}
+
+function openWorkflow(project, trace = "") {
+  const list = paginatedList("projectWorkflow", "协作记录", 10, async (page, size) => {
+    const query = new URLSearchParams({ trace, page, page_size: size });
+    const result = await request(`/api/maintainer/projects/${encodeURIComponent(project.id)}/workflow?${query}`);
+    return { items: result.workflow, ...result.pagination };
+  }, (items) => table(["发生时间", "工作区", "来源", "阶段", "记录", "状态", "编号"], items.map((row) => {
+    const item = row.data;
+    const outcome = node("span", outcomeNames[item.outcome] || item.outcome);
+    if (item.reason) outcome.append(` · ${item.reason}`);
+    if (item.stage === "queue") outcome.append(` · 待发 ${item.pending} · 重试 ${item.retries}`);
+    const scope = node("div");
+    for (const [id, label] of [[item.trace, "任务"], [item.receipt, "操作"]]) {
+      if (!id || (label === "操作" && id === item.trace)) continue;
+      const entry = button(`${label} ${id.slice(0, 8)}`, () => openWorkflow(project, id), "link");
+      entry.title = id;
+      scope.append(entry, " ");
+    }
+    const operation = workflowOperations[item.operation] || item.operation;
+    const versions = [item.previous_version, item.target_version].filter(Boolean);
+    const source = item.stage === "queue" ? "本地队列" : usageSources[item.source] || "发布工具";
+    return [preciseStamp(row.observed_at), row.workspace.slice(0, 8), source,
+      workflowStages[item.stage] || item.stage, [operation, versions.join(" → ")].filter(Boolean).join(" · "), outcome, scope];
+  })));
+  const controls = node("div", null, "toolbar");
+  controls.append(button("返回项目", () => openProject(project.id)));
+  if (trace) controls.append(button("查看全部记录", () => openWorkflow(project)));
+  openDialog(`协作记录 · ${project.name}${trace ? ` · ${trace.slice(0, 8)}` : ""}`, [controls, list.element],
+    { closeOnBackdrop: true });
+  list.paint({ reset: true });
+}
+
+// 环境快照用短名展示已启用的 SDK 和 Kit。
 const enabledModuleNames = new Map([
-  ...Array.from(sdkPackageConfigs.values(), ({ name, type }) => [`NovaFramework.SDK.${type}`, name]),
+  ["NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig", "Ad"],
+  ["NovaFramework.SDK.AIHelp.Runtime.AIHelpPluginConfig", "AIHelp"],
+  ["NovaFramework.SDK.AppleSignIn.AppleSignInPluginConfig", "AppleSignIn"],
+  ["NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig", "AppsFlyer"],
+  ["NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.DataMasterPluginConfig", "DataMaster"],
+  ["NovaFramework.SDK.Facebook.FacebookPluginConfig", "Facebook"],
+  ["NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig", "Firebase"],
+  ["NovaFramework.SDK.GoogleSignIn.GoogleSignInPluginConfig", "GoogleSignIn"],
+  ["NovaFramework.SDK.IAP.Runtime.IAPPluginConfig", "IAP"],
+  ["NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig", "TGA"],
+  ["NovaFramework.SDK.WeChatMiniGame.Runtime.WeChatMiniGamePluginConfig", "WeChatMiniGame"],
   ["NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig", "GameLogin"],
   ["NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig", "GameSave"],
   ["NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig", "GameBind"],
 ]);
-const sdkAdapterConfigOwners = new Map(Object.entries({
-  admob: "广告聚合配置", max: "广告聚合配置",
-  "iap.mobile": "IAP 配置", "iap.thirdpay": "IAP 配置", "iap.voucher": "IAP 配置",
-}));
-
-/** 汇总 SDK 清单，启用状态来自该包和配置一起上报的记录。 */
-function sdkPackageTable(workspaces) {
-  if (!workspaces.length) return node("p", "暂无 SDK 清单上报", "empty");
-  const prefix = "com.solotopia.nova.framework.sdk.";
-  const packages = new Map();
-  for (const workspace of workspaces) {
-    const configs = new Set(workspace.sdk_configs);
-    for (const item of workspace.sdk_packages || []) {
-      if (!packages.has(item.id)) {
-        const name = item.id.slice(prefix.length);
-        packages.set(item.id, { ...item, name, config: sdkPackageConfigs.get(name)?.type, enabled: false });
-      }
-      const sdk = packages.get(item.id);
-      if (sdk.config && configs.has(`NovaFramework.SDK.${sdk.config}`)) sdk.enabled = true;
-    }
-  }
-  if (!packages.size) return node("p", "暂无已安装 SDK 包", "empty");
-  const installed = [...packages.values()].sort((left, right) => left.id.localeCompare(right.id));
-  return table(["已安装 SDK 包", "启用 SDK 配置"], installed.map(({ name, id, version, config, enabled }) => {
-    const status = statusPill(enabled ? "是" : "否", enabled);
-    const owner = sdkAdapterConfigOwners.get(name);
-    if (owner) status.title = `此适配包的配置在${owner}中管理。`;
-    else if (!config) status.title = "暂无此包独立配置的对应信息。";
-    return [`${id}@${version}`, status];
-  }));
-}
 
 /** 在快照中按上报顺序列出 SDK 和 Kit，旧类型或自定义类型取其简短类名。 */
 function enabledModuleList(types = []) {
@@ -1156,8 +1333,13 @@ function implementationVerification(success) {
   if (success) {
     const { stage, framework, unity } = success.data;
     status.title = `${implementationStages[stage]} · ${stamp(success.observed_at)} · Framework ${framework} · Unity ${unity} · 本地工程 ${success.workspace.slice(0, 8)}`;
+    status.setAttribute("aria-label", `已验证 · ${status.title}`);
   }
   return status;
+}
+
+function sameVerificationScope(first, second) {
+  return first.workspace === second.workspace && first.data.framework === second.data.framework && first.data.unity === second.data.unity;
 }
 
 function timedImplementationResult(row, label = "") {
@@ -1171,28 +1353,28 @@ function implementationLabel({ data }) {
   return data.step && data.stage === "pipify-batch" ? `${stage} · ${data.step}` : stage;
 }
 
-function mobileBuildResults(outcomes) {
+/** 按构建类型汇总最近结果，每个项目独立翻页。 */
+function projectBuildPanel(projectId, outcomes) {
   const builds = new Map();
   for (const row of outcomes) {
     const item = row.data;
-    if (item.stage !== "player-build" || !["Android", "iOS"].includes(item.platform) || item.build_kind === "scripts") continue;
-    const key = `${item.platform}:${item.build_kind}:${item.development}`;
+    if (item.stage !== "player-build" || !["Android", "iOS", "WebGL"].includes(item.platform) || item.build_kind === "scripts") continue;
+    const key = `${item.platform}:${item.build_kind}:${item.development}:${Boolean(item.batch_mode)}`;
     if (!builds.has(key)) builds.set(key, { latest: row, success: null });
-    if (item.outcome === "success") builds.get(key).success = row;
+    if (item.outcome === "success" && sameVerificationScope(row, builds.get(key).latest)) builds.get(key).success = row;
   }
-  if (!builds.size) return node("p", "暂无 Android／iOS 项目构建记录", "empty");
-  return table(["Android／iOS 项目构建", "验证", "最近结果"], [...builds.values()].map(({ latest, success }) => {
-    const { platform, build_kind, development } = latest.data;
-    return [`${platform} ${buildKinds[build_kind]} · ${development ? "开发构建" : "普通构建"}`,
-      implementationVerification(success), timedImplementationResult(latest)];
-  }));
-}
-
-function evidenceSection(key, title, body) {
-  const section = node("details");
-  section.dataset.evidenceKey = key;
-  section.append(node("summary", title), body);
-  return section;
+  const title = "项目构建记录";
+  if (!builds.size) return panel(title, node("p", "暂无 Android / iOS / WebGL 构建记录", "empty"));
+  const items = [...builds.values()];
+  const list = paginatedList(`projectBuilds:${projectId}`, title, 10,
+    (page, size) => localListPage(items, page, size),
+    (rows) => table(["构建", "入口", "验证", "最近结果"], rows.map(({ latest, success }) => {
+      const { platform, build_kind, development, batch_mode } = latest.data;
+      return [`${platform} ${buildKinds[build_kind]} · ${development ? "开发构建" : "普通构建"}`, batch_mode ? "批处理" : "Editor",
+        implementationVerification(success), timedImplementationResult(latest)];
+    })));
+  list.paint();
+  return panel(title, list.element);
 }
 
 /** 从按采集时间倒序排列的环境快照中取最近一次 Unity CLI 状态。 */
@@ -1232,8 +1414,19 @@ function toolConfigurationStatus(hasWorkspaceReport, configured) {
     : node("span", "暂无配置上报", "muted");
 }
 
-/** 显示各模块的配置和两类调用次数，最近时间在末列统一显示。 */
-function moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, sdk, unityCli, unityMcp) {
+/** 普通模块按实际上报显示使用状态。 */
+function moduleUseStatus(evidence, registeredAt) {
+  if (evidence?.last_success) {
+    const status = statusPill("有成功记录", true);
+    status.title = `最近成功 · ${stamp(evidence.last_success)}`;
+    return status;
+  }
+  if (registeredAt) return statusPill("已注册", true);
+  return evidence?.last_use ? statusPill("待验证", false) : node("span", "暂无上报", "muted");
+}
+
+/** 显示各模块的状态和两类调用次数，最近时间在末列统一显示。 */
+function moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, unityCli, unityMcp) {
   const modules = new Set([...Object.keys(implementationModules), ...usage.keys()]);
   if (unityCli) modules.add("unity-cli");
   if (unityMcp.length) modules.add("unity-mcp");
@@ -1244,7 +1437,8 @@ function moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, 
     const isUnityCli = id === "unity-cli";
     const isUnityMcp = id === "unity-mcp";
     const tool = toolKeys[id];
-    let configuration = "—";
+    const registeredAt = id === "table" ? tableReadyAt : 0;
+    let configuration;
     if (tool) {
       configuration = toolConfigurationStatus(hasWorkspaceReport, configuredTools.has(tool));
     } else if (isUnityCli) {
@@ -1252,19 +1446,16 @@ function moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, 
       if (unityCli) configuration.title = `环境快照 · ${stamp(unityCli.observedAt)}`;
     } else if (isUnityMcp) {
       configuration = unityMcpConfiguration(unityMcp);
-    } else if (id === "sdk") {
-      configuration = button("查看 SDK 清单", () => {
-        sdk.open = true;
-        sdk.scrollIntoView({ block: "nearest" });
-      }, "link");
+    } else {
+      configuration = moduleUseStatus(evidence, registeredAt);
     }
 
-    const latest = Math.max(evidence?.last_use || 0, id === "table" ? tableReadyAt : 0,
+    const latest = Math.max(evidence?.last_use || 0, registeredAt,
       isUnityCli ? unityCli?.observedAt || 0 : 0, isUnityMcp ? unityMcp[0]?.observedAt || 0 : 0);
     return [implementationModules[id] || usageModuleName(id), configuration,
       evidence?.development_calls || 0, evidence?.play_calls || 0, stamp(latest)];
   });
-  const summary = table(["模块", "配置 / 启用", "开发调用次数", "Play 调用次数", "最近记录"], rows);
+  const summary = table(["模块", "状态", "开发调用次数", "Play 调用次数", "最近记录"], rows);
   const headers = summary.querySelectorAll("th");
   headers[2].title = "执行开发工具、导出或命令的次数。";
   headers[3].title = "Unity Editor Play 中成功调用模块入口的次数。旧版按场次上报的记录不计入。";
@@ -1272,7 +1463,7 @@ function moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, 
   return panel("模块接入与使用", node("p", "次数按项目统计近 30 天。", "muted"), summary);
 }
 
-/** 汇总项目的工具验证、SDK 构建和模块使用。 */
+/** 汇总项目的工具验证、模块使用和构建记录。 */
 function implementationPanel(result) {
   const workspaceFacts = (result.implementation || []).filter((row) => row.data.stage === "workspace");
   const workspaces = workspaceFacts.map((row) => row.data);
@@ -1287,141 +1478,137 @@ function implementationPanel(result) {
   }
   const configuredTools = new Set(result.configured_tools || []);
   const scopeName = (item) => [item.platform, item.channel, item.mode].filter(Boolean).join(" · ") || "工程级";
-  const latestAt = Math.max(0, ...[...workspaceFacts, ...outcomes].map((item) => item.observed_at), issue?.observed_at || 0);
-  const sdk = evidenceSection("sdk", "SDK 接入与构建", sdkPackageTable(workspaces));
-  sdk.append(mobileBuildResults(outcomes));
-  const frameworks = [...new Set(workspaces.map(loadedFrameworkVersion).filter(Boolean))].join("、");
-  const unity = [...new Set(workspaces.map((workspace) => workspace.unity).filter(Boolean))].join("、");
+  const latestAt = Math.max(result.archived_play_at || 0, ...[...workspaceFacts, ...outcomes].map((item) => item.observed_at),
+    issue?.observed_at || 0);
   return panel("工程实施",
-    fields([["Framework版本", frameworks || "待上报"], ["Unity", unity || "待上报"],
-      ["最近上报坐标", workspaces.length ? scopeName(workspaces[0]) : "待上报"],
+    fields([["最近上报坐标", workspaces.length ? scopeName(workspaces[0]) : "待上报"],
       ["最近实施记录", stamp(latestAt)],
       ["最近编译或导入异常", issue ? button(`#${issue.issue_id} · ${stamp(issue.observed_at)}`,
         () => openIssue(issue.issue_id), "link") : "暂无记录"]]),
     table(["工具", "配置", "验证", "最近结果"], [["config", "Config", ["config-load", "config-export"]],
       ["pipify", "Pipify", ["pipify-batch"]], ["plugpals", "PlugPals", ["plugpals-query"]]].map(([id, label, stages]) => {
       const recent = outcomes.find((row) => stages.includes(row.data.stage));
-      const success = outcomes.find((row) => stages.includes(row.data.stage) && row.data.outcome === "success");
+      const success = recent && outcomes.find((row) => stages.includes(row.data.stage) &&
+        row.data.outcome === "success" && sameVerificationScope(row, recent));
       const configured = configuredTools.has(id);
       return [label, toolConfigurationStatus(hasWorkspaceReport, configured), implementationVerification(success),
         recent ? timedImplementationResult(recent, implementationLabel(recent)) : "暂无记录"];
     })),
-    sdk,
-    moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, sdk, unityCli, unityMcp));
+    moduleUsagePanel(usage, hasWorkspaceReport, configuredTools, outcomes, unityCli, unityMcp),
+    projectBuildPanel(result.project.id, outcomes));
 }
 
 /** 提取会影响工程实施面板的上报，工具状态变化时同样刷新。 */
 function implementationEvidence(result) {
   return JSON.stringify([result.implementation, result.configured_tools, result.implementation_outcomes,
-    result.project_module_evidence, result.upgrade_issues, latestUnityCliStatus(result.snapshots), unityMcpConnections(result)]);
+    result.project_module_evidence, result.archived_play_at, result.upgrade_issues, latestUnityCliStatus(result.snapshots),
+    unityMcpConnections(result)]);
 }
 
 /** 展示环境信息、采集状态及按需读取的包清单。 */
-function snapshotPanel(snapshot, path, hookRun) {
+function snapshotPanel(snapshot, path) {
   const snap = snapshot.data;
+  const frameworkVersion = snap.editor_framework ?? snap.framework;
+  const nova = frameworkVersion && frameworkVersion !== "unknown" ? frameworkVersion : "待上报";
+  const unity = snap.unity && snap.unity !== "unknown" ? snap.unity : "待上报";
+  const reporter = snap.git_user_name || "暂无 Git 名称";
   const section = node("details");
-  const feedback = node("div");
-  feedback.dataset.hookFeedback = "";
-  feedback.append(hookStatus(snap, hookRun));
-  const packages = node("div");
+  const packageSection = node("section", null, "snapshot-packages");
+  const packages = node("div", null, "snapshot-package-groups");
+  const packageStatus = node("p", null, "empty");
+  packageStatus.hidden = true;
+  packageSection.append(node("h3", "包清单"), packages, packageStatus);
   let loading = false;
   let complete = false;
   section.addEventListener("toggle", async () => {
     if (!section.open || loading || complete) return;
     if (!snap.packages.length) {
-      packages.replaceChildren(packageTable(snap.packages, new Map()));
+      packageStatus.textContent = "暂无已发现包";
+      packageStatus.hidden = false;
       complete = true;
       return;
     }
 
     loading = true;
     const route = `${path}/package-versions?snapshot=${encodeURIComponent(snapshot.id)}`;
-    const checking = node("p", "正在检查更多包版本…", "empty");
-    packages.replaceChildren(node("p", "正在读取包版本…", "empty"));
+    packageStatus.textContent = "正在读取包版本…";
+    packageStatus.hidden = false;
     try {
       const attempts = 6;
       for (let attempt = 0; attempt < attempts; attempt++) {
         if (!section.isConnected || !section.open || !byId("details").open) return;
         const { packages: versions, pending } = await request(route);
-        packages.replaceChildren(packageTable(snap.packages, new Map(Object.entries(versions))));
+        if (!section.isConnected || !byId("details").open) return;
+        renderPackageGroups(packages, snap.packages, new Map(Object.entries(versions)));
         complete = !pending;
         if (complete || !section.open || attempt === attempts - 1) return;
-        packages.append(checking);
+        packageStatus.textContent = "正在检查更多包版本…";
         await new Promise((resolve) => setTimeout(resolve, 700));
       }
     } catch {
-      if (!packages.querySelector("table")) packages.replaceChildren(packageTable(snap.packages, new Map()));
+      if (!packages.childElementCount) renderPackageGroups(packages, snap.packages, new Map());
     } finally {
-      checking.remove();
+      packageStatus.hidden = true;
       loading = false;
     }
   });
-  section.append(node("summary", `Unity ${snap.unity} · ${stamp(snapshot.received_at)}`),
-    fields([["上报人", snap.git_user_name || "暂无 Git 名称"],
+  section.append(node("summary", `Unity ${unity} · Nova ${nova} · ${reporter} · ${stamp(snapshot.observed_at)}`),
+    fields([["Framework版本", nova], ["Unity", unity], ["上报人", reporter],
       ["操作系统", { macos: "macOS", windows: "Windows", linux: "Linux" }[snap.operating_system] || "待上报"],
-      ["游戏包名", gamePackageNames(snap.application_identifiers)], ["钩子追加", feedback],
+      ["游戏包名", gamePackageNames(snap.application_identifiers)], ["钩子追加", hookStatus(snap)],
       ["已启用", enabledModuleList(snap.enabled)],
       ...Object.entries(snap.coverage).map(([name, state]) => [`${name} 采集`,
         statusPill(coverageNames[state] || state, readyCoverageStates.has(state))]),
       ...Object.entries(snap.tools).filter(([name]) => name !== "mcp" && name !== "pipeline")
         .map(([name, item]) => [name, snapshotToolStatus(item)])]),
-    packages);
+    packageSection);
   return section;
 }
 
-function updateProjectSnapshots(current, result) {
-  const hookRuns = new Map((result.hook_activity || []).map((run) => [run.workspace, run]));
-  const existing = new Map([...current.snapshots.children].map((section) => [section.dataset.snapshot, section]));
-  result.snapshots.forEach((snapshot, index) => {
-    const run = hookRuns.get(snapshot.workspace);
-    hookRuns.delete(snapshot.workspace);
-    const previous = existing.get(snapshot.id);
-    const section = previous || snapshotPanel(snapshot, current.path, run);
-    section.dataset.snapshot = snapshot.id;
-    const feedback = section.querySelector("[data-hook-feedback]");
-    const signature = JSON.stringify([snapshot.data.codex_hooks, run?.last_run, run?.framework]);
-    if (feedback.dataset.value !== signature) {
-      feedback.replaceChildren(hookStatus(snapshot.data, run));
-      feedback.dataset.value = signature;
-    }
-    if (section !== current.snapshots.children[index]) {
-      current.snapshots.insertBefore(section, current.snapshots.children[index] || null);
-    }
-    existing.delete(snapshot.id);
-    if (!previous && index === 0 && !current.snapshots.querySelector("details[open]")) section.open = true;
+/** 分页读取快照，后台刷新时复用当前页已展开的内容。 */
+function projectSnapshotList(id, path) {
+  const sections = node("div");
+  return paginatedList(`projectSnapshots:${id}`, "环境快照", 10, async (page, size) => {
+    const query = new URLSearchParams({ page, page_size: size });
+    const { snapshots, pagination } = await request(`${path}/snapshots?${query}`);
+    return { items: snapshots, ...pagination };
+  }, (snapshots, page) => {
+    const existing = new Map([...sections.children].map((section) => [section.dataset.snapshot, section]));
+    snapshots.forEach((snapshot, index) => {
+      const previous = existing.get(snapshot.id);
+      const section = previous || snapshotPanel(snapshot, path);
+      section.dataset.snapshot = snapshot.id;
+      const atIndex = sections.children[index];
+      if (section !== atIndex) sections.insertBefore(section, atIndex || null);
+      existing.delete(snapshot.id);
+      if (!previous && page === 1 && index === 0 && !sections.querySelector(":scope > details[open]")) section.open = true;
+    });
+    for (const section of existing.values()) section.remove();
+    if (!snapshots.length) sections.append(node("p", "等待该项目的首次上报。", "empty"));
+    return sections;
   });
-  for (const section of existing.values()) section.remove();
-  if (!result.snapshots.length) current.snapshots.append(node("p", "等待该项目的首次上报。", "empty"));
 }
 
+/** 在弹窗顶部更新项目详情，滚动阅读时将更新留到下一轮。 */
 async function refreshProjectDetail() {
   const current = projectLive;
-  if (!current || current.pending || !current.implementation.isConnected || !byId("details").open) return;
+  const dialog = byId("details");
+  if (!current || current.pending || !current.implementation.isConnected || !dialog.open || dialog.scrollTop) return;
   const summary = data?.projects.find((project) => project.id === current.id);
   if (!summary || (summary.last_seen === current.lastSeen && summary.team === current.team &&
       data.server_time - current.refreshedAt < 15)) return;
   current.pending = true;
   try {
     const result = await request(current.path);
-    if (projectLive !== current || !session || !byId("details").open) return;
+    if (projectLive !== current || !session || !dialog.open || dialog.scrollTop) return;
     const evidence = implementationEvidence(result);
     if (evidence !== current.evidence) {
-      const open = new Map([...current.implementation.querySelectorAll("details[data-evidence-key]")]
-        .map((section) => [section.dataset.evidenceKey, section.open]));
-      const active = current.implementation.contains(document.activeElement)
-        ? document.activeElement.closest("details")?.dataset.evidenceKey : null;
       const next = implementationPanel(result);
-      for (const section of next.querySelectorAll("details[data-evidence-key]")) {
-        if (open.has(section.dataset.evidenceKey)) section.open = open.get(section.dataset.evidenceKey);
-      }
       current.implementation.replaceWith(next);
       current.implementation = next;
-      for (const section of next.querySelectorAll("details[data-evidence-key]")) {
-        if (section.dataset.evidenceKey === active) section.querySelector("summary")?.focus({ preventScroll: true });
-      }
       current.evidence = evidence;
     }
-    updateProjectSnapshots(current, result);
+    current.snapshots.paint({ background: true });
     if (current.team !== result.project.team) current.teamField.replaceChildren(teamControl(result.project, true));
     current.team = result.project.team;
     current.lastSeen = result.project.last_seen;
@@ -1444,19 +1631,20 @@ async function openProject(id) {
     if (!session || !loading.isConnected || !byId("details").open) return;
     const current = {
       id, path, lastSeen: result.project.last_seen, team: result.project.team, refreshedAt: data?.server_time || 0,
-      implementation: implementationPanel(result), snapshots: node("div"),
+      implementation: implementationPanel(result), snapshots: projectSnapshotList(id, path),
       teamField: node("span"),
       evidence: implementationEvidence(result),
     };
     current.teamField.append(teamControl(result.project, true));
-    updateProjectSnapshots(current, result);
     openDialog(result.project.name, [
       fields([["标识", id], ["团队", current.teamField]]),
+      button("协作记录", () => openWorkflow(result.project)),
       current.implementation,
-      panel("环境快照", current.snapshots),
+      panel("环境快照", current.snapshots.element),
       deleteAction(path, `确定删除项目「${result.project.name}」吗？项目的上报和仅由该项目上报的问题会一并删除。此操作不可撤销。今后的自动上报仍可重新登记该项目。`),
     ], options);
     projectLive = current;
+    current.snapshots.paint();
     return true;
   } catch (failure) {
     if (session && loading.isConnected && byId("details").open) {
@@ -1574,6 +1762,10 @@ detailDialog.addEventListener("close", () => {
   if (!detailDialog.open) {
     projectLive = null;
     dialogHasEdits = null;
+    if (unreadListNeedsPaint) {
+      unreadListNeedsPaint = false;
+      refreshUnreadList(view);
+    }
   }
 });
 detailDialog.addEventListener("pointerdown", (event) => {
@@ -1596,7 +1788,11 @@ byId("nav").addEventListener("click", (event) => {
 });
 
 window.addEventListener("storage", (event) => {
-  if (session && unreadSections.some((section) => event.key === readKey(section))) updateUnread();
+  if (!session || !unreadSections.some((section) => event.key === readKey(section))) return;
+  const previous = unreadRows[view];
+  updateUnread();
+  if (unreadOnly.has(view) && event.key === readKey(view) &&
+      [...previous.keys()].some((key) => !unreadRows[view].has(key))) refreshUnreadList(view);
 });
 
 byId("login-form").addEventListener("submit", async (event) => {

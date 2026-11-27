@@ -41,7 +41,8 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.Sound.Exporter.ExportData(sourceDirPath, settings, unitSetting);
+            EditorUtil.NovaIssues.RunManualExport("sound", "data",
+                () => EditorUtil.Sound.Exporter.ExportData(sourceDirPath, settings, unitSetting, new EditorUtil.Sound.Exporter.ExportOperations()));
         }
 
         /// <summary>
@@ -63,7 +64,9 @@ namespace NovaFramework.Editor
 
             string relativePath = Util.SysIO.Path.GetRelativePath(sourceDirPath.TrimEnd('/', '\\'), filePath);
             SoundUnitSetting unitSetting = settings.SoundUnitsSettings?.Find(u => u.SourcePath == relativePath);
-            EditorUtil.Sound.Exporter.ExportCode(sourceDirPath, settings, unitSetting, classExportPath, null);
+            EditorUtil.NovaIssues.RunManualExport("sound", "code",
+                () => EditorUtil.Sound.Exporter.ExportCode(sourceDirPath, settings, unitSetting, classExportPath, null,
+                    new EditorUtil.Sound.Exporter.ExportOperations()));
         }
 
         /// <summary>
@@ -87,7 +90,8 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.Sound.Exporter.ExportAll(sourceDirPath, settings);
+            EditorUtil.NovaIssues.RunManualExport("sound", "all",
+                () => EditorUtil.Sound.Exporter.ExportAll(sourceDirPath, settings, new EditorUtil.Sound.Exporter.ExportOperations()));
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NovaFramework.Runtime;
+using SqlCipher4Unity3D;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -26,12 +27,82 @@ namespace NovaFramework.Editor
             private const string c_WorkspaceImplementation = "implementation_workspace";
             private const string c_UnityMcpPackage = "com.coplaydev.unity-mcp";
             private const double c_UnityMcpHeartbeatSeconds = 300;
+            private const string c_StartupTrace = "Nova.Issues.EditorStartupTrace";
+            private const string c_StartupReady = "Nova.Issues.EditorStartupReady";
+            private const string c_StartupProblem = "Nova.Issues.EditorStartupProblem";
+            private const string c_LastLoadedFramework = "last_registry_framework";
             private static readonly DateTime s_EditorStartedUtc = DateTime.UtcNow.AddSeconds(-EditorApplication.timeSinceStartup);
             private static DateTime s_LastBuildReportWrite;
             private static double s_NextBuildReportCheck;
             private static string s_LastUnityMcpState;
             private static string s_LastUnityMcpVersion;
             private static double s_NextUnityMcpHeartbeat;
+
+            private static string EditorStartupTrace()
+            {
+                string trace = SessionState.GetString(c_StartupTrace, string.Empty);
+                if (trace.Length == 0)
+                {
+                    trace = Guid.NewGuid().ToString("N");
+                    SessionState.SetString(c_StartupTrace, trace);
+                }
+                return trace;
+            }
+
+            /// <summary>同一 Editor 进程就绪一次，域重载仍保留原启动编号。</summary>
+            private static void ObserveEditorStartup()
+            {
+                if (SessionState.GetBool(c_StartupReady, false))
+                    return;
+                SessionState.SetBool(c_StartupReady, true);
+                ObserveWorkflow("startup", "editor-ready", "success", EditorStartupTrace());
+            }
+
+            /// <summary>启动就绪前收到的首个可归因编译错误。</summary>
+            private static void ObserveEditorStartupProblem(string code)
+            {
+                if (SessionState.GetBool(c_StartupReady, false) || SessionState.GetBool(c_StartupProblem, false))
+                    return;
+                SessionState.SetBool(c_StartupProblem, true);
+                ObserveWorkflow("startup", "editor-compilation", "failed", EditorStartupTrace(), reason: code);
+            }
+
+            /// <summary>记录已加载的版本变更，或同一升级目标最早看到的编译故障。</summary>
+            private static void RecordFrameworkUpgrade(SQLiteConnection db, JObject input, string workspace, long stamp,
+                string loaded, string compilerError = null)
+            {
+                if ((bool?)input["framework_registry"] != true)
+                    return;
+                string registered = ReportText(input, "framework");
+                if (!Version.TryParse(registered, out Version target) || (loaded != registered && compilerError == null))
+                    return;
+                string previous = (string)ReadState(db, c_LastLoadedFramework);
+                if (previous == null && ReadState(db, "editor") is JObject snapshot && snapshot["packages"] is JArray packages)
+                {
+                    string lastLoaded = ReportText(snapshot, "editor_framework");
+                    if (packages.OfType<JObject>().Any(package => ReportText(package, "id") == c_Framework &&
+                            ReportText(package, "version") == lastLoaded && ReportText(package, "source") == "registry"))
+                        previous = lastLoaded;
+                }
+
+                if (Version.TryParse(previous, out Version previousVersion) && target > previousVersion)
+                {
+                    string trace = EventId("framework-upgrade", workspace, previous, registered);
+                    bool succeeded = compilerError == null;
+                    var data = new JObject
+                    {
+                        ["stage"] = "upgrade", ["operation"] = succeeded ? "framework-loaded" : "framework-compilation",
+                        ["framework"] = registered, ["source"] = "editor", ["trace"] = trace,
+                        ["outcome"] = succeeded ? "success" : "failed",
+                        ["previous_version"] = previous, ["target_version"] = registered
+                    };
+                    if (!succeeded)
+                        data["reason"] = compilerError;
+                    AppendReport(db, workspace, EventId(trace, succeeded ? "loaded" : "compilation"), stamp, "workflow", data);
+                }
+                if (loaded == registered && previous != loaded)
+                    SaveState(db, c_LastLoadedFramework, new JValue(loaded));
+            }
 
             /// <summary>状态变化时上报 Coplay 桥接，状态稳定时定期补一份最近观察。</summary>
             private static void ObserveUnityMcpConnection(PackageInfo[] packages, double editorTime)
@@ -91,7 +162,7 @@ namespace NovaFramework.Editor
                 string channel = null, string mode = null, string step = null, string buildKind = null,
                 bool development = false, string reportId = null, long? observedAt = null, long? calls = null)
             {
-                if (Application.isBatchMode)
+                if (Application.isBatchMode && stage is not ("player-build" or "pipify-batch"))
                     return false;
                 try
                 {
@@ -105,6 +176,8 @@ namespace NovaFramework.Editor
                     {
                         data["build_kind"] = buildKind;
                         data["development"] = development;
+                        if (Application.isBatchMode || platform is not ("Android" or "iOS"))
+                            data["batch_mode"] = Application.isBatchMode;
                     }
                     var input = new JObject { ["event"] = "implementation", ["implementation"] = data };
                     if (reportId != null) input["id"] = reportId;
@@ -119,13 +192,15 @@ namespace NovaFramework.Editor
                 }
             }
 
-            private static bool IsMobileBuild(BuildTarget platform, BuildOptions options) =>
-                (platform is BuildTarget.Android or BuildTarget.iOS) && (options & BuildOptions.BuildScriptsOnly) == 0;
+            private static bool IsMonitoredBuild(BuildTarget platform, BuildOptions options) =>
+                (platform is BuildTarget.Android or BuildTarget.iOS or BuildTarget.StandaloneOSX or
+                    BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or
+                    BuildTarget.StandaloneLinux64 or BuildTarget.WebGL) && (options & BuildOptions.BuildScriptsOnly) == 0;
 
-            /// <summary>记录供 SDK 构建汇总使用的 Android 或 iOS 构建终态。</summary>
+            /// <summary>记录实际 Player 构建终态，批处理与交互式 Editor 各自标记。</summary>
             internal static void ObservePlayerBuild(BuildSummary summary, bool exportsProject)
             {
-                if (!IsMobileBuild(summary.platform, summary.options))
+                if (!IsMonitoredBuild(summary.platform, summary.options))
                     return;
                 string outcome = summary.result switch
                 {
@@ -146,7 +221,7 @@ namespace NovaFramework.Editor
             internal static void ObservePlayerBuildFailure(BuildTarget platform, bool exportsProject, BuildOptions options,
                 string outcome)
             {
-                if (!IsMobileBuild(platform, options))
+                if (!IsMonitoredBuild(platform, options))
                     return;
                 ObserveImplementation("player-build", outcome, platform.ToString(),
                     buildKind: exportsProject ? "project" : "player", development: (options & BuildOptions.Development) != 0);
@@ -191,7 +266,7 @@ namespace NovaFramework.Editor
                     if (report == null)
                         return false;
                     BuildSummary summary = report.summary;
-                    if (summary.buildType != BuildType.Player || !IsMobileBuild(summary.platform, summary.options) ||
+                    if (summary.buildType != BuildType.Player || !IsMonitoredBuild(summary.platform, summary.options) ||
                         summary.buildStartedAt < notBefore ||
                         summary.result is not (BuildResult.Succeeded or BuildResult.Cancelled or BuildResult.Failed))
                         return false;

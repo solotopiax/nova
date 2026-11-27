@@ -143,6 +143,7 @@ namespace NovaFramework.Editor
                             plan.ExpiresAtUtc = expiresAtUtc;
                             plan.OperationId = operation.OperationId;
                             plan.RecoveryToken = recoveryToken;
+                            NovaIssues.ObserveActionWorkflow(actionId, operation.OperationId, "plan", "success");
                         }
                         return plan;
                     }
@@ -398,6 +399,7 @@ namespace NovaFramework.Editor
                             {
                                 result.Warnings.Add("Verify 已完成，但 Operation 验证状态持久化失败。");
                             }
+                            NovaIssues.ObserveActionWorkflow(actionId, operationId, "verify", result.Status);
                         }
                         return result;
                     }

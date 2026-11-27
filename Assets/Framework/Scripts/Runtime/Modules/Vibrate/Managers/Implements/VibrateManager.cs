@@ -137,6 +137,9 @@ namespace NovaFramework.Runtime
 
 #if NOVA_NICEVIBRATIONS
             HapticPatterns.PlayConstant(1f, 1f, 0.3f);
+#if UNITY_EDITOR
+            EditorPlayEvidence.Use(EditorPlayModule.Vibrate);
+#endif
 #endif
         }
 
@@ -151,6 +154,9 @@ namespace NovaFramework.Runtime
 
 #if NOVA_NICEVIBRATIONS
             HapticPatterns.PlayPreset(GetHapticType(type));
+#if UNITY_EDITOR
+            EditorPlayEvidence.Use(EditorPlayModule.Vibrate);
+#endif
 #endif
         }
 
@@ -170,6 +176,9 @@ namespace NovaFramework.Runtime
 
             CancelAndRecreateCts();
             PlayCustomGroupInternal(name, m_PlayCts.Token).Forget();
+#if UNITY_EDITOR && NOVA_NICEVIBRATIONS
+            EditorPlayEvidence.Use(EditorPlayModule.Vibrate);
+#endif
         }
 
         /// <summary>
@@ -195,10 +204,14 @@ namespace NovaFramework.Runtime
             {
                 EnsureCts();
                 PlayCustomDelayed(intensity, sharpness, preDuration, duration, m_PlayCts.Token).Forget();
-                return;
             }
-
-            HapticPatterns.PlayConstant(intensity, sharpness, duration);
+            else
+            {
+                HapticPatterns.PlayConstant(intensity, sharpness, duration);
+            }
+#if UNITY_EDITOR
+            EditorPlayEvidence.Use(EditorPlayModule.Vibrate);
+#endif
 #endif
         }
 
@@ -218,6 +231,9 @@ namespace NovaFramework.Runtime
 
             CancelAndRecreateCts();
             PlayEmphasisGroupInternal(name, m_PlayCts.Token).Forget();
+#if UNITY_EDITOR && NOVA_NICEVIBRATIONS
+            EditorPlayEvidence.Use(EditorPlayModule.Vibrate);
+#endif
         }
 
         /// <summary>
@@ -240,10 +256,14 @@ namespace NovaFramework.Runtime
             {
                 EnsureCts();
                 PlayEmphasisDelayed(amplitude, frequency, preDuration, m_PlayCts.Token).Forget();
-                return;
             }
-
-            HapticPatterns.PlayEmphasis(amplitude, frequency);
+            else
+            {
+                HapticPatterns.PlayEmphasis(amplitude, frequency);
+            }
+#if UNITY_EDITOR
+            EditorPlayEvidence.Use(EditorPlayModule.Vibrate);
+#endif
 #endif
         }
         
